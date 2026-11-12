@@ -194,3 +194,10 @@
  #app.board-focus .mission .drawer-handle,
  #app.board-focus .tool-panel .drawer-handle{min-height:84px;touch-action:manipulation}
 }
+
+
+/* Prevent stale WebGL canvas dimensions from stretching the document while a
+ * slow laptop GPU is still processing a resize event. The backbuffer catches
+ * up in resize(); its CSS presentation must fit immediately. */
+#scene{overflow:hidden;contain:layout size paint}
+#scene canvas{width:100%!important;height:100%!important;max-width:100%;max-height:100%}
