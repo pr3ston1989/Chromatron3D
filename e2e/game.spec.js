@@ -212,3 +212,42 @@ test('rotation eases visually without delaying the optical logic',async({page})=
  await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().activeOpticTweens)).toBe(0);
  expect(errors).toEqual([]);
 });
+
+
+test('wheel and trackpad rotate continuously without recreating mirror geometry',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/');
+ const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await page.mouse.click(point.x,point.y);
+ const state=()=>page.evaluate(()=>window.chromatron.getState());
+ const stats=()=>page.evaluate(()=>window.chromatron.getVisualStats());
+ const baseline=await stats();
+ expect(baseline.selectionVisible).toBe(true);
+ expect(baseline.selectionPieceId).toBe((await state()).selectedId);
+
+ await page.keyboard.press('Escape');
+ expect((await stats()).componentRebuilds).toBe(baseline.componentRebuilds);
+ expect((await stats()).selectionVisible).toBe(false);
+ await page.mouse.click(point.x,point.y);
+ expect((await stats()).selectionVisible).toBe(true);
+ expect((await stats()).componentRebuilds).toBe(baseline.componentRebuilds);
+ await page.mouse.move(point.x,point.y);
+ // One negative wheel detent, one 45-degree reverse step.
+ await page.mouse.wheel(0,-100);
+ await expect.poll(async()=>(await state()).pieces.find(p=>p.type==='mirror').rot).toBe(7);
+ await expect(page.locator('#rotation-angle')).toHaveText('315°');
+ await page.mouse.wheel(0,100);
+ await expect.poll(async()=>(await state()).pieces.find(p=>p.type==='mirror').rot).toBe(0);
+
+ // High-resolution touchpads send several small sub-detent values.
+ for(let i=0;i<4;i++)await page.mouse.wheel(0,-20);
+ await expect.poll(async()=>(await state()).pieces.find(p=>p.type==='mirror').rot).toBe(7);
+ expect((await stats()).componentRebuilds).toBe(baseline.componentRebuilds);
+ await expect.poll(async()=>(await stats()).activeOpticTweens).toBe(0);
+ const final=await stats();
+ const expected=-7*Math.PI/4;
+ expect(Math.abs(Math.sin(final.selectedVisualAngle-expected))).toBeLessThan(.025);
+ await page.screenshot({path:'test-results/chromatron-precision-selection.png'});
+ expect(errors).toEqual([]);
+});
