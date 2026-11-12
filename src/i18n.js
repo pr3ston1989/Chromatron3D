@@ -1,6 +1,10 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    coachChoose:'1. Wybierz lustro',coachChooseDetail:'Kliknij podświetlone LUSTRO w panelu elementów. To właśnie nim zmienisz kierunek światła.',
+    coachPlace:'2. Ustaw lustro na planszy',coachPlaceDetail:'Kliknij wolne pole na drodze lasera lub przeciągnij lustro z panelu. Podświetlenie pokaże możliwe miejsce.',
+    coachRotate:'3. Obróć lustro',coachRotateDetail:'Naciśnij Q lub E (albo kliknij lustro ponownie). Skieruj niebieską wiązkę na świecący rezonator.',
+    coachDismiss:'Ukryj samouczek',
     analysisToggle:'Analizuj światło (V)',analysisHeading:'ANALIZATOR WIĄZEK',analysisIntro:'Sprawdź barwy i miejsca pochłaniania wiązek bez ujawniania rozwiązania.',
     analysisSources:'EMITERY',analysisSegments:'ODCINKI WIĄZEK',analysisTargetHeading:'REZONATORY',analysisAbsorption:'POCHŁONIĘTE PROMIENIE',
     analysisCorrect:'ZGODNY',analysisWrong:'NIEZGODNY',analysisNoLight:'BRAK ŚWIATŁA',analysisNeed:'Wymagany',analysisReceived:'Otrzymany',
@@ -20,6 +24,10 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    coachChoose:'1. Pick up the mirror',coachChooseDetail:'Click the highlighted MIRROR in the components panel. You will use it to redirect the laser.',
+    coachPlace:'2. Place the mirror',coachPlaceDetail:'Click an empty tile in the laser beam, or drag the mirror from the panel. The tile preview shows where it will land.',
+    coachRotate:'3. Rotate the mirror',coachRotateDetail:'Press Q or E (or click the mirror again). Aim the blue laser at the glowing resonator.',
+    coachDismiss:'Hide tutorial',
     analysisToggle:'Inspect beams (V)',analysisHeading:'BEAM ANALYZER',analysisIntro:'Inspect wavelengths and absorbed beams without revealing puzzle solutions.',
     analysisSources:'EMITTERS',analysisSegments:'BEAM SEGMENTS',analysisTargetHeading:'RESONATORS',analysisAbsorption:'ABSORBED BEAMS',
     analysisCorrect:'MATCHED',analysisWrong:'MISMATCH',analysisNoLight:'NO LIGHT',analysisNeed:'Required',analysisReceived:'Received',
