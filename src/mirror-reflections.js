@@ -11,7 +11,7 @@ import {Reflector} from 'three/addons/objects/Reflector.js';
  */
 export function mountRealMirror(THREE,head,resolution=160){
  const size=Math.max(64,Math.min(512,Math.round(resolution)));
- const reflector=new Reflector(new THREE.PlaneGeometry(.91,.68),{
+ const reflector=new Reflector(new THREE.PlaneGeometry(1.045,.92),{
   textureWidth:size,
   textureHeight:size,
   clipBias:.003,
