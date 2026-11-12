@@ -61,7 +61,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending
   });
   const sprite=new THREE.Sprite(m);
-  sprite.position.copy(point(x,y,.69));
+  sprite.position.copy(point(x,y,.79));
   sprite.scale.setScalar(scale);sprite.renderOrder=12;parent.add(sprite);
   flicker.push({sprite,scale});
  }
@@ -97,7 +97,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  }
  const coreAxis=new THREE.Vector3(0,1,0);
  for(const s of segments){
-  const a=point(s.x,s.y,.53),b=point(s.nx,s.ny,.53);
+  const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
   const segment=b.clone().sub(a),len=segment.length();
   if(len<.001)continue;
   if(!shellMaterials.has(s.color))shellMaterials.set(s.color,new THREE.MeshBasicMaterial({
@@ -125,7 +125,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  for(let i=0;i<usedSegments.length;i++){
   const seg=usedSegments[i];
   for(let n=0;n<2;n++){
-   const a=point(seg.x,seg.y,.62),b=point(seg.nx,seg.ny,.62);
+   const a=point(seg.x,seg.y,.82),b=point(seg.nx,seg.ny,.82);
    photonStarts.push(...a.toArray());
    photonEnds.push(...b.toArray());
    const c=new THREE.Color(palette[seg.color]);
@@ -211,15 +211,15 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   if(!piece||piece.type==='laser')continue;
   if(piece.type==='target'){
    const active=received.get(piece.id)===piece.color;
-   flareOnce(piece.x,piece.y,s.color,active?2.3:.95);
+   flareOnce(piece.x,piece.y,s.color,active?1.8:.62);
    if(active&&lightBudget++<9){
     const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),24,8,2);
     l.position.copy(point(piece.x,piece.y,1));parent.add(l);
    }
   }else if(piece.type!=='wall'){
-   flareOnce(piece.x,piece.y,s.color,.85);
+   flareOnce(piece.x,piece.y,s.color,.38);
   }else{
-   flareOnce(piece.x,piece.y,s.color,.6);
+   flareOnce(piece.x,piece.y,s.color,.44);
   }
  }
  return {
