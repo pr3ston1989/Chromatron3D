@@ -412,12 +412,19 @@ function setLanguage(next){
  updateLocalizedLevel();
 }
 function load(i){
+ cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
- try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
+ let legacyHints=0;
+ if(currentPackId===demoPackId){
+  try{legacyHints=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{}
+ }
+ wallet=ensurePreviousHints(wallet,currentLevelKey(),legacyHints);
+ hintCount=wallet.unlocked[currentLevelKey()]||0;
+ saveWallet();
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
  $('total-levels').textContent=String(levels.length).padStart(3,'0');
  $('prev').disabled=levelIndex===0;$('next').disabled=levelIndex===levels.length-1;
