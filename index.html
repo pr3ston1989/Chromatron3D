@@ -33,6 +33,7 @@
     <button id="redo" class="ui-button small" type="button" data-i18n-title="redoTitle" title="Ponów" aria-label="Redo" disabled>↷</button>
     <button id="next" class="ui-button small" type="button" aria-label="Następna zagadka">›</button>
   </div>
+  <div class="hint-wallet" aria-live="polite"><span class="hint-wallet-icon">◆</span> <strong id="hint-credits">3</strong> <span data-i18n="creditsLabel">KREDYTY PODPOWIEDZI</span></div>
   <button id="hint" class="ui-button hint-button" type="button" data-i18n-aria="hintAria">✦ <span data-i18n="hintButton">PODPOWIEDŹ</span> <span id="hint-badge">0/3</span></button>
   <div id="level-status" class="level-status" aria-live="polite"></div>
  </aside>
@@ -65,12 +66,19 @@
  <div id="win" class="overlay hidden" role="dialog" aria-modal="true">
   <div class="modal"><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
    <p data-i18n="completeDesc">Wszystkie rezonatory otrzymały właściwe kolory światła.</p>
+   <p id="win-reward" class="win-reward" aria-live="polite"></p>
    <button id="continue" class="ui-button accent" type="button" data-i18n="next">NASTĘPNA ZAGADKA →</button>
   </div>
  </div>
  <div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true">
   <div class="modal help-modal"><div class="eyebrow">FIELD MANUAL / 001</div><h2 data-i18n="manualTitle">STERUJ ŚWIATŁEM.</h2>
    <p data-i18n="manualIntro"></p><p data-i18n="manualExtra"></p><p data-i18n="prototypeNote"></p>
+   <div class="classic-import">
+    <p data-i18n="classicImportIntro">Odtwarzanie klasycznych plansz: wybierz lokalny JSON wyeksportowany z własnej kopii gry. Pliki pozostają na Twoim komputerze.</p>
+    <button id="import-classic" class="ui-button" type="button" data-i18n="classicImportButton">IMPORTUJ DANE POZIOMÓW (.JSON)</button>
+    <input id="classic-files" type="file" accept=".json,application/json" multiple hidden>
+    <p id="classic-import-status" role="status" aria-live="polite"></p>
+   </div>
    <button id="close-help" class="ui-button accent" type="button" data-i18n="understood">ROZUMIEM</button>
   </div>
  </div>
@@ -78,8 +86,11 @@
   <div class="modal hint-modal">
    <div class="eyebrow">CHROMATRON / ASSIST</div><h2 id="hint-title" data-i18n="hintTitle">NIE MOŻESZ RUSZYĆ DALEJ?</h2>
    <p data-i18n="hintIntro">Odsłaniaj wskazówki stopniowo.</p>
+   <div class="hint-wallet modal-wallet"><span class="hint-wallet-icon">◆</span> <strong id="modal-credits">3</strong> <span data-i18n="creditsLabel">KREDYTY PODPOWIEDZI</span></div>
+   <p id="hint-analysis-status" class="hint-analysis-status" aria-live="polite"></p>
    <div id="hint-steps" class="hint-steps" aria-live="polite"></div>
    <button id="reveal-hint" class="ui-button accent" type="button" data-i18n="hintReveal">ODKRYJ WSKAZÓWKĘ</button>
+   <p id="hint-cost" class="hint-cost"></p>
    <button id="skip-level" class="ui-button hint-skip hidden" type="button" data-i18n="hintSkip">POMIŃ ZAGADKĘ →</button>
    <button id="close-hint" class="ui-button hint-close" type="button" data-i18n="hintClose">WRÓĆ DO GRY</button>
   </div>
