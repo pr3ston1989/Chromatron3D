@@ -105,6 +105,7 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
 test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');
+ await page.locator('#graphics-quality').selectOption('balanced');
  await page.locator('#next').click();
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
  const state=()=>page.evaluate(()=>window.chromatron.getState());
@@ -220,6 +221,8 @@ test('rotation eases visually without delaying the optical logic',async({page})=
 test('wheel and trackpad rotate continuously without recreating mirror geometry',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.goto('/');
+ // Pin a fixed profile so automatic GPU downgrades cannot invalidate counts.
+ await page.locator('#graphics-quality').selectOption('balanced');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(point.x,point.y);
