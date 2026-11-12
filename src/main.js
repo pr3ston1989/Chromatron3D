@@ -21,6 +21,8 @@ import {detailEmitter,detailResonator} from './optical-assets.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
+import {createSelectionReticle} from './selection-reticle.js';
+import {createWheelRotation} from './wheel-rotation.js';
 import './style.css';
 import './redesign.css';
 const $=id=>document.getElementById(id);
@@ -96,6 +98,8 @@ const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 const beamGroup=new THREE.Group();world.add(beamGroup);
 const assistGroup=new THREE.Group();world.add(assistGroup);
 const guideGroup=new THREE.Group();world.add(guideGroup);
+const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T),T);
+const wheelRotation=createWheelRotation();
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
@@ -144,7 +148,7 @@ function rebuildPieces(){
   const glow=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.3,metalness:.24,roughness:.18});
   const base=mesh(new THREE.CylinderGeometry(.53,.60,.24,12),metal,g);base.position.y=.025;
   const foot=mesh(new THREE.CylinderGeometry(.47,.49,.06,24),trim,g);foot.position.y=.17;
-  const outlineMaterial=new THREE.MeshBasicMaterial({color:p===selected?0x9ce9ff:0x59acc8,transparent:true,opacity:p===selected ? .72 : .64});
+  const outlineMaterial=new THREE.MeshBasicMaterial({color:0x467e96,transparent:true,opacity:.43});
   const outline=torus(.48,.030,outlineMaterial,g);
   outline.position.y=-.045;
   if(p.type==='laser'){
@@ -223,12 +227,7 @@ function rebuildPieces(){
     const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.60,.07),
       new THREE.MeshBasicMaterial({color:0xf0ffff,transparent:true,opacity:.88,toneMapped:false}),head);
     reflectionStrip.position.set(-.145,.13,-.25);
-    if(p===selected){
-     const outward=(p.rot+6)%8;
-     const guide=new THREE.ArrowHelper(new THREE.Vector3(DX[outward],0,DY[outward]).normalize(),
-       new THREE.Vector3(0,.88,0),.58,0x86ebff,.19,.11);
-     g.add(guide);
-    }
+    // Incoming/outgoing beam arrows live in the independent guidance layer.
    }else if(p.type==='prism'){
     const prism=mesh(new THREE.ConeGeometry(.49,.78,3),glass,head);prism.rotation.y=Math.PI/6;
     const base=mesh(new THREE.CylinderGeometry(.32,.35,.08,3),glow,head);base.position.y=-.37;
@@ -247,10 +246,7 @@ function rebuildPieces(){
    torus(.50,.03,baseRingMaterial,g).position.y=.29;
   }
   g.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
-  if(p===selected){
-   const halo=torus(.64,.028,new THREE.MeshBasicMaterial({color:0xa5f1ff,transparent:true,opacity:.68,depthTest:false}),g);
-   halo.position.y=.04;halo.renderOrder=20;
-  }
+  // Precise four-corner reticle is shared by all optics, never rebuilt.
   // Animate the model, not its logical placement. The ray tracer resolves
   // instantly; the optical hardware settles with an unobtrusive ease-out.
   if(!reducedMotion.matches){
@@ -328,7 +324,7 @@ function load(i){
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
- selected=null;placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
+ selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
@@ -340,12 +336,35 @@ function rebuildSelectionGuides(){
  disposeGroupChildren(guideGroup);
  renderSelectionGuides(THREE,guideGroup,selected,currentResult?.segments||[],vec,COLORS,T);
 }
+function reconcileMirrorReflections(){
+ const activeIds=new Set(reflectionCandidates(pieces,selected,graphicsProfile.reflectorCount).map(p=>p.id));
+ for(const group of componentGroup.children){
+  const piece=group.userData.piece;
+  if(!piece||piece.type!=='mirror')continue;
+  const head=group.children.find(c=>c.userData.motionHead);
+  if(!head)continue;
+  const reflector=head.children.find(c=>c.isReflector);
+  if(activeIds.has(piece.id)&&!reflector){
+   mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
+  }else if(!activeIds.has(piece.id)&&reflector){
+   reflector.getRenderTarget()?.dispose();
+   head.remove(reflector);
+   reflector.geometry.dispose();reflector.material.dispose();
+  }
+ }
+}
 function refreshSelection(){
- rebuildPieces();rebuildSelectionGuides();renderInventory();updateCoach();syncTransformTools();
+ // Never reconstruct the optics meshes and their GPU reflection targets just
+ // to select or deselect a piece. This was the main source of interaction hitching.
+ selectionReticle.setPiece(selected);
+ reconcileMirrorReflections();
+ rebuildSelectionGuides();renderInventory();updateCoach();syncTransformTools();
  placementPreview.visible=false;
 }
 function update(){
- rebuildBeams();rebuildPieces();rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
+ rebuildBeams();rebuildPieces();
+ selectionReticle.setPiece(selected);
+ rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
  placementPreview.visible=false;
 }
 function renderInventory(){
@@ -360,7 +379,7 @@ function renderInventory(){
   item.type=movableType?'button':undefined;
   if(movableType){
    item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
-   if(selected?.type===type)item.classList.add('selected');
+   if(selected?.inTray && selected?.type===type)item.classList.add('selected');
    item.disabled=tray.length===0;
    item.addEventListener('click',()=>{
     const first=nextTrayPiece(pieces,type);
@@ -481,10 +500,10 @@ function syncTransformTools(){
  $('guide-incoming').textContent=t(language,'guideIncoming');
  $('guide-outgoing').textContent=t(language,'guideOutgoing');
 }
-function clearSelection(){selected=null;placementMode=false;draggedPiece=null;refreshSelection()}
+function clearSelection(){wheelRotation.reset();selected=null;placementMode=false;draggedPiece=null;refreshSelection()}
 function selectFromTray(p){
  if(!p?.inTray||!movable.has(p.type))return;
- selected=p;placementMode=true;refreshSelection();beep(420,.04)
+ selected=p;placementMode=true;wheelRotation.reset();refreshSelection();beep(420,.04)
 }
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
@@ -512,7 +531,7 @@ function select(p){
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
  // Clicking the same optic again is intentionally inert: rotation is explicit.
  if(selected===p && !placementMode)return;
- selected=p;placementMode=Boolean(p.inTray);refreshSelection();beep(420,.04)
+ selected=p;placementMode=Boolean(p.inTray);wheelRotation.reset();refreshSelection();beep(420,.04)
 }
 function rotate(dir){
  if(!selected)return toast(t(language,'selectFirst'));
@@ -844,6 +863,7 @@ function animate(time){
  }
  for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
  for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
+ selectionReticle.update(time,reducedMotion.matches);
  if(laserVisuals)laserVisuals.update(time*.001);
  if(victoryFX && !victoryFX.update((time-victorySince)*.001)){
   victoryFX.dispose();victoryFX=null;
