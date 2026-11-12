@@ -1,3 +1,4 @@
+import {applyOpticFinish} from './optic-textures.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
@@ -13,6 +14,8 @@ export function detailEmitter(THREE,group,rot,color){
  const graphite=new THREE.MeshStandardMaterial({color:0x091829,metalness:.62,roughness:.38});
  const silver=new THREE.MeshPhysicalMaterial({color:0xadcddd,metalness:.93,roughness:.15,clearcoat:.55});
  const energy=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.84,toneMapped:false});
+ applyOpticFinish(THREE,titanium,'brushed');
+ applyOpticFinish(THREE,silver,'polished');
  const axis=new THREE.Vector3([0,1,1,1,0,-1,-1,-1][rot],0,[-1,-1,0,1,1,1,0,-1][rot]).normalize();
  const cylinderAxis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
  const torusAxis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),axis);
@@ -50,6 +53,7 @@ export function detailResonator(THREE,group,{color,active=false}={}){
  const ceramic=new THREE.MeshPhysicalMaterial({color:0x1a2b41,metalness:.35,roughness:.24,clearcoat:.55});
  const chrome=new THREE.MeshPhysicalMaterial({color:0xa8cbda,metalness:.85,roughness:.17,clearcoat:.75});
  const energy=new THREE.MeshBasicMaterial({color,transparent:true,opacity:active ? .95 : .54,toneMapped:false});
+ applyOpticFinish(THREE,chrome,'polished');
  function add(geo,mat,x,y,z,name){
   const m=new THREE.Mesh(geo,mat);m.name=name;m.position.set(x,y,z);root.add(m);return m;
  }
