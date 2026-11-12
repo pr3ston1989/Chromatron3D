@@ -117,7 +117,7 @@ function rebuildPieces(){
    const housing=mesh(new THREE.CylinderGeometry(.35,.42,.24,24),dark,g);housing.position.y=.27;
    const receiverRing=torus(.41,.074,energized?glow:silver,g);receiverRing.position.y=.40;
    torus(.29,.04,glow,g).position.y=.49;
-   const crystal=mesh(new THREE.IcosahedronGeometry(energized?.27:.225,1),glow,g);
+   const crystal=mesh(new THREE.IcosahedronGeometry(energized ? .27 : .225,1),glow,g);
    crystal.position.y=.56;crystal.userData.spin=true;
    const frame=mesh(new THREE.CylinderGeometry(.47,.50,.05,28),trim,g);frame.position.y=.13;
   }else if(p.type==='wall'){
