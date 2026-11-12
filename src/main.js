@@ -58,6 +58,7 @@ function rebuildPieces(){
  while(componentGroup.children.length)componentGroup.remove(componentGroup.children[0]);
  hitObjects.length=0;
  for(const p of pieces){
+  if(p.inTray)continue;
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
   const base=mesh(new THREE.CylinderGeometry(.44,.51,.22,8),metal,g);base.position.y=0;
   torus(.38,.022,p===selected?cyan:new THREE.MeshBasicMaterial({color:0x2a6a99}),g);
@@ -131,7 +132,7 @@ function setLanguage(next){
 }
 function load(i){
  levelIndex=(i+levels.length)%levels.length;
- const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color}));
+ const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;history=[];redoHistory=[];won=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
@@ -142,13 +143,30 @@ function load(i){
 }
 function update(){rebuildPieces();rebuildBeams();renderInventory()}
 function renderInventory(){
- const el=$('inventory');el.innerHTML='';
- for(const type of ['laser','mirror','filter','splitter','prism','target']){
-  const count=pieces.filter(p=>p.type===type).length;if(!count)continue;
-  const item=document.createElement('div');item.className='inventory-item';
-  item.innerHTML='<span class="component-icon">'+({laser:'↗',mirror:'◩',filter:'◈',splitter:'◇',prism:'⬡',target:'◎'}[type])+'</span><span>'+t(language,'type'+type[0].toUpperCase()+type.slice(1))+'</span><strong>'+String(count).padStart(2,'0')+'</strong>';
-  el.appendChild(item);
+ const el=$('inventory');el.replaceChildren();
+ for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
+  const candidates=pieces.filter(p=>p.type===type);if(!candidates.length)continue;
+  const tray=candidates.filter(p=>p.inTray);
+  const movableType=movable.has(type);
+  const item=document.createElement(movableType?'button':'div');
+  item.className='inventory-item'+(movableType?' selectable':'');
+  item.type=movableType?'button':undefined;
+  if(movableType){
+   item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
+   if(selected?.type===type)item.classList.add('selected');
+   item.addEventListener('click',()=>{
+    const first=tray[0]||candidates[0];
+    if(first!==selected)select(first);
+   });
+  }
+  const icon=document.createElement('span');icon.className='component-icon';
+  icon.textContent=({laser:'↗',mirror:'◩',bender:'◢',filter:'◈',prism:'⬡',doppler:'◉',splitter:'◇',tangler:'⋈',target:'◎',wall:'▩',conduit:'▤',teleporter:'⊙'}[type]);
+  const name=document.createElement('span');name.textContent=t(language,'type'+type[0].toUpperCase()+type.slice(1));
+  const count=document.createElement('strong');
+  count.textContent=tray.length?tray.length+' / '+candidates.length:String(candidates.length).padStart(2,'0');
+  item.append(icon,name,count);el.appendChild(item);
  }
+ $('return-tray').disabled=!(selected&&!selected.inTray&&movable.has(selected.type));
 }
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
@@ -172,7 +190,7 @@ function redo(){
 }
 function select(p){
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
- if(selected===p){rotate(1);return}
+ if(selected===p){if(!selected.inTray)rotate(1);return}
  selected=p;update();beep(420,.04)
 }
 function rotate(dir){
@@ -181,8 +199,13 @@ function rotate(dir){
 }
 function move(x,y){
  if(!selected)return;
- if(pieces.some(p=>p.x===x&&p.y===y)){toast(t(language,'cellOccupied'));return}
- saveHistory();selected.x=x;selected.y=y;update();beep(620,.06)
+ if(pieces.some(p=>!p.inTray&&p.x===x&&p.y===y)){toast(t(language,'cellOccupied'));return}
+ if(!selected.inTray&&selected.x===x&&selected.y===y)return;
+ saveHistory();selected.x=x;selected.y=y;selected.inTray=false;update();beep(620,.06)
+}
+function returnToTray(){
+ if(!selected||selected.inTray||!movable.has(selected.type))return;
+ saveHistory();selected.inTray=true;update();beep(390,.05);
 }
 let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
@@ -203,6 +226,7 @@ document.addEventListener('keydown',e=>{
  if(e.code==='Escape'){selected=null;update();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
+ if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
@@ -211,6 +235,7 @@ document.addEventListener('keydown',e=>{
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 $('reset').onclick=()=>load(levelIndex);
 $('undo').onclick=undo;$('redo').onclick=redo;
+$('return-tray').onclick=returnToTray;
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
 $('hint').onclick=()=>{$('hint-overlay').classList.remove('hidden');renderHints()};
