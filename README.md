@@ -40,7 +40,7 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 
 ## Current status: prototype
 
-**The 200 original puzzles are not included yet.** Five custom demo layouts are supplied solely for testing the renderer and mechanics. The optical simulator now supports angle-gated mirrors, benders, filters, prisms, dopplers, splitters, conduits and teleporters; entanglement and exact original fidelity still need verification and implementation.
+**The 200 original puzzles are not included yet.** Eight independently authored demo layouts are supplied to exercise the renderer, puzzles and optics. The three newest cover wavelength shifting, RGB dispersion and beam splitting. The optical simulator now supports angle-gated mirrors, benders, filters, prisms, dopplers, splitters, conduits and teleporters; entanglement and exact original fidelity still need verification and implementation.
 
 The Chromatron series (4 × 50 original levels) was created by Sean Barrett / Silver Spaceship Software. Official games: https://www.silverspaceship.com/chromatron/
 
@@ -49,9 +49,23 @@ The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for
 ## Quality assurance
 
 Run `npm run check` to execute simulation/localization/scene-lifecycle tests and build the production bundle.
-The five independently authored demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
+All eight independently authored demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
+
+## Better rendering without sacrificing laptop FPS
+
+- **GPU laser batching:** each wavelength is assembled into shared shader
+  ribbons and instanced inner/outer tubes. A long route no longer makes a
+  separate draw call for every tiny section of every beam layer.
+- **Grounded optical hardware:** one instanced soft-contact-shadow layer
+  grounds all pieces visually without expensive per-object shadow maps.
+- **Adaptive optical light budgets:** the Performance, Balanced and Cinematic
+  presets now scale real dynamic point lights as well as pixel ratio, bloom
+  and genuine planar mirror reflections.
+- **More puzzles:** eight original demonstration levels, including Doppler
+  wavelength shifting, a three-channel prism and two-way splitting. They are
+  NOT reproduced from the original Chromatron series.
 
 ## Board focus and smoother camera
 
