@@ -391,6 +391,10 @@ function syncTransformTools(){
  const tools=$('transform-tools');
  tools.classList.toggle('hidden',!selected);
  if(selected)$('transform-caption').textContent=t(language,placementMode?'placementCaption':'selectedCaption');
+ const showGuides=Boolean(selected && !selected.inTray && ['mirror','bender','splitter'].includes(selected.type));
+ $('beam-guide-legend').classList.toggle('hidden',!showGuides);
+ $('guide-incoming').textContent=t(language,'guideIncoming');
+ $('guide-outgoing').textContent=t(language,'guideOutgoing');
 }
 function clearSelection(){selected=null;placementMode=false;draggedPiece=null;refreshSelection()}
 function selectFromTray(p){
