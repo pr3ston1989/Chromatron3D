@@ -6,6 +6,7 @@ import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
+import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
 import './redesign.css';
 const $=id=>document.getElementById(id);
@@ -47,6 +48,7 @@ const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let coachDismissed=false,tutorialPlaced=false;
+let placementMode=false,draggedPiece=null;
 let saved=0;
 try{
  saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
@@ -182,7 +184,7 @@ function setLanguage(next){
 function load(i){
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
- selected=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
+ selected=null;placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
@@ -190,7 +192,7 @@ function load(i){
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
-function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer();updateCoach();placementPreview.visible=false}
+function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();placementPreview.visible=false}
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
  for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
@@ -204,11 +206,17 @@ function renderInventory(){
   if(movableType){
    item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
    if(selected?.type===type)item.classList.add('selected');
+   item.disabled=tray.length===0;
    item.addEventListener('click',()=>{
-    const first=tray[0]||candidates[0];
-    if(first!==selected)select(first);
+    const first=nextTrayPiece(pieces,type);
+    if(first)selectFromTray(first);
+    else toast(t(language,'emptyTray'));
    });
-   if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{select(tray[0]);e.dataTransfer?.setData('text/plain','chromatron-optic');if(e.dataTransfer)e.dataTransfer.effectAllowed='move'})}
+   if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{
+    const piece=nextTrayPiece(pieces,type);
+    if(piece){selected=piece;placementMode=true;updateCoach();syncTransformTools()}
+    e.dataTransfer?.setData('text/plain','chromatron-optic');if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
+   })}
   }
   const icon=document.createElement('span');icon.className='component-icon';
   icon.textContent=({laser:'↗',mirror:'◩',bender:'◢',filter:'◈',prism:'⬡',doppler:'◉',splitter:'◇',tangler:'⋈',target:'◎',wall:'▩',conduit:'▤',teleporter:'⊙'}[type]);
@@ -309,6 +317,16 @@ function updateCoach(){
  $('coach-detail').textContent=t(language,label+'Detail');
  $('coach').setAttribute('aria-label',t(language,label));
 }
+function syncTransformTools(){
+ const tools=$('transform-tools');
+ tools.classList.toggle('hidden',!selected);
+ if(selected)$('transform-caption').textContent=t(language,placementMode?'placementCaption':'selectedCaption');
+}
+function clearSelection(){selected=null;placementMode=false;draggedPiece=null;update()}
+function selectFromTray(p){
+ if(!p?.inTray||!movable.has(p.type))return;
+ selected=p;placementMode=true;update();beep(420,.04)
+}
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
  $('undo').disabled=history.length===0;
@@ -320,6 +338,7 @@ function undo(){
  const selection=selected?.id;
  redoHistory.push(snapshot());pieces=history.pop();
  selected=pieces.find(p=>p.id===selection)||null;
+ placementMode=Boolean(selected?.inTray);
  update();syncUndoButtons();beep(410,.045);
 }
 function redo(){
@@ -327,26 +346,32 @@ function redo(){
  const selection=selected?.id;
  history.push(snapshot());pieces=redoHistory.pop();
  selected=pieces.find(p=>p.id===selection)||null;
+ placementMode=Boolean(selected?.inTray);
  update();syncUndoButtons();beep(580,.045);
 }
 function select(p){
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
- if(selected===p){if(!selected.inTray)rotate(1);return}
- selected=p;update();beep(420,.04)
+ // Clicking the same optic again is intentionally inert: rotation is explicit.
+ if(selected===p && !placementMode)return;
+ selected=p;placementMode=Boolean(p.inTray);update();beep(420,.04)
 }
 function rotate(dir){
  if(!selected)return toast(t(language,'selectFirst'));
  saveHistory();selected.rot=(selected.rot+dir+8)%8;update();beep(540,.055)
 }
-function move(x,y){
- if(!selected)return;
- if(pieces.some(p=>!p.inTray&&p.x===x&&p.y===y)){toast(t(language,'cellOccupied'));return}
- if(!selected.inTray&&selected.x===x&&selected.y===y)return;
- saveHistory();selected.x=x;selected.y=y;selected.inTray=false;tutorialPlaced=true;update();beep(620,.06)
+function move(x,y,fromDrag=false){
+ if(!selected)return false;
+ // An existing optic can move ONLY when the player physically drags it.
+ if(!selected.inTray&&!fromDrag)return false;
+ if(!isFreeCell(pieces,selected,x,y)){toast(t(language,'cellOccupied'));return false}
+ if(!selected.inTray&&selected.x===x&&selected.y===y)return false;
+ saveHistory();selected.x=x;selected.y=y;selected.inTray=false;
+ placementMode=false;draggedPiece=null;tutorialPlaced=true;update();beep(620,.06);
+ return true;
 }
 function returnToTray(){
  if(!selected||selected.inTray||!movable.has(selected.type))return;
- saveHistory();selected.inTray=true;update();beep(390,.05);
+ saveHistory();selected.inTray=true;placementMode=false;selected=null;update();beep(390,.05);
 }
 let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
