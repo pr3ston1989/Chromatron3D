@@ -154,6 +154,20 @@ function rebuildPieces(){
      trimRail.position.set(0,.045,end);
     }
     const lip=mesh(new THREE.BoxGeometry(.29,.064,1.16),trim,head);lip.position.y=-.39;
+    // Long, thin line on the pedestal is the actual tangent of the mirror:
+    // readable even from a near top-down camera. Cyan = reflective/front;
+    // charcoal = opaque/back. Orientation matches the ray tracer.
+    const surfaceFootprint=new THREE.Group();surfaceFootprint.rotation.y=-p.rot*Math.PI/4;
+    surfaceFootprint.position.y=.205;g.add(surfaceFootprint);
+    const frontMark=mesh(new THREE.BoxGeometry(.075,.025,1.14),
+      new THREE.MeshBasicMaterial({color:0xc6f8ff,toneMapped:false}),surfaceFootprint);
+    frontMark.position.x=-.12;
+    const backMark=mesh(new THREE.BoxGeometry(.085,.028,1.14),
+      new THREE.MeshBasicMaterial({color:0x152232}),surfaceFootprint);
+    backMark.position.x=.12;
+    const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.52,.10),
+      new THREE.MeshBasicMaterial({color:0xf0ffff,transparent:true,opacity:.88,toneMapped:false}),head);
+    reflectionStrip.position.set(-.145,.13,-.25);
     if(p===selected){
      const outward=(p.rot+6)%8;
      const guide=new THREE.ArrowHelper(new THREE.Vector3(DX[outward],0,DY[outward]).normalize(),
