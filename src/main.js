@@ -339,6 +339,7 @@ function load(i){
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
+ $('total-levels').textContent=String(levels.length).padStart(3,'0');
  $('prev').disabled=levelIndex===0;$('next').disabled=levelIndex===levels.length-1;
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
