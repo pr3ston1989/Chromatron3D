@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    fullscreenEnter:'Przełącz pełny ekran (F)',fullscreenExit:'Opuść pełny ekran (F)',fullscreenUnavailable:'Przeglądarka nie zezwoliła na przełączenie pełnego ekranu.',
     graphicsQuality:'GRAFIKA',graphicsQualityAria:'Jakość grafiki i odbić',graphicsAuto:'AUTO',graphicsPerformance:'PŁYNNOŚĆ',graphicsBalanced:'ZRÓWNOWAŻONA',graphicsCinematic:'FILMOWA',
 
     tipPlace:'Kliknij, aby postawić',tipOccupied:'Pole zajęte',tipSelect:'Kliknij, aby zaznaczyć · przeciągnij, aby przesunąć',tipFixed:'Element nieruchomy',
@@ -36,6 +37,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    fullscreenEnter:'Toggle fullscreen (F)',fullscreenExit:'Leave fullscreen (F)',fullscreenUnavailable:'This browser blocked the fullscreen request.',
     graphicsQuality:'GRAPHICS',graphicsQualityAria:'Graphics and reflections quality',graphicsAuto:'AUTO',graphicsPerformance:'PERFORMANCE',graphicsBalanced:'BALANCED',graphicsCinematic:'CINEMATIC',
 
     tipPlace:'Click to place',tipOccupied:'Occupied cell',tipSelect:'Click to select · drag to move',tipFixed:'Fixed component',
