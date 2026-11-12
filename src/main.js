@@ -32,6 +32,7 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 let yaw=-1.05,pitch=1.10,dist=44;
+let zoomTarget=44,zoomLastFrame=0;
 let boardFocus=false;
 try{boardFocus=localStorage.getItem('chromatron-board-focus')==='yes'}catch{}
 let graphicsMode='auto',autoLevel='balanced';
@@ -645,7 +646,10 @@ function toggleCameraPreset(){
 function updateCamera(){
  const viewportWidth=innerWidth;
  // Portrait mode: fit a 15×15 board into the usable central viewport.
- const cameraDistance=dist*(viewportWidth<680?Math.max(1.55,720/Math.max(380,viewportWidth)):1);
+ const portraitScale=viewportWidth<680?Math.max(1.55,720/Math.max(380,viewportWidth)):1;
+ // With both HUD drawers folded away the board can occupy more of the viewport.
+ const focusScale=boardFocus&&viewportWidth>680?(innerHeight<650 ? .93 : .86):1;
+ const cameraDistance=dist*portraitScale*focusScale;
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
@@ -900,8 +904,8 @@ renderer.domElement.addEventListener('wheel',e=>{
  }else{
   wheelRotation.reset();
   const delta=toWheelPixels(e.deltaY,e.deltaMode,innerHeight);
-  dist=Math.max(22,Math.min(60,dist+delta*.021));
-  updateCamera();
+  zoomTarget=Math.max(22,Math.min(60,zoomTarget+delta*.021));
+  if(reducedMotion.matches){dist=zoomTarget;updateCamera()}
  }
 },{passive:false});
 document.addEventListener('keydown',e=>{
@@ -984,6 +988,14 @@ function trackFrameRate(time){
 function animate(time){
  requestAnimationFrame(animate);
  trackFrameRate(time);
+ // Damped camera dolly, independent of mouse/trackpad event granularity.
+ const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
+ zoomLastFrame=time;
+ if(Math.abs(zoomTarget-dist)>.015){
+  const amount=reducedMotion.matches?1:1-Math.exp(-zoomDt/115);
+  dist+=(zoomTarget-dist)*amount;
+  updateCamera();
+ }else if(zoomTarget!==dist){dist=zoomTarget;updateCamera()}
  for(let i=opticTweens.length-1;i>=0;i--){
   const a=opticTweens[i];
   const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
