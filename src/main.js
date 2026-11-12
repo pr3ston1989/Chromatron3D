@@ -462,7 +462,12 @@ function hit(clientX,clientY){
  ray.setFromCamera(mouse,camera);
  const objs=ray.intersectObjects(hitObjects,false);
  if(objs.length)return {piece:objs[0].object.userData.piece};
- return cellAt(clientX,clientY);
+ // Optical pieces are thin; a click anywhere inside their whole grid cell
+ // must still pick that identity. This creates a forgiving, stable hit target.
+ const cell=cellAt(clientX,clientY);
+ if(!cell)return null;
+ const occupant=pieces.find(p=>!p.inTray && p.x===cell.x && p.y===cell.y);
+ return occupant?{piece:occupant}:cell;
 }
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
 const placementPreview=mesh(new THREE.BoxGeometry(T*.90,.025,T*.90),previewMat,world);
