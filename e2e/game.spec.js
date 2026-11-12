@@ -86,9 +86,11 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
  const before=(await state()).pieces.find(p=>p.type==='mirror').rot;
  await page.mouse.click(onMirror.x,onMirror.y);
  expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe(before);
- await page.locator('#turn-right').click();
- expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe((before+1)%8);
+ // Rotate away from the winning angle before rotating back:
+ // the success dialog must not interfere with this interaction regression.
  await page.locator('#turn-left').click();
+ expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe((before+7)%8);
+ await page.locator('#turn-right').click();
  expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe(before);
  await page.screenshot({path:'test-results/chromatron-controls.png'});
  expect(errors).toEqual([]);
