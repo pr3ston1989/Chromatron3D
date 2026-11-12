@@ -4,6 +4,7 @@ import {COLORS,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
+import {disposeGroupChildren} from './dispose.js';
 import './style.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
@@ -58,7 +59,7 @@ const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
 const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[color||7]),emissive:new THREE.Color(COLORS[color||7]),emissiveIntensity:1.8,metalness:.3,roughness:.18});
 function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 function rebuildPieces(){
- while(componentGroup.children.length)componentGroup.remove(componentGroup.children[0]);
+ disposeGroupChildren(componentGroup,new Set([metal,dark,cyan]));
  hitObjects.length=0;
  for(const p of pieces){
   if(p.inTray)continue;
@@ -91,7 +92,7 @@ function rebuildPieces(){
  }
 }
 function rebuildBeams(){
- while(beamGroup.children.length)beamGroup.remove(beamGroup.children[0]);
+ disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
  for(const s of currentResult.segments){
   const start=vec(s.x,s.y,.42),end=vec(s.nx,s.ny,.42),direction=end.clone().sub(start),length=direction.length();
@@ -380,7 +381,7 @@ function renderHints(){
   block.append(header,copy);root.appendChild(block);
  }
  // A board-space highlight appears only after the second hint.
- while(assistGroup.children.length)assistGroup.remove(assistGroup.children[0]);
+ disposeGroupChildren(assistGroup);
  const focus=hintFor(levels[levelIndex],language,hintCount)?.focus;
  if(focus&&Number.isInteger(focus.x)&&Number.isInteger(focus.y)){
    const halo=torus(.48,.047,new THREE.MeshBasicMaterial({color:0xc992ff,transparent:true,opacity:.96,depthTest:false}),assistGroup);
