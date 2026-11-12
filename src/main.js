@@ -3,6 +3,9 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
@@ -55,6 +58,14 @@ const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
 const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),graphicsProfile.bloomStrength,.27,1.10);
 composer.addPass(bloomPass);
+// WebGL's canvas antialias flag does not smooth postprocessed render targets.
+// Use native postprocessing AA: inexpensive FXAA for laptops, SMAA for HQ.
+const fxaaPass=new ShaderPass(FXAAShader);
+const smaaPass=new SMAAPass();
+fxaaPass.enabled=graphicsProfile.antialias==='fxaa';
+smaaPass.enabled=graphicsProfile.antialias==='smaa';
+composer.addPass(fxaaPass);
+composer.addPass(smaaPass);
 composer.addPass(new OutputPass());
 
 $('scene').appendChild(renderer.domElement);
@@ -722,6 +733,8 @@ function resize(){
  const w=innerWidth,h=innerHeight;
  camera.aspect=w/h;camera.updateProjectionMatrix();
  renderer.setSize(w,h);composer.setSize(w,h);
+ const pixelRatio=renderer.getPixelRatio();
+ fxaaPass.uniforms.resolution.value.set(1/Math.max(1,w*pixelRatio),1/Math.max(1,h*pixelRatio));
  syncBoardFocus();
 }
 function applyGraphicsQuality(){
@@ -729,6 +742,8 @@ function applyGraphicsQuality(){
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
+ fxaaPass.enabled=graphicsProfile.antialias==='fxaa';
+ smaaPass.enabled=graphicsProfile.antialias==='smaa';
  resize();
  if(pieces.length){
   // Performance presets limit both the expensive mirror reflections AND
@@ -1067,7 +1082,7 @@ load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate)
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
