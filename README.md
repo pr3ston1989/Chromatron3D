@@ -53,6 +53,16 @@ The five independently authored demo levels have automated **golden solution tes
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
+## Precision 3D asset production
+
+The project now has reusable code-generated 3D hardware:
+
+- `src/mirror-asset.js`: machined mirror and bender frames, metal fasteners, rear carbon shield and optical direction indicator. The actual scene reflection remains separate in `src/mirror-reflections.js`.
+- `src/optical-assets.js`: directional laser cooling jackets, optical collar, wavelength lens and eight-vane resonator. Parts stay aligned with the solver's eight directions.
+- `docs/ASSET_BIBLE.md`: source-of-truth technical art specification, material requirements and future glTF/GLB delivery pipeline.
+
+These are **real mesh assets generated at runtime**, not just image concepts. They work in the browser now and can later be replaced or backed with artist-produced GLB models without rewriting puzzle physics. Quality settings continue to limit expensive live reflections. The new code has unit coverage for geometry composition and orientation.
+
 ## Visual and interaction overhaul
 
 The prototype now uses multi-layer additive shader beams with soft volumetric-style ribbons, collision flares, colored point lighting and an adjustable bloom pass. Mirror geometry is aligned with the one-sided classic optical rule: bright reflective face vs dark absorbing back. Barriers have armoured geometry and hazard marks. The interaction model explicitly separates choosing a tray optic, placing it, selecting a placed piece, dragging, and rotating — preventing accidental mirror relocation. Quality is still under active art-direction review.
