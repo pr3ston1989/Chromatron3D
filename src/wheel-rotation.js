@@ -17,7 +17,11 @@ export function createWheelRotation({threshold=78,resetAfterMs=1200,maxSteps=2}=
  function consume(deltaY,deltaMode=0,now=0,pageHeight=750){
   let pixels=toWheelPixels(deltaY,deltaMode,pageHeight);
   if(Math.abs(pixels)<.05)return 0;
-  if(now-last>resetAfterMs || (carry!==0&&Math.sign(pixels)!==Math.sign(carry)))carry=0;
+  // Tiny high-resolution touchpad packets can be delayed by GPU load.
+  // Keep their cumulative progress for longer; larger wheel movements still
+  // expire quickly to avoid surprising residual turns.
+  const activeTimeout=Math.abs(pixels)<=24?8000:resetAfterMs;
+  if(now-last>activeTimeout || (carry!==0&&Math.sign(pixels)!==Math.sign(carry)))carry=0;
   last=now;
   // Traditional mouse wheels report 100px or 3 lines PER notch. Treat each
   // such event as one stable 45° step; accumulating 22px residue after every
