@@ -320,6 +320,52 @@ function rebuildPieces(){
  // resource collector. Avoid disposing them before every piece has been rendered.
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
+function currentLevelKey(){return stageKey(currentPackId,levelIndex)}
+function saveWallet(){
+ store('chromatron-reborn-credit-wallet',JSON.stringify(wallet));
+ syncWalletUI();
+}
+function syncWalletUI(){
+ $('hint-credits').textContent=String(wallet.balance);
+ $('modal-credits').textContent=String(wallet.balance);
+}
+function verifiedSolutionForCurrent(){
+ const level=levels[levelIndex];
+ const provided=level.solution;
+ if(provided&&verifyPuzzleSolution(level,provided).valid)return provided;
+ const cached=verifiedSolutions.get(currentLevelKey());
+ return cached&&verifyPuzzleSolution(level,cached).valid?cached:null;
+}
+function cancelSolutionSearch(){
+ if(hintWorker){hintWorker.terminate();hintWorker=null}
+ solvingId=null;solverStatus='';
+}
+function requestSolutionSearch(){
+ const id=currentLevelKey();
+ if(verifiedSolutionForCurrent()||solvingId===id||!globalThis.Worker)return;
+ cancelSolutionSearch();
+ solverStatus='running';solvingId=id;
+ try{
+  hintWorker=new Worker(new URL('./solver-worker.js',import.meta.url),{type:'module'});
+  hintWorker.onmessage=event=>{
+   if(event.data?.id!==solvingId)return;
+   const answer=event.data;
+   cancelSolutionSearch();
+   if(answer.status==='solved'&&answer.solution&&
+      verifyPuzzleSolution(levels[levelIndex],answer.solution).valid){
+    verifiedSolutions.set(id,answer.solution);solverStatus='verified';
+   }else solverStatus=answer.status||'unsupported';
+   if(!$('hint-overlay').classList.contains('hidden'))renderHints();
+  };
+  hintWorker.onerror=()=>{
+   cancelSolutionSearch();solverStatus='error';
+   if(!$('hint-overlay').classList.contains('hidden'))renderHints();
+  };
+  hintWorker.postMessage({id,level:levels[levelIndex],maxChecks:20000});
+ }catch(error){
+  cancelSolutionSearch();solverStatus='error';
+ }
+}
 function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
