@@ -1132,24 +1132,48 @@ function renderHints(){
  const root=$('hint-steps');
  if(!root)return;
  root.replaceChildren();
+ const level=levels[levelIndex];
+ const known=verifiedSolutionForCurrent();
+ let finalFocus=null;
  for(let step=1;step<=hintCount;step++){
-  const hint=hintFor(levels[levelIndex],language,step);
+  // Built-in prose sets up a puzzle; a state-aware verified plan then reveals
+  // one concrete next action, never a fabricated move.
+  const authored=step<3&&level.hints?.[step-1]?
+   hintFor(level,language,step):null;
+  const dynamic=contextualHint(level,pieces,step,language,known);
+  const hint=authored||dynamic;
   if(!hint)continue;
+  finalFocus=hint.focus||finalFocus;
   const block=document.createElement('section');block.className='hint-step';
-  const header=document.createElement('div');header.className='eyebrow';header.textContent=t(language,'hintStep',{step})+' · '+hint.label;
+  const header=document.createElement('div');
+  header.className='eyebrow';
+  header.textContent=t(language,'hintStep',{step})+' · '+t(language,'hintType'+step);
   const copy=document.createElement('p');copy.textContent=hint.body;
   block.append(header,copy);root.appendChild(block);
  }
- // A board-space highlight appears only after the second hint.
  disposeGroupChildren(assistGroup);
- const focus=hintFor(levels[levelIndex],language,hintCount)?.focus;
- if(focus&&Number.isInteger(focus.x)&&Number.isInteger(focus.y)){
-   const halo=torus(.48,.047,new THREE.MeshBasicMaterial({color:0xc992ff,transparent:true,opacity:.96,depthTest:false}),assistGroup);
-   halo.position.copy(vec(focus.x,focus.y,.055));halo.renderOrder=20;
+ if(finalFocus&&hintCount>=2&&Number.isInteger(finalFocus.x)&&Number.isInteger(finalFocus.y)){
+  const marker=torus(.43,.032,new THREE.MeshBasicMaterial({
+   color:0xc992ff,transparent:true,opacity:.82,depthTest:false
+  }),assistGroup);
+  marker.position.copy(vec(finalFocus.x,finalFocus.y,.055));marker.renderOrder=20;
  }
  $('hint-badge').textContent=hintCount+'/3';
- $('reveal-hint').textContent=t(language,hintCount===0?'hintReveal':'hintAgain');
- $('reveal-hint').disabled=hintCount===3;
+ syncWalletUI();
+ const next=hintCount;
+ const cost=HINT_COSTS[next]??0;
+ const needsVerified=next===2&&!known&&!level.hints?.[2];
+ const canBuy=next<3&&wallet.balance>=cost&&!needsVerified;
+ const button=$('reveal-hint');
+ button.textContent=t(language,hintCount===0?'hintReveal':'hintAgain');
+ button.disabled=!canBuy;
+ const help=$('hint-cost');
+ help.textContent=next===3?'':needsVerified?t(language,'hintNeedVerified'):
+  cost===0?t(language,'hintCostFree'):
+  wallet.balance<cost?t(language,'creditsRequired'):t(language,'hintCostPaid',{cost});
+ const status=$('hint-analysis-status');
+ status.textContent=solverStatus==='running'?t(language,'hintAnalysisRunning'):
+  solverStatus&&solverStatus!=='verified'&&needsVerified?t(language,'hintAnalysisUnavailable'):'';
  $('skip-level').classList.toggle('hidden',hintCount<3 || levels.length<=1);
 }
 setLanguage(language);
