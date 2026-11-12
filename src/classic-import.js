@@ -78,8 +78,9 @@ export function loadLevelBundle(json,{game=1}={}){
  const data=typeof json==='string'?JSON.parse(json):json;
  if(Array.isArray(data))return validateLevels(data);
  if(Array.isArray(data?.packs))return convertClassicCollection(data.packs);
- if(Array.isArray(data?.levels)&&data.levels[0]?.pieces?.[0]&&
-    !Array.isArray(data.levels[0].pieces[0]))
+ if(Array.isArray(data?.level_order))return convertClassicPack(data,{game});
+ if(Array.isArray(data?.levels)&&data.levels.some(level=>
+    level?.pieces?.some(piece=>!Array.isArray(piece))))
   return convertClassicPack(data,{game});
  if(Array.isArray(data?.levels))return validateLevels(data.levels);
  throw new Error('Unsupported puzzle JSON format');
