@@ -33,7 +33,7 @@ const studioEnvironment=new RoomEnvironment();
 const pmremGenerator=new THREE.PMREMGenerator(renderer);
 const studioMap=pmremGenerator.fromScene(studioEnvironment,.04);
 scene.environment=studioMap.texture;
-scene.environmentIntensity=.72;
+scene.environmentIntensity=.48;
 studioEnvironment.dispose();
 pmremGenerator.dispose();
 const composer=new EffectComposer(renderer);
