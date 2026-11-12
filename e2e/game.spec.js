@@ -250,8 +250,15 @@ test('wheel and trackpad rotate continuously without recreating mirror geometry'
  await page.mouse.wheel(0,100);
  await expect.poll(async()=>(await state()).pieces.find(p=>p.type==='mirror').rot).toBe(0);
 
- // High-resolution touchpads send several small sub-detent values.
- for(let i=0;i<4;i++)await page.mouse.wheel(0,-20);
+ // Trackpad packets arrive inside one native input gesture. Dispatch them
+ // together to avoid introducing multi-second test-runner gaps on SwiftShader:
+ // one real wheel detent above still uses Playwright's physical mouse input.
+ await page.evaluate(()=>{
+  const canvas=document.querySelector('#scene canvas');
+  for(let i=0;i<4;i++)canvas.dispatchEvent(new WheelEvent('wheel',{
+   deltaY:-20,deltaMode:0,bubbles:true,cancelable:true
+  }));
+ });
  await expect.poll(async()=>(await state()).pieces.find(p=>p.type==='mirror').rot).toBe(7);
  expect((await stats()).componentRebuilds).toBe(baseline.componentRebuilds);
  await expect.poll(async()=>(await stats()).activeOpticTweens).toBe(0);
