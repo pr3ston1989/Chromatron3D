@@ -32,6 +32,8 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 let yaw=-1.05,pitch=1.10,dist=44;
+let boardFocus=false;
+try{boardFocus=localStorage.getItem('chromatron-board-focus')==='yes'}catch{}
 let graphicsMode='auto',autoLevel='balanced';
 try{graphicsMode=normalizeQuality(localStorage.getItem('chromatron-graphics-quality'))}catch{}
 let graphicsProfile=profileFor(graphicsMode,autoLevel);
@@ -321,7 +323,7 @@ function setLanguage(next){
  language=normalizeLanguage(next);
  store('chromatron-reborn-language',language);
  applyLanguage(language);
- syncFullscreenButton();
+ syncFullscreenButton();syncBoardFocus();
  $('language').textContent=language.toUpperCase();
  updateLocalizedLevel();
 }
@@ -511,7 +513,7 @@ function syncTransformTools(){
 function clearSelection(){wheelRotation.reset();selected=null;placementMode=false;draggedPiece=null;refreshSelection()}
 function selectFromTray(p){
  if(!p?.inTray||!movable.has(p.type))return;
- selected=p;placementMode=true;wheelRotation.reset();refreshSelection();beep(420,.04)
+ selected=p;placementMode=true;wheelRotation.reset();closeFocusDrawers();refreshSelection();beep(420,.04)
 }
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
@@ -647,6 +649,47 @@ function updateCamera(){
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
+function syncBoardFocus(){
+ const enabled=boardFocus&&innerWidth>680;
+ const app=$('app'),btn=$('board-focus');
+ app.classList.toggle('board-focus',enabled);
+ btn.setAttribute('aria-pressed',String(enabled));
+ btn.title=t(language,enabled?'focusExit':'focusEnter');
+ btn.setAttribute('aria-label',btn.title);
+ for(const [pane,handle,key] of [
+  ['.mission','mission-drawer','missionDrawer'],
+  ['.tool-panel','tool-drawer','toolDrawer']
+ ]){
+  const panel=app.querySelector(pane),button=$(handle);
+  if(!enabled)panel.classList.remove('drawer-open');
+  button.setAttribute('aria-expanded',String(enabled&&panel.classList.contains('drawer-open')));
+  button.setAttribute('aria-label',t(language,key));
+  button.title=t(language,key);
+ }
+}
+function closeFocusDrawers(){
+ if(!boardFocus)return;
+ $('app').querySelector('.mission').classList.remove('drawer-open');
+ $('app').querySelector('.tool-panel').classList.remove('drawer-open');
+ syncBoardFocus();
+}
+function toggleBoardFocus(){
+ if(innerWidth<=680)return;
+ boardFocus=!boardFocus;
+ store('chromatron-board-focus',boardFocus?'yes':'no');
+ closeFocusDrawers();
+ syncBoardFocus();
+ updateCamera();
+}
+function toggleBoardDrawer(selector){
+ const panel=$('app').querySelector(selector);
+ if(!boardFocus||innerWidth<=680)return;
+ const wasOpen=panel.classList.contains('drawer-open');
+ $('app').querySelector('.mission').classList.remove('drawer-open');
+ $('app').querySelector('.tool-panel').classList.remove('drawer-open');
+ if(!wasOpen)panel.classList.add('drawer-open');
+ syncBoardFocus();
+}
 function syncFullscreenButton(){
  const full=Boolean(document.fullscreenElement);
  const btn=$('fullscreen');
@@ -671,6 +714,7 @@ function resize(){
  const w=innerWidth,h=innerHeight;
  camera.aspect=w/h;camera.updateProjectionMatrix();
  renderer.setSize(w,h);composer.setSize(w,h);
+ syncBoardFocus();
 }
 function applyGraphicsQuality(){
  graphicsProfile=profileFor(graphicsMode,autoLevel);
@@ -869,6 +913,7 @@ document.addEventListener('keydown',e=>{
  if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
  if(e.code==='KeyC' && !e.ctrlKey){toggleCameraPreset();return}
  if(e.code==='KeyF' && !e.ctrlKey && !e.metaKey && !e.altKey){e.preventDefault();void toggleFullscreen();return}
+ if(e.code==='KeyB' && !e.ctrlKey && !e.metaKey && !e.altKey){e.preventDefault();toggleBoardFocus();return}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
@@ -900,6 +945,9 @@ $('skip-level').onclick=()=>{
  load(levelIndex+1);toast(t(language,'skipNotice'))
 };
 $('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dismissed','yes');updateCoach();renderInventory()};
+$('board-focus').onclick=toggleBoardFocus;
+$('mission-drawer').onclick=()=>toggleBoardDrawer('.mission');
+$('tool-drawer').onclick=()=>toggleBoardDrawer('.tool-panel');
 $('fullscreen').onclick=toggleFullscreen;
 $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
@@ -994,6 +1042,7 @@ setLanguage(language);
 load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
 window.chromatron={
+ getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
  getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
