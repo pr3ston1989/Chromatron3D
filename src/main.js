@@ -817,6 +817,8 @@ function showOpticTooltip(e,hovered){
 }
 let down=null;
 renderer.domElement.addEventListener('pointerdown',e=>{
+ // Tapping the board closes open focus drawers without swallowing the click.
+ if(boardFocus)closeFocusDrawers();
  hideOpticTooltip();
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
