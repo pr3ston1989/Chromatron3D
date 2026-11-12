@@ -93,22 +93,33 @@ function rebuildPieces(){
   const outline=torus(.48,.035,p===selected?glow:new THREE.MeshBasicMaterial({color:0x59acc8}),g);
   outline.position.y=-.045;
   if(p.type==='laser'){
-   const barrel=mesh(new THREE.CylinderGeometry(.27,.35,.38,16),dark,g);barrel.position.y=.38;
-   const corona=torus(.35,.07,glow,g);corona.position.y=.61;
-   const lens=mesh(new THREE.SphereGeometry(.19,16,12),glow,g);lens.position.y=.63;
-   const heading=p.rot*Math.PI/4;
-   const nozzle=mesh(new THREE.CylinderGeometry(.13,.19,.47,12),silver,g);
-   nozzle.rotation.z=Math.PI/2;nozzle.rotation.y=heading;
-   nozzle.position.set(Math.sin(heading)*.33,.50,-Math.cos(heading)*.33);
-   const arrow=mesh(new THREE.ConeGeometry(.13,.26,5),glow,g);
-   arrow.rotation.x=Math.PI/2;arrow.rotation.z=-heading;
-   arrow.position.set(Math.sin(heading)*.48,.69,-Math.cos(heading)*.48);
+   // Distinct directional photon emitter: a barrel, aperture and hot optical lens.
+   const tower=mesh(new THREE.CylinderGeometry(.30,.37,.43,20),dark,g);tower.position.y=.38;
+   const poweredRing=torus(.32,.055,glow,g);poweredRing.position.y=.56;
+   const lens=mesh(new THREE.SphereGeometry(.16,16,12),glow,g);lens.position.y=.59;
+   const nozzleAxis=new THREE.Vector3(DX[p.rot],0,DY[p.rot]).normalize();
+   const orientation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),nozzleAxis);
+   const nozzle=mesh(new THREE.CylinderGeometry(.17,.205,.59,20),silver,g);
+   nozzle.quaternion.copy(orientation);
+   nozzle.position.set(nozzleAxis.x*.34,.53,nozzleAxis.z*.34);
+   const lensFace=mesh(new THREE.CylinderGeometry(.16,.16,.034,20),glow,g);
+   lensFace.quaternion.copy(orientation);
+   lensFace.position.set(nozzleAxis.x*.655,.53,nozzleAxis.z*.655);
+   const aperture=mesh(new THREE.CylinderGeometry(.22,.22,.035,20),trim,g);
+   aperture.quaternion.copy(orientation);
+   aperture.position.set(nozzleAxis.x*.63,.53,nozzleAxis.z*.63);
+   const flare=mesh(new THREE.SphereGeometry(.11,12,8),
+     new THREE.MeshBasicMaterial({color:0xe8ffff,toneMapped:false}),g);
+   flare.position.set(nozzleAxis.x*.70,.53,nozzleAxis.z*.70);
   }else if(p.type==='target'){
-   const housing=mesh(new THREE.CylinderGeometry(.35,.42,.3,24),dark,g);housing.position.y=.27;
-   torus(.41,.07,glow,g).position.y=.45;
-   torus(.28,.042,silver,g).position.y=.52;
-   const crystal=mesh(new THREE.IcosahedronGeometry(.235,1),glow,g);
+   const energized=currentResult?.received.get(p.id)===p.color;
+   glow.emissiveIntensity=energized?5.2:1.7;
+   const housing=mesh(new THREE.CylinderGeometry(.35,.42,.24,24),dark,g);housing.position.y=.27;
+   const receiverRing=torus(.41,.074,energized?glow:silver,g);receiverRing.position.y=.40;
+   torus(.29,.04,glow,g).position.y=.49;
+   const crystal=mesh(new THREE.IcosahedronGeometry(energized?.27:.225,1),glow,g);
    crystal.position.y=.56;crystal.userData.spin=true;
+   const frame=mesh(new THREE.CylinderGeometry(.47,.50,.05,28),trim,g);frame.position.y=.13;
   }else if(p.type==='wall'){
    // A proper light-blocking bulkhead with inset armored faces and safety marks.
    const wall=mesh(new THREE.BoxGeometry(1.05,.88,1.05),dark,g);wall.position.y=.48;
