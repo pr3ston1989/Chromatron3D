@@ -181,3 +181,16 @@
 @media(prefers-reduced-motion:reduce){
  #app.board-focus .mission,#app.board-focus .tool-panel{transition:none!important}
 }
+
+/* Expanded focus drawers retain scroll at short laptop heights. */
+@media(min-width:681px){
+ #app.board-focus .mission.drawer-open,
+ #app.board-focus .tool-panel.drawer-open{
+  overflow-y:auto;overflow-x:hidden;
+  max-height:calc(100dvh - 108px);
+ }
+ #app.board-focus .mission:not(.drawer-open),
+ #app.board-focus .tool-panel:not(.drawer-open){overflow:visible}
+ #app.board-focus .mission .drawer-handle,
+ #app.board-focus .tool-panel .drawer-handle{min-height:84px;touch-action:manipulation}
+}
