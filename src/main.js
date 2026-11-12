@@ -16,6 +16,7 @@ import {normalizeWallet,packFingerprint,stageKey,rewardOnce,ensurePreviousHints,
 import {verifyPuzzleSolution} from './puzzle-solver.js';
 import {contextualHint} from './hint-assistant.js';
 import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
+import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {opticIcon} from './optic-icons.js';
@@ -1070,9 +1071,14 @@ $('classic-files').addEventListener('change',async event=>{
   if(!files.length)return;
   const loaded=await Promise.all(files.map(async(file,i)=>{
    if(file.size>8_000_000)throw new Error('JSON file is too large');
-   const data=JSON.parse(await file.text());
    const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
    const game=match?Number(match[1]):i+1;
+   const isExecutable=/\.exe$/i.test(file.name);
+   if(isExecutable&&game!==1)
+    throw new Error('Direct executable extraction currently supports Chromatron 1 only; use JSON for 2–4.');
+   const data=isExecutable?
+    extractChromatron1Executable(await file.arrayBuffer()):
+    JSON.parse(await file.text());
    return {game,data};
   }));
   const next=loaded.length===1?
