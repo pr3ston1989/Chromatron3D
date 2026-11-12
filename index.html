@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d1b">
+<title>CHROMATRON / REBORN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+ <div id="scene"></div>
+ <div class="grain"></div>
+ <header class="header">
+  <div class="brand"><div class="brand-mark">✳</div><div><span class="eyebrow">SPECTRAL LABORATORIES</span><strong>CHROMATRON<span class="slash">/</span>REBORN</strong></div></div>
+  <div class="header-right"><span class="status-dot"></span><span>OPTICAL SYSTEM ONLINE</span><button id="audio" class="icon-btn" title="Dźwięk">♪</button><button id="help" class="icon-btn" title="Pomoc">?</button></div>
+ </header>
+ <aside class="mission">
+  <span class="eyebrow">EXPERIMENT <span id="level-index">001</span> / PROTOTYPE</span>
+  <div class="rule"></div>
+  <div class="tag">CHAPTER 01 // FUNDAMENTALS</div>
+  <h1 id="level-title">FIRST LIGHT</h1>
+  <p id="level-desc"></p>
+  <div class="mission-progress"><span>RESONATORS ONLINE</span><strong id="counter">0 / 1</strong></div>
+  <div class="progress-track"><div id="progress"></div></div>
+  <div class="mission-actions"><button id="prev" class="ui-button small">‹</button><button id="reset" class="ui-button">↺ &nbsp; RESET</button><button id="next" class="ui-button small">›</button></div>
+ </aside>
+ <aside class="tool-panel"><span class="eyebrow">OPTICAL COMPONENTS</span><div id="inventory"></div><span class="eyebrow small-note">CLICK TO SELECT · Q / E TO ROTATE</span></aside>
+ <div class="hud-bottom"><div class="camera-label">◉ &nbsp; ISOMETRIC VIEW <span>— 3D OPTICAL ARRAY</span></div><div class="controls">LEFT CLICK <b>SELECT / MOVE</b> &nbsp; · &nbsp; DRAG EMPTY SPACE <b>ORBIT</b> &nbsp; · &nbsp; WHEEL <b>ZOOM</b></div></div>
+ <div id="toast" role="status" aria-live="polite"></div>
+ <div id="win" class="overlay hidden"><div class="modal"><div class="eyebrow">EXPERIMENT COMPLETE</div><h2>LIGHT ALIGNED<span>.</span></h2><p>All resonators have received their exact required spectrum.</p><button id="continue" class="ui-button accent">NEXT EXPERIMENT &nbsp; →</button></div></div>
+ <div id="help-overlay" class="overlay hidden"><div class="modal help-modal"><div class="eyebrow">FIELD MANUAL / 001</div><h2>CONTROL THE LIGHT<span>.</span></h2><p>Redirect each laser into the matching resonator. Select a movable component and click a free cell to reposition it. Press Q / E or click the selected component again to rotate. Right-drag or drag empty space to orbit; mouse wheel zooms.</p><p>All beams update in real time. Mixed colors are additive. Only the exact target color counts.</p><p><strong>Prototype notice:</strong> these are original demonstration puzzles, not yet the 200 classic Chromatron levels.</p><button id="close-help" class="ui-button accent">UNDERSTOOD</button></div></div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
