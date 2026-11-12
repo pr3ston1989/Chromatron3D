@@ -49,13 +49,27 @@ The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for
 ## Quality assurance
 
 Run `npm run check` to execute simulation/localization/scene-lifecycle tests and build the production bundle.
-The five original demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
+The five independently authored demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
 ## Visual and interaction overhaul
 
 The prototype now uses multi-layer additive shader beams with soft volumetric-style ribbons, collision flares, colored point lighting and an adjustable bloom pass. Mirror geometry is aligned with the one-sided classic optical rule: bright reflective face vs dark absorbing back. Barriers have armoured geometry and hazard marks. The interaction model explicitly separates choosing a tray optic, placing it, selecting a placed piece, dragging, and rotating — preventing accidental mirror relocation. Quality is still under active art-direction review.
+
+## True mirrors and performance profiles
+
+A limited number of optical reflectors now render **real planar reflections of the scene** on the silvered front face via Three.js `Reflector`; the dark back remains opaque. The reflective view is a separate GPU render target, not a photo texture. Each selected mirror is prioritized.
+
+Use **GRAFIKA / GRAPHICS** at the bottom of the game screen:
+- **AUTO** (default): balanced reflections and bloom initially, with a sustained low-FPS fallback
+- **PŁYNNOŚĆ / PERFORMANCE**: no realtime mirror reflection; reduced resolution and postprocessing
+- **ZRÓWNOWAŻONA / BALANCED**: one realtime reflective mirror at reduced render-target resolution
+- **FILMOWA / CINEMATIC**: up to two reflective mirrors, sharper targets, higher pixel ratio
+
+Live frame rate is displayed next to the selector. These choices affect *rendering only*, never the puzzle simulation. Placement and turning now have short ease-out 3D animations (suppressed for reduced-motion users).
+
+More realistic appearance remains a balance of model geometry, PBR reflection, environment lighting and beam VFX. These are web-friendly render techniques, not GPU-accelerated path tracing. See [graphics notes](docs/GRAPHICS.md).
 
 ## Technical foundation
 
