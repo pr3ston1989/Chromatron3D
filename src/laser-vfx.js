@@ -104,6 +104,68 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   ribbon(a,b,.66,false,material(s.color));
   ribbon(a,b,.47,true,material(s.color));
  }
+
+ // Directional moving photons reveal how the light travels, especially with
+ // several mirrors. A single GPU points draw call handles the entire board.
+ const photonStarts=[],photonEnds=[],photonColors=[],photonPhases=[],photonSizes=[];
+ const usedSegments=segments.slice(0,120);
+ for(let i=0;i<usedSegments.length;i++){
+  const seg=usedSegments[i];
+  for(let n=0;n<2;n++){
+   const a=point(seg.x,seg.y,.62),b=point(seg.nx,seg.ny,.62);
+   photonStarts.push(...a.toArray());
+   photonEnds.push(...b.toArray());
+   const c=new THREE.Color(palette[seg.color]);
+   photonColors.push(c.r,c.g,c.b);
+   photonPhases.push(((i*0.61803398875+n*.47)%1+1)%1);
+   photonSizes.push(n===0?4.0:2.5);
+  }
+ }
+ let photons=null;
+ if(photonPhases.length){
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(photonStarts,3));
+  geo.setAttribute('aDestination',new THREE.Float32BufferAttribute(photonEnds,3));
+  geo.setAttribute('aColor',new THREE.Float32BufferAttribute(photonColors,3));
+  geo.setAttribute('aPhase',new THREE.Float32BufferAttribute(photonPhases,1));
+  geo.setAttribute('aSize',new THREE.Float32BufferAttribute(photonSizes,1));
+  const mat=new THREE.ShaderMaterial({
+   transparent:true,depthWrite:false,depthTest:true,toneMapped:false,
+   blending:THREE.AdditiveBlending,
+   uniforms:{uTime:{value:0}},
+   vertexShader:`
+    attribute vec3 aDestination;
+    attribute vec3 aColor;
+    attribute float aPhase;
+    attribute float aSize;
+    uniform float uTime;
+    varying vec3 vColor;
+    void main(){
+     float progress=fract(uTime*.68+aPhase);
+     vec3 p=mix(position,aDestination,progress);
+     p.y+=.04*sin(progress*6.2831853);
+     vec4 eye=modelViewMatrix*vec4(p,1.0);
+     gl_Position=projectionMatrix*eye;
+     gl_PointSize=clamp(aSize*90.0/max(1.0,-eye.z),1.5,9.5);
+     vColor=aColor;
+    }
+   `,
+   fragmentShader:`
+    varying vec3 vColor;
+    void main(){
+     float d=length(gl_PointCoord-vec2(.5))*2.0;
+     float hot=exp(-d*d*13.0);
+     float haze=exp(-d*d*3.3);
+     float alpha=min(1.0,.88*hot+.26*haze);
+     gl_FragColor=vec4(vColor*(1.4*hot+.58*haze)+vec3(.46)*hot,alpha);
+    }
+   `
+  });
+  photons=new THREE.Points(geo,mat);
+  photons.renderOrder=11;
+  photons.frustumCulled=false;
+  parent.add(photons);
+ }
  const flareCells=new Set();
  function flareOnce(x,y,color,scale){
   const key=x+','+y;
@@ -140,6 +202,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  return {
   update(seconds){
    for(const m of materials.values())m.uniforms.uTime.value=seconds;
+   if(photons)photons.material.uniforms.uTime.value=seconds;
    for(const f of flicker){
     const pulse=1+.055*Math.sin(seconds*7+f.sprite.position.x*.4);
     f.sprite.scale.setScalar(f.scale*pulse);
