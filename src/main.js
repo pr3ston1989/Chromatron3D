@@ -37,8 +37,9 @@ const starGeo=new THREE.BufferGeometry(),pos=[];for(let i=0;i<1000;i++)pos.push(
 starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x76aaff,size:.035,transparent:true,opacity:.6})));
 const componentGroup=new THREE.Group();world.add(componentGroup);
 const beamGroup=new THREE.Group();world.add(beamGroup);
+const assistGroup=new THREE.Group();world.add(assistGroup);
 const hitObjects=[];
-let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],currentResult=null,won=false,audioEnabled=false;
+let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[];
 let saved=0;
 try{
@@ -98,6 +99,7 @@ function rebuildBeams(){
  }
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
+ if(!currentResult.won&&won){won=false;$('win').classList.add('hidden')}
  if(currentResult.won&&!won){
   won=true;
   if(!solved.includes(levelIndex)){solved.push(levelIndex);store('chromatron-reborn-solved',JSON.stringify(solved))}
@@ -130,12 +132,12 @@ function setLanguage(next){
 function load(i){
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color}));
- selected=null;history=[];won=false;$('win').classList.add('hidden');
+ selected=null;history=[];redoHistory=[];won=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
  $('prev').disabled=levelIndex===0;$('next').disabled=levelIndex===levels.length-1;
- update();updateLocalizedLevel();
+ update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
 function update(){rebuildPieces();rebuildBeams();renderInventory()}
@@ -148,7 +150,26 @@ function renderInventory(){
   el.appendChild(item);
  }
 }
-function saveHistory(){history.push(pieces.map(p=>({...p})));if(history.length>100)history.shift()}
+function snapshot(){return pieces.map(p=>({...p}))}
+function syncUndoButtons(){
+ $('undo').disabled=history.length===0;
+ $('redo').disabled=redoHistory.length===0;
+}
+function saveHistory(){history.push(snapshot());if(history.length>100)history.shift();redoHistory=[];syncUndoButtons()}
+function undo(){
+ if(!history.length)return;
+ const selection=selected?.id;
+ redoHistory.push(snapshot());pieces=history.pop();
+ selected=pieces.find(p=>p.id===selection)||null;
+ update();syncUndoButtons();beep(410,.045);
+}
+function redo(){
+ if(!redoHistory.length)return;
+ const selection=selected?.id;
+ history.push(snapshot());pieces=redoHistory.pop();
+ selected=pieces.find(p=>p.id===selection)||null;
+ update();syncUndoButtons();beep(580,.045);
+}
 function select(p){
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
  if(selected===p){rotate(1);return}
@@ -179,14 +200,17 @@ renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(19,Math.min(58,dist+e.deltaY*.023));updateCamera()},{passive:false});
 document.addEventListener('keydown',e=>{
  if(e.target instanceof HTMLInputElement)return;
+ if(e.code==='Escape'){selected=null;update();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
+ if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
- if(e.code==='Escape'){selected=null;update();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden')}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
- if(e.code==='KeyZ'&&e.ctrlKey){e.preventDefault();if(history.length){const selId=selected?.id;pieces=history.pop();selected=pieces.find(p=>p.id===selId)||null;update()}}
+ if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
+ else if(e.code==='KeyZ'&&e.ctrlKey){e.preventDefault();undo()}
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 $('reset').onclick=()=>load(levelIndex);
+$('undo').onclick=undo;$('redo').onclick=redo;
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
 $('hint').onclick=()=>{$('hint-overlay').classList.remove('hidden');renderHints()};
@@ -205,7 +229,12 @@ $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
 $('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('enabled',audioEnabled);beep(700,.08)};
 let start=performance.now();
-function animate(time){requestAnimationFrame(animate);for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;renderer.render(scene,camera)}
+function animate(time){
+ requestAnimationFrame(animate);
+ for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
+ for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
+ renderer.render(scene,camera);
+}
 function renderHints(){
  const root=$('hint-steps');
  if(!root)return;
@@ -217,6 +246,13 @@ function renderHints(){
   const header=document.createElement('div');header.className='eyebrow';header.textContent=t(language,'hintStep',{step})+' · '+hint.label;
   const copy=document.createElement('p');copy.textContent=hint.body;
   block.append(header,copy);root.appendChild(block);
+ }
+ // A board-space highlight appears only after the second hint.
+ while(assistGroup.children.length)assistGroup.remove(assistGroup.children[0]);
+ const focus=hintFor(levels[levelIndex],language,hintCount)?.focus;
+ if(focus&&Number.isInteger(focus.x)&&Number.isInteger(focus.y)){
+   const halo=torus(.48,.047,new THREE.MeshBasicMaterial({color:0xc992ff,transparent:true,opacity:.96,depthTest:false}),assistGroup);
+   halo.position.copy(vec(focus.x,focus.y,.055));halo.renderOrder=20;
  }
  $('hint-badge').textContent=hintCount+'/3';
  $('reveal-hint').textContent=t(language,hintCount===0?'hintReveal':'hintAgain');
