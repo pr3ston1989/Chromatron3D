@@ -13,6 +13,7 @@ import {buildLaboratory} from './world-art.js';
 import {opticIcon} from './optic-icons.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
+import {createVictoryFX} from './victory-vfx.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
 import './redesign.css';
@@ -202,7 +203,7 @@ function rebuildPieces(){
  // These are shared within this rebuild, but disposed next time by the group's
  // resource collector. Avoid disposing them before every piece has been rendered.
 }
-let laserVisuals=null;
+let laserVisuals=null,victoryFX=null,victorySince=0;
 function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
@@ -210,13 +211,16 @@ function rebuildBeams(){
  laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
- if(!currentResult.won&&won){won=false;$('win').classList.add('hidden')}
+ if(!currentResult.won&&won){won=false;$('win').classList.add('hidden');if(victoryFX){victoryFX.dispose();victoryFX=null}}
  if(currentResult.won&&!won){
   won=true;
+  if(victoryFX)victoryFX.dispose();
+  victoryFX=createVictoryFX(THREE,world,pieces,COLORS,vec);
+  victorySince=performance.now();
   if(!solved.includes(levelIndex)){solved.push(levelIndex);store('chromatron-reborn-solved',JSON.stringify(solved))}
   updateStatus();
   const completedIndex=levelIndex;
-  setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},250)
+  setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},650)
  }
 }
 function store(key,value){try{localStorage.setItem(key,value)}catch{}}
@@ -241,6 +245,7 @@ function setLanguage(next){
  updateLocalizedLevel();
 }
 function load(i){
+ if(victoryFX){victoryFX.dispose();victoryFX=null}
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
@@ -674,6 +679,9 @@ function animate(time){
  for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
  for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
  if(laserVisuals)laserVisuals.update(time*.001);
+ if(victoryFX && !victoryFX.update((time-victorySince)*.001)){
+  victoryFX.dispose();victoryFX=null;
+ }
  composer.render();
 }
 function renderHints(){
