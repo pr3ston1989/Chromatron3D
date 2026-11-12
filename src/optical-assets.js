@@ -48,7 +48,7 @@ export function detailResonator(THREE,group,{color,active=false}={}){
  group.add(root);
  const ceramic=new THREE.MeshPhysicalMaterial({color:0x1a2b41,metalness:.35,roughness:.24,clearcoat:.55});
  const chrome=new THREE.MeshPhysicalMaterial({color:0xa8cbda,metalness:.85,roughness:.17,clearcoat:.75});
- const energy=new THREE.MeshBasicMaterial({color,transparent:true,opacity:active?.95:.54,toneMapped:false});
+ const energy=new THREE.MeshBasicMaterial({color,transparent:true,opacity:active ? .95 : .54,toneMapped:false});
  function add(geo,mat,x,y,z,name){
   const m=new THREE.Mesh(geo,mat);m.name=name;m.position.set(x,y,z);root.add(m);return m;
  }
