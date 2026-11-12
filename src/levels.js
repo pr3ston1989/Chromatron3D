@@ -11,7 +11,7 @@ export const PROTOTYPE_LEVELS = [
    {pl:'Laser świeci w prawo. Rezonator jest wyżej, więc promień musi skręcić w górę.',en:'The emitter shoots right. The target sits higher: the ray needs to turn upward.'},
    {pl:'Postaw lustro na przecięciu poziomej trasy lasera i pionowej linii rezonatora.',en:'Place the mirror where the horizontal laser path crosses the target’s vertical line.'},
    {pl:'Przenieś lustro na pole (7, 7), a następnie obróć je raz w prawo (E).',en:'Move the mirror to cell (7, 7), then rotate it once clockwise (E).'}
-  ],hintFocus:{x:7,y:7}
+  ],hintFocus:{x:7,y:7},startMovablesInTray:true
  },
  {
   title:{pl:'PODWÓJNY ZAKRĘT',en:'THE DOUBLE TURN'},
