@@ -25,10 +25,10 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 
 ## Controls
 
-- **Click** a movable optic to select.
-- **Click** an empty tile to move it.
-- **Q / E** rotate by 45 degrees; click the selected optic again to rotate.
-- **Drag** to orbit; **mouse wheel** to zoom.
+- **Click** a movable optic on the board to select it. Clicking the same optic again does not rotate it.
+- **Click a tray optic**, then click an empty tile to place it. After placement it remains selected for rotation, but no longer follows empty-board clicks.
+- **Q / E** or the visible **↶ / ↷ buttons** rotate the selected optic 45° in opposite directions.
+- **Drag a placed optic** to move it; drag empty board space to orbit. **Mouse wheel** rotates the selected optic; **Shift + wheel** zooms (or just wheel when none selected). **Right-click / Escape** cancels selection.
 - **V** toggles the advanced beam analyzer: exact required/received colors, absorbed rays and RGB channel labels.
 - **C** switches between isometric and top-down camera presets with a smooth transition (respecting reduced-motion preferences).
 - The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.
@@ -52,6 +52,10 @@ Run `npm run check` to execute simulation/localization/scene-lifecycle tests and
 The five original demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
+
+## Visual and interaction overhaul
+
+The prototype now uses multi-layer additive shader beams with soft volumetric-style ribbons, collision flares, colored point lighting and an adjustable bloom pass. Mirror geometry is aligned with the one-sided classic optical rule: bright reflective face vs dark absorbing back. Barriers have armoured geometry and hazard marks. The interaction model explicitly separates choosing a tray optic, placing it, selecting a placed piece, dragging, and rotating — preventing accidental mirror relocation. Quality is still under active art-direction review.
 
 ## Technical foundation
 
