@@ -39,3 +39,17 @@ button:focus-visible{outline:2px solid #65e2ff;outline-offset:3px}
 .return-tray{width:100%;margin:5px 0 16px;padding:8px 5px;font-size:11px}
 .return-tray:disabled{opacity:.4;cursor:default}
 .mission-actions{flex-wrap:wrap}
+
+/* Accessible spectral inspector. Every color has a readable R/G/B letter. */
+.spectrum-toggle{width:100%;font-size:11px;padding:9px 3px;margin:0 0 10px;border-color:#2b8fa6aa}
+.spectral-inspector{max-height:36vh;overflow:auto;border-top:1px solid #244b65;padding-top:9px;scrollbar-width:thin;scrollbar-color:#276387 transparent}
+.spectrum-row{padding:9px 2px;border-bottom:1px solid #22415a}
+.spectrum-row>strong{display:block;color:#c8e4fc;font-size:10px;letter-spacing:1px;margin-bottom:7px}
+.spectrum-line{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:5px 0;color:#99bed4;font-size:9px}
+.spectrum-bits{display:inline-flex;gap:3px}
+.spectrum-bit{display:inline-grid;place-items:center;border:1px solid #466177;border-radius:3px;width:20px;height:20px;font:700 11px 'Rajdhani',sans-serif;letter-spacing:0}
+.spectrum-bit.off{opacity:.3;background:#081421;color:#93a8b7}
+.spectrum-r.on{background:#a71c3a;color:#fff;border-color:#ff6d88}
+.spectrum-g.on{background:#166946;color:#fff;border-color:#70efb3}
+.spectrum-b.on{background:#1f4fbd;color:#fff;border-color:#7ab0ff}
+@media(max-width:680px){.spectrum-line{font-size:8px}.spectrum-bit{width:18px;height:18px}.spectral-inspector{max-height:20vh}}
