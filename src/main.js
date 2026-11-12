@@ -321,6 +321,7 @@ function setLanguage(next){
  language=normalizeLanguage(next);
  store('chromatron-reborn-language',language);
  applyLanguage(language);
+ syncFullscreenButton();
  $('language').textContent=language.toUpperCase();
  updateLocalizedLevel();
 }
@@ -646,6 +647,26 @@ function updateCamera(){
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
+function syncFullscreenButton(){
+ const full=Boolean(document.fullscreenElement);
+ const btn=$('fullscreen');
+ btn.setAttribute('aria-pressed',String(full));
+ btn.title=t(language,full?'fullscreenExit':'fullscreenEnter');
+ btn.setAttribute('aria-label',btn.title);
+}
+async function toggleFullscreen(){
+ try{
+  if(document.fullscreenElement)await document.exitFullscreen();
+  else await document.documentElement.requestFullscreen();
+ }catch{
+  toast(t(language,'fullscreenUnavailable'));
+ }
+ syncFullscreenButton();
+}
+document.addEventListener('fullscreenchange',()=>{
+ syncFullscreenButton();
+ resize();updateCamera();
+});
 function resize(){
  const w=innerWidth,h=innerHeight;
  camera.aspect=w/h;camera.updateProjectionMatrix();
@@ -847,6 +868,7 @@ document.addEventListener('keydown',e=>{
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
  if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
  if(e.code==='KeyC' && !e.ctrlKey){toggleCameraPreset();return}
+ if(e.code==='KeyF' && !e.ctrlKey && !e.metaKey && !e.altKey){e.preventDefault();void toggleFullscreen();return}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
@@ -878,6 +900,7 @@ $('skip-level').onclick=()=>{
  load(levelIndex+1);toast(t(language,'skipNotice'))
 };
 $('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dismissed','yes');updateCoach();renderInventory()};
+$('fullscreen').onclick=toggleFullscreen;
 $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
 $('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('enabled',audioEnabled);beep(700,.08)};
