@@ -400,7 +400,21 @@ function updateCamera(){
 }
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
-function hit(clientX,clientY){mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);ray.setFromCamera(mouse,camera);const objs=ray.intersectObjects(hitObjects,false);if(objs.length)return {piece:objs[0].object.userData.piece};const point=new THREE.Vector3();if(ray.ray.intersectPlane(plane,point)){const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);if(x>=0&&x<GRID&&y>=0&&y<GRID)return {x,y}}return null}
+function cellAt(clientX,clientY){
+ mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
+ ray.setFromCamera(mouse,camera);
+ const pt=new THREE.Vector3();
+ if(!ray.ray.intersectPlane(plane,pt))return null;
+ const x=Math.round(pt.x/T+HALF),y=Math.round(pt.z/T+HALF);
+ return x>=0&&x<GRID&&y>=0&&y<GRID?{x,y}:null;
+}
+function hit(clientX,clientY){
+ mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
+ ray.setFromCamera(mouse,camera);
+ const objs=ray.intersectObjects(hitObjects,false);
+ if(objs.length)return {piece:objs[0].object.userData.piece};
+ return cellAt(clientX,clientY);
+}
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
 const placementPreview=mesh(new THREE.BoxGeometry(T*.90,.025,T*.90),previewMat,world);
 placementPreview.visible=false;placementPreview.renderOrder=18;
@@ -408,7 +422,7 @@ const previewEdgeMat=new THREE.LineBasicMaterial({color:0x8ce9ff,depthTest:false
 const previewEdge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(T*.92,.04,T*.92)),previewEdgeMat);
 placementPreview.add(previewEdge);
 function updatePlacementPreview(e){
- if(!selected){placementPreview.visible=false;return}
+ if(!selected||(!placementMode&&!draggedPiece)){placementPreview.visible=false;return}
  mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);
  ray.setFromCamera(mouse,camera);
  const point=new THREE.Vector3();
@@ -422,17 +436,86 @@ function updatePlacementPreview(e){
  placementPreview.visible=true;
 }
 let down=null;
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;cameraTween=null;down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false};renderer.domElement.setPointerCapture(e.pointerId)});
-renderer.domElement.addEventListener('pointermove',e=>{if(!down){updatePlacementPreview(e);return}const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;if(down.moved){yaw=down.yaw-dx*.005;pitch=Math.max(.3,Math.min(1.48,down.pitch+dy*.004));updateCamera()}});
-renderer.domElement.addEventListener('pointerup',e=>{if(!down)return;const dragged=down.moved;down=null;if(dragged)return;const result=hit(e.clientX,e.clientY);if(!result)return;if(result.piece)select(result.piece);else if(selected)move(result.x,result.y)});
-renderer.domElement.addEventListener('pointerleave',()=>{placementPreview.visible=false});
-renderer.domElement.addEventListener('dragover',e=>{if(selected){e.preventDefault();updatePlacementPreview(e)}});
-renderer.domElement.addEventListener('drop',e=>{e.preventDefault();const target=hit(e.clientX,e.clientY);if(target&&'x'in target)move(target.x,target.y);placementPreview.visible=false});
-renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(19,Math.min(58,dist+e.deltaY*.023));updateCamera()},{passive:false});
+renderer.domElement.addEventListener('pointerdown',e=>{
+ if(e.button!==0&&e.button!==2)return;
+ cameraTween=null;
+ const origin=hit(e.clientX,e.clientY);
+ const draggingCandidate=e.button===0 && origin?.piece && movable.has(origin.piece.type);
+ down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,
+       mode:draggingCandidate?'piece':'orbit',origin};
+ if(draggingCandidate)select(origin.piece);
+ renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+ if(!down){
+  updatePlacementPreview(e);
+  const hovered=hit(e.clientX,e.clientY);
+  renderer.domElement.style.cursor=hovered?.piece&&movable.has(hovered.piece.type)?'grab':placementMode?'crosshair':'default';
+  return;
+ }
+ const dx=e.clientX-down.x,dy=e.clientY-down.y;
+ if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;
+ if(!down.moved)return;
+ if(down.mode==='piece'){
+  draggedPiece=down.origin.piece;
+  renderer.domElement.style.cursor='grabbing';
+  updatePlacementPreview(e);
+  return;
+ }
+ // Orbiting requires a drag on the empty board, not on an optic.
+ if(down.button===0){
+  yaw=down.yaw-dx*.0045;pitch=Math.max(.35,Math.min(1.49,down.pitch+dy*.004));
+  updateCamera();
+ }
+});
+renderer.domElement.addEventListener('pointerup',e=>{
+ if(!down)return;
+ const state=down;down=null;
+ if(state.button===2){clearSelection();return}
+ if(state.moved){
+  if(state.mode==='piece'){
+   const dest=cellAt(e.clientX,e.clientY);
+   if(dest){selected=state.origin.piece;move(dest.x,dest.y,true)}
+  }
+  draggedPiece=null;placementPreview.visible=false;
+  renderer.domElement.style.cursor='default';
+  return;
+ }
+ // Clicking an optic only selects it. Clicking elsewhere only places a
+ // tray optic, otherwise it cancels selection (never warps an existing optic).
+ const target=hit(e.clientX,e.clientY);
+ const intent=classifyClick(target,selected,placementMode);
+ if(intent.action==='select')select(intent.piece);
+ else if(intent.action==='place')move(intent.x,intent.y);
+ else if(selected)clearSelection();
+});
+renderer.domElement.addEventListener('pointercancel',()=>{
+ down=null;draggedPiece=null;placementPreview.visible=false;
+});
+renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false});
+renderer.domElement.addEventListener('dragover',e=>{
+ if(placementMode&&selected?.inTray){e.preventDefault();updatePlacementPreview(e)}
+});
+renderer.domElement.addEventListener('drop',e=>{
+ e.preventDefault();const dest=cellAt(e.clientX,e.clientY);
+ if(placementMode && selected?.inTray && dest)move(dest.x,dest.y);
+ placementPreview.visible=false;
+});
+renderer.domElement.addEventListener('contextmenu',e=>{e.preventDefault();clearSelection()});
+let wheelDelta=0;
+renderer.domElement.addEventListener('wheel',e=>{
+ e.preventDefault();
+ if(selected&&!e.shiftKey){
+  wheelDelta+=e.deltaY;
+  if(Math.abs(wheelDelta)>=55){rotate(wheelDelta>0?1:-1);wheelDelta=0}
+ }else{
+  wheelDelta=0;
+  dist=Math.max(22,Math.min(60,dist+e.deltaY*.021));updateCamera();
+ }
+},{passive:false});
 document.addEventListener('keydown',e=>{
  if(e.target instanceof HTMLInputElement)return;
- if(e.code==='Escape'){selected=null;update();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
+ if(e.code==='Escape'){clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
@@ -447,6 +530,9 @@ $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1
 $('reset').onclick=()=>load(levelIndex);
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
+$('turn-left').onclick=()=>rotate(-1);
+$('turn-right').onclick=()=>rotate(1);
+$('cancel-selection').onclick=clearSelection;
 $('analysis-toggle').onclick=toggleAnalyzer;
 $('analysis-close').onclick=toggleAnalyzer;
 $('camera-preset').onclick=toggleCameraPreset;
