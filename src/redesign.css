@@ -196,3 +196,15 @@ body{background:#102238;color:var(--ui-ink)}
 .component-icon svg{width:38px;height:38px;max-width:100%;max-height:100%;filter:drop-shadow(0 0 5px rgba(95,220,250,.17))}
 .inventory-item.selected .component-icon svg,.inventory-item:hover .component-icon svg{filter:drop-shadow(0 0 8px rgba(123,231,255,.45))}
 @media(max-width:680px){.component-icon svg{width:29px;height:29px}.beam-guide-legend{font-size:7px;gap:3px}}
+
+/* Contextual pointer hints: readable where the eye already is, never block clicks. */
+.optic-tooltip{
+ position:fixed;z-index:11;max-width:245px;padding:7px 10px;border-radius:7px;
+ border:1px solid rgba(105,233,196,.70);background:rgba(8,29,44,.94);
+ color:#d9fff3;box-shadow:0 8px 23px rgba(0,0,0,.28);
+ font:600 11px 'Space Grotesk',sans-serif;letter-spacing:.12px;
+ pointer-events:none;white-space:normal;backdrop-filter:blur(6px);
+}
+.optic-tooltip.hidden{display:none}
+.optic-tooltip.blocked{color:#ffd0d0;border-color:#fb8b93;background:rgba(54,21,34,.94)}
+@media(max-width:680px){.optic-tooltip{display:none!important}}
