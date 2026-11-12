@@ -9,7 +9,7 @@ export function buildLaboratory(THREE, scene, world, tileSize=1.3) {
  const shell=new THREE.MeshStandardMaterial({color:0x162a3b,metalness:.72,roughness:.32});
  const shellLight=new THREE.MeshStandardMaterial({color:0x324d61,metalness:.76,roughness:.25});
  const graphite=new THREE.MeshStandardMaterial({color:0x0b1625,metalness:.78,roughness:.38});
- const cyan=new THREE.MeshStandardMaterial({color:0x5de7ed,emissive:0x11bedc,emissiveIntensity:.95,roughness:.25});
+ const cyan=new THREE.MeshStandardMaterial({color:0x5de7ed,emissive:0x11bedc,emissiveIntensity:.58,roughness:.25});
  const amber=new THREE.MeshStandardMaterial({color:0xffbf78,emissive:0xff9933,emissiveIntensity:1.1,roughness:.28});
  const make=(geometry,material,x,y,z,rotationY=0)=>{
   const m=new THREE.Mesh(geometry,material);
