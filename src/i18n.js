@@ -1,6 +1,8 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    graphicsQuality:'GRAFIKA',graphicsQualityAria:'Jakość grafiki i odbić',graphicsAuto:'AUTO',graphicsPerformance:'PŁYNNOŚĆ',graphicsBalanced:'ZRÓWNOWAŻONA',graphicsCinematic:'FILMOWA',
+
     tipPlace:'Kliknij, aby postawić',tipOccupied:'Pole zajęte',tipSelect:'Kliknij, aby zaznaczyć · przeciągnij, aby przesunąć',tipFixed:'Element nieruchomy',
     guideIncoming:'WIĄZKA WPADA',guideOutgoing:'WIĄZKA WYCHODZI',
     rotateLeft:'Obróć lustro w lewo o 45° (Q)',
@@ -34,6 +36,8 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    graphicsQuality:'GRAPHICS',graphicsQualityAria:'Graphics and reflections quality',graphicsAuto:'AUTO',graphicsPerformance:'PERFORMANCE',graphicsBalanced:'BALANCED',graphicsCinematic:'CINEMATIC',
+
     tipPlace:'Click to place',tipOccupied:'Occupied cell',tipSelect:'Click to select · drag to move',tipFixed:'Fixed component',
     guideIncoming:'INCOMING LIGHT',guideOutgoing:'REFLECTED LIGHT',
     rotateLeft:'Rotate the mirror 45° left (Q)',
