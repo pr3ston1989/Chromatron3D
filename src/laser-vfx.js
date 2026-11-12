@@ -26,7 +26,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     float core=exp(-radial*radial*165.0);
     float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
     float energy=(halo*.18+middle*.55+core*.62)*ripples;
-    vec3 radiance=uColor*(halo*.35+middle*1.6+core*2.9)+vec3(.86,.96,1.0)*core*1.3;
+    vec3 radiance=uColor*(halo*.55+middle*1.72+core*2.9)+mix(uColor,vec3(1.0),.23)*core*.62;
     gl_FragColor=vec4(radiance*energy,clamp(halo*.19+middle*.47+core*.9,0.0,.94));
    }
   `
@@ -80,11 +80,19 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   geometry.computeVertexNormals();
   const mesh=new THREE.Mesh(geometry,shader);mesh.renderOrder=6;parent.add(mesh);
  }
- const whiteCore=new THREE.MeshBasicMaterial({
-  color:0xe1edff,transparent:true,opacity:.86,
-  depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending
- });
+ const coreMaterials=new Map();
  const shellMaterials=new Map();
+ function coloredCore(mask){
+  if(!coreMaterials.has(mask)){
+   const base=new THREE.Color(palette[mask]);
+   const ice=base.clone().lerp(new THREE.Color(0xffffff),.23);
+   coreMaterials.set(mask,new THREE.MeshBasicMaterial({
+    color:ice,transparent:true,opacity:.74,depthWrite:false,
+    toneMapped:false,blending:THREE.AdditiveBlending
+   }));
+  }
+  return coreMaterials.get(mask);
+ }
  const coreAxis=new THREE.Vector3(0,1,0);
  for(const s of segments){
   const a=point(s.x,s.y,.53),b=point(s.nx,s.ny,.53);
@@ -98,7 +106,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   jacket.position.copy(a).add(b).multiplyScalar(.5);
   jacket.quaternion.setFromUnitVectors(coreAxis,segment.clone().normalize());
   jacket.renderOrder=8;parent.add(jacket);
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(.013,.013,len,7),whiteCore);
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.010,.010,len,7),coloredCore(s.color));
   core.position.copy(jacket.position);core.quaternion.copy(jacket.quaternion);
   core.renderOrder=9;parent.add(core);
   ribbon(a,b,.66,false,material(s.color));
