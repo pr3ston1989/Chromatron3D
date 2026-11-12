@@ -25,8 +25,8 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     float middle=exp(-radial*radial*30.0);
     float core=exp(-radial*radial*165.0);
     float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
-    float energy=(halo*.15+middle*.4+core*.7)*ripples;
-    vec3 radiance=uColor*(halo*.34+middle*1.8+core*2.7)+vec3(.86,.96,1.0)*core*1.3;
+    float energy=(halo*.18+middle*.55+core*.62)*ripples;
+    vec3 radiance=uColor*(halo*.35+middle*1.6+core*2.9)+vec3(.86,.96,1.0)*core*1.3;
     gl_FragColor=vec4(radiance*energy,clamp(halo*.19+middle*.47+core*.9,0.0,.94));
    }
   `
@@ -81,7 +81,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   const mesh=new THREE.Mesh(geometry,shader);mesh.renderOrder=6;parent.add(mesh);
  }
  const whiteCore=new THREE.MeshBasicMaterial({
-  color:0xf2fcff,transparent:true,opacity:.98,
+  color:0xe1edff,transparent:true,opacity:.86,
   depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending
  });
  const shellMaterials=new Map();
@@ -98,7 +98,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   jacket.position.copy(a).add(b).multiplyScalar(.5);
   jacket.quaternion.setFromUnitVectors(coreAxis,segment.clone().normalize());
   jacket.renderOrder=8;parent.add(jacket);
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(.016,.016,len,7),whiteCore);
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.013,.013,len,7),whiteCore);
   core.position.copy(jacket.position);core.quaternion.copy(jacket.quaternion);
   core.renderOrder=9;parent.add(core);
   ribbon(a,b,.66,false,material(s.color));
