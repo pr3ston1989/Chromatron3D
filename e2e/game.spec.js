@@ -334,3 +334,35 @@ test('fullscreen button and F shortcut adapt the game without hiding controls',a
  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
  expect(errors).toEqual([]);
 });
+
+
+test('board focus mode expands usable puzzle space without losing equipment access',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:1093,height:614});
+ await page.goto('/');
+ await expect(page.locator('#board-focus')).toBeVisible();
+ await page.locator('#board-focus').click();
+ await expect(page.locator('#app')).toHaveClass(/board-focus/);
+ expect((await page.evaluate(()=>window.chromatron.getLayoutState())).boardFocus).toBe(true);
+ for(const id of ['mission-drawer','tool-drawer']){
+  const handle=page.locator('#'+id);
+  await expect(handle).toBeVisible();
+  const b=await handle.boundingBox();
+  expect(b.x).toBeGreaterThanOrEqual(0);
+  expect(b.x+b.width).toBeLessThanOrEqual(1093);
+  expect(b.y+b.height).toBeLessThanOrEqual(614);
+ }
+ await page.locator('#tool-drawer').click();
+ await expect(page.locator('#tool-drawer')).toHaveAttribute('aria-expanded','true');
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await expect(page.locator('#tool-drawer')).toHaveAttribute('aria-expanded','false');
+ const cell=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.click(cell.x,cell.y);
+ expect((await page.evaluate(()=>window.chromatron.getState())).pieces.find(p=>p.type==='mirror').inTray).toBe(false);
+ await page.screenshot({path:'test-results/chromatron-laptop-focus.png'});
+ await page.keyboard.press('b');
+ await expect(page.locator('#app')).not.toHaveClass(/board-focus/);
+ await page.locator('#board-focus').click();
+ await expect(page.locator('#app')).toHaveClass(/board-focus/);
+ expect(errors).toEqual([]);
+});
