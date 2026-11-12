@@ -13,6 +13,10 @@ test('directional laser asset follows all eight optical headings',()=>{
   assert.equal(g.children.filter(c=>c.name==='heatsink-fin').length,8);
   const lens=g.children.find(c=>c.name==='laser-wavelength-lens');
   assert.ok(lens);
+  const ring=g.children.find(c=>c.name==='machined-barrel-ring');
+  const outward=new THREE.Vector3(0,1,0).applyQuaternion(lens.quaternion);
+  const frontVector=new THREE.Vector3(0,0,1).applyQuaternion(ring.quaternion);
+  assert.ok(outward.distanceTo(frontVector)<1e-6,'torus and lens must share physical forward normal');
   sample.add(lens.position.x.toFixed(3)+','+lens.position.z.toFixed(3));
  }
  assert.equal(sample.size,8,'eight unique headings produce unique apertures');
