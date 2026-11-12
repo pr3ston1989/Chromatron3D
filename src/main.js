@@ -10,6 +10,7 @@ import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
+import {opticIcon} from './optic-icons.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
@@ -282,7 +283,7 @@ function renderInventory(){
    })}
   }
   const icon=document.createElement('span');icon.className='component-icon';
-  icon.textContent=({laser:'↗',mirror:'◩',bender:'◢',filter:'◈',prism:'⬡',doppler:'◉',splitter:'◇',tangler:'⋈',target:'◎',wall:'▩',conduit:'▤',teleporter:'⊙'}[type]);
+  icon.innerHTML=opticIcon(type);
   const name=document.createElement('span');name.textContent=t(language,'type'+type[0].toUpperCase()+type.slice(1));
   const count=document.createElement('strong');
   count.textContent=tray.length?tray.length+' / '+candidates.length:String(candidates.length).padStart(2,'0');
