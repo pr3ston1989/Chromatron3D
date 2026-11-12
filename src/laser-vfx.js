@@ -36,7 +36,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   const key=mask+':'+(floor?'floor':'beam');
   if(!materials.has(key)){
    const mat=new THREE.ShaderMaterial({
-    ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0},uStrength:{value:floor?.18:1}},
+    ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0},uStrength:{value:floor ? 0.18 : 1}},
     transparent:true,depthWrite:false,side:THREE.DoubleSide,
     blending:THREE.AdditiveBlending,toneMapped:false
    });
