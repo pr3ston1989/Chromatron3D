@@ -380,6 +380,10 @@ function rebuildBeams(){
   victoryFX=createVictoryFX(THREE,world,pieces,COLORS,vec);
   victorySince=performance.now();
   if(!solved.includes(levelIndex)){solved.push(levelIndex);store('chromatron-reborn-solved',JSON.stringify(solved))}
+  const earned=rewardOnce(wallet,currentLevelKey());
+  wallet=earned.wallet;saveWallet();
+  $('win-reward').textContent=earned.awarded?
+   t(language,'earnedCredits',{amount:earned.awarded}):t(language,'noRewardRepeat');
   updateStatus();
   const completedIndex=levelIndex;
   setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},650)
@@ -1142,7 +1146,9 @@ function renderHints(){
  $('skip-level').classList.toggle('hidden',hintCount<3 || levels.length<=1);
 }
 setLanguage(language);
-load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate);
+load(Math.min(Math.max(saved,0),levels.length-1));
+syncWalletUI();
+requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
