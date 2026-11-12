@@ -647,7 +647,8 @@ setLanguage(language);
 load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
 window.chromatron={
- getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),result:{...currentResult,received:[...currentResult.received]}}),
+ getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
+ projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  loadLevels(json){const parsed=typeof json==='string'?JSON.parse(json):json;levels=validateLevels(parsed);solved=[];skipped=[];load(0);toast(t(language,'imported',{count:levels.length}))},
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
