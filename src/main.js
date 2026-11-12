@@ -495,7 +495,10 @@ function updateCoach(){
 function syncTransformTools(){
  const tools=$('transform-tools');
  tools.classList.toggle('hidden',!selected);
- if(selected)$('transform-caption').textContent=t(language,placementMode?'placementCaption':'selectedCaption');
+ if(selected){
+  $('transform-caption').textContent=t(language,placementMode?'placementCaption':'selectedCaption');
+  $('rotation-angle').textContent=String(selected.rot*45).padStart(3,'0')+'°';
+ }
  const showGuides=Boolean(selected && !selected.inTray && ['mirror','bender','splitter'].includes(selected.type));
  $('beam-guide-legend').classList.toggle('hidden',!showGuides);
  $('guide-incoming').textContent=t(language,'guideIncoming');
