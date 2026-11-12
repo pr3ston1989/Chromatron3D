@@ -56,5 +56,32 @@ export function buildLaboratory(THREE, scene, world, tileSize=1.3) {
   const light=new THREE.PointLight(color,12,24,2);
   light.position.set(x,4,z);scene.add(light);
  }
+
+ // A quiet, reflective physical room rather than an empty black void.
+ // Low contrast preserves focus on the actual puzzle grid.
+ const floorMat=new THREE.MeshStandardMaterial({
+  color:0x0b1927,metalness:.57,roughness:.37,side:THREE.DoubleSide
+ });
+ const chamberFloor=new THREE.Mesh(new THREE.PlaneGeometry(85,85),floorMat);
+ chamberFloor.rotation.x=-Math.PI/2;
+ chamberFloor.position.y=-2.25;scene.add(chamberFloor);
+ const circleMaterial=new THREE.MeshBasicMaterial({
+  color:0x376b8e,transparent:true,opacity:.20,depthWrite:false,side:THREE.DoubleSide
+ });
+ for(const [inner,outer] of [[14.7,14.76],[18.3,18.37],[24.5,24.56]]){
+  const arc=new THREE.Mesh(new THREE.RingGeometry(inner,outer,128),circleMaterial);
+  arc.rotation.x=-Math.PI/2;
+  arc.position.y=-2.20;
+  scene.add(arc);
+ }
+ const guideMaterial=new THREE.MeshBasicMaterial({color:0x2e6382,transparent:true,opacity:.29,depthWrite:false});
+ for(const offset of [-25,-17,17,25]){
+  const strip=new THREE.Mesh(new THREE.BoxGeometry(.048,.01,54),guideMaterial);
+  strip.position.set(offset,-2.18,0);scene.add(strip);
+  const cross=new THREE.Mesh(new THREE.BoxGeometry(54,.01,.048),guideMaterial);
+  cross.position.set(0,-2.18,offset);scene.add(cross);
+ }
+ const underlight=new THREE.PointLight(0x2f84ad,9,18,2);
+ underlight.position.set(0,-1.45,0);scene.add(underlight);
  return group;
 }
