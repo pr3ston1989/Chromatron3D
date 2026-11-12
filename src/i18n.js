@@ -1,6 +1,11 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    analysisToggle:'Analizuj światło (V)',analysisHeading:'ANALIZATOR WIĄZEK',analysisIntro:'Sprawdź barwy i miejsca pochłaniania wiązek bez ujawniania rozwiązania.',
+    analysisSources:'EMITERY',analysisSegments:'ODCINKI WIĄZEK',analysisTargetHeading:'REZONATORY',analysisAbsorption:'POCHŁONIĘTE PROMIENIE',
+    analysisCorrect:'ZGODNY',analysisWrong:'NIEZGODNY',analysisNoLight:'BRAK ŚWIATŁA',analysisNeed:'Wymagany',analysisReceived:'Otrzymany',
+    analysisNone:'Brak punktów pochłaniania',analysisWarning:'Uwaga: niektóre specjalne interakcje nie są jeszcze obsługiwane w prototypie.',
+    analysisClose:'Zamknij analizę',analysisCameraIso:'WIDOK IZOMETRYCZNY',analysisCameraTop:'WIDOK Z GÓRY',cameraSwitch:'Zmień widok kamery (C)',
     online:'SYSTEM OPTYCZNY AKTYWNY',experiment:'EKSPERYMENT',prototype:'PROTOTYP',chapter:'ROZDZIAŁ 01 // PODSTAWY',resonators:'AKTYWNE REZONATORY',
     reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',spectral:'◈ ANALIZATOR WIDMA',spectralSource:'LASER',spectralTarget:'REZONATOR',spectralNeed:'WYMAGANE',spectralReceived:'OTRZYMANE',spectralEmits:'EMITUJE',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ELEMENTY OPTYCZNE',selectHelp:'WYBIERZ ELEMENT · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
     controls:'KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM',
@@ -15,6 +20,11 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    analysisToggle:'Inspect beams (V)',analysisHeading:'BEAM ANALYZER',analysisIntro:'Inspect wavelengths and absorbed beams without revealing puzzle solutions.',
+    analysisSources:'EMITTERS',analysisSegments:'BEAM SEGMENTS',analysisTargetHeading:'RESONATORS',analysisAbsorption:'ABSORBED BEAMS',
+    analysisCorrect:'MATCHED',analysisWrong:'MISMATCH',analysisNoLight:'NO LIGHT',analysisNeed:'Required',analysisReceived:'Received',
+    analysisNone:'No absorbed beams',analysisWarning:'Note: some specialty optical interactions are not yet supported in this prototype.',
+    analysisClose:'Close beam analyzer',analysisCameraIso:'ISOMETRIC VIEW',analysisCameraTop:'TOP VIEW',cameraSwitch:'Change camera preset (C)',
     online:'OPTICAL SYSTEM ONLINE',experiment:'EXPERIMENT',prototype:'PROTOTYPE',chapter:'CHAPTER 01 // FUNDAMENTALS',resonators:'RESONATORS ONLINE',
     reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',spectral:'◈ SPECTRAL INSPECTOR',spectralSource:'EMITTER',spectralTarget:'RESONATOR',spectralNeed:'REQUIRED',spectralReceived:'RECEIVED',spectralEmits:'EMITS',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'OPTICAL COMPONENTS',selectHelp:'SELECT AN OPTIC · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
     controls:'CLICK: SELECT / MOVE · DRAG: ORBIT · WHEEL: ZOOM',
