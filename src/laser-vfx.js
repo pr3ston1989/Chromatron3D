@@ -31,7 +31,7 @@ export function getLaserFlareTexture(THREE){
  * crossed shader ribbons for soft volumetric scatter. Glows at interactions
  * and carefully budgeted dynamic point lights connect the beam to the world.
  */
-export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point) {
+export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point, lightingProfile={}) {
  const materials=new Map(), flicker=[];
  const beamBatcher=createBeamBatcher(THREE,parent);
  const activePieces=pieces.filter(p=>!p.inTray);
@@ -181,7 +181,9 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  }
  // A handful of real point lights let surrounding metallic tiles respond to
  // the laser wavelength. Bound the cost for integrated laptop GPUs.
- const glowLights=Math.min(4,segments.length);
+ const maxBeamLights=Math.max(0,Math.min(4,Number.isFinite(lightingProfile.maxBeamLights)?lightingProfile.maxBeamLights:4));
+ const maxOpticLights=Math.max(0,Math.min(9,Number.isFinite(lightingProfile.maxOpticLights)?lightingProfile.maxOpticLights:9));
+ const glowLights=Math.min(maxBeamLights,segments.length);
  const stride=Math.max(1,Math.floor(segments.length/Math.max(1,glowLights)));
  for(let i=0;i<glowLights;i++){
   const s=segments[Math.min(segments.length-1,i*stride)];
@@ -200,7 +202,8 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  for(const piece of activePieces){
   if(piece.type==='laser'){
    flareOnce(piece.x,piece.y,piece.color,1.65);
-   if(lightBudget++<5){
+   if(lightBudget<Math.min(5,maxOpticLights)){
+    lightBudget++;
     const light=new THREE.PointLight(new THREE.Color(palette[piece.color]),14,7,2);
     light.position.copy(point(piece.x,piece.y,.85));parent.add(light);
    }
@@ -212,7 +215,8 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   if(piece.type==='target'){
    const active=received.get(piece.id)===piece.color;
    flareOnce(piece.x,piece.y,s.color,active?1.8:.62);
-   if(active&&lightBudget++<9){
+   if(active&&lightBudget<maxOpticLights){
+    lightBudget++;
     const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),24,8,2);
     l.position.copy(point(piece.x,piece.y,1));parent.add(l);
    }
@@ -224,6 +228,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  }
  return {
   geometryStats:laserGeometryStats,
+  dynamicLightCount:parent.children.filter(x=>x.isPointLight).length,
   update(seconds){
    for(const m of materials.values())m.uniforms.uTime.value=seconds;
    if(photons)photons.material.uniforms.uTime.value=seconds;
