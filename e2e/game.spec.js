@@ -316,3 +316,21 @@ test('short viewport uses scrollable side panels instead of clipping interactive
  await expect(page.locator('#level-index')).toHaveText('002');
  await page.screenshot({path:'test-results/chromatron-short-window.png'});
 });
+
+
+test('fullscreen button and F shortcut adapt the game without hiding controls',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:1280,height:720});
+ await page.goto('/');
+ await expect(page.locator('#fullscreen')).toBeVisible();
+ await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
+ await page.locator('#fullscreen').click();
+ await expect.poll(async()=>page.evaluate(()=>Boolean(document.fullscreenElement))).toBe(true);
+ await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#scene canvas')).toBeVisible();
+ await expect(page.locator('#next')).toBeVisible();
+ await page.keyboard.press('f');
+ await expect.poll(async()=>page.evaluate(()=>Boolean(document.fullscreenElement))).toBe(false);
+ await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
+ expect(errors).toEqual([]);
+});
