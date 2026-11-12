@@ -43,7 +43,16 @@
   <h3 data-i18n="analysisAbsorption">POCHŁONIĘTE PROMIENIE</h3><div id="analysis-collisions" class="analysis-collisions"></div>
   <p id="analysis-warning" class="analysis-warning hidden"></p>
  </aside>
- <div class="hud-bottom"><div class="camera-label"><span data-i18n="camera">◉ WIDOK IZOMETRYCZNY</span> <span data-i18n="opticalArray">— TABLICA OPTYCZNA 3D</span> <button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" title="Zmień widok kamery (C)" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
+ <div class="hud-bottom"><div class="camera-label"><span data-i18n="camera">◉ WIDOK IZOMETRYCZNY</span> <span data-i18n="opticalArray">— TABLICA OPTYCZNA 3D</span> <button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" title="Zmień widok kamery (C)" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button>
+   <span class="quality-widget">
+    <label for="graphics-quality" data-i18n="graphicsQuality">GRAFIKA</label>
+    <select id="graphics-quality" data-i18n-aria="graphicsQualityAria" aria-label="Jakość grafiki">
+     <option value="auto" data-i18n="graphicsAuto">AUTO</option>
+     <option value="performance" data-i18n="graphicsPerformance">PŁYNNOŚĆ</option>
+     <option value="balanced" data-i18n="graphicsBalanced">ZRÓWNOWAŻONA</option>
+     <option value="cinematic" data-i18n="graphicsCinematic">FILMOWA</option>
+    </select><span id="graphics-fps" class="graphics-fps" aria-label="FPS">— FPS</span>
+   </span></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
  <section id="coach" class="coach hidden" role="status" aria-live="polite" aria-label="Samouczek">
   <div class="coach-number" id="coach-number">01 <span>/ 03</span></div>
   <div class="coach-copy"><strong id="coach-title"></strong><p id="coach-detail"></p></div>
