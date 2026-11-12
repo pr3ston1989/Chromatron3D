@@ -51,3 +51,12 @@ test('touchpad ticks spaced by 350ms still accumulate one deliberate turn',()=>{
  assert.equal(w.consume(-20,0,700),0);
  assert.equal(w.consume(-20,0,1050),-1);
 });
+
+
+test('touchpad packets survive GPU stalls and still produce a single rotation',()=>{
+ const w=createWheelRotation();
+ const times=[100,1750,3300,5100];
+ for(let i=0;i<times.length-1;i++)assert.equal(w.consume(-20,0,times[i]),0);
+ assert.equal(w.consume(-20,0,times.at(-1)),-1);
+ assert.equal(w.pending,0);
+});
