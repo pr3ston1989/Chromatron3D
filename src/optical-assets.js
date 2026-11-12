@@ -14,7 +14,8 @@ export function detailEmitter(THREE,group,rot,color){
  const silver=new THREE.MeshPhysicalMaterial({color:0xadcddd,metalness:.93,roughness:.15,clearcoat:.55});
  const energy=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.84,toneMapped:false});
  const axis=new THREE.Vector3([0,1,1,1,0,-1,-1,-1][rot],0,[-1,-1,0,1,1,1,0,-1][rot]).normalize();
- const ringAxis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
+ const cylinderAxis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
+ const torusAxis=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),axis);
  function add(geo,mat,x,y,z,name){
   const m=new THREE.Mesh(geo,mat);
   m.name=name;m.position.set(x,y,z);root.add(m);return m;
@@ -22,7 +23,7 @@ export function detailEmitter(THREE,group,rot,color){
  // Four thermal jackets, visible around the barrel and indicating engineering purpose.
  for(const length of [.075,.18,.30,.41]){
   const ring=add(new THREE.TorusGeometry(.211,.018,8,28),silver,axis.x*length,.53,axis.z*length,'machined-barrel-ring');
-  ring.quaternion.copy(ringAxis);
+  ring.quaternion.copy(torusAxis);
  }
  // Eight radial cooling cuts form a physical heat sink at the back of the lens.
  for(let i=0;i<8;i++){
@@ -33,12 +34,12 @@ export function detailEmitter(THREE,group,rot,color){
   fin.rotation.y=angle;
  }
  const shroud=add(new THREE.CylinderGeometry(.255,.285,.095,24),graphite,axis.x*.60,.53,axis.z*.60,'optical-collar');
- shroud.quaternion.copy(ringAxis);
+ shroud.quaternion.copy(cylinderAxis);
  const glass=add(new THREE.CylinderGeometry(.161,.161,.035,24),energy,axis.x*.68,.53,axis.z*.68,'laser-wavelength-lens');
- glass.quaternion.copy(ringAxis);
+ glass.quaternion.copy(cylinderAxis);
  // Small forward-facing marker shows the beam direction without extra bloom.
  const heading=add(new THREE.ConeGeometry(.052,.12,3),energy,axis.x*.51,.83,axis.z*.51,'direction-index');
- heading.quaternion.copy(ringAxis);
+ heading.quaternion.copy(cylinderAxis);
  return root;
 }
 
