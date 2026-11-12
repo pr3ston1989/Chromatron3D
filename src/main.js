@@ -20,6 +20,7 @@ import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
 import {createMirrorHardware} from './mirror-asset.js';
+import {applyOpticFinish} from './optic-textures.js';
 import {detailEmitter,detailResonator} from './optical-assets.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
@@ -84,6 +85,7 @@ const gridGroup=new THREE.Group();world.add(gridGroup);
 // Two instanced draw calls replace 450 independent tile/line meshes.
 // This preserves every logical cell and its coloring while keeping GPU headroom.
 const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
+applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const lineGeometry=new THREE.BoxGeometry(T*.88,.012,.016);
 const boardLines=new THREE.InstancedMesh(lineGeometry,new THREE.MeshBasicMaterial({
@@ -161,6 +163,8 @@ function rebuildPieces(){
  const silver=new THREE.MeshPhysicalMaterial({color:0xd3f6ff,metalness:.86,roughness:.11,clearcoat:1,clearcoatRoughness:.08,emissive:0x18415a,emissiveIntensity:.22,side:THREE.DoubleSide});
  const trim=new THREE.MeshStandardMaterial({color:0x587991,metalness:.82,roughness:.22});
  const glass=new THREE.MeshPhysicalMaterial({color:0x97eaff,metalness:.42,roughness:.12,transparent:true,opacity:.83,clearcoat:1,side:THREE.DoubleSide});
+ applyOpticFinish(THREE,silver,'polished');
+ applyOpticFinish(THREE,trim,'brushed');
  for(const p of pieces){
   if(p.inTray)continue;
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
