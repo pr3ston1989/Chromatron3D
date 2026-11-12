@@ -22,7 +22,7 @@ import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from '
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
-import {createWheelRotation} from './wheel-rotation.js';
+import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
 import './redesign.css';
 const $=id=>document.getElementById(id);
@@ -809,15 +809,18 @@ renderer.domElement.addEventListener('drop',e=>{
  placementPreview.visible=false;
 });
 renderer.domElement.addEventListener('contextmenu',e=>{e.preventDefault();clearSelection()});
-let wheelDelta=0;
 renderer.domElement.addEventListener('wheel',e=>{
  e.preventDefault();
- if(selected&&!e.shiftKey){
-  wheelDelta+=e.deltaY;
-  if(Math.abs(wheelDelta)>=55){rotate(wheelDelta>0?1:-1);wheelDelta=0}
+ if(selected&&!e.shiftKey&&!e.ctrlKey){
+  // Mouse wheel detents and high-resolution touchpad ticks have different
+  // magnitudes and may report deltaY in pixels, lines or pages.
+  const steps=wheelRotation.consume(e.deltaY,e.deltaMode,performance.now(),innerHeight);
+  if(steps)for(let i=0;i<Math.abs(steps);i++)rotate(Math.sign(steps));
  }else{
-  wheelDelta=0;
-  dist=Math.max(22,Math.min(60,dist+e.deltaY*.021));updateCamera();
+  wheelRotation.reset();
+  const delta=toWheelPixels(e.deltaY,e.deltaMode,innerHeight);
+  dist=Math.max(22,Math.min(60,dist+delta*.021));
+  updateCamera();
  }
 },{passive:false});
 document.addEventListener('keydown',e=>{
