@@ -223,7 +223,14 @@ function load(i){
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
-function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();placementPreview.visible=false}
+function refreshSelection(){
+ rebuildPieces();renderInventory();updateCoach();syncTransformTools();
+ placementPreview.visible=false;
+}
+function update(){
+ rebuildBeams();rebuildPieces();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
+ placementPreview.visible=false;
+}
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
  for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
@@ -353,10 +360,10 @@ function syncTransformTools(){
  tools.classList.toggle('hidden',!selected);
  if(selected)$('transform-caption').textContent=t(language,placementMode?'placementCaption':'selectedCaption');
 }
-function clearSelection(){selected=null;placementMode=false;draggedPiece=null;update()}
+function clearSelection(){selected=null;placementMode=false;draggedPiece=null;refreshSelection()}
 function selectFromTray(p){
  if(!p?.inTray||!movable.has(p.type))return;
- selected=p;placementMode=true;update();beep(420,.04)
+ selected=p;placementMode=true;refreshSelection();beep(420,.04)
 }
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
@@ -384,7 +391,7 @@ function select(p){
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
  // Clicking the same optic again is intentionally inert: rotation is explicit.
  if(selected===p && !placementMode)return;
- selected=p;placementMode=Boolean(p.inTray);update();beep(420,.04)
+ selected=p;placementMode=Boolean(p.inTray);refreshSelection();beep(420,.04)
 }
 function rotate(dir){
  if(!selected)return toast(t(language,'selectFirst'));
