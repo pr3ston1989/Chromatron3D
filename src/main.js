@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {COLORS,trace,movable} from './optics.js';
+import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import './style.css';
@@ -40,11 +41,12 @@ const beamGroup=new THREE.Group();world.add(beamGroup);
 const assistGroup=new THREE.Group();world.add(assistGroup);
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
-let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false;
+let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let saved=0;
 try{
  saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
+ analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
  spectrumActive=localStorage.getItem('chromatron-reborn-spectrum')==='true';
@@ -122,7 +124,7 @@ function updateLocalizedLevel(){
  $('level-desc').textContent=loc(l.description,language);
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
- updateStatus();renderInventory();renderHints();
+ updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
@@ -142,7 +144,7 @@ function load(i){
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
-function update(){rebuildPieces();rebuildBeams();renderInventory()}
+function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer()}
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
  for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
@@ -202,6 +204,50 @@ function renderSpectrum(){
   panel.appendChild(row);
  }
 }
+
+function syncAnalyzer(){
+ $('analysis-panel').classList.toggle('hidden',!analysisActive);
+ $('analysis-toggle').setAttribute('aria-pressed',String(analysisActive));
+ $('analysis-panel').setAttribute('aria-label',t(language,'analysisHeading'));
+}
+function toggleAnalyzer(){
+ analysisActive=!analysisActive;store('chromatron-reborn-analysis',analysisActive?'on':'off');
+ renderAnalyzer();
+}
+function renderAnalyzer(){
+ syncAnalyzer();
+ if(!analysisActive||!currentResult)return;
+ const data=inspectLight(pieces,currentResult),targetRoot=$('analysis-targets'),blocked=$('analysis-collisions');
+ $('analysis-sources').textContent=String(data.lasers);
+ $('analysis-segments').textContent=String(data.segments);
+ targetRoot.replaceChildren();blocked.replaceChildren();
+ for(const target of data.targets){
+  const tile=document.createElement('article');tile.className='analysis-target';
+  const header=document.createElement('div');header.className='analysis-target-header';
+  const title=document.createElement('strong');title.textContent=(target.x+1)+','+(target.y+1);
+  const status=document.createElement('span');status.className='analysis-target-state'+(target.correct?' ok':'');
+  status.textContent=t(language,target.correct?'analysisCorrect':target.received?'analysisWrong':'analysisNoLight');
+  header.append(title,status);tile.appendChild(header);
+  for(const [label,mask] of [[t(language,'analysisNeed'),target.required],[t(language,'analysisReceived'),target.received]]){
+   const line=document.createElement('div');line.className='analysis-target-detail';
+   const caption=document.createElement('span');caption.textContent=label;
+   const value=document.createElement('span');
+   const dot=document.createElement('span');dot.className='color-swatch';dot.style.background=COLORS[mask];
+   const color=document.createElement('span');color.textContent=colorName(mask,language)+(mask?' ['+channels(mask).join('+')+']':'');
+   value.append(dot,color);line.append(caption,value);tile.appendChild(line);
+  }
+  targetRoot.appendChild(tile);
+ }
+ if(!data.collisions.length){const empty=document.createElement('p');empty.textContent=t(language,'analysisNone');blocked.append(empty)}
+ for(const hit of data.collisions.slice(0,12)){
+  const line=document.createElement('div');line.className='analysis-collision';
+  const type='type'+hit.type[0].toUpperCase()+hit.type.slice(1);
+  line.textContent=t(language,type)+' · '+(hit.x+1)+','+(hit.y+1)+' · '+colorName(hit.color,language);
+  blocked.append(line);
+ }
+ const warning=$('analysis-warning');warning.classList.toggle('hidden',!data.unsupported.length&&!data.truncated);
+ warning.textContent=t(language,'analysisWarning');
+}
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
  $('undo').disabled=history.length===0;
@@ -245,12 +291,26 @@ let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
 let ctx;
 function beep(freq,duration){if(!audioEnabled)return;try{ctx??=new AudioContext();const o=ctx.createOscillator(),gain=ctx.createGain();o.type='sine';o.frequency.value=freq;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);o.connect(gain).connect(ctx.destination);o.start();o.stop(ctx.currentTime+duration)}catch{}}
+
+let cameraTween=null,cameraTop=false;
+function syncCameraLabel(){
+ $('camera-preset').setAttribute('aria-pressed',String(cameraTop));
+ $('camera-preset-label').textContent=t(language,cameraTop?'analysisCameraIso':'analysisCameraTop');
+}
+function toggleCameraPreset(){
+ cameraTop=!cameraTop;
+ const nextYaw=cameraTop?0:-.68,nextPitch=cameraTop?1.49:.89;
+ if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+  cameraTween=null;yaw=nextYaw;pitch=nextPitch;updateCamera();
+ }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,time:performance.now()};
+ syncCameraLabel();
+}
 function updateCamera(){camera.position.set(Math.sin(yaw)*Math.cos(pitch)*dist,Math.sin(pitch)*dist,Math.cos(yaw)*Math.cos(pitch)*dist);camera.lookAt(cameraTarget)}
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function hit(clientX,clientY){mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);ray.setFromCamera(mouse,camera);const objs=ray.intersectObjects(hitObjects,false);if(objs.length)return {piece:objs[0].object.userData.piece};const point=new THREE.Vector3();if(ray.ray.intersectPlane(plane,point)){const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);if(x>=0&&x<GRID&&y>=0&&y<GRID)return {x,y}}return null}
 let down=null;
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false};renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;cameraTween=null;down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false};renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;if(down.moved){yaw=down.yaw-dx*.005;pitch=Math.max(.3,Math.min(1.48,down.pitch+dy*.004));updateCamera()}});
 renderer.domElement.addEventListener('pointerup',e=>{if(!down)return;const dragged=down.moved;down=null;if(dragged)return;const result=hit(e.clientX,e.clientY);if(!result)return;if(result.piece)select(result.piece);else if(selected)move(result.x,result.y)});
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
@@ -261,6 +321,8 @@ document.addEventListener('keydown',e=>{
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
+ if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
+ if(e.code==='KeyC' && !e.ctrlKey){toggleCameraPreset();return}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
@@ -270,6 +332,9 @@ $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1
 $('reset').onclick=()=>load(levelIndex);
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
+$('analysis-toggle').onclick=toggleAnalyzer;
+$('analysis-close').onclick=toggleAnalyzer;
+$('camera-preset').onclick=toggleCameraPreset;
 $('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
@@ -291,6 +356,13 @@ $('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('
 let start=performance.now();
 function animate(time){
  requestAnimationFrame(animate);
+ if(cameraTween){
+  const f=Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
+  yaw=cameraTween.yaw0+(cameraTween.yaw1-cameraTween.yaw0)*ease;
+  pitch=cameraTween.pitch0+(cameraTween.pitch1-cameraTween.pitch0)*ease;
+  if(f===1)cameraTween=null;
+  updateCamera();
+ }
  for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
  for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
  renderer.render(scene,camera);
