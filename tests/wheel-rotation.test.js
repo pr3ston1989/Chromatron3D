@@ -34,3 +34,12 @@ test('stale trackpad leftovers expire and a huge wheel cannot skip many rotation
  assert.equal(w.consume(7,0,1120),0);
  w.reset();assert.equal(w.pending,0);
 });
+
+test('four consecutive 100px wheel detents yield exactly four turns, never five',()=>{
+ const w=createWheelRotation();
+ const steps=[0,100,200,300].map(t=>w.consume(100,0,t));
+ assert.deepEqual(steps,[1,1,1,1]);
+ assert.equal(w.pending,0);
+ const backward=[400,500,600].map(t=>w.consume(-3,1,t));
+ assert.deepEqual(backward,[-1,-1,-1]);
+});
