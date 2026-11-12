@@ -7,6 +7,7 @@ import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import './style.css';
+import './redesign.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
@@ -45,11 +46,13 @@ const assistGroup=new THREE.Group();world.add(assistGroup);
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
+let coachDismissed=false,tutorialPlaced=false;
 let saved=0;
 try{
  saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
+ coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
  spectrumActive=localStorage.getItem('chromatron-reborn-spectrum')==='true';
@@ -167,7 +170,7 @@ function updateLocalizedLevel(){
  $('level-desc').textContent=loc(l.description,language);
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
- updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();
+ updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
@@ -179,7 +182,7 @@ function setLanguage(next){
 function load(i){
  levelIndex=(i+levels.length)%levels.length;
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
- selected=null;history=[];redoHistory=[];won=false;$('win').classList.add('hidden');
+ selected=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  try{hintCount=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{hintCount=0}
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
@@ -187,7 +190,7 @@ function load(i){
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
-function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer()}
+function update(){rebuildPieces();rebuildBeams();renderInventory();renderAnalyzer();updateCoach();placementPreview.visible=false}
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
  for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
@@ -196,6 +199,7 @@ function renderInventory(){
   const movableType=movable.has(type);
   const item=document.createElement(movableType?'button':'div');
   item.className='inventory-item'+(movableType?' selectable':'');
+  if(levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
   item.type=movableType?'button':undefined;
   if(movableType){
    item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
@@ -204,6 +208,7 @@ function renderInventory(){
     const first=tray[0]||candidates[0];
     if(first!==selected)select(first);
    });
+   if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{select(tray[0]);e.dataTransfer?.setData('text/plain','chromatron-optic');if(e.dataTransfer)e.dataTransfer.effectAllowed='move'})}
   }
   const icon=document.createElement('span');icon.className='component-icon';
   icon.textContent=({laser:'↗',mirror:'◩',bender:'◢',filter:'◈',prism:'⬡',doppler:'◉',splitter:'◇',tangler:'⋈',target:'◎',wall:'▩',conduit:'▤',teleporter:'⊙'}[type]);
@@ -291,6 +296,19 @@ function renderAnalyzer(){
  const warning=$('analysis-warning');warning.classList.toggle('hidden',!data.unsupported.length&&!data.truncated);
  warning.textContent=t(language,'analysisWarning');
 }
+function updateCoach(){
+ const coach=$('coach');
+ const show=levelIndex===0&&!coachDismissed&&!currentResult?.won&&Boolean(levels[0]?.startMovablesInTray);
+ coach.classList.toggle('hidden',!show);
+ if(!show)return;
+ // A single clear next action, rather than a wall of controls.
+ const step=!selected&&!tutorialPlaced?0:selected?.inTray?1:2;
+ $('coach-number').innerHTML=String(step+1).padStart(2,'0')+' <span>/ 03</span>';
+ const label=['coachChoose','coachPlace','coachRotate'][step];
+ $('coach-title').textContent=t(language,label);
+ $('coach-detail').textContent=t(language,label+'Detail');
+ $('coach').setAttribute('aria-label',t(language,label));
+}
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
  $('undo').disabled=history.length===0;
@@ -324,7 +342,7 @@ function move(x,y){
  if(!selected)return;
  if(pieces.some(p=>!p.inTray&&p.x===x&&p.y===y)){toast(t(language,'cellOccupied'));return}
  if(!selected.inTray&&selected.x===x&&selected.y===y)return;
- saveHistory();selected.x=x;selected.y=y;selected.inTray=false;update();beep(620,.06)
+ saveHistory();selected.x=x;selected.y=y;selected.inTray=false;tutorialPlaced=true;update();beep(620,.06)
 }
 function returnToTray(){
  if(!selected||selected.inTray||!movable.has(selected.type))return;
@@ -358,10 +376,33 @@ function updateCamera(){
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function hit(clientX,clientY){mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);ray.setFromCamera(mouse,camera);const objs=ray.intersectObjects(hitObjects,false);if(objs.length)return {piece:objs[0].object.userData.piece};const point=new THREE.Vector3();if(ray.ray.intersectPlane(plane,point)){const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);if(x>=0&&x<GRID&&y>=0&&y<GRID)return {x,y}}return null}
+const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
+const placementPreview=mesh(new THREE.BoxGeometry(T*.90,.025,T*.90),previewMat,world);
+placementPreview.visible=false;placementPreview.renderOrder=18;
+const previewEdgeMat=new THREE.LineBasicMaterial({color:0x8ce9ff,depthTest:false});
+const previewEdge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(T*.92,.04,T*.92)),previewEdgeMat);
+placementPreview.add(previewEdge);
+function updatePlacementPreview(e){
+ if(!selected){placementPreview.visible=false;return}
+ mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);
+ ray.setFromCamera(mouse,camera);
+ const point=new THREE.Vector3();
+ if(!ray.ray.intersectPlane(plane,point)){placementPreview.visible=false;return}
+ const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);
+ if(x<0||x>=GRID||y<0||y>=GRID){placementPreview.visible=false;return}
+ const occupied=pieces.some(p=>!p.inTray&&p!==selected&&p.x===x&&p.y===y);
+ previewMat.color.setHex(occupied?0xff728c:0x72eac1);
+ previewEdgeMat.color.setHex(occupied?0xff728c:0xa8f9d3);
+ placementPreview.position.copy(vec(x,y,.075));
+ placementPreview.visible=true;
+}
 let down=null;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;cameraTween=null;down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false};renderer.domElement.setPointerCapture(e.pointerId)});
-renderer.domElement.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;if(down.moved){yaw=down.yaw-dx*.005;pitch=Math.max(.3,Math.min(1.48,down.pitch+dy*.004));updateCamera()}});
+renderer.domElement.addEventListener('pointermove',e=>{if(!down){updatePlacementPreview(e);return}const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;if(down.moved){yaw=down.yaw-dx*.005;pitch=Math.max(.3,Math.min(1.48,down.pitch+dy*.004));updateCamera()}});
 renderer.domElement.addEventListener('pointerup',e=>{if(!down)return;const dragged=down.moved;down=null;if(dragged)return;const result=hit(e.clientX,e.clientY);if(!result)return;if(result.piece)select(result.piece);else if(selected)move(result.x,result.y)});
+renderer.domElement.addEventListener('pointerleave',()=>{placementPreview.visible=false});
+renderer.domElement.addEventListener('dragover',e=>{if(selected){e.preventDefault();updatePlacementPreview(e)}});
+renderer.domElement.addEventListener('drop',e=>{e.preventDefault();const target=hit(e.clientX,e.clientY);if(target&&'x'in target)move(target.x,target.y);placementPreview.visible=false});
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(19,Math.min(58,dist+e.deltaY*.023));updateCamera()},{passive:false});
 document.addEventListener('keydown',e=>{
@@ -399,6 +440,7 @@ $('skip-level').onclick=()=>{
  if(!skipped.includes(levelIndex)){skipped.push(levelIndex);store('chromatron-reborn-skipped',JSON.stringify(skipped))}
  load(levelIndex+1);toast(t(language,'skipNotice'))
 };
+$('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dismissed','yes');updateCoach();renderInventory()};
 $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
 $('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('enabled',audioEnabled);beep(700,.08)};
