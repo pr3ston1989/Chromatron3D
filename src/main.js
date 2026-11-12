@@ -180,7 +180,8 @@ function rebuildPieces(){
    const crystal=mesh(new THREE.IcosahedronGeometry(energized ? .27 : .225,1),glow,g);
    crystal.position.y=.56;crystal.userData.spin=true;
    const frame=mesh(new THREE.CylinderGeometry(.47,.50,.05,28),trim,g);frame.position.y=.13;
-   detailResonator(THREE,g,{color,active:energized});
+   const detail=detailResonator(THREE,g,{color,active:energized});
+   g.userData.targetVisual={glow,crystal,receiverRing,silver,detail,active:energized};
   }else if(p.type==='wall'){
    // A proper light-blocking bulkhead with inset armored faces and safety marks.
    const wall=mesh(new THREE.BoxGeometry(1.05,.88,1.05),dark,g);wall.position.y=.48;
@@ -533,9 +534,61 @@ function select(p){
  if(selected===p && !placementMode)return;
  selected=p;placementMode=Boolean(p.inTray);wheelRotation.reset();refreshSelection();beep(420,.04)
 }
+function animateRotationTo(piece,previousRotation,dir){
+ const group=componentGroup.children.find(g=>g.userData.piece?.id===piece.id);
+ const head=group?.children.find(c=>c.userData.motionHead);
+ if(!head)return;
+ const footprint=group.children.find(c=>c.userData.motionFootprint);
+ const active=opticTweens.find(a=>a.kind==='rotate'&&a.object===head);
+ const currentAngle=head.rotation.y;
+ // Work in an UNWRAPPED angle space. Repeated wheel steps always continue
+ // in the requested direction, even past 360° or while another tween runs.
+ const priorTarget=active?.to??currentAngle+shortestAngle(currentAngle,-previousRotation*Math.PI/4);
+ const newTarget=priorTarget-dir*Math.PI/4;
+ for(let i=opticTweens.length-1;i>=0;i--)
+  if(opticTweens[i].kind==='rotate'&&opticTweens[i].object===head)opticTweens.splice(i,1);
+ if(reducedMotion.matches){
+  head.rotation.y=newTarget;if(footprint)footprint.rotation.y=newTarget;
+  return;
+ }
+ // Longer bursts are eased in one continuous motion, without destroying the
+ // mirror mesh, allocating GPU reflector targets or restarting from a snapped angle.
+ const degrees=Math.abs(newTarget-currentAngle)/(Math.PI/4);
+ opticTweens.push({object:head,footprint,kind:'rotate',from:currentAngle,
+  to:newTarget,start:performance.now(),duration:Math.min(490,155+degrees*68)});
+}
+function syncTargetGlow(){
+ for(const group of componentGroup.children){
+  const piece=group.userData.piece,visual=group.userData.targetVisual;
+  if(piece?.type!=='target'||!visual)continue;
+  const active=currentResult?.received.get(piece.id)===piece.color;
+  if(visual.active===active)continue;
+  visual.active=active;
+  visual.glow.emissiveIntensity=active?5.2:1.7;
+  visual.crystal.scale.setScalar(active?1.2:1);
+  visual.receiverRing.material=active?visual.glow:visual.silver;
+  const halo=visual.detail.children.find(c=>c.name==='receiver-color-halo');
+  const outer=visual.detail.children.find(c=>c.name==='receiver-outer-collar');
+  if(halo)halo.material.opacity=active ? .95 : .54;
+  for(const index of visual.detail.children.filter(c=>c.name==='wavelength-index'))
+   index.material=active?(halo?.material||index.material):(outer?.material||index.material);
+ }
+}
 function rotate(dir){
  if(!selected)return toast(t(language,'selectFirst'));
- saveHistory();selected.rot=(selected.rot+dir+8)%8;update();beep(540,.055)
+ if(!Number.isInteger(dir)||dir===0)return;
+ const previousRotation=selected.rot;
+ saveHistory();
+ selected.rot=(selected.rot+dir+8)%8;
+ animateRotationTo(selected,previousRotation,dir);
+ // Only recompute *light*, not the entire lab and mirror hardware.
+ // The shader ribbons follow logical physics immediately while the visual
+ // optic smoothly settles into its next 45-degree detent.
+ rebuildBeams();
+ syncTargetGlow();
+ rebuildSelectionGuides();
+ renderAnalyzer();updateCoach();syncTransformTools();
+ beep(540,.05);
 }
 function move(x,y,fromDrag=false){
  if(!selected)return false;
@@ -549,6 +602,7 @@ function move(x,y,fromDrag=false){
 }
 function returnToTray(){
  if(!selected||selected.inTray||!movable.has(selected.type))return;
+ wheelRotation.reset();
  saveHistory();selected.inTray=true;placementMode=false;selected=null;update();beep(390,.05);
 }
 let toastTimeout;
