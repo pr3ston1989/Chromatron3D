@@ -153,3 +153,22 @@ test('spectrum FX and mirror light-direction guides are rendered in WebGL',async
  await page.screenshot({path:'test-results/chromatron-light-guides.png'});
  expect(errors).toEqual([]);
 });
+
+
+test('tooltip differentiates free and occupied cells, board remains GPU-instanced',async({page})=>{
+ const errors=[];page.on('pageerror',err=>errors.push(err.message));
+ await page.goto('/');
+ const stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.instancedBoardLayers).toBe(2);
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ const free=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.move(free.x,free.y);
+ await expect(page.locator('#optic-tooltip')).toBeVisible();
+ await expect(page.locator('#optic-tooltip')).toContainText(/Kliknij, aby postawić|Click to place/);
+ const occupied=await page.evaluate(()=>window.chromatron.projectCell(7,3));
+ await page.mouse.move(occupied.x,occupied.y);
+ await expect(page.locator('#optic-tooltip')).toContainText(/Pole zajęte|Occupied cell/);
+ const mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
+ expect(mirror.inTray).toBe(true);
+ expect(errors).toEqual([]);
+});
