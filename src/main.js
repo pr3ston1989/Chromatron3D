@@ -488,16 +488,18 @@ function cellAt(clientX,clientY){
  return x>=0&&x<GRID&&y>=0&&y<GRID?{x,y}:null;
 }
 function hit(clientX,clientY){
+ // Prefer the logical cell occupant. Only fallback to a 3D mesh when the
+ // cursor points at a tall object's silhouette above its board footprint.
+ const cell=cellAt(clientX,clientY);
+ if(cell){
+  const occupant=pieces.find(p=>!p.inTray && p.x===cell.x && p.y===cell.y);
+  if(occupant)return {piece:occupant};
+ }
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
  ray.setFromCamera(mouse,camera);
  const objs=ray.intersectObjects(hitObjects,false);
  if(objs.length)return {piece:objs[0].object.userData.piece};
- // Optical pieces are thin; a click anywhere inside their whole grid cell
- // must still pick that identity. This creates a forgiving, stable hit target.
- const cell=cellAt(clientX,clientY);
- if(!cell)return null;
- const occupant=pieces.find(p=>!p.inTray && p.x===cell.x && p.y===cell.y);
- return occupant?{piece:occupant}:cell;
+ return cell;
 }
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
 const placementPreview=mesh(new THREE.BoxGeometry(T*.90,.025,T*.90),previewMat,world);
@@ -543,11 +545,13 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
  const origin=hit(e.clientX,e.clientY);
- // Place a tray optic on pointerdown. The action is deterministic even under
- // low frame rates or an interrupted pointer capture; it also feels immediate.
- if(e.button===0 && placementMode && selected?.inTray && origin &&
-    Number.isInteger(origin.x) && Number.isInteger(origin.y)){
-  move(origin.x,origin.y);
+ // Placement always uses the board's world-space cell, not a raycast mesh:
+ // raised optics and glass can otherwise steal a click on an empty tile.
+ const trayCell=cellAt(e.clientX,e.clientY);
+ if(e.button===0 && placementMode && selected?.inTray && trayCell){
+  if(isFreeCell(pieces,selected,trayCell.x,trayCell.y)){
+   move(trayCell.x,trayCell.y);
+  }else toast(t(language,'cellOccupied'));
   down=null;
   return;
  }
@@ -715,7 +719,12 @@ window.chromatron={
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
  getVisualStats:()=>({beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
- inspectPointer(clientX,clientY){const h=hit(clientX,clientY);const c=classifyClick(h,selected,placementMode);return {hit:h?.piece?{pieceId:h.piece.id,pieceType:h.piece.type}:h,intent:c.action,selectedId:selected?.id??null,placementMode}},
+ inspectPointer(clientX,clientY){
+  const cell=cellAt(clientX,clientY);
+  const h=placementMode&&selected?.inTray&&cell?cell:hit(clientX,clientY);
+  const c=classifyClick(h,selected,placementMode);
+  return {hit:h?.piece?{pieceId:h.piece.id,pieceType:h.piece.type}:h,intent:c.action,selectedId:selected?.id??null,placementMode}
+ },
  loadLevels(json){const parsed=typeof json==='string'?JSON.parse(json):json;levels=validateLevels(parsed);solved=[];skipped=[];load(0);toast(t(language,'imported',{count:levels.length}))},
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
