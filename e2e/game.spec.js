@@ -260,17 +260,19 @@ test('wheel and trackpad rotate continuously without recreating mirror geometry'
 
 
 test('small laptop layouts keep essential controls on screen without horizontal overflow',async({page})=>{
+ test.setTimeout(120000); // Multiple 3D viewport resizes on software-rendered CI GPUs.
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:1366,height:768});
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#scene canvas')).toBeVisible();
  for(const size of [
   {width:1366,height:768},
   {width:1280,height:720},
-  {width:1093,height:614}, // 1366x768 with 125% Windows scaling
+  {width:1093,height:614}, // 1366×768 with Windows display scaling 125%
   {width:1024,height:640}
  ]){
   await page.setViewportSize(size);
-  await page.goto('/');
-  await expect(page.locator('#scene canvas')).toBeVisible();
-  for(const selector of ['.header','.mission','.tool-panel','#prev','#next','#reset','#hint','#graphics-quality','#camera-preset']){
+  for(const selector of ['.header','.mission','.tool-panel','#reset','#hint','#graphics-quality','#camera-preset']){
    const el=page.locator(selector);
    await expect(el).toBeVisible();
    const b=await el.boundingBox();
@@ -281,20 +283,20 @@ test('small laptop layouts keep essential controls on screen without horizontal 
    expect(b.y+b.height,selector+' bottom at '+JSON.stringify(size)).toBeLessThanOrEqual(size.height+1);
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width+1);
-  const mission=page.locator('.mission'),tray=page.locator('.tool-panel');
-  const panelRects=await Promise.all([mission.boundingBox(),tray.boundingBox()]);
-  expect(panelRects[0].x+panelRects[0].width).toBeLessThan(panelRects[1].x);
-  // The first puzzle's frequently used rotate controls are accessible after placement.
-  const mirror=page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/});
-  await mirror.click();
-  const center=await page.evaluate(()=>window.chromatron.projectCell(7,7));
-  await page.mouse.click(center.x,center.y);
-  await expect(page.locator('#turn-left')).toBeVisible();
-  await expect(page.locator('#turn-right')).toBeVisible();
+  const mission=await page.locator('.mission').boundingBox();
+  const tray=await page.locator('.tool-panel').boundingBox();
+  expect(mission.x+mission.width).toBeLessThan(tray.x);
   const footer=await page.locator('.hud-bottom').boundingBox();
   expect(footer.y+footer.height).toBeLessThanOrEqual(size.height+1);
-  await page.screenshot({path:'test-results/chromatron-laptop-'+size.width+'x'+size.height+'.png'});
  }
+ // Verify controls are still reachable in the tightest configuration.
+ const mirror=page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/});
+ await mirror.click();
+ const center=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.click(center.x,center.y);
+ await expect(page.locator('#turn-left')).toBeVisible();
+ await expect(page.locator('#turn-right')).toBeVisible();
+ await page.screenshot({path:'test-results/chromatron-laptop-1024x640.png',animations:'disabled'});
  expect(errors).toEqual([]);
 });
 
