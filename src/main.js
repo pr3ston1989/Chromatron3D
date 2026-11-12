@@ -17,6 +17,7 @@ import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
 import {createMirrorHardware} from './mirror-asset.js';
+import {detailEmitter,detailResonator} from './optical-assets.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
@@ -165,6 +166,7 @@ function rebuildPieces(){
    const flare=mesh(new THREE.SphereGeometry(.11,12,8),
      new THREE.MeshBasicMaterial({color:0xe8ffff,toneMapped:false}),g);
    flare.position.set(nozzleAxis.x*.70,.53,nozzleAxis.z*.70);
+   detailEmitter(THREE,g,p.rot,color);
   }else if(p.type==='target'){
    const energized=currentResult?.received.get(p.id)===p.color;
    glow.emissiveIntensity=energized?5.2:1.7;
@@ -174,6 +176,7 @@ function rebuildPieces(){
    const crystal=mesh(new THREE.IcosahedronGeometry(energized ? .27 : .225,1),glow,g);
    crystal.position.y=.56;crystal.userData.spin=true;
    const frame=mesh(new THREE.CylinderGeometry(.47,.50,.05,28),trim,g);frame.position.y=.13;
+   detailResonator(THREE,g,{color,active:energized});
   }else if(p.type==='wall'){
    // A proper light-blocking bulkhead with inset armored faces and safety marks.
    const wall=mesh(new THREE.BoxGeometry(1.05,.88,1.05),dark,g);wall.position.y=.48;
