@@ -1060,6 +1060,33 @@ $('camera-preset').onclick=toggleCameraPreset;
 $('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
+// User-owned classic data stays local; neither source binaries nor extracted
+// levels are included in the shipped bundle or uploaded to any server.
+$('import-classic').onclick=()=>$('classic-files').click();
+$('classic-files').addEventListener('change',async event=>{
+ const input=event.target;
+ try{
+  const files=[...input.files];
+  if(!files.length)return;
+  const loaded=await Promise.all(files.map(async(file,i)=>{
+   if(file.size>8_000_000)throw new Error('JSON file is too large');
+   const data=JSON.parse(await file.text());
+   const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
+   const game=match?Number(match[1]):i+1;
+   return {game,data};
+  }));
+  const next=loaded.length===1?
+   loadLevelBundle(loaded[0].data,{game:loaded[0].game}):
+   convertClassicCollection(loaded);
+  const count=switchLevelPack(next);
+  $('classic-import-status').textContent=t(language,'classicImportSuccess',{count});
+  $('help-overlay').classList.add('hidden');
+  toast(t(language,'classicImportSuccess',{count}));
+ }catch(error){
+  const message=String(error?.message||error).slice(0,180);
+  $('classic-import-status').textContent=t(language,'classicImportError',{message});
+ }finally{input.value=''}
+});
 $('hint').onclick=()=>{
  $('hint-overlay').classList.remove('hidden');
  requestSolutionSearch();
@@ -1230,6 +1257,7 @@ window.chromatron={
   const c=classifyClick(h,selected,placementMode);
   return {hit:h?.piece?{pieceId:h.piece.id,pieceType:h.piece.type}:h,intent:c.action,selectedId:selected?.id??null,placementMode}
  },
- loadLevels(json){const parsed=typeof json==='string'?JSON.parse(json):json;levels=validateLevels(parsed);solved=[];skipped=[];load(0);toast(t(language,'imported',{count:levels.length}))},
+ loadLevels(json){const next=loadLevelBundle(json);const count=switchLevelPack(next);toast(t(language,'imported',{count}));return count},
+ getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
