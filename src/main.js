@@ -1038,11 +1038,23 @@ $('camera-preset').onclick=toggleCameraPreset;
 $('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
-$('hint').onclick=()=>{$('hint-overlay').classList.remove('hidden');renderHints()};
+$('hint').onclick=()=>{
+ $('hint-overlay').classList.remove('hidden');
+ requestSolutionSearch();
+ renderHints();
+};
 $('close-hint').onclick=()=>$('hint-overlay').classList.add('hidden');
 $('reveal-hint').onclick=()=>{
- if(hintCount<3){hintCount=nextHint(hintCount);store(progressKey(levelIndex),String(hintCount));renderHints();beep(460,.09)}
- else toast(t(language,'allHints'));
+ if(hintCount>=3)return toast(t(language,'allHints'));
+ if(hintCount===2&&!verifiedSolutionForCurrent()&&!levels[levelIndex].hints?.[2])
+  return toast(t(language,'hintNeedVerified'));
+ const purchased=buyNextHint(wallet,currentLevelKey());
+ if(!purchased.unlocked)
+  return toast(t(language,purchased.reason==='credits'?'creditsRequired':'allHints'));
+ wallet=purchased.wallet;hintCount=purchased.stage;
+ saveWallet();
+ if(currentPackId===demoPackId)store(progressKey(levelIndex),String(hintCount));
+ renderHints();beep(460,.09);
 };
 $('skip-level').onclick=()=>{
  if(hintCount<3)return;
