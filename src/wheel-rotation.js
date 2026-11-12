@@ -24,7 +24,7 @@ export function createWheelRotation({threshold=78,resetAfterMs=260,maxSteps=2}={
   const steps=Math.max(-maxSteps,Math.min(maxSteps,rawSteps));
   // A very large trackpad burst must not leave a hidden extra rotation behind.
   carry=Math.abs(rawSteps)>maxSteps?0:carry-steps*threshold;
-  return steps;
+  return steps===0?0:steps;
  }
  function reset(){carry=0;last=-Infinity}
  return {consume,reset,get pending(){return carry}};
