@@ -34,16 +34,3 @@ jobs:
             test-results/
             playwright-report/
           if-no-files-found: ignore
-      - name: Install headless Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Smoke test rendered 3D puzzle and localization
-        run: npm run test:browser
-      - name: Attach browser screenshots for visual QA
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chromium-smoke-test
-          path: |
-            test-results/
-            playwright-report/
-          if-no-files-found: ignore
