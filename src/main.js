@@ -527,6 +527,14 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
  const origin=hit(e.clientX,e.clientY);
+ // Place a tray optic on pointerdown. The action is deterministic even under
+ // low frame rates or an interrupted pointer capture; it also feels immediate.
+ if(e.button===0 && placementMode && selected?.inTray && origin &&
+    Number.isInteger(origin.x) && Number.isInteger(origin.y)){
+  move(origin.x,origin.y);
+  down=null;
+  return;
+ }
  const draggingCandidate=e.button===0 && origin?.piece && movable.has(origin.piece.type);
  down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,
        mode:draggingCandidate?'piece':'orbit',origin};
