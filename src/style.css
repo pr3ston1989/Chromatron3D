@@ -53,3 +53,37 @@ button:focus-visible{outline:2px solid #65e2ff;outline-offset:3px}
 .spectrum-g.on{background:#166946;color:#fff;border-color:#70efb3}
 .spectrum-b.on{background:#1f4fbd;color:#fff;border-color:#7ab0ff}
 @media(max-width:680px){.spectrum-line{font-size:8px}.spectrum-bit{width:18px;height:18px}.spectral-inspector{max-height:20vh}}
+
+
+/* Advanced beam inspector complements the compact R/G/B spectrum legend. */
+.analyzer-btn[aria-pressed="true"]{background:#17465b;border-color:#65e2ff;color:#f0ffff;box-shadow:0 0 18px #2fb9eb45}
+.analysis-panel{position:absolute;z-index:3;right:270px;top:164px;width:300px;max-height:min(68vh,630px);overflow:auto;padding:20px 20px 18px;background:linear-gradient(135deg,#0b2237ed,#071424f0);border:1px solid #467f9e;box-shadow:0 20px 65px #0008,0 0 33px #0d6a9733;backdrop-filter:blur(15px);scrollbar-color:#316785 transparent;scrollbar-width:thin}
+.analysis-panel.hidden{display:none}
+.analysis-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.analysis-close{font-size:22px;line-height:1;background:transparent;border:0;color:#aacde1;cursor:pointer;padding:4px 7px}
+.analysis-close:hover{color:#fff}
+.analysis-panel>p{font-size:11px;line-height:1.6;color:#a9c5d6;margin:13px 0 20px}
+.analysis-panel h3{font:600 11px 'Space Grotesk',sans-serif;letter-spacing:1.6px;color:#79bbd7;margin:22px 0 10px}
+.analysis-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.analysis-stats>div{padding:13px 12px;border:1px solid #2d5370;background:#112c43}
+.analysis-stats strong{display:block;font:700 25px 'Rajdhani',sans-serif;color:#e4f6ff;line-height:1}
+.analysis-stats span{font-size:8px;letter-spacing:1px;color:#8bb5cf}
+.analysis-target{padding:10px 11px;margin:8px 0;background:#102a418c;border:1px solid #294965}
+.analysis-target-header{display:flex;gap:8px;justify-content:space-between;align-items:center;font:600 11px 'Rajdhani',sans-serif;letter-spacing:.8px}
+.analysis-target-header strong{color:#d3f3ff}
+.analysis-target-state{font-size:9px;letter-spacing:1px;color:#ffcda1}
+.analysis-target-state.ok{color:#73e9af}
+.analysis-target-detail{display:flex;justify-content:space-between;gap:12px;font-size:10px;margin-top:7px;color:#b3cce0}
+.analysis-target-detail .color-swatch{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;box-shadow:0 0 5px currentColor}
+.analysis-collision{font-size:10px;color:#bbcfe0;border-left:2px solid #bc779a;padding:5px 0 5px 9px;margin:7px 0;line-height:1.6}
+.analysis-warning{border:1px solid #9a624b;padding:10px!important;color:#ffbcaa!important}
+.camera-preset{appearance:none;margin-left:10px;background:#133149b8;border:1px solid #367497;border-radius:4px;color:#c7efff;padding:5px 10px;font:600 10px 'Rajdhani',sans-serif;letter-spacing:1.2px;cursor:pointer;white-space:nowrap}
+.camera-preset:hover{background:#1d536d;border-color:#62dbfa}
+.camera-preset:focus-visible,.analysis-close:focus-visible{outline:2px solid #65e2ff;outline-offset:3px}
+@media(max-width:1130px){.analysis-panel{right:205px;top:126px;width:260px}}
+@media(max-width:680px){
+ .analysis-panel{left:10px;right:10px;top:auto;bottom:48px;width:auto;max-height:57vh;padding:14px;z-index:6}
+ .camera-preset{font-size:9px;padding:4px;margin-left:4px}
+ .camera-label span[data-i18n="opticalArray"]{display:none}
+ .analysis-stats strong{font-size:20px}
+}
