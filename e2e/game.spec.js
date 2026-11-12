@@ -81,7 +81,7 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
  expect((await state()).pieces.find(p=>p.type==='mirror')).toMatchObject({x:7,y:7});
  expect((await state()).selectedId).toBe(null);
 
- const onMirror=await point(7,7,.60);
+ const onMirror=await point(7,7);
  await page.mouse.click(onMirror.x,onMirror.y);
  const before=(await state()).pieces.find(p=>p.type==='mirror').rot;
  await page.mouse.click(onMirror.x,onMirror.y);
@@ -104,7 +104,7 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  const state=()=>page.evaluate(()=>window.chromatron.getState());
  const start=(await state()).pieces.filter(p=>p.type==='mirror');
  expect(start).toHaveLength(2);
- const m1=await point(5,11,.63),m2=await point(9,11,.63);
+ const m1=await point(5,11),m2=await point(9,11);
  await page.mouse.click(m1.x,m1.y);
  expect((await state()).selectedId).toBe(start[0].id);
  await page.mouse.click(m2.x,m2.y);
