@@ -31,3 +31,11 @@ button:focus-visible{outline:2px solid #65e2ff;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important}
 }
+
+/* Classic inventory is actionable: an optic can live in the toolbox or board. */
+#inventory button.inventory-item{appearance:none;border:0;border-bottom:1px solid #243a5288;text-align:left;color:#eaf4ff;background:transparent;width:100%;font:inherit;cursor:pointer}
+#inventory button.inventory-item:hover,#inventory button.inventory-item.selected{background:#17456899;box-shadow:inset 2px 0 #7cddfb}
+#inventory button.inventory-item:focus-visible{outline:2px solid #8bdfff;outline-offset:-2px}
+.return-tray{width:100%;margin:5px 0 16px;padding:8px 5px;font-size:11px}
+.return-tray:disabled{opacity:.4;cursor:default}
+.mission-actions{flex-wrap:wrap}
