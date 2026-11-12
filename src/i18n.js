@@ -1,6 +1,14 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    rotateLeft:'Obróć lustro w lewo o 45° (Q)',
+    rotateRight:'Obróć lustro w prawo o 45° (E)',
+    cancelSelection:'Odznacz / anuluj (Esc)',
+    placementCaption:'WYBIERZ POLE NA PLANSZY',
+    selectedCaption:'WYBRANY ELEMENT — OBRÓĆ LUB PRZECIĄGNIJ',
+    emptyTray:'Wszystkie elementy tego typu są już na planszy. Kliknij element na planszy, aby go wybrać.',
+    coachRotateDetail:'Obróć wybrane lustro przyciskami ↶ / ↷ lub klawiszami Q / E. Powierzchnia odbijająca jest jasna, tylna strona ciemna.',
+
     coachChoose:'1. Wybierz lustro',coachChooseDetail:'Kliknij podświetlone LUSTRO w panelu elementów. To właśnie nim zmienisz kierunek światła.',
     coachPlace:'2. Ustaw lustro na planszy',coachPlaceDetail:'Kliknij wolne pole na drodze lasera lub przeciągnij lustro z panelu. Podświetlenie pokaże możliwe miejsce.',
     coachRotate:'3. Obróć lustro',coachRotateDetail:'Naciśnij Q lub E (albo kliknij lustro ponownie). Skieruj niebieską wiązkę na świecący rezonator.',
@@ -11,10 +19,10 @@ const strings = {
     analysisNone:'Brak punktów pochłaniania',analysisWarning:'Uwaga: niektóre specjalne interakcje nie są jeszcze obsługiwane w prototypie.',
     analysisClose:'Zamknij analizę',analysisCameraIso:'WIDOK IZOMETRYCZNY',analysisCameraTop:'WIDOK Z GÓRY',cameraSwitch:'Zmień widok kamery (C)',
     online:'SYSTEM OPTYCZNY AKTYWNY',experiment:'EKSPERYMENT',prototype:'PROTOTYP',chapter:'ROZDZIAŁ 01 // PODSTAWY',resonators:'AKTYWNE REZONATORY',
-    reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',spectral:'◈ ANALIZATOR WIDMA',spectralSource:'LASER',spectralTarget:'REZONATOR',spectralNeed:'WYMAGANE',spectralReceived:'OTRZYMANE',spectralEmits:'EMITUJE',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ELEMENTY OPTYCZNE',selectHelp:'WYBIERZ ELEMENT · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
-    controls:'KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM',
-    manualTitle:'STERUJ ŚWIATŁEM.',manualIntro:'Skieruj laser na rezonator o odpowiednim kolorze. Wybierz ruchomy element i kliknij wolne pole, aby go przesunąć. Q / E obraca element o 45°. Przeciągaj puste miejsce, by obracać kamerę.',
-    manualExtra:'Ctrl+Z cofa ruch. Rolka myszy przybliża widok. Podpowiedzi pomagają bez konieczności szukania gotowego rozwiązania.',
+    reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',spectral:'◈ ANALIZATOR WIDMA',spectralSource:'LASER',spectralTarget:'REZONATOR',spectralNeed:'WYMAGANE',spectralReceived:'OTRZYMANE',spectralEmits:'EMITUJE',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ELEMENTY OPTYCZNE',selectHelp:'WYBIERZ · PRZECIĄGNIJ · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
+    controls:'KLIKNIJ: WYBIERZ / POSTAW · PRZECIĄGNIJ ELEMENT: PRZESUŃ · Q/E: OBRÓĆ',
+    manualTitle:'STERUJ ŚWIATŁEM.',manualIntro:'Skieruj laser na rezonator o odpowiednim kolorze. Wybierz element z zasobnika i kliknij wolne pole, aby go ustawić. Element na planszy przesuwaj przeciągnięciem. Q / E obraca w obie strony. Przeciągaj puste miejsce, by obracać kamerę.',
+    manualExtra:'Ctrl+Z cofa ruch. Rolka obraca wybrany element; Shift+rolka przybliża widok. Podpowiedzi pomagają bez konieczności szukania gotowego rozwiązania.',
     prototypeNote:'Na razie to autorskie plansze demonstracyjne, a nie 200 poziomów z oryginalnych gier.',
     understood:'ROZUMIEM',complete:'EKSPERYMENT UKOŃCZONY',aligned:'ŚWIATŁO USTAWIONE.',completeDesc:'Wszystkie rezonatory otrzymały właściwe kolory światła.',next:'NASTĘPNA ZAGADKA →',
     hintButton:'PODPOWIEDŹ',hintTitle:'NIE MOŻESZ RUSZYĆ DALEJ?',hintIntro:'Odsłaniaj wskazówki stopniowo. Podpowiedzi nie blokują postępu.',hintReveal:'ODKRYJ WSKAZÓWKĘ',hintAgain:'KOLEJNA WSKAZÓWKA',hintStep:'WSKAZÓWKA {step} / 3',hintType1:'OBSERWUJ',hintType2:'SPRÓBUJ',hintType3:'KONKRETNY KIERUNEK',hintSkip:'POMIŃ ZAGADKĘ →',hintClose:'WRÓĆ DO GRY',
@@ -24,6 +32,14 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    rotateLeft:'Rotate the mirror 45° left (Q)',
+    rotateRight:'Rotate the mirror 45° right (E)',
+    cancelSelection:'Deselect / cancel (Esc)',
+    placementCaption:'CHOOSE AN EMPTY BOARD TILE',
+    selectedCaption:'SELECTED OPTIC — ROTATE OR DRAG TO MOVE',
+    emptyTray:'All optics of this type are already on the board. Click one on the board to select it.',
+    coachRotateDetail:'Use ↶ / ↷ or Q / E to rotate. The reflective face is bright; the back is dark.',
+
     coachChoose:'1. Pick up the mirror',coachChooseDetail:'Click the highlighted MIRROR in the components panel. You will use it to redirect the laser.',
     coachPlace:'2. Place the mirror',coachPlaceDetail:'Click an empty tile in the laser beam, or drag the mirror from the panel. The tile preview shows where it will land.',
     coachRotate:'3. Rotate the mirror',coachRotateDetail:'Press Q or E (or click the mirror again). Aim the blue laser at the glowing resonator.',
@@ -34,10 +50,10 @@ const strings = {
     analysisNone:'No absorbed beams',analysisWarning:'Note: some specialty optical interactions are not yet supported in this prototype.',
     analysisClose:'Close beam analyzer',analysisCameraIso:'ISOMETRIC VIEW',analysisCameraTop:'TOP VIEW',cameraSwitch:'Change camera preset (C)',
     online:'OPTICAL SYSTEM ONLINE',experiment:'EXPERIMENT',prototype:'PROTOTYPE',chapter:'CHAPTER 01 // FUNDAMENTALS',resonators:'RESONATORS ONLINE',
-    reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',spectral:'◈ SPECTRAL INSPECTOR',spectralSource:'EMITTER',spectralTarget:'RESONATOR',spectralNeed:'REQUIRED',spectralReceived:'RECEIVED',spectralEmits:'EMITS',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'OPTICAL COMPONENTS',selectHelp:'SELECT AN OPTIC · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
-    controls:'CLICK: SELECT / MOVE · DRAG: ORBIT · WHEEL: ZOOM',
+    reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',spectral:'◈ SPECTRAL INSPECTOR',spectralSource:'EMITTER',spectralTarget:'RESONATOR',spectralNeed:'REQUIRED',spectralReceived:'RECEIVED',spectralEmits:'EMITS',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'OPTICAL COMPONENTS',selectHelp:'SELECT · DRAG · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
+    controls:'CLICK: SELECT / PLACE · DRAG AN OPTIC: MOVE · Q/E: ROTATE',
     manualTitle:'CONTROL THE LIGHT.',manualIntro:'Redirect each laser into the matching resonator. Select an optical component and click an empty cell to move it. Q / E rotates by 45°. Drag empty space to orbit the camera.',
-    manualExtra:'Ctrl+Z undoes a move. Mouse wheel zooms. The hint system helps you progress without immediately revealing a full solution.',
+    manualExtra:'Ctrl+Z undoes a move. The wheel rotates a selected optic; Shift+wheel zooms. The hint system helps you progress without immediately revealing a full solution.',
     prototypeNote:'These are original demonstration puzzles, not yet the 200 levels from the classic games.',
     understood:'UNDERSTOOD',complete:'EXPERIMENT COMPLETE',aligned:'LIGHT ALIGNED.',completeDesc:'All resonators have received their correct colors.',next:'NEXT EXPERIMENT →',
     hintButton:'HINT',hintTitle:'STUCK ON A PUZZLE?',hintIntro:'Reveal clues gradually. Using hints never locks your progress.',hintReveal:'REVEAL A CLUE',hintAgain:'NEXT CLUE',hintStep:'CLUE {step} / 3',hintType1:'OBSERVE',hintType2:'EXPERIMENT',hintType3:'NEXT STEP',hintSkip:'SKIP PUZZLE →',hintClose:'BACK TO GAME',
