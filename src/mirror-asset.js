@@ -1,3 +1,4 @@
+import {applyOpticFinish} from './optic-textures.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
@@ -21,6 +22,9 @@ export function createMirrorHardware(THREE,head,{bender=false}={}){
  const darkTitanium=new THREE.MeshStandardMaterial({color:0x15283b,metalness:.78,roughness:.33});
  const brushed=new THREE.MeshStandardMaterial({color:0x425b6c,metalness:.78,roughness:.28});
  const ceramic=new THREE.MeshPhysicalMaterial({color:0x0b1421,metalness:.45,roughness:.47,clearcoat:.38});
+ applyOpticFinish(THREE,chrome,'polished');
+ applyOpticFinish(THREE,brushed,'brushed');
+ applyOpticFinish(THREE,darkTitanium,'brushed');
  const accent=new THREE.MeshBasicMaterial({
   color:bender?0xffb578:0x64cce9,transparent:true,opacity:.75,toneMapped:false
  });
