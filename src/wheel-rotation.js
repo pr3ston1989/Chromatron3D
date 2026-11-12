@@ -19,6 +19,16 @@ export function createWheelRotation({threshold=78,resetAfterMs=260,maxSteps=2}={
   if(Math.abs(pixels)<.05)return 0;
   if(now-last>resetAfterMs || (carry!==0&&Math.sign(pixels)!==Math.sign(carry)))carry=0;
   last=now;
+  // Traditional mouse wheels report 100px or 3 lines PER notch. Treat each
+  // such event as one stable 45° step; accumulating 22px residue after every
+  // 100px event caused an unwanted extra step every fourth notch.
+  const isDetentedMouseEvent=(deltaMode===1&&Math.abs(deltaY)>=2)||
+    (deltaMode===0&&Math.abs(pixels)>=80);
+  if(isDetentedMouseEvent){
+   carry=0;
+   const detents=Math.max(1,Math.min(maxSteps,Math.round(Math.abs(pixels)/100)));
+   return Math.sign(pixels)*detents;
+  }
   carry+=pixels;
   const rawSteps=Math.trunc(carry/threshold);
   const steps=Math.max(-maxSteps,Math.min(maxSteps,rawSteps));
