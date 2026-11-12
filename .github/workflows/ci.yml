@@ -21,6 +21,19 @@ jobs:
         run: npm test
       - name: Build production bundle
         run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser UI and screenshots
+        run: npm run test:e2e
+      - name: Publish screenshots and browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromatron-browser-review
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
       - name: Install headless Chromium
         run: npx playwright install --with-deps chromium
       - name: Smoke test rendered 3D puzzle and localization
