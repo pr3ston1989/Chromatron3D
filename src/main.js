@@ -15,6 +15,8 @@ import {opticIcon} from './optic-icons.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
+import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
+import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
 import './redesign.css';
@@ -23,9 +25,12 @@ const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
-let yaw=-.58,pitch=1.10,dist=44;
+let yaw=-1.05,pitch=1.10,dist=44;
+let graphicsMode='auto',autoLevel='balanced';
+try{graphicsMode=normalizeQuality(localStorage.getItem('chromatron-graphics-quality'))}catch{}
+let graphicsProfile=profileFor(graphicsMode,autoLevel);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.23;
 // Physically based studio reflections: low-roughness metals and mirror fronts
 // need environment radiance to look like metal instead of unlit gray plastic.
@@ -38,7 +43,7 @@ studioEnvironment.dispose();
 pmremGenerator.dispose();
 const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
-const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),.52,.27,1.10);
+const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),graphicsProfile.bloomStrength,.27,1.10);
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
@@ -109,8 +114,11 @@ const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLO
 function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
+ // Planar reflections own GPU render targets in addition to their meshes.
+ disposeReflectionTargets(componentGroup);
  disposeGroupChildren(componentGroup,new Set([metal,dark,cyan]));
  hitObjects.length=0;
+ const reflectingIds=new Set(reflectionCandidates(pieces,selected,graphicsProfile.reflectorCount).map(p=>p.id));
  const silver=new THREE.MeshPhysicalMaterial({color:0xd3f6ff,metalness:.86,roughness:.11,clearcoat:1,clearcoatRoughness:.08,emissive:0x18415a,emissiveIntensity:.22,side:THREE.DoubleSide});
  const trim=new THREE.MeshStandardMaterial({color:0x587991,metalness:.82,roughness:.22});
  const glass=new THREE.MeshPhysicalMaterial({color:0x97eaff,metalness:.42,roughness:.12,transparent:true,opacity:.83,clearcoat:1,side:THREE.DoubleSide});
@@ -177,6 +185,9 @@ function rebuildPieces(){
     const support=mesh(new THREE.BoxGeometry(.19,.82,1.06),trim,head);support.position.y=.04;
     const front=mesh(new THREE.BoxGeometry(.026,.70,.95),silver,head);
     front.position.set(-.113,.065,0);
+    // The interactive mirror's silvered front receives a real reflection of
+    // the 3D scene. The other faces retain PBR environment reflections.
+    if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
     const rearMat=new THREE.MeshStandardMaterial({color:0x081522,metalness:.35,roughness:.75});
     const rear=mesh(new THREE.BoxGeometry(.035,.71,.96),rearMat,head);
     rear.position.set(.116,.065,0);
@@ -493,7 +504,7 @@ function syncCameraLabel(){
 }
 function toggleCameraPreset(){
  cameraTop=!cameraTop;
- const nextYaw=cameraTop?0:-.58,nextPitch=cameraTop?1.49:1.10;
+ const nextYaw=cameraTop?0:-1.05,nextPitch=cameraTop?1.49:1.10;
  if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
   cameraTween=null;yaw=nextYaw;pitch=nextPitch;updateCamera();
  }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,time:performance.now()};
