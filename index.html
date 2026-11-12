@@ -2,36 +2,59 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080d1b">
-<title>CHROMATRON / REBORN</title>
+<meta name="theme-color" content="#080d1b"><title>CHROMATRON / REBORN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-<div id="app">
- <div id="scene"></div>
- <div class="grain"></div>
+<body><div id="app">
+ <div id="scene"></div><div class="grain"></div>
  <header class="header">
   <div class="brand"><div class="brand-mark">✳</div><div><span class="eyebrow">SPECTRAL LABORATORIES</span><strong>CHROMATRON<span class="slash">/</span>REBORN</strong></div></div>
-  <div class="header-right"><span class="status-dot"></span><span>OPTICAL SYSTEM ONLINE</span><button id="audio" class="icon-btn" title="Dźwięk">♪</button><button id="help" class="icon-btn" title="Pomoc">?</button></div>
+  <div class="header-right"><span class="status-dot"></span><span data-i18n="online">SYSTEM OPTYCZNY AKTYWNY</span>
+    <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
+    <button id="audio" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
+    <button id="help" class="icon-btn" type="button" data-i18n-title="helpAria" aria-label="Pomoc">?</button>
+  </div>
  </header>
  <aside class="mission">
-  <span class="eyebrow">EXPERIMENT <span id="level-index">001</span> / PROTOTYPE</span>
-  <div class="rule"></div>
-  <div class="tag">CHAPTER 01 // FUNDAMENTALS</div>
-  <h1 id="level-title">FIRST LIGHT</h1>
-  <p id="level-desc"></p>
-  <div class="mission-progress"><span>RESONATORS ONLINE</span><strong id="counter">0 / 1</strong></div>
+  <span class="eyebrow"><span data-i18n="experiment">EKSPERYMENT</span> <span id="level-index">001</span> / <span data-i18n="prototype">PROTOTYP</span></span>
+  <div class="rule"></div><div class="tag" data-i18n="chapter">ROZDZIAŁ 01 // PODSTAWY</div>
+  <h1 id="level-title">FIRST LIGHT</h1><p id="level-desc"></p>
+  <div class="mission-progress"><span data-i18n="resonators">AKTYWNE REZONATORY</span><strong id="counter">0 / 1</strong></div>
   <div class="progress-track"><div id="progress"></div></div>
-  <div class="mission-actions"><button id="prev" class="ui-button small">‹</button><button id="reset" class="ui-button">↺ &nbsp; RESET</button><button id="next" class="ui-button small">›</button></div>
+  <div class="mission-actions">
+    <button id="prev" class="ui-button small" type="button" aria-label="Poprzednia zagadka">‹</button>
+    <button id="reset" class="ui-button" type="button" data-i18n="reset">↺ OD NOWA</button>
+    <button id="next" class="ui-button small" type="button" aria-label="Następna zagadka">›</button>
+  </div>
+  <button id="hint" class="ui-button hint-button" type="button" data-i18n-aria="hintAria">✦ <span data-i18n="hintButton">PODPOWIEDŹ</span> <span id="hint-badge">0/3</span></button>
+  <div id="level-status" class="level-status" aria-live="polite"></div>
  </aside>
- <aside class="tool-panel"><span class="eyebrow">OPTICAL COMPONENTS</span><div id="inventory"></div><span class="eyebrow small-note">CLICK TO SELECT · Q / E TO ROTATE</span></aside>
- <div class="hud-bottom"><div class="camera-label">◉ &nbsp; ISOMETRIC VIEW <span>— 3D OPTICAL ARRAY</span></div><div class="controls">LEFT CLICK <b>SELECT / MOVE</b> &nbsp; · &nbsp; DRAG EMPTY SPACE <b>ORBIT</b> &nbsp; · &nbsp; WHEEL <b>ZOOM</b></div></div>
+ <aside class="tool-panel"><span class="eyebrow" data-i18n="optics">ELEMENTY OPTYCZNE</span><div id="inventory"></div><span class="eyebrow small-note" data-i18n="selectHelp">WYBIERZ ELEMENT · Q/E: OBRÓT</span></aside>
+ <div class="hud-bottom"><div class="camera-label"><span data-i18n="camera">◉ WIDOK IZOMETRYCZNY</span> <span data-i18n="opticalArray">— TABLICA OPTYCZNA 3D</span></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
  <div id="toast" role="status" aria-live="polite"></div>
- <div id="win" class="overlay hidden"><div class="modal"><div class="eyebrow">EXPERIMENT COMPLETE</div><h2>LIGHT ALIGNED<span>.</span></h2><p>All resonators have received their exact required spectrum.</p><button id="continue" class="ui-button accent">NEXT EXPERIMENT &nbsp; →</button></div></div>
- <div id="help-overlay" class="overlay hidden"><div class="modal help-modal"><div class="eyebrow">FIELD MANUAL / 001</div><h2>CONTROL THE LIGHT<span>.</span></h2><p>Redirect each laser into the matching resonator. Select a movable component and click a free cell to reposition it. Press Q / E or click the selected component again to rotate. Right-drag or drag empty space to orbit; mouse wheel zooms.</p><p>All beams update in real time. Mixed colors are additive. Only the exact target color counts.</p><p><strong>Prototype notice:</strong> these are original demonstration puzzles, not yet the 200 classic Chromatron levels.</p><button id="close-help" class="ui-button accent">UNDERSTOOD</button></div></div>
-</div>
-<script type="module" src="/src/main.js"></script>
-</body>
-</html>
+ <div id="win" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal"><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
+   <p data-i18n="completeDesc">Wszystkie rezonatory otrzymały właściwe kolory światła.</p>
+   <button id="continue" class="ui-button accent" type="button" data-i18n="next">NASTĘPNA ZAGADKA →</button>
+  </div>
+ </div>
+ <div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal help-modal"><div class="eyebrow">FIELD MANUAL / 001</div><h2 data-i18n="manualTitle">STERUJ ŚWIATŁEM.</h2>
+   <p data-i18n="manualIntro"></p><p data-i18n="manualExtra"></p><p data-i18n="prototypeNote"></p>
+   <button id="close-help" class="ui-button accent" type="button" data-i18n="understood">ROZUMIEM</button>
+  </div>
+ </div>
+ <div id="hint-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="hint-title">
+  <div class="modal hint-modal">
+   <div class="eyebrow">CHROMATRON / ASSIST</div><h2 id="hint-title" data-i18n="hintTitle">NIE MOŻESZ RUSZYĆ DALEJ?</h2>
+   <p data-i18n="hintIntro">Odsłaniaj wskazówki stopniowo.</p>
+   <div id="hint-steps" class="hint-steps" aria-live="polite"></div>
+   <button id="reveal-hint" class="ui-button accent" type="button" data-i18n="hintReveal">ODKRYJ WSKAZÓWKĘ</button>
+   <button id="skip-level" class="ui-button hint-skip hidden" type="button" data-i18n="hintSkip">POMIŃ ZAGADKĘ →</button>
+   <button id="close-hint" class="ui-button hint-close" type="button" data-i18n="hintClose">WRÓĆ DO GRY</button>
+  </div>
+ </div>
+</div><script type="module" src="/src/main.js"></script>
+</body></html>
