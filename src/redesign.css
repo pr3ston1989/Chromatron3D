@@ -208,3 +208,26 @@ body{background:#102238;color:var(--ui-ink)}
 .optic-tooltip.hidden{display:none}
 .optic-tooltip.blocked{color:#ffd0d0;border-color:#fb8b93;background:rgba(54,21,34,.94)}
 @media(max-width:680px){.optic-tooltip{display:none!important}}
+
+/* Live graphics profiles, kept beside the camera control rather than another menu. */
+.quality-widget{display:inline-flex;align-items:center;gap:8px;margin-left:12px;vertical-align:middle}
+.quality-widget label{font:700 9px 'Space Grotesk',sans-serif;letter-spacing:1px;color:#add6e5}
+.quality-widget select{
+ appearance:none;border:1px solid #679bb2;border-radius:6px;
+ background:linear-gradient(140deg,#244c63,#122b40);color:#e1f6ff;
+ padding:7px 29px 7px 10px;cursor:pointer;max-width:170px;min-height:32px;
+ font:700 10px 'Space Grotesk',sans-serif;letter-spacing:.4px;
+ background-image:linear-gradient(45deg,transparent 50%,#95dff1 50%),linear-gradient(135deg,#95dff1 50%,transparent 50%),linear-gradient(140deg,#244c63,#122b40);
+ background-position:calc(100% - 16px) 14px,calc(100% - 11px) 14px,0 0;
+ background-size:5px 5px,5px 5px,100% 100%;background-repeat:no-repeat;
+}
+.quality-widget select option{background:#152a40;color:#f2fbff}
+.quality-widget select:focus-visible{outline:2px solid #9feaff;outline-offset:2px}
+.graphics-fps{min-width:40px;font:600 10px 'Rajdhani',sans-serif;color:#9acae0;white-space:nowrap}
+.graphics-fps.low{color:#ffa7a5}
+@media(max-width:1150px){.quality-widget{margin-left:4px;gap:4px}.quality-widget label{display:none}}
+@media(max-width:680px){
+ .quality-widget{margin-left:4px;gap:4px}
+ .quality-widget select{font-size:9px;padding:5px 22px 5px 7px;min-height:27px;max-width:104px;background-position:calc(100% - 13px) 11px,calc(100% - 8px) 11px,0 0}
+ .graphics-fps{font-size:9px;min-width:31px}
+}
