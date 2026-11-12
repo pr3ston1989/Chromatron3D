@@ -124,3 +124,28 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  expect(moved.find(p=>p.id===start[1].id)).toMatchObject({x:8,y:11});
  expect(errors).toEqual([]);
 });
+
+
+test('spectrum FX and mirror light-direction guides are rendered in WebGL',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ const icons=page.locator('#inventory .component-icon svg');
+ await expect(icons).toHaveCount(3);
+ let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.photonSystems).toBeGreaterThan(0);
+ expect(stats.beamSegments).toBeGreaterThan(1);
+ expect(stats.guideObjects).toBe(0);
+
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ const at=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.click(at.x,at.y);
+ stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.selectedType).toBe('mirror');
+ expect(stats.guideObjects).toBeGreaterThan(0);
+ await expect(page.locator('#beam-guide-legend')).toBeVisible();
+ await page.keyboard.press('q'); // a live reflection, but not yet a win
+ stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.guideObjects).toBeGreaterThan(1);
+ await page.screenshot({path:'test-results/chromatron-light-guides.png'});
+ expect(errors).toEqual([]);
+});
