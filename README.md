@@ -53,6 +53,19 @@ The five independently authored demo levels have automated **golden solution tes
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
+## Board focus and smoother camera
+
+On desktop or laptop, use the **▣ board-focus button** or press **B**.
+The puzzle information and equipment panel tuck into slim side tabs. Open either
+tab with a click when needed; selecting an optic from the tray automatically
+closes the tools drawer so the board is unobstructed. You can still rotate the
+selected optic with **Q/E or the wheel**. Press B again to restore both panels.
+
+When the drawers are closed the 3D board automatically grows slightly, with
+a height-aware zoom limit so short laptop viewports retain the whole puzzle.
+Shift+wheel zooming now uses damped motion rather than abrupt camera jumps;
+reduced-motion preference disables the interpolation.
+
 ## Compact laptop and fullscreen mode
 
 The UI now adapts to common smaller Windows laptop viewport sizes, including
