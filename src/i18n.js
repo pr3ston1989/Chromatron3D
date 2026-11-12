@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    focusEnter:'Powiększ przestrzeń planszy (B)',focusExit:'Przywróć panele boczne (B)',missionDrawer:'Pokaż / ukryj panel zagadki',toolDrawer:'Pokaż / ukryj narzędzia',
     fullscreenEnter:'Przełącz pełny ekran (F)',fullscreenExit:'Opuść pełny ekran (F)',fullscreenUnavailable:'Przeglądarka nie zezwoliła na przełączenie pełnego ekranu.',
     graphicsQuality:'GRAFIKA',graphicsQualityAria:'Jakość grafiki i odbić',graphicsAuto:'AUTO',graphicsPerformance:'PŁYNNOŚĆ',graphicsBalanced:'ZRÓWNOWAŻONA',graphicsCinematic:'FILMOWA',
 
@@ -37,6 +38,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    focusEnter:'Focus on the puzzle board (B)',focusExit:'Restore side panels (B)',missionDrawer:'Show / hide puzzle panel',toolDrawer:'Show / hide equipment tray',
     fullscreenEnter:'Toggle fullscreen (F)',fullscreenExit:'Leave fullscreen (F)',fullscreenUnavailable:'This browser blocked the fullscreen request.',
     graphicsQuality:'GRAPHICS',graphicsQualityAria:'Graphics and reflections quality',graphicsAuto:'AUTO',graphicsPerformance:'PERFORMANCE',graphicsBalanced:'BALANCED',graphicsCinematic:'CINEMATIC',
 
