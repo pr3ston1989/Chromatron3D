@@ -50,7 +50,7 @@ export const PROTOTYPE_LEVELS = [
   hints:[
    {pl:'Niebieski odbiornik jest już na prostej trasie lasera. Skup się na czerwonej wiązce.',en:'The blue target already has an unobstructed path. Focus on the red ray.'},
    {pl:'Czerwona wiązka musi zejść niżej przed barierą, potem skręcić w stronę odbiornika.',en:'Turn the red beam downward before the barrier, then right toward its target.'},
-   {pl:'Ustaw pierwsze lustro na (4, 5), obrót 3; drugie na (4, 8), obrót 3.',en:'Place the first mirror at (4, 5), rotation 3; the second at (4, 8), rotation 3.'}
+   {pl:'Ustaw pierwsze lustro na (4, 5), obrót 7; drugie na (4, 8), obrót 3.',en:'Place the first mirror at (4, 5), rotation 7; the second at (4, 8), rotation 3.'}
   ],hintFocus:{x:4,y:5}
  }
 ];
