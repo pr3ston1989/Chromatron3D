@@ -557,8 +557,32 @@ function updatePlacementPreview(e){
  ghostMirror.visible=selected.type==='mirror'||selected.type==='bender';
  placementPreview.visible=true;
 }
+function hideOpticTooltip(){$('optic-tooltip').classList.add('hidden')}
+function showOpticTooltip(e,hovered){
+ const tooltip=$('optic-tooltip');
+ let message='',blocked=false;
+ if(placementMode&&selected?.inTray){
+  const cell=cellAt(e.clientX,e.clientY);
+  if(cell){
+   blocked=!isFreeCell(pieces,selected,cell.x,cell.y);
+   message=t(language,blocked?'tipOccupied':'tipPlace');
+  }
+ }else if(hovered?.piece){
+  const p=hovered.piece;
+  const key='type'+p.type[0].toUpperCase()+p.type.slice(1);
+  message=t(language,key)+' · '+t(language,movable.has(p.type)?'tipSelect':'tipFixed');
+ }
+ tooltip.classList.toggle('hidden',!message);
+ tooltip.classList.toggle('blocked',blocked);
+ if(message){
+  tooltip.textContent=message;
+  tooltip.style.left=Math.max(9,Math.min(innerWidth-255,e.clientX+19))+'px';
+  tooltip.style.top=Math.max(9,Math.min(innerHeight-65,e.clientY+23))+'px';
+ }
+}
 let down=null;
 renderer.domElement.addEventListener('pointerdown',e=>{
+ hideOpticTooltip();
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
  const origin=hit(e.clientX,e.clientY);
@@ -583,6 +607,7 @@ renderer.domElement.addEventListener('pointermove',e=>{
   updatePlacementPreview(e);
   const hovered=hit(e.clientX,e.clientY);
   renderer.domElement.style.cursor=hovered?.piece&&movable.has(hovered.piece.type)?'grab':placementMode?'crosshair':'default';
+  showOpticTooltip(e,hovered);
   return;
  }
  const dx=e.clientX-down.x,dy=e.clientY-down.y;
@@ -624,7 +649,7 @@ renderer.domElement.addEventListener('pointerup',e=>{
 renderer.domElement.addEventListener('pointercancel',()=>{
  down=null;draggedPiece=null;placementPreview.visible=false;
 });
-renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false});
+renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false;hideOpticTooltip()});
 renderer.domElement.addEventListener('dragover',e=>{
  if(placementMode&&selected?.inTray){e.preventDefault();updatePlacementPreview(e)}
 });
