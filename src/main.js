@@ -22,6 +22,7 @@ import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from '
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
+import {createOpticContactShadows} from './optic-contact-shadows.js';
 import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
 import './redesign.css';
@@ -97,6 +98,7 @@ buildLaboratory(THREE,scene,world,T);
 const starGeo=new THREE.BufferGeometry(),pos=[];for(let i=0;i<1000;i++)pos.push((Math.random()-.5)*150,Math.random()*58-5,(Math.random()-.5)*150);
 starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x76aaff,size:.035,transparent:true,opacity:.6})));
 const componentGroup=new THREE.Group();world.add(componentGroup);
+const opticShadows=createOpticContactShadows(THREE,world,{tileSize:T,half:HALF});
 let componentRebuilds=0;
 const opticTweens=[];
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -128,6 +130,7 @@ const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLO
 function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
+ opticShadows.update(pieces);
  componentRebuilds++;
  // Capture current *visual* poses before rebuilding so interaction remains
  // responsive while optical hardware glides and rotates smoothly.
@@ -1058,7 +1061,7 @@ load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate)
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
