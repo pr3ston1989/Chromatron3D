@@ -130,3 +130,14 @@
  .coach{display:none}
 }
 /* Content remains reachable without moving the complete WebGL viewport. */
+
+/* Fullscreen state is always visible, including at 125% desktop scaling. */
+.fullscreen-btn[aria-pressed="true"]{border-color:#80eadc!important;background:rgba(31,109,109,.6)!important;color:#effffb!important}
+@media(min-width:681px) and (max-height:860px){
+ .header-right>.status-dot{display:none}
+ .header-right .icon-btn{margin-left:0}
+}
+@media(max-width:390px){
+ .header-right .icon-btn{width:25px;height:27px;padding:0}
+ .header-right{gap:2px}
+}
