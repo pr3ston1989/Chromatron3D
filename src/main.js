@@ -294,7 +294,7 @@ function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
- laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec);
+ laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,graphicsProfile);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
  if(!currentResult.won&&won){won=false;$('win').classList.add('hidden');if(victoryFX){victoryFX.dispose();victoryFX=null}}
@@ -729,7 +729,12 @@ function applyGraphicsQuality(){
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
  resize();
- if(pieces.length)rebuildPieces();
+ if(pieces.length){
+  // Performance presets limit both the expensive mirror reflections AND
+  // the number of real point lights along the laser's route.
+  rebuildBeams();
+  rebuildPieces();
+ }
  $('graphics-quality').value=graphicsMode;
 }
 window.addEventListener('resize',resize);resize();updateCamera();
@@ -1061,7 +1066,7 @@ load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate)
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
