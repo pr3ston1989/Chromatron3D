@@ -90,3 +90,17 @@ test('three-stage hints, no penalties and a reliable end to escalation',()=>{
  assert.ok(three.body.includes('(7, 7)'));assert.equal(three.canSkip,true);
  assert.ok(three.focus&&three.focus.x===7);
 });
+
+test('classic imported levels may start all movable optics in the tray',()=>{
+ const original={title:{pl:'Test',en:'Test'},startMovablesInTray:true,pieces:[
+  ['laser',2,7,2,4],['mirror',7,7,1,0],['target',7,3,0,4]
+ ]};
+ const parsed=validateLevels([original])[0];
+ assert.equal(parsed.startMovablesInTray,true);
+ const board=parsed.pieces.map(([type,x,y,rot,color],id)=>({id,type,x,y,rot,color,inTray:parsed.startMovablesInTray&&type==='mirror'}));
+ assert.equal(trace(board).won,false);
+ board[1].inTray=false;
+ assert.equal(trace(board).won,true);
+ board[1].inTray=true;
+ assert.equal(trace(board).won,false);
+});
