@@ -141,3 +141,43 @@
  .header-right .icon-btn{width:25px;height:27px;padding:0}
  .header-right{gap:2px}
 }
+
+
+/* Distraction-free board mode: both side panels become intentional drawers.
+ * The 38px handles remain reachable by mouse, keyboard or touchscreen.
+ * Unlike hiding panels with display:none, all original controls remain usable. */
+.drawer-handle{display:none}
+@media(min-width:681px){
+ .focus-btn[aria-pressed="true"]{background:rgba(34,117,105,.72)!important;color:#ebfff8!important;border-color:#8ef0cf!important}
+ #app.board-focus .mission,#app.board-focus .tool-panel{
+  transition:transform .25s cubic-bezier(.22,1,.36,1);
+  will-change:transform;
+  z-index:8;
+  overflow:visible;
+ }
+ #app.board-focus .mission{transform:translateX(calc(-100% + 38px))}
+ #app.board-focus .tool-panel{transform:translateX(calc(100% - 38px))}
+ #app.board-focus .mission.drawer-open,#app.board-focus .tool-panel.drawer-open{transform:translateX(0)}
+ #app.board-focus .drawer-handle{
+  position:absolute;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:4px;width:38px;height:106px;
+  top:50%;transform:translateY(-50%);
+  background:linear-gradient(180deg,rgba(31,81,101,.98),rgba(12,39,59,.99));
+  color:#c2f6ff;border:1px solid #5893ab;cursor:pointer;
+  box-shadow:0 7px 23px #0006;
+  font:700 19px 'Rajdhani',sans-serif;
+  z-index:2;
+ }
+ #app.board-focus .drawer-handle span{font:700 9px 'Rajdhani',sans-serif;letter-spacing:1.2px;writing-mode:vertical-rl;text-orientation:mixed}
+ #app.board-focus .mission-handle{right:-1px;border-radius:0 8px 8px 0}
+ #app.board-focus .tool-handle{left:-1px;border-radius:8px 0 0 8px}
+ #app.board-focus .drawer-handle[aria-expanded="true"]{background:#275d72;border-color:#a5f5ed}
+ #app.board-focus .drawer-handle:focus-visible{outline:3px solid #a5f5ed;outline-offset:3px}
+ #app.board-focus .coach{bottom:55px}
+ #app.board-focus .analysis-panel{right:48px}
+}
+/* On phones use the existing horizontal tray layout, not sliding drawers. */
+@media(max-width:680px){.focus-btn,.drawer-handle{display:none!important}}
+@media(prefers-reduced-motion:reduce){
+ #app.board-focus .mission,#app.board-focus .tool-panel{transition:none!important}
+}
