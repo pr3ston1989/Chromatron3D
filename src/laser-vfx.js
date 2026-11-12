@@ -98,6 +98,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  const coreAxis=new THREE.Vector3(0,1,0);
  for(const s of segments){
   const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
+  if(positions.get(s.x+','+s.y)?.type==='laser')a.lerp(b,.50); // Beam emerges from actual barrel tip
   const segment=b.clone().sub(a),len=segment.length();
   if(len<.001)continue;
   if(!shellMaterials.has(s.color))shellMaterials.set(s.color,new THREE.MeshBasicMaterial({
@@ -126,6 +127,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   const seg=usedSegments[i];
   for(let n=0;n<2;n++){
    const a=point(seg.x,seg.y,.82),b=point(seg.nx,seg.ny,.82);
+   if(positions.get(seg.x+','+seg.y)?.type==='laser')a.lerp(b,.50); // Start photons at the aperture
    photonStarts.push(...a.toArray());
    photonEnds.push(...b.toArray());
    const c=new THREE.Color(palette[seg.color]);
