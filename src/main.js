@@ -519,6 +519,7 @@ function syncUndoButtons(){
 function saveHistory(){history.push(snapshot());if(history.length>100)history.shift();redoHistory=[];syncUndoButtons()}
 function undo(){
  if(!history.length)return;
+ wheelRotation.reset();
  const selection=selected?.id;
  redoHistory.push(snapshot());pieces=history.pop();
  selected=pieces.find(p=>p.id===selection)||null;
@@ -527,6 +528,7 @@ function undo(){
 }
 function redo(){
  if(!redoHistory.length)return;
+ wheelRotation.reset();
  const selection=selected?.id;
  history.push(snapshot());pieces=redoHistory.pop();
  selected=pieces.find(p=>p.id===selection)||null;
@@ -604,6 +606,7 @@ function rotate(dir){
 }
 function move(x,y,fromDrag=false){
  if(!selected)return false;
+ wheelRotation.reset();
  // An existing optic can move ONLY when the player physically drags it.
  if(!selected.inTray&&!fromDrag)return false;
  if(!isFreeCell(pieces,selected,x,y)){toast(t(language,'cellOccupied'));return false}
