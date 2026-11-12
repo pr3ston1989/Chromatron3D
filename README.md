@@ -53,6 +53,18 @@ The five independently authored demo levels have automated **golden solution tes
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
+## Compact laptop and fullscreen mode
+
+The UI now adapts to common smaller Windows laptop viewport sizes, including
+1366×768, 1280×720, and the reduced CSS viewport produced by 125% display
+scaling. Side panels keep their buttons in independently scrollable regions
+instead of overflowing the browser. The laser board remains in view.
+
+Use the **⛶ icon in the upper-right corner** or press **F** for fullscreen.
+Use **F** again or **Esc** to exit. Fullscreen is optional: important controls
+are designed to remain accessible in a normal browser window. Dedicated
+Chromium UI screenshots cover compact laptops, scaled desktops, and fullscreen.
+
 ## Smoother selection and mouse-wheel rotation
 
 - Selection uses four restrained **corner brackets** around the occupied cell, not a glow ring hiding the actual optical hardware. An on-screen angle indicator shows the selected optic's current orientation, in 45° steps.
