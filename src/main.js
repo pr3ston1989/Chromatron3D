@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
@@ -6,6 +10,7 @@ import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
+import {renderLaserFX} from './laser-vfx.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
 import './redesign.css';
@@ -18,6 +23,12 @@ let yaw=-.58,pitch=1.10,dist=44;
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.9;
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),1.15,.5,.58);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
 $('scene').appendChild(renderer.domElement);
 const ambient=new THREE.AmbientLight(0xb0d7ef,2.0);scene.add(ambient);
 const key=new THREE.DirectionalLight(0xf0faff,3.2);key.position.set(-8,16,12);scene.add(key);
@@ -163,17 +174,12 @@ function rebuildPieces(){
  // These are shared within this rebuild, but disposed next time by the group's
  // resource collector. Avoid disposing them before every piece has been rendered.
 }
+let laserVisuals=null;
 function rebuildBeams(){
+ if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
- for(const s of currentResult.segments){
-  const start=vec(s.x,s.y,.42),end=vec(s.nx,s.ny,.42),direction=end.clone().sub(start),length=direction.length();
-  const color=new THREE.Color(COLORS[s.color]);
-  const beam=mesh(new THREE.CylinderGeometry(.027,.027,length,6),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.97}),beamGroup);
-  beam.position.copy(start).add(end).multiplyScalar(.5);beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
-  const glow=mesh(new THREE.CylinderGeometry(.105,.105,length,8),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.10,depthWrite:false}),beamGroup);
-  glow.position.copy(beam.position);glow.quaternion.copy(beam.quaternion);
- }
+ laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
  if(!currentResult.won&&won){won=false;$('win').classList.add('hidden')}
@@ -423,7 +429,7 @@ function updateCamera(){
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
-function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
+function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);composer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function cellAt(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
@@ -592,7 +598,8 @@ function animate(time){
  }
  for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
  for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
- renderer.render(scene,camera);
+ if(laserVisuals)laserVisuals.update(time*.001);
+ composer.render();
 }
 function renderHints(){
  const root=$('hint-steps');
