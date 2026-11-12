@@ -111,7 +111,8 @@ function rebuildPieces(){
   const glow=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.3,metalness:.24,roughness:.18});
   const base=mesh(new THREE.CylinderGeometry(.53,.60,.24,12),metal,g);base.position.y=.025;
   const foot=mesh(new THREE.CylinderGeometry(.47,.49,.06,24),trim,g);foot.position.y=.17;
-  const outline=torus(.48,.035,p===selected?glow:new THREE.MeshBasicMaterial({color:0x59acc8}),g);
+  const outlineMaterial=new THREE.MeshBasicMaterial({color:p===selected?0x9ce9ff:0x59acc8,transparent:true,opacity:p===selected ? .72 : .64});
+  const outline=torus(.48,.030,outlineMaterial,g);
   outline.position.y=-.045;
   if(p.type==='laser'){
    // Distinct directional photon emitter: a barrel, aperture and hot optical lens.
@@ -180,10 +181,10 @@ function rebuildPieces(){
     // charcoal = opaque/back. Orientation matches the ray tracer.
     const surfaceFootprint=new THREE.Group();surfaceFootprint.rotation.y=-p.rot*Math.PI/4;
     surfaceFootprint.position.y=.205;g.add(surfaceFootprint);
-    const frontMark=mesh(new THREE.BoxGeometry(.075,.025,1.14),
+    const frontMark=mesh(new THREE.BoxGeometry(.14,.035,1.14),
       new THREE.MeshBasicMaterial({color:0xc6f8ff,toneMapped:false}),surfaceFootprint);
     frontMark.position.x=-.12;
-    const backMark=mesh(new THREE.BoxGeometry(.085,.028,1.14),
+    const backMark=mesh(new THREE.BoxGeometry(.14,.036,1.14),
       new THREE.MeshBasicMaterial({color:0x152232}),surfaceFootprint);
     backMark.position.x=.12;
     const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.52,.10),
@@ -209,11 +210,12 @@ function rebuildPieces(){
     const ring=torus(.34,.075,glow,head);ring.rotation.x=0;
     mesh(new THREE.IcosahedronGeometry(.2,1),silver,head);
    }
-   torus(.50,.035,glow,g).position.y=.29;
+   const baseRingMaterial=p.type==='mirror'?new THREE.MeshBasicMaterial({color:0x417fa1,transparent:true,opacity:.78}):glow;
+   torus(.50,.03,baseRingMaterial,g).position.y=.29;
   }
   g.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
   if(p===selected){
-   const halo=torus(.66,.055,new THREE.MeshBasicMaterial({color:0xa5f1ff,transparent:true,opacity:.95,depthTest:false}),g);
+   const halo=torus(.64,.028,new THREE.MeshBasicMaterial({color:0xa5f1ff,transparent:true,opacity:.68,depthTest:false}),g);
    halo.position.y=.04;halo.renderOrder=20;
   }
  }
