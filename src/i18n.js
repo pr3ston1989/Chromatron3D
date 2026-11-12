@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    guideIncoming:'WIĄZKA WPADA',guideOutgoing:'WIĄZKA WYCHODZI',
     rotateLeft:'Obróć lustro w lewo o 45° (Q)',
     rotateRight:'Obróć lustro w prawo o 45° (E)',
     cancelSelection:'Odznacz / anuluj (Esc)',
@@ -32,6 +33,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    guideIncoming:'INCOMING LIGHT',guideOutgoing:'REFLECTED LIGHT',
     rotateLeft:'Rotate the mirror 45° left (Q)',
     rotateRight:'Rotate the mirror 45° right (E)',
     cancelSelection:'Deselect / cancel (Esc)',
