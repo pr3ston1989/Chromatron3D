@@ -384,3 +384,66 @@ test('board focus mode expands usable puzzle space without losing equipment acce
  await expect(page.locator('#app')).toHaveClass(/board-focus/);
  expect(errors).toEqual([]);
 });
+
+
+test('credits are spent once per hint stage and solved-level rewards cannot be farmed',async({page})=>{
+ test.setTimeout(120000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ const tools=()=>page.evaluate(()=>window.chromatron.getPuzzleTools());
+ expect((await tools()).credits).toBe(3);
+ await page.locator('#hint').click();
+ await expect(page.locator('#reveal-hint')).toBeEnabled();
+ await page.locator('#reveal-hint').click();
+ expect((await tools()).unlocked).toBe(1);
+ expect((await tools()).credits).toBe(3);
+ await page.locator('#reveal-hint').click();
+ expect((await tools()).unlocked).toBe(2);
+ expect((await tools()).credits).toBe(1);
+ await expect(page.locator('#reveal-hint')).toBeDisabled();
+ await page.locator('#close-hint').click();
+ const loc=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await page.mouse.click(loc.x,loc.y);
+ await page.keyboard.press('e');
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getState().result.won)).toBe(true);
+ expect((await tools()).credits).toBe(6);
+ await page.locator('#win').waitFor({state:'visible'});
+ await expect(page.locator('#win-reward')).toContainText('+5');
+ // Returning to the solved arrangement cannot grant credits again.
+ await page.locator('#win').waitFor({state:'visible'});
+ await page.evaluate(()=>document.getElementById('win').classList.add('hidden'));
+ await page.locator('#reset').click();
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await page.mouse.click(loc.x,loc.y);
+ await page.keyboard.press('e');
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getState().result.won)).toBe(true);
+ expect((await tools()).credits).toBe(6);
+ expect(errors).toEqual([]);
+});
+
+test('original numeric level JSON imports privately with full 50 level index order',async({page})=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ const sample={
+  levels:Array.from({length:50},(_,i)=>({
+   text:'Synthetic sample '+i,
+   pieces:[{type:2,rotation:2,color:4,x:2,y:7},
+    {type:10,rotation:0,color:4,x:12,y:7}]
+  })),
+  level_order:Array.from({length:50},(_,i)=>i)
+ };
+ await page.locator('#help').click();
+ await page.locator('#classic-files').setInputFiles({
+  name:'chromatron1-extracted.json',
+  mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(sample))
+ });
+ await expect(page.locator('#total-levels')).toHaveText('050');
+ await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');
+ expect((await page.evaluate(()=>window.chromatron.getState())).pieces).toHaveLength(2);
+ await page.locator('#next').click();
+ await expect(page.locator('#level-index')).toHaveText('002');
+ expect(errors).toEqual([]);
+});
