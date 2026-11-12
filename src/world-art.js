@@ -9,8 +9,8 @@ export function buildLaboratory(THREE, scene, world, tileSize=1.3) {
  const shell=new THREE.MeshStandardMaterial({color:0x162a3b,metalness:.72,roughness:.32});
  const shellLight=new THREE.MeshStandardMaterial({color:0x324d61,metalness:.76,roughness:.25});
  const graphite=new THREE.MeshStandardMaterial({color:0x0b1625,metalness:.78,roughness:.38});
- const cyan=new THREE.MeshStandardMaterial({color:0x5de7ed,emissive:0x11bedc,emissiveIntensity:2,roughness:.25});
- const amber=new THREE.MeshStandardMaterial({color:0xffbf78,emissive:0xff9933,emissiveIntensity:2.2,roughness:.28});
+ const cyan=new THREE.MeshStandardMaterial({color:0x5de7ed,emissive:0x11bedc,emissiveIntensity:.95,roughness:.25});
+ const amber=new THREE.MeshStandardMaterial({color:0xffbf78,emissive:0xff9933,emissiveIntensity:1.1,roughness:.28});
  const make=(geometry,material,x,y,z,rotationY=0)=>{
   const m=new THREE.Mesh(geometry,material);
   m.position.set(x,y,z);m.rotation.y=rotationY;group.add(m);
@@ -51,9 +51,9 @@ export function buildLaboratory(THREE, scene, world, tileSize=1.3) {
   const rail=new THREE.Mesh(new THREE.BoxGeometry(.16,11.5,.16),cyan);
   rail.position.set(x+.65,4,z+.65);beams.add(rail);
  }
- const hemi=new THREE.HemisphereLight(0xbbebff,0x243448,1.5);scene.add(hemi);
+ const hemi=new THREE.HemisphereLight(0xbbebff,0x243448,.65);scene.add(hemi);
  for(const [x,z,color] of [[-10,-9,0x50dcff],[10,10,0xffa45d]]){
-  const light=new THREE.PointLight(color,38,24,2);
+  const light=new THREE.PointLight(color,12,24,2);
   light.position.set(x,4,z);scene.add(light);
  }
  return group;
