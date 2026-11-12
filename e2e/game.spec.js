@@ -38,3 +38,23 @@ test('hints are progressive and non-destructive; narrow layout stays interactive
  await page.screenshot({path:'test-results/chromatron-mobile.png'});
  expect(exceptions).toEqual([]);
 });
+
+
+test('first puzzle teaches the three interactions and can be solved using the UI',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/');
+ await expect(page.locator('#coach')).toBeVisible();
+ await expect(page.locator('#coach-title')).toContainText('Wybierz lustro');
+ const mirror=page.locator('#inventory button').filter({hasText:'LUSTRO'});
+ await expect(mirror).toHaveClass(/coach-focus/);
+ await mirror.click();
+ await expect(page.locator('#coach-title')).toContainText('Ustaw lustro');
+ const bounds=await page.locator('#scene canvas').boundingBox();
+ await page.mouse.click(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getState().pieces.find(x=>x.type==='mirror').inTray)).toBe(false);
+ await expect(page.locator('#coach-title')).toContainText('Obróć lustro');
+ await page.keyboard.press('e');
+ await expect(page.locator('#counter')).toContainText('1 / 1');
+ await expect(page.locator('#win')).toBeVisible();
+ expect(errors).toEqual([]);
+});
