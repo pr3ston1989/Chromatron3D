@@ -580,6 +580,13 @@ function rotate(dir){
  const previousRotation=selected.rot;
  saveHistory();
  selected.rot=(selected.rot+dir+8)%8;
+ if(selected.inTray){
+  // Preview the new angle immediately without rebuilding board meshes.
+  ghostHead.rotation.y=-selected.rot*Math.PI/4;
+  syncTransformTools();
+  beep(540,.045);
+  return;
+ }
  animateRotationTo(selected,previousRotation,dir);
  // Only recompute *light*, not the entire lab and mirror hardware.
  // The shader ribbons follow logical physics immediately while the visual
@@ -815,7 +822,7 @@ renderer.domElement.addEventListener('wheel',e=>{
   // Mouse wheel detents and high-resolution touchpad ticks have different
   // magnitudes and may report deltaY in pixels, lines or pages.
   const steps=wheelRotation.consume(e.deltaY,e.deltaMode,performance.now(),innerHeight);
-  if(steps)for(let i=0;i<Math.abs(steps);i++)rotate(Math.sign(steps));
+  if(steps)rotate(steps);
  }else{
   wheelRotation.reset();
   const delta=toWheelPixels(e.deltaY,e.deltaMode,innerHeight);
