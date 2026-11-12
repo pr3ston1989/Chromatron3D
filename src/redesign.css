@@ -185,3 +185,14 @@ body{background:#102238;color:var(--ui-ink)}
  .tool-panel:has(.transform-tools:not(.hidden)){max-height:195px}
  .tool-panel:has(.transform-tools:not(.hidden)) ~ .hud-bottom{bottom:205px}
 }
+
+/* The same colors appear on 3D directional arrows at a selected mirror. */
+.beam-guide-legend{display:grid;grid-template-columns:9px 1fr 9px 1fr;align-items:center;gap:4px 6px;padding:7px 0 10px;font:700 8px 'Space Grotesk',sans-serif;letter-spacing:.45px;color:#bfe2ef;line-height:1.3}
+.beam-guide-legend.hidden{display:none}
+.legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;box-shadow:0 0 6px currentColor}
+.legend-dot.input{background:#8cf8d4;color:#8cf8d4}
+.legend-dot.output{background:#ffcd86;color:#ffcd86}
+.component-icon{display:flex;align-items:center;justify-content:center;overflow:hidden}
+.component-icon svg{width:38px;height:38px;max-width:100%;max-height:100%;filter:drop-shadow(0 0 5px rgba(95,220,250,.17))}
+.inventory-item.selected .component-icon svg,.inventory-item:hover .component-icon svg{filter:drop-shadow(0 0 8px rgba(123,231,255,.45))}
+@media(max-width:680px){.component-icon svg{width:29px;height:29px}.beam-guide-legend{font-size:7px;gap:3px}}
