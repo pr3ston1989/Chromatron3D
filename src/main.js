@@ -16,6 +16,7 @@ import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
+import {createMirrorHardware} from './mirror-asset.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
@@ -202,15 +203,8 @@ function rebuildPieces(){
     // The interactive mirror's silvered front receives a real reflection of
     // the 3D scene. The other faces retain PBR environment reflections.
     if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
-    const rearMat=new THREE.MeshStandardMaterial({color:0x081522,metalness:.35,roughness:.75});
-    const rear=mesh(new THREE.BoxGeometry(.035,.94,1.07),rearMat,head);
-    rear.position.set(.116,.065,0);
-    const edgeMat=new THREE.MeshBasicMaterial({color:p.type==='bender'?0xffc177:0x82eaff});
-    for(const end of [-.53,.53]){
-     const trimRail=mesh(new THREE.BoxGeometry(.21,1.04,.055),edgeMat,head);
-     trimRail.position.set(0,.09,end);
-    }
-    const lip=mesh(new THREE.BoxGeometry(.31,.075,1.23),trim,head);lip.position.y=-.44;
+    // Modular optical hardware: chamfered machined rails, captive screws, opaque carbon back.
+    createMirrorHardware(THREE,head,{bender:p.type==='bender'});
     // Long, thin line on the pedestal is the actual tangent of the mirror:
     // readable even from a near top-down camera. Cyan = reflective/front;
     // charcoal = opaque/back. Orientation matches the ray tracer.
