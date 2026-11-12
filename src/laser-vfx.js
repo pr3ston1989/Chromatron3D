@@ -1,3 +1,4 @@
+import {createBeamBatcher} from './beam-batching.js';
 const flareTextureCache=new WeakMap();
 /**
  * One reusable GPU lens-flare texture for the lifetime of the renderer.
@@ -31,7 +32,8 @@ export function getLaserFlareTexture(THREE){
  * and carefully budgeted dynamic point lights connect the beam to the world.
  */
 export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point) {
- const materials=new Map(), flicker=[], sparks=[];
+ const materials=new Map(), flicker=[];
+ const beamBatcher=createBeamBatcher(THREE,parent);
  const activePieces=pieces.filter(p=>!p.inTray);
  const positions=new Map(activePieces.map(p=>[p.x+','+p.y,p]));
  const rayShader={
@@ -79,23 +81,10 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   sprite.scale.setScalar(scale);sprite.renderOrder=12;parent.add(sprite);
   flicker.push({sprite,scale});
  }
- // A custom quad in world-space, not a stretched opaque cylinder:
- // v is distance across the beam, u is progression along the beam.
- function ribbon(a,b,width,vertical,shader){
-  const d=b.clone().sub(a),len=d.length();
-  if(len<.001)return;
-  const cross=vertical?new THREE.Vector3(0,1,0):new THREE.Vector3(-d.z,0,d.x).normalize();
-  const side=cross.multiplyScalar(width*.5);
-  const pts=[a.clone().sub(side),a.clone().add(side),b.clone().add(side),b.clone().sub(side)];
-  const vertices=new Float32Array([...pts[0].toArray(),...pts[1].toArray(),...pts[2].toArray(),
-     ...pts[0].toArray(),...pts[2].toArray(),...pts[3].toArray()]);
-  const uvs=new Float32Array([0,0,0,1,1,1, 0,0,1,1,1,0]);
-  const geometry=new THREE.BufferGeometry();
-  geometry.setAttribute('position',new THREE.BufferAttribute(vertices,3));
-  geometry.setAttribute('uv',new THREE.BufferAttribute(uvs,2));
-  geometry.computeVertexNormals();
-  const mesh=new THREE.Mesh(geometry,shader);mesh.renderOrder=6;parent.add(mesh);
- }
+ // Shader ribbons are assembled in shared GPU buffers instead of
+ // allocating one mesh per ray segment. Color/layer still define materials.
+ const ribbon=(a,b,width,vertical,shader,order=6)=>
+  beamBatcher.addRibbon(a,b,width,vertical,shader,order);
  const coreMaterials=new Map();
  const shellMaterials=new Map();
  function coloredCore(mask){
@@ -109,7 +98,6 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   }
   return coreMaterials.get(mask);
  }
- const coreAxis=new THREE.Vector3(0,1,0);
  for(const s of segments){
   const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
   if(positions.get(s.x+','+s.y)?.type==='laser')a.lerp(b,.50); // Beam emerges from actual barrel tip
@@ -119,19 +107,15 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    color:new THREE.Color(palette[s.color]),transparent:true,opacity:.8,
    depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending
   }));
-  const jacket=new THREE.Mesh(new THREE.CylinderGeometry(.063,.063,len,9),shellMaterials.get(s.color));
-  jacket.position.copy(a).add(b).multiplyScalar(.5);
-  jacket.quaternion.setFromUnitVectors(coreAxis,segment.clone().normalize());
-  jacket.renderOrder=8;parent.add(jacket);
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(.010,.010,len,7),coloredCore(s.color));
-  core.position.copy(jacket.position);core.quaternion.copy(jacket.quaternion);
-  core.renderOrder=9;parent.add(core);
+  beamBatcher.addTube(a,b,.063,shellMaterials.get(s.color),8);
+  beamBatcher.addTube(a,b,.010,coloredCore(s.color),9);
   ribbon(a,b,.66,false,material(s.color));
   ribbon(a,b,.47,true,material(s.color));
   // A low-intensity pool of colored light on the board under the beam.
   // This ground-level optical light spill makes the ray feel spatial.
-  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,false,material(s.color,true));
+  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,false,material(s.color,true),5);
  }
+ const laserGeometryStats=beamBatcher.flush();
 
  // Directional moving photons reveal how the light travels, especially with
  // several mirrors. A single GPU points draw call handles the entire board.
@@ -239,6 +223,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   }
  }
  return {
+  geometryStats:laserGeometryStats,
   update(seconds){
    for(const m of materials.values())m.uniforms.uTime.value=seconds;
    if(photons)photons.material.uniforms.uTime.value=seconds;
