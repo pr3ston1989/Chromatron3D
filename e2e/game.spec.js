@@ -142,6 +142,8 @@ test('spectrum FX and mirror light-direction guides are rendered in WebGL',async
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.photonSystems).toBeGreaterThan(0);
  expect(stats.beamSegments).toBeGreaterThan(1);
+ expect(stats.beamGeometryDrawCalls).toBeLessThanOrEqual(8);
+ expect(stats.contactShadowInstances).toBe(2); // laser + target; mirror is in tray
  expect(stats.guideObjects).toBe(0);
 
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
@@ -149,6 +151,8 @@ test('spectrum FX and mirror light-direction guides are rendered in WebGL',async
  await page.mouse.click(at.x,at.y);
  stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.selectedType).toBe('mirror');
+ expect(stats.contactShadowInstances).toBe(3);
+ expect(stats.beamGeometryDrawCalls).toBeLessThanOrEqual(8);
  expect(stats.guideObjects).toBeGreaterThan(0);
  await expect(page.locator('#beam-guide-legend')).toBeVisible();
  await page.keyboard.press('q'); // a live reflection, but not yet a win
