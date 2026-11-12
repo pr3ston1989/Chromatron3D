@@ -12,7 +12,7 @@ const strings = {
     hintFallback1:'Porównaj kolor lasera z kolorem rezonatora. Sprawdź, dokąd biegnie wiązka.',hintFallback2:'Przesuń element optyczny na tor lasera i obracaj go po 45 stopni.',hintFallback3:'Zacznij od ostatniego zakrętu przed rezonatorem. Możesz też pominąć zagadkę i wrócić później.',
     selectLocked:'Ten element jest nieruchomy',selectFirst:'Najpierw wybierz ruchomy element',cellOccupied:'To pole jest zajęte',imported:'Zaimportowano {count} poziomów',skipNotice:'Zagadkę pominięto (nie zaliczono jej jako rozwiązanej)',lastLevel:'To ostatnia dostępna plansza',allHints:'Odkryto już wszystkie trzy wskazówki',
     languageAria:'Switch to English',helpAria:'Instrukcja',soundAria:'Dźwięk',hintAria:'System podpowiedzi',statusSolved:'UKOŃCZONA',statusSkipped:'POMINIĘTA',
-    typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ'
+    typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
     online:'OPTICAL SYSTEM ONLINE',experiment:'EXPERIMENT',prototype:'PROTOTYPE',chapter:'CHAPTER 01 // FUNDAMENTALS',resonators:'RESONATORS ONLINE',
@@ -26,7 +26,7 @@ const strings = {
     hintFallback1:'Compare the color of the laser with the resonator. See where the beam is currently going.',hintFallback2:'Place an optic in the beam path and rotate it by 45 degrees.',hintFallback3:'Work backward from the target and find the final turn. You can also skip this puzzle and return later.',
     selectLocked:'This component is fixed in place',selectFirst:'Select a movable optic first',cellOccupied:'Cell occupied',imported:'Imported {count} levels',skipNotice:'Puzzle skipped (not counted as solved)',lastLevel:'This is the last available puzzle',allHints:'All three clues have been revealed',
     languageAria:'Zmień na polski',helpAria:'How to play',soundAria:'Sound',hintAria:'Hint system',statusSolved:'SOLVED',statusSkipped:'SKIPPED',
-    typeLaser:'LASER',typeMirror:'REFLECTOR',typeFilter:'FILTER',typeSplitter:'SPLITTER',typePrism:'PRISM',typeTarget:'RESONATOR',typeBender:'BENDER',typeDoppler:'DOPPLER',typeTangler:'TANGLER'
+    typeLaser:'LASER',typeMirror:'REFLECTOR',typeFilter:'FILTER',typeSplitter:'SPLITTER',typePrism:'PRISM',typeTarget:'RESONATOR',typeBender:'BENDER',typeDoppler:'DOPPLER',typeTangler:'TANGLER',typeWall:'BARRIER',typeConduit:'CONDUIT',typeTeleporter:'TELEPORTER'
   }
 };
 export const normalizeLanguage=v=>LANGUAGES.includes(v)?v:'pl';
