@@ -40,13 +40,14 @@ const beamGroup=new THREE.Group();world.add(beamGroup);
 const assistGroup=new THREE.Group();world.add(assistGroup);
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
-let language='pl',hintCount=0,solved=[],skipped=[];
+let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false;
 let saved=0;
 try{
  saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
+ spectrumActive=localStorage.getItem('chromatron-reborn-spectrum')==='true';
  if(!Array.isArray(solved))solved=[];
  if(!Array.isArray(skipped))skipped=[];
 }catch{}
@@ -167,6 +168,39 @@ function renderInventory(){
   item.append(icon,name,count);el.appendChild(item);
  }
  $('return-tray').disabled=!(selected&&!selected.inTray&&movable.has(selected.type));
+ renderSpectrum();
+}
+function renderSpectrum(){
+ const panel=$('spectral-inspector');
+ if(!panel)return;
+ panel.classList.toggle('hidden',!spectrumActive);
+ $('spectral-toggle').setAttribute('aria-expanded',String(spectrumActive));
+ if(!spectrumActive)return;
+ panel.replaceChildren();
+ const makeBits=(mask)=>{
+  const el=document.createElement('div');el.className='spectrum-bits';
+  for(const [bit,label] of [[1,'R'],[2,'G'],[4,'B']]){
+   const part=document.createElement('span');part.className='spectrum-bit '+(mask&bit?'on':'off')+' spectrum-'+label.toLowerCase();
+   part.textContent=label;part.setAttribute('aria-label',label+': '+(mask&bit?'1':'0'));
+   el.appendChild(part);
+  }
+  return el;
+ };
+ for(const part of pieces.filter(p=>!p.inTray&&(p.type==='laser'||p.type==='target'))){
+  const row=document.createElement('div');row.className='spectrum-row';
+  const heading=document.createElement('strong');
+  heading.textContent=t(language,part.type==='laser'?'spectralSource':'spectralTarget')+' · '+(part.x+1)+','+(part.y+1);
+  row.appendChild(heading);
+  const lines=part.type==='laser'
+   ? [[t(language,'spectralEmits'),part.color]]
+   : [[t(language,'spectralNeed'),part.color],[t(language,'spectralReceived'),currentResult?.received.get(part.id)||0]];
+  for(const [label,mask] of lines){
+   const line=document.createElement('div');line.className='spectrum-line';
+   const text=document.createElement('span');text.textContent=label;
+   line.append(text,makeBits(mask));row.appendChild(line);
+  }
+  panel.appendChild(row);
+ }
 }
 function snapshot(){return pieces.map(p=>({...p}))}
 function syncUndoButtons(){
@@ -236,6 +270,7 @@ $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1
 $('reset').onclick=()=>load(levelIndex);
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
+$('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
 $('hint').onclick=()=>{$('hint-overlay').classList.remove('hidden');renderHints()};
