@@ -42,8 +42,9 @@ export function createMirrorHardware(THREE,head,{bender=false}={}){
   add(rounded(.035,.019,1.08,.008),chrome,-.219,y,0,'chrome-highlight');
  }
  // Top/bottom machined brackets connect the optical plate to the pedestal.
- for(const y of [-.29,.42]){
-  for(const z of [-.44,.44]){
+ // Fasteners stay on the outside of the reflective aperture.
+ for(const y of [-.43,.55]){
+  for(const z of [-.565,.565]){
    add(rounded(.19,.095,.16,.020),darkTitanium,.122,y,z,'mounting-ear');
    const screw=add(new THREE.CylinderGeometry(.035,.035,.018,12),chrome,-.206,y,z,'captive-screw');
    screw.rotation.z=Math.PI/2;
