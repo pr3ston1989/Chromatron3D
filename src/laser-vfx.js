@@ -1,3 +1,27 @@
+const flareTextureCache=new WeakMap();
+/**
+ * One reusable GPU lens-flare texture for the lifetime of the renderer.
+ * A wheel turn updates beam geometry, not an entire new GPU texture upload.
+ */
+export function getLaserFlareTexture(THREE){
+ const cached=flareTextureCache.get(THREE);
+ if(cached)return cached;
+ const flareData=new Uint8Array(64*64*4);
+ for(let y=0;y<64;y++)for(let x=0;x<64;x++){
+  const r=Math.hypot((x-31.5)/31.5,(y-31.5)/31.5);
+  const i=(y*64+x)*4;
+  const center=Math.exp(-r*r*22),outer=Math.exp(-r*r*4.5);
+  flareData[i]=255;flareData[i+1]=255;flareData[i+2]=255;
+  flareData[i+3]=Math.round(255*Math.min(1,center*.75+outer*.35));
+ }
+ const flareTexture=new THREE.DataTexture(flareData,64,64,THREE.RGBAFormat);
+ flareTexture.needsUpdate=true;
+ flareTexture.colorSpace=THREE.SRGBColorSpace;
+
+ flareTextureCache.set(THREE,flareTexture);
+ return flareTexture;
+}
+
 /**
  * Cinematic additive laser renderer. Physical ray routing still comes exclusively
  * from src/optics.js; this module never affects puzzle mechanics.
@@ -44,17 +68,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   }
   return materials.get(key);
  }
- const flareData=new Uint8Array(64*64*4);
- for(let y=0;y<64;y++)for(let x=0;x<64;x++){
-  const r=Math.hypot((x-31.5)/31.5,(y-31.5)/31.5);
-  const i=(y*64+x)*4;
-  const center=Math.exp(-r*r*22),outer=Math.exp(-r*r*4.5);
-  flareData[i]=255;flareData[i+1]=255;flareData[i+2]=255;
-  flareData[i+3]=Math.round(255*Math.min(1,center*.75+outer*.35));
- }
- const flareTexture=new THREE.DataTexture(flareData,64,64,THREE.RGBAFormat);
- flareTexture.needsUpdate=true;
- flareTexture.colorSpace=THREE.SRGBColorSpace;
+ const flareTexture=getLaserFlareTexture(THREE);
  function flare(x,y,color,scale=1){
   const m=new THREE.SpriteMaterial({
    map:flareTexture,color:new THREE.Color(palette[color]),transparent:true,
@@ -234,9 +248,8 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    }
   },
   dispose(){
-   flareTexture.dispose();
-   // All mesh and sprite geometries/materials are owned by the parent group
-   // and disposed by disposeGroupChildren() before a new VFX pass.
+   // The small flare DataTexture is intentionally reused between wheel turns.
+   // Temporary materials and geometries are owned/disposed by the beam group.
   }
  };
 }
