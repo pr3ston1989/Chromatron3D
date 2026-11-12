@@ -201,3 +201,43 @@
  * up in resize(); its CSS presentation must fit immediately. */
 #scene{overflow:hidden;contain:layout size paint}
 #scene canvas{width:100%!important;height:100%!important;max-width:100%;max-height:100%}
+
+
+/* Locally earned hint credits are quiet information, not a large overlay.
+ * The user can always tell how much a concrete clue costs before paying. */
+.hint-wallet{display:flex;align-items:center;gap:7px;margin:9px 0 7px;
+ color:#b9d5e2;font:600 10px 'Rajdhani',sans-serif;letter-spacing:.8px;
+ max-width:100%;min-width:0}
+.hint-wallet strong{font-size:15px;line-height:1;color:#f6e8b2;
+ font-variant-numeric:tabular-nums}
+.hint-wallet .hint-wallet-icon{color:#f1c46b;font-size:11px}
+.hint-wallet>span:last-child{flex:1;min-width:0}
+.hint-wallet.modal-wallet{padding:9px 12px;border:1px solid #45677d;
+ border-radius:8px;background:rgba(16,35,54,.85);margin:5px 0 13px}
+.hint-cost,.hint-analysis-status{font:600 11px/1.4 'Rajdhani',sans-serif!important;
+ color:#c9d7e4!important;letter-spacing:.4px;margin:8px 0!important}
+.hint-analysis-status:empty,.hint-cost:empty{display:none}
+.win-reward{font:700 14px 'Rajdhani',sans-serif!important;letter-spacing:.4px;
+ color:#a9f0c7!important;margin:4px 0 14px!important}
+.classic-import{margin:15px 0 10px;border-top:1px solid rgba(129,175,200,.28);
+ padding-top:12px}
+.classic-import p{font-size:12px;line-height:1.5;margin:5px 0 10px}
+.classic-import .ui-button{width:100%;padding:10px 8px;letter-spacing:.5px}
+#classic-import-status{font-size:11px;overflow-wrap:anywhere;color:#92e6d7}
+@media(min-width:681px) and (max-height:860px){
+ .mission .hint-wallet{margin:4px 0 3px;gap:5px;font-size:8px;letter-spacing:.25px}
+ .mission .hint-wallet strong{font-size:12px}
+ .mission .hint-wallet .hint-wallet-icon{font-size:10px}
+ .hint-modal{max-height:calc(100dvh - 20px);padding:20px 26px}
+ .hint-modal h2{font-size:clamp(25px,3vw,33px)}
+ .hint-modal .hint-steps{margin:7px 0;gap:6px}
+ .hint-modal .hint-step{padding:8px 12px}
+ .hint-modal .hint-step p{font-size:12px;margin:5px 0 0;line-height:1.35}
+ .hint-modal .ui-button{margin-top:6px}
+}
+@media(max-width:680px){
+ .mission .hint-wallet{display:none}
+ .hint-modal .modal-wallet{display:flex}
+ .hint-modal{max-height:90dvh;overflow-y:auto}
+ .classic-import .ui-button{font-size:10px}
+}
