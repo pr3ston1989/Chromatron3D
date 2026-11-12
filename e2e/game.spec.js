@@ -49,6 +49,10 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await expect(mirror).toHaveClass(/coach-focus/);
  await mirror.click();
  await expect(page.locator('#coach-title')).toContainText('Ustaw lustro');
+ // An occupied cell must not steal or drop a piece from the tray.
+ const occupied=await page.evaluate(()=>window.chromatron.projectCell(7,3));
+ await page.mouse.click(occupied.x,occupied.y);
+ expect((await page.evaluate(()=>window.chromatron.getState())).pieces.find(p=>p.type==='mirror').inTray).toBe(true);
  const center=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  const intent=await page.evaluate(({x,y})=>window.chromatron.inspectPointer(x,y),center);
  expect(intent).toMatchObject({intent:'place',placementMode:true});
