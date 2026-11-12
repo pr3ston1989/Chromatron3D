@@ -1,0 +1,164 @@
+/* CHROMATRON / REBORN | readability-first visual direction v2
+   Distinct visual layers: high-contrast board, restrained dashboard, one clear action. */
+:root{
+ --ui-ink:#e9f7ff;--ui-muted:#acc9db;--ui-bright:#80ecff;--ui-gold:#ffd193;
+ --ui-panel:rgba(8,23,37,.91);--ui-edge:rgba(105,193,221,.35);
+}
+body{background:#102238;color:var(--ui-ink)}
+.grain{
+ background:radial-gradient(ellipse at 50% 51%,transparent 47%,rgba(2,7,16,.37) 100%);
+}
+.header{
+ padding:21px 28px;
+ background:linear-gradient(180deg,rgba(4,14,25,.94),rgba(6,19,32,.7) 76%,transparent);
+}
+.header .brand strong{font-size:25px;letter-spacing:1px}
+.header .brand-mark{color:#90edff;text-shadow:0 0 27px #48ceff}
+.header-right{gap:8px}
+.header-right .icon-btn{margin-left:0;border-radius:8px;background:rgba(18,43,64,.88);width:37px;height:37px;color:#c7edfa}
+.header-right .icon-btn:hover{border-color:#80e5ff;box-shadow:0 0 20px #1eadd04a}
+.mission,.tool-panel{
+ top:118px;
+ background:linear-gradient(160deg,rgba(11,29,45,.95),rgba(6,18,33,.91));
+ border:1px solid var(--ui-edge);
+ border-radius:14px;
+ padding:20px;
+ box-shadow:0 18px 45px rgba(0,4,10,.34),0 1px 0 #80e4ff1d inset;
+ backdrop-filter:blur(14px);
+}
+.mission{left:27px;width:289px}
+.mission h1{font-size:43px;line-height:.94;color:#f2fbff;letter-spacing:.2px;margin:11px 0}
+.mission p{font-size:13px;line-height:1.7;color:#bbd0df;margin:0 0 23px}
+.mission .rule{margin:14px 0 16px;background:#8fe7f3}
+.mission .tag{color:#c4dfed;font-size:10px}
+.mission-progress{color:#a5d7e7;align-items:center}
+.progress-track{height:5px;border-radius:8px;background:#1b4257;overflow:hidden;margin:10px 0 18px}
+.progress-track #progress{background:#70f6bf;box-shadow:0 0 20px #70f6bf}
+.mission-actions{display:grid;grid-template-columns:34px 34px minmax(72px,1fr) 34px 34px;gap:5px}
+.ui-button{
+ border-radius:7px;background:rgba(24,57,76,.8);border-color:#517e98;
+ font:700 13px 'Rajdhani',sans-serif;letter-spacing:.7px;color:#e8f9ff;
+ padding:10px 11px;
+}
+.mission-actions .ui-button.small{padding:7px 4px;font-size:20px}
+.ui-button:hover:not(:disabled){background:#23617b;color:#fff}
+.ui-button:disabled{opacity:.34}
+.hint-button{margin-top:14px;width:100%;min-height:43px;gap:11px;font-size:14px;
+ border-color:#7e9ce2;background:linear-gradient(95deg,#2e3863,#204c70)}
+.level-status{margin-top:10px}
+.tool-panel{right:26px;width:228px;padding:19px}
+#inventory{margin:14px 0}
+.inventory-item{padding:10px 0;color:#e1f2ff;font-size:15px;gap:9px}
+.component-icon{
+ width:42px;height:42px;flex-shrink:0;border-radius:8px;
+ color:#e1faff;border:1px solid #478ba9;
+ background:linear-gradient(135deg,#25506a,#14344e);font-size:25px;
+}
+.inventory-item strong{font-size:13px;color:#b9e4ff}
+#inventory button.inventory-item:hover,#inventory button.inventory-item.selected{
+ border-radius:8px;background:rgba(44,136,174,.33);box-shadow:inset 4px 0 #6ae6ff;
+}
+#inventory button.inventory-item.coach-focus{
+ background:linear-gradient(90deg,rgba(255,186,96,.28),rgba(49,113,137,.20));
+ box-shadow:inset 4px 0 #ffd28c,0 0 0 1px #f4bb776b;
+ border-radius:7px;
+ animation:coach-pulse 1.7s ease-in-out infinite;
+}
+@keyframes coach-pulse{50%{box-shadow:inset 4px 0 #ffd28c,0 0 0 1px #f4bb77b0,0 0 19px #ebba624c}}
+.return-tray,.spectrum-toggle{font-size:12px;width:100%;min-height:33px}
+.small-note{font-size:9px;color:#b7d9e8;line-height:1.55}
+.hud-bottom{left:28px;right:28px;bottom:18px;color:#aac9d9;letter-spacing:.7px}
+.camera-label{font-size:10px;color:#aee8f7}
+.camera-preset{border-radius:6px;border-color:#5b9cb8;background:#173a50;color:#eaf8fe}
+.controls{color:#bed9e7}
+.coach{
+ position:absolute;z-index:5;top:93px;left:50%;transform:translateX(-50%);
+ width:min(480px,calc(100vw - 690px));min-width:300px;
+ display:flex;align-items:flex-start;gap:13px;padding:13px 14px;
+ border:1px solid rgba(255,193,113,.64);border-left:4px solid #ffbc6f;
+ background:linear-gradient(110deg,rgba(35,38,51,.97),rgba(14,34,50,.96));
+ box-shadow:0 12px 40px rgba(0,0,0,.3);backdrop-filter:blur(12px);
+ border-radius:10px;
+}
+.coach.hidden{display:none}
+.coach-number{font:700 25px 'Rajdhani',sans-serif;color:#ffd08f;white-space:nowrap;line-height:1.08}
+.coach-number span{font:600 10px 'Space Grotesk',sans-serif;color:#a8bdce;letter-spacing:1px}
+.coach-copy{flex:1;min-width:0}
+.coach-copy strong{font-size:13px;color:#f2fbff;letter-spacing:.2px}
+.coach-copy p{font-size:11px;line-height:1.55;color:#c7dce8;margin:5px 0 0}
+.coach-dismiss{
+ appearance:none;border:0;background:transparent;color:#bcd4df;
+ font-size:21px;line-height:1;cursor:pointer;padding:0 4px;
+}
+.coach-dismiss:hover{color:#fff}
+.modal{border-radius:16px;border-color:#6facc4;background:linear-gradient(145deg,#1b3850,#0b1b2e)}
+.analysis-panel{border-radius:11px;background:linear-gradient(140deg,#122d41f4,#071a2bf4)}
+@media(max-width:1150px){
+ .mission{left:15px;top:99px;width:243px;padding:16px}
+ .mission h1{font-size:36px}
+ .tool-panel{top:99px;right:15px;width:192px;padding:15px}
+ .coach{top:79px;width:340px;min-width:280px}
+ .component-icon{height:35px;width:35px}
+}
+@media(max-width:760px) and (min-width:681px){
+ .coach{top:auto;bottom:25px;left:50%;width:340px}
+}
+@media(max-width:680px){
+ .header{padding:11px 12px;min-height:57px;align-items:center}
+ .header .brand{gap:7px}
+ .header .brand strong{font-size:17px;letter-spacing:0}
+ .header .brand-mark{font-size:26px}
+ .header .brand .eyebrow{font-size:7px;letter-spacing:1px}
+ .header-right{gap:3px}
+ .header-right .icon-btn{width:28px;height:29px;font-size:11px;margin-left:0}
+ .mission{
+  position:absolute;top:66px;left:10px;right:10px;width:auto;
+  padding:11px 13px 9px;border-radius:11px;
+  pointer-events:auto;max-height:none;
+ }
+ .mission .rule,.mission .tag{display:none}
+ .mission h1{font-size:26px;line-height:1.05;margin:5px 0}
+ .mission p{font-size:11px;line-height:1.4;margin:0 0 7px;max-width:100%}
+ .mission-progress{font-size:9px}
+ .progress-track{margin:6px 0 9px;height:3px}
+ .mission-actions{display:flex;gap:5px;align-items:center;flex-wrap:nowrap}
+ .mission-actions .ui-button{padding:5px 10px;font-size:12px}
+ .mission-actions .ui-button.small{padding:5px 8px;font-size:15px}
+ .hint-button{min-height:32px;width:auto;display:inline-flex;margin-top:8px;padding:5px 12px;font-size:12px}
+ .level-status{display:inline;margin-left:13px;font-size:9px}
+ .tool-panel{
+  top:auto;bottom:10px;left:10px;right:10px;width:auto;
+  max-height:160px;padding:11px 13px 9px;border-radius:11px;
+ }
+ .tool-panel>.eyebrow{font-size:8px}
+ #inventory{display:flex;flex-direction:row;gap:7px;overflow-x:auto;scrollbar-width:thin;margin:8px 0;max-width:100%}
+ #inventory .inventory-item{
+  flex:0 0 auto;min-width:91px;max-width:130px;min-height:50px;
+  gap:5px;padding:4px 6px;font-size:11px;
+ }
+ #inventory .component-icon{width:29px;height:29px;font-size:17px}
+ #inventory .inventory-item strong{font-size:10px}
+ .tool-panel .return-tray,.tool-panel .spectrum-toggle{
+  width:auto;display:inline-block;font-size:10px;margin:4px 6px 2px 0;padding:6px 8px;min-height:0
+ }
+ .tool-panel .small-note{display:none}
+ .hud-bottom{left:12px;right:12px;bottom:172px;pointer-events:auto}
+ .hud-bottom .controls{display:none}
+ .hud-bottom .camera-label span[data-i18n="camera"]{display:none}
+ .camera-preset{font-size:10px;margin-left:0}
+ .coach{
+  position:absolute;top:auto;bottom:207px;left:10px;right:10px;
+  transform:none;width:auto;min-width:0;gap:10px;padding:9px 11px;border-radius:9px;
+ }
+ .coach-number{font-size:20px}
+ .coach-copy strong{font-size:11px}
+ .coach-copy p{font-size:10px;margin-top:2px}
+ .analysis-panel{top:auto;bottom:174px;left:10px;right:10px;width:auto;max-height:48vh;z-index:7}
+ .mission .hint-button,.mission .mission-actions{pointer-events:auto}
+}
+@media(max-width:390px){
+ .header .brand strong{font-size:14px}
+ .header .brand .eyebrow{font-size:6px}
+ .header-right .icon-btn{height:27px;width:26px}
+}
+@media(prefers-reduced-motion:reduce){#inventory button.inventory-item.coach-focus{animation:none}}
