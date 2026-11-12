@@ -3,6 +3,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
@@ -26,6 +27,15 @@ let yaw=-.58,pitch=1.10,dist=44;
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.23;
+// Physically based studio reflections: low-roughness metals and mirror fronts
+// need environment radiance to look like metal instead of unlit gray plastic.
+const studioEnvironment=new RoomEnvironment();
+const pmremGenerator=new THREE.PMREMGenerator(renderer);
+const studioMap=pmremGenerator.fromScene(studioEnvironment,.04);
+scene.environment=studioMap.texture;
+scene.environmentIntensity=.72;
+studioEnvironment.dispose();
+pmremGenerator.dispose();
 const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
 const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),.52,.27,1.10);
