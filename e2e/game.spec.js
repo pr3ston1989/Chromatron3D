@@ -5,6 +5,7 @@ test('3D gameplay loads, switches languages and exposes optical diagnostics',asy
  await page.goto('/');
  await expect(page.locator('#scene canvas')).toHaveCount(1);
  await expect(page.locator('#level-title')).not.toBeEmpty();
+ await expect(page.locator('#total-levels')).toHaveText('008');
  await expect(page.locator('#counter')).toHaveText(/\d+\s*\/\s*\d+/);
  await expect(page.locator('#language')).toHaveText('PL');
  await page.locator('#language').click();
