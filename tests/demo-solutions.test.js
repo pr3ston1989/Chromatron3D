@@ -12,11 +12,14 @@ const solutions=[
  [[5,9,1],[5,4,5]],            // Double turn
  [[7,6,0]],                    // Spectrum: move filter off ray
  [[5,10,1],[5,3,5]],           // Blue detour
- [[4,5,7],[4,8,3]]             // Twin signal
+ [[4,5,7],[4,8,3]],            // Twin signal
+ [[7,7,0]],                     // Spectral shift: red to green
+ [[7,7,0]],                     // Three wavelengths: prism into RGB
+ [[7,8,1]]                      // Split ray: forward and north
 ];
 test('every included demo puzzle has a verified, playable solution',()=>{
  const levels=validateLevels(PROTOTYPE_LEVELS);
- assert.equal(levels.length,5);
+ assert.equal(levels.length,solutions.length);
  for(const [index,level] of levels.entries()){
   const parts=level.pieces.map(([type,x,y,rot,color],id)=>({id,type,x,y,rot,color}));
   const movableParts=parts.filter(p=>movable.has(p.type));
