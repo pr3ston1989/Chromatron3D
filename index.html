@@ -14,6 +14,7 @@
   <div class="header-right"><span class="status-dot"></span><span data-i18n="online">SYSTEM OPTYCZNY AKTYWNY</span>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
     <button id="audio" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
+    <button id="analysis-toggle" class="icon-btn analyzer-btn" type="button" aria-pressed="false" data-i18n-title="analysisToggle" data-i18n-aria="analysisToggle" title="Analiza światła (V)">∿</button>
     <button id="help" class="icon-btn" type="button" data-i18n-title="helpAria" aria-label="Pomoc">?</button>
   </div>
  </header>
@@ -34,7 +35,15 @@
   <div id="level-status" class="level-status" aria-live="polite"></div>
  </aside>
  <aside class="tool-panel"><span class="eyebrow" data-i18n="optics">ELEMENTY OPTYCZNE</span><div id="inventory"></div><button id="return-tray" class="ui-button return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button id="spectral-toggle" class="ui-button spectrum-toggle" type="button" data-i18n="spectral" aria-expanded="false">◈ ANALIZATOR WIDMA</button><div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div><span class="eyebrow small-note" data-i18n="selectHelp">WYBIERZ ELEMENT · Q/E: OBRÓT</span></aside>
- <div class="hud-bottom"><div class="camera-label"><span data-i18n="camera">◉ WIDOK IZOMETRYCZNY</span> <span data-i18n="opticalArray">— TABLICA OPTYCZNA 3D</span></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
+ <aside id="analysis-panel" class="analysis-panel hidden" role="region" aria-label="Analiza światła">
+  <div class="analysis-heading"><span class="eyebrow" data-i18n="analysisHeading">ANALIZATOR SPEKTRUM</span><button id="analysis-close" class="analysis-close" type="button" data-i18n-aria="analysisClose" aria-label="Zamknij analizę">×</button></div>
+  <p data-i18n="analysisIntro">Obserwuj wiązki i zgodność barw bez ujawniania rozwiązania.</p>
+  <div class="analysis-stats"><div><strong id="analysis-sources">0</strong><span data-i18n="analysisSources">EMITERY</span></div><div><strong id="analysis-segments">0</strong><span data-i18n="analysisSegments">ODCINKI WIĄZEK</span></div></div>
+  <h3 data-i18n="analysisTargetHeading">REZONATORY</h3><div id="analysis-targets" class="analysis-targets" aria-live="polite"></div>
+  <h3 data-i18n="analysisAbsorption">POCHŁONIĘTE PROMIENIE</h3><div id="analysis-collisions" class="analysis-collisions"></div>
+  <p id="analysis-warning" class="analysis-warning hidden"></p>
+ </aside>
+ <div class="hud-bottom"><div class="camera-label"><span data-i18n="camera">◉ WIDOK IZOMETRYCZNY</span> <span data-i18n="opticalArray">— TABLICA OPTYCZNA 3D</span> <button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" title="Zmień widok kamery (C)" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
  <div id="toast" role="status" aria-live="polite"></div>
  <div id="win" class="overlay hidden" role="dialog" aria-modal="true">
   <div class="modal"><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
