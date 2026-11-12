@@ -85,6 +85,23 @@ export const PROTOTYPE_LEVELS = [
  }
 ];
 
+/**
+ * Known author-verified demonstration solutions, indexed by the original
+ * piece order. These are not the classic Chromatron puzzle arrangements.
+ * Each step is checked against the live optics solver before use as a hint.
+ */
+export const DEMO_SOLUTIONS=Object.freeze([
+ [{index:2,x:7,y:7,rot:1}],
+ [{index:3,x:5,y:9,rot:1},{index:4,x:5,y:4,rot:5}],
+ [{index:2,x:7,y:9,rot:0}],
+ [{index:4,x:5,y:10,rot:1},{index:5,x:5,y:3,rot:5}],
+ [{index:5,x:4,y:5,rot:7},{index:6,x:4,y:8,rot:3}],
+ [{index:2,x:7,y:7,rot:0}],
+ [{index:4,x:7,y:7,rot:0}],
+ [{index:3,x:7,y:8,rot:1}]
+]);
+for(let i=0;i<PROTOTYPE_LEVELS.length;i++)PROTOTYPE_LEVELS[i].solution=DEMO_SOLUTIONS[i];
+
 const types=new Set(['laser','target','mirror','wall','filter','splitter','prism','bender','doppler','tangler','conduit','teleporter']);
 const validText=value=>typeof value==='string'||(value && typeof value==='object' && ['pl','en'].some(k=>typeof value[k]==='string'));
 export function validateLevels(levels){
@@ -108,6 +125,15 @@ export function validateLevels(levels){
   const hints=Array.isArray(level.hints)?level.hints.slice(0,3).filter(validText):[];
   const f=level.hintFocus;
   const hintFocus=f&&Number.isInteger(f.x)&&Number.isInteger(f.y)&&f.x>=0&&f.x<15&&f.y>=0&&f.y<15?{x:f.x,y:f.y}:null;
-  return {title,description,hints,hintFocus,startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p])};
+  const solution=Array.isArray(level.solution)?level.solution.map(step=>{
+   if(!step||!Number.isInteger(step.index)||step.index<0||step.index>=level.pieces.length||
+      !Number.isInteger(step.x)||step.x<0||step.x>=15||
+      !Number.isInteger(step.y)||step.y<0||step.y>=15||
+      !Number.isInteger(step.rot)||step.rot<0||step.rot>7)
+    throw new Error('Invalid solution move in level '+index);
+   return {index:step.index,x:step.x,y:step.y,rot:step.rot};
+  }):null;
+  return {title,description,hints,hintFocus,solution,
+   startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p])};
  });
 }
