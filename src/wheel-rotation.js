@@ -20,10 +20,10 @@ export function createWheelRotation({threshold=78,resetAfterMs=260,maxSteps=2}={
   if(now-last>resetAfterMs || (carry!==0&&Math.sign(pixels)!==Math.sign(carry)))carry=0;
   last=now;
   carry+=pixels;
-  const steps=Math.max(-maxSteps,Math.min(maxSteps,Math.trunc(carry/threshold)));
-  carry-=steps*threshold;
-  // Discard extreme motion when the device reports many detents at once.
-  carry=Math.max(-threshold+.001,Math.min(threshold-.001,carry));
+  const rawSteps=Math.trunc(carry/threshold);
+  const steps=Math.max(-maxSteps,Math.min(maxSteps,rawSteps));
+  // A very large trackpad burst must not leave a hidden extra rotation behind.
+  carry=Math.abs(rawSteps)>maxSteps?0:carry-steps*threshold;
   return steps;
  }
  function reset(){carry=0;last=-Infinity}
