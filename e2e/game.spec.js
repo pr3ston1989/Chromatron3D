@@ -58,3 +58,63 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await expect(page.locator('#win')).toBeVisible();
  expect(errors).toEqual([]);
 });
+
+
+test('select, place, rotate both ways and never teleport a placed mirror',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
+ const state=()=>page.evaluate(()=>window.chromatron.getState());
+ const mirror=page.locator('#inventory button').filter({hasText:'LUSTRO'});
+ await mirror.click();
+ expect((await state()).placementMode).toBe(true);
+ const dest=await point(7,7);
+ await page.mouse.click(dest.x,dest.y);
+ const placed=(await state()).pieces.find(p=>p.type==='mirror');
+ expect([placed.x,placed.y,placed.inTray]).toEqual([7,7,false]);
+ expect((await state()).placementMode).toBe(false);
+ await expect(page.locator('#transform-tools')).toBeVisible();
+
+ // Empty clicks only deselect; they never relocate an already placed mirror.
+ const other=await point(6,6);
+ await page.mouse.click(other.x,other.y);
+ expect((await state()).pieces.find(p=>p.type==='mirror')).toMatchObject({x:7,y:7});
+ expect((await state()).selectedId).toBe(null);
+
+ const onMirror=await point(7,7,.60);
+ await page.mouse.click(onMirror.x,onMirror.y);
+ const before=(await state()).pieces.find(p=>p.type==='mirror').rot;
+ await page.mouse.click(onMirror.x,onMirror.y);
+ expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe(before);
+ await page.locator('#turn-right').click();
+ expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe((before+1)%8);
+ await page.locator('#turn-left').click();
+ expect((await state()).pieces.find(p=>p.type==='mirror').rot).toBe(before);
+ await page.screenshot({path:'test-results/chromatron-controls.png'});
+ expect(errors).toEqual([]);
+});
+
+test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ await page.locator('#next').click();
+ const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
+ const state=()=>page.evaluate(()=>window.chromatron.getState());
+ const start=(await state()).pieces.filter(p=>p.type==='mirror');
+ expect(start).toHaveLength(2);
+ const m1=await point(5,11,.63),m2=await point(9,11,.63);
+ await page.mouse.click(m1.x,m1.y);
+ expect((await state()).selectedId).toBe(start[0].id);
+ await page.mouse.click(m2.x,m2.y);
+ expect((await state()).selectedId).toBe(start[1].id);
+ expect((await state()).pieces.find(p=>p.id===start[0].id)).toMatchObject({x:5,y:11});
+ const dest=await point(8,11);
+ await page.mouse.move(m2.x,m2.y);
+ await page.mouse.down();
+ await page.mouse.move(dest.x,dest.y,{steps:8});
+ await page.mouse.up();
+ const moved=(await state()).pieces;
+ expect(moved.find(p=>p.id===start[0].id)).toMatchObject({x:5,y:11});
+ expect(moved.find(p=>p.id===start[1].id)).toMatchObject({x:8,y:11});
+ expect(errors).toEqual([]);
+});
