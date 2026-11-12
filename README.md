@@ -53,6 +53,15 @@ The five independently authored demo levels have automated **golden solution tes
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
+## Smoother selection and mouse-wheel rotation
+
+- Selection uses four restrained **corner brackets** around the occupied cell, not a glow ring hiding the actual optical hardware. An on-screen angle indicator shows the selected optic's current orientation, in 45° steps.
+- The program no longer rebuilds every mesh and planar mirror when selecting a piece. It updates the reticle and, when needed, moves the limited reflection render targets to whichever mirror is being inspected.
+- **Mouse wheel** rotates selected optics; **Shift + wheel** zooms. Trackpad sub-detents accumulate to one step, while ordinary ~100px wheel detents remain exactly one 45° step (no unintentional extra fourth-step rotation).
+- Physical mirror models smoothly continue from their current angular pose when several steps arrive together or direction reverses. The deterministic optical solver still resolves instantly.
+- Lens flare sprites reuse one cached GPU texture, reducing stutter during repeated turns.
+- `tests/wheel-rotation.test.js`, `tests/selection-reticle.test.js` and Chromium browser tests protect these behaviors.
+
 ## Precision 3D asset production
 
 The project now has reusable code-generated 3D hardware:
