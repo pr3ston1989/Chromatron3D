@@ -29,9 +29,9 @@ test('quick direction reversal discards latent motion rather than rotating backw
 test('stale trackpad leftovers expire and a huge wheel cannot skip many rotations at once',()=>{
  const w=createWheelRotation();
  assert.equal(w.consume(40,0,0),0);
- assert.equal(w.consume(40,0,1000),0);
- assert.equal(w.consume(700,0,1100),2);
- assert.equal(w.consume(7,0,1120),0);
+ assert.equal(w.consume(40,0,2500),0);
+ assert.equal(w.consume(700,0,2600),2);
+ assert.equal(w.consume(7,0,2620),0);
  w.reset();assert.equal(w.pending,0);
 });
 
@@ -42,4 +42,12 @@ test('four consecutive 100px wheel detents yield exactly four turns, never five'
  assert.equal(w.pending,0);
  const backward=[400,500,600].map(t=>w.consume(-3,1,t));
  assert.deepEqual(backward,[-1,-1,-1]);
+});
+
+test('touchpad ticks spaced by 350ms still accumulate one deliberate turn',()=>{
+ const w=createWheelRotation();
+ assert.equal(w.consume(-20,0,0),0);
+ assert.equal(w.consume(-20,0,350),0);
+ assert.equal(w.consume(-20,0,700),0);
+ assert.equal(w.consume(-20,0,1050),-1);
 });
