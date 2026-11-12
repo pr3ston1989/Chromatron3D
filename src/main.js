@@ -11,6 +11,7 @@ import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {opticIcon} from './optic-icons.js';
+import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
@@ -56,6 +57,7 @@ starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.a
 const componentGroup=new THREE.Group();world.add(componentGroup);
 const beamGroup=new THREE.Group();world.add(beamGroup);
 const assistGroup=new THREE.Group();world.add(assistGroup);
+const guideGroup=new THREE.Group();world.add(guideGroup);
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
@@ -249,12 +251,16 @@ function load(i){
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
 }
+function rebuildSelectionGuides(){
+ disposeGroupChildren(guideGroup);
+ renderSelectionGuides(THREE,guideGroup,selected,currentResult?.segments||[],vec,COLORS,T);
+}
 function refreshSelection(){
- rebuildPieces();renderInventory();updateCoach();syncTransformTools();
+ rebuildPieces();rebuildSelectionGuides();renderInventory();updateCoach();syncTransformTools();
  placementPreview.visible=false;
 }
 function update(){
- rebuildBeams();rebuildPieces();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
+ rebuildBeams();rebuildPieces();rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
  placementPreview.visible=false;
 }
 function renderInventory(){
