@@ -2,7 +2,7 @@ export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
     online:'SYSTEM OPTYCZNY AKTYWNY',experiment:'EKSPERYMENT',prototype:'PROTOTYP',chapter:'ROZDZIAŁ 01 // PODSTAWY',resonators:'AKTYWNE REZONATORY',
-    reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ELEMENTY OPTYCZNE',selectHelp:'WYBIERZ ELEMENT · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
+    reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',spectral:'◈ ANALIZATOR WIDMA',spectralSource:'LASER',spectralTarget:'REZONATOR',spectralNeed:'WYMAGANE',spectralReceived:'OTRZYMANE',spectralEmits:'EMITUJE',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ELEMENTY OPTYCZNE',selectHelp:'WYBIERZ ELEMENT · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
     controls:'KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM',
     manualTitle:'STERUJ ŚWIATŁEM.',manualIntro:'Skieruj laser na rezonator o odpowiednim kolorze. Wybierz ruchomy element i kliknij wolne pole, aby go przesunąć. Q / E obraca element o 45°. Przeciągaj puste miejsce, by obracać kamerę.',
     manualExtra:'Ctrl+Z cofa ruch. Rolka myszy przybliża widok. Podpowiedzi pomagają bez konieczności szukania gotowego rozwiązania.',
@@ -16,7 +16,7 @@ const strings = {
   },
   en:{
     online:'OPTICAL SYSTEM ONLINE',experiment:'EXPERIMENT',prototype:'PROTOTYPE',chapter:'CHAPTER 01 // FUNDAMENTALS',resonators:'RESONATORS ONLINE',
-    reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'OPTICAL COMPONENTS',selectHelp:'SELECT AN OPTIC · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
+    reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',spectral:'◈ SPECTRAL INSPECTOR',spectralSource:'EMITTER',spectralTarget:'RESONATOR',spectralNeed:'REQUIRED',spectralReceived:'RECEIVED',spectralEmits:'EMITS',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'OPTICAL COMPONENTS',selectHelp:'SELECT AN OPTIC · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
     controls:'CLICK: SELECT / MOVE · DRAG: ORBIT · WHEEL: ZOOM',
     manualTitle:'CONTROL THE LIGHT.',manualIntro:'Redirect each laser into the matching resonator. Select an optical component and click an empty cell to move it. Q / E rotates by 45°. Drag empty space to orbit the camera.',
     manualExtra:'Ctrl+Z undoes a move. Mouse wheel zooms. The hint system helps you progress without immediately revealing a full solution.',
