@@ -93,3 +93,15 @@ button:focus-visible{outline:2px solid #65e2ff;outline-offset:3px}
 @media(max-width:680px){
  .mission .hint-button,.mission .mission-actions{pointer-events:auto}
 }
+
+/* Narrow phone header: four usable controls without horizontal overflow. */
+@media(max-width:480px){
+ .brand{gap:7px}
+ .brand-mark{font-size:23px}
+ .brand strong{font-size:16px;letter-spacing:.2px}
+ .brand .eyebrow{font-size:7px;letter-spacing:1.2px}
+ .header{gap:6px}
+ .header-right{gap:2px;flex-shrink:0}
+ .header-right .icon-btn{width:29px;height:31px;margin-left:0;font-size:12px}
+ .tool-panel{right:8px;bottom:45px}
+}
