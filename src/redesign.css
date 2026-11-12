@@ -231,3 +231,15 @@ body{background:#102238;color:var(--ui-ink)}
  .quality-widget select{font-size:9px;padding:5px 22px 5px 7px;min-height:27px;max-width:104px;background-position:calc(100% - 13px) 11px,calc(100% - 8px) 11px,0 0}
  .graphics-fps{font-size:9px;min-width:31px}
 }
+
+/* Selection is a precise on-board corner reticle, not a giant glowing halo.
+   The angle is textual, so wheelchair/keyboard and trackpad users see what changed. */
+.transform-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.transform-heading .transform-caption{flex:1;min-width:0;margin-bottom:0}
+.rotation-angle{display:inline-flex;flex:none;align-items:center;justify-content:center;
+ min-width:47px;padding:4px 5px;margin-top:-3px;
+ color:#d4f9ef;background:rgba(41,110,113,.22);border:1px solid #4c9597;
+ border-radius:6px;font:700 13px 'Rajdhani',sans-serif;font-variant-numeric:tabular-nums;
+ letter-spacing:.8px}
+#inventory button.inventory-item.selected:not(:disabled){border-left:3px solid #70cbb4}
+@media(max-width:680px){.rotation-angle{min-width:38px;font-size:11px;padding:3px}.transform-heading{gap:4px;margin-bottom:4px}}
