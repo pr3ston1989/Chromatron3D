@@ -50,13 +50,16 @@ test('ray tracing halts on cycles and walls',()=>{
  const r=trace([p(1,'laser',2,7,2,1),p(2,'mirror',5,7,0),p(3,'mirror',5,5,0),p(4,'target',14,14,0,1)]);
  assert.equal(r.won,false);assert.ok(r.segments.length<16384);
 });
-test('all five prototype demonstration layouts have verified working placements',()=>{
+test('all eight original demonstration layouts have verified working placements',()=>{
  const layouts=[
   [['mirror',0,7,7,1]],
   [['mirror',0,5,9,1],['mirror',1,5,4,5]],
   [['filter',0,7,9,0]],
   [['mirror',0,5,10,1],['mirror',1,5,3,5]],
-  [['mirror',0,4,5,7],['mirror',1,4,8,3]]
+  [['mirror',0,4,5,7],['mirror',1,4,8,3]],
+  [['doppler',0,7,7,0]],
+  [['prism',0,7,7,0]],
+  [['splitter',0,7,8,1]]
  ];
  const levels=validateLevels(PROTOTYPE_LEVELS);
  assert.equal(levels.length,layouts.length);
