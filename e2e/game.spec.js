@@ -184,8 +184,12 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 
 
 test('real planar mirror reflections and GPU quality presets are switchable',async({page})=>{
+ // Mirror quality requires GPU-intensive render targets: SwiftShader on CI
+ // is software-rendered and may be much slower than a normal laptop GPU.
+ test.setTimeout(120000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('/');
+ await page.setViewportSize({width:1024,height:720});
+ await page.goto('/',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#graphics-quality')).toHaveValue('auto');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
@@ -200,8 +204,8 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
  expect(stats.planarReflections).toBe(1);
  expect(stats.effectiveQuality).toBe('cinematic');
  expect(stats.pixelRatio).toBeGreaterThanOrEqual(1);
- await page.screenshot({path:'test-results/chromatron-true-mirror.png'});
- await page.reload();
+ await page.screenshot({path:'test-results/chromatron-true-mirror.png',animations:'disabled'});
+ await page.reload({waitUntil:'domcontentloaded'});
  await expect(page.locator('#graphics-quality')).toHaveValue('cinematic');
  expect(errors).toEqual([]);
 });
