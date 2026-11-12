@@ -11,7 +11,11 @@ import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
-import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
+import {clampHints,hintFor,progressKey} from './hints.js';
+import {normalizeWallet,packFingerprint,stageKey,rewardOnce,ensurePreviousHints,buyNextHint,HINT_COSTS} from './hint-economy.js';
+import {verifyPuzzleSolution} from './puzzle-solver.js';
+import {contextualHint} from './hint-assistant.js';
+import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {opticIcon} from './optic-icons.js';
@@ -123,6 +127,11 @@ const wheelRotation=createWheelRotation();
 const hitObjects=[];
 let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
+let wallet=normalizeWallet(null);
+let currentPackId=packFingerprint(levels);
+const demoPackId=currentPackId;
+const verifiedSolutions=new Map();
+let hintWorker=null,solvingId=null,solverStatus='';
 let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,draggedPiece=null;
 let saved=0;
@@ -134,9 +143,15 @@ try{
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
  spectrumActive=localStorage.getItem('chromatron-reborn-spectrum')==='true';
+ wallet=normalizeWallet(localStorage.getItem('chromatron-reborn-credit-wallet'));
  if(!Array.isArray(solved))solved=[];
  if(!Array.isArray(skipped))skipped=[];
 }catch{}
+for(const level of solved){
+ if(Number.isInteger(level)&&level>=0&&level<levels.length)
+  wallet=rewardOnce(wallet,stageKey(currentPackId,level)).wallet;
+}
+try{localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify(wallet))}catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
 const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[color||7]),emissive:new THREE.Color(COLORS[color||7]),emissiveIntensity:1.8,metalness:.3,roughness:.18});
