@@ -45,13 +45,30 @@ function mesh(geo,mat,parent=world){const m=new THREE.Mesh(geo,mat);parent.add(m
 const deck=mesh(new THREE.BoxGeometry(21,.75,21),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.3}));deck.position.y=-.62;
 const edge=new THREE.EdgesGeometry(new THREE.BoxGeometry(21,.75,21));const wire=new THREE.LineSegments(edge,new THREE.LineBasicMaterial({color:0x1c89bd,transparent:true,opacity:.35}));wire.position.copy(deck.position);world.add(wire);
 const gridGroup=new THREE.Group();world.add(gridGroup);
+// Two instanced draw calls replace 450 independent tile/line meshes.
+// This preserves every logical cell and its coloring while keeping GPU headroom.
+const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
+const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
+const lineGeometry=new THREE.BoxGeometry(T*.88,.012,.016);
+const boardLines=new THREE.InstancedMesh(lineGeometry,new THREE.MeshBasicMaterial({
+ color:0x73abc4,transparent:true,opacity:.68,depthWrite:false
+}),GRID*GRID);
+const transform=new THREE.Object3D();
+let tileIndex=0;
 for(let y=0;y<GRID;y++)for(let x=0;x<GRID;x++){
- const tile=mesh(tileGeo,new THREE.MeshStandardMaterial({color:(x+y)%2?0x263f53:0x2b465a,metalness:.48,roughness:.48}),gridGroup);
- tile.position.set((x-HALF)*T,-.12,(y-HALF)*T);
- tile.userData.cell={x,y};
- const line=mesh(new THREE.BoxGeometry(T*.88,.012,.016),new THREE.MeshBasicMaterial({color:0x73abc4,transparent:true,opacity:.68}),gridGroup);
- line.position.set((x-HALF)*T,.002,(y-HALF)*T-T*.44);
+ transform.position.set((x-HALF)*T,-.12,(y-HALF)*T);
+ transform.updateMatrix();
+ boardTiles.setMatrixAt(tileIndex,transform.matrix);
+ boardTiles.setColorAt(tileIndex,new THREE.Color((x+y)%2?0x263f53:0x2b465a));
+ transform.position.set((x-HALF)*T,.002,(y-HALF)*T-T*.44);
+ transform.updateMatrix();
+ boardLines.setMatrixAt(tileIndex,transform.matrix);
+ tileIndex++;
 }
+boardTiles.instanceMatrix.needsUpdate=true;
+boardTiles.instanceColor.needsUpdate=true;
+boardLines.instanceMatrix.needsUpdate=true;
+gridGroup.add(boardTiles,boardLines);
 buildLaboratory(THREE,scene,world,T);
 const starGeo=new THREE.BufferGeometry(),pos=[];for(let i=0;i<1000;i++)pos.push((Math.random()-.5)*150,Math.random()*58-5,(Math.random()-.5)*150);
 starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x76aaff,size:.035,transparent:true,opacity:.6})));
