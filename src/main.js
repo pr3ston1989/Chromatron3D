@@ -470,6 +470,22 @@ placementPreview.visible=false;placementPreview.renderOrder=18;
 const previewEdgeMat=new THREE.LineBasicMaterial({color:0x8ce9ff,depthTest:false});
 const previewEdge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(T*.92,.04,T*.92)),previewEdgeMat);
 placementPreview.add(previewEdge);
+// A translucent, correctly oriented 3D silhouette follows the cursor while
+// placing or dragging. The player sees the OPTIC, not just a highlighted tile.
+const ghostMirror=new THREE.Group();
+placementPreview.add(ghostMirror);
+const ghostMat=new THREE.MeshBasicMaterial({
+ color:0xa7f3ff,transparent:true,opacity:.43,depthWrite:false,depthTest:false,side:THREE.DoubleSide
+});
+const ghostStand=new THREE.Mesh(new THREE.CylinderGeometry(.40,.45,.15,12),ghostMat);
+ghostStand.position.y=.18;ghostMirror.add(ghostStand);
+const ghostHead=new THREE.Group();ghostHead.position.y=.64;ghostMirror.add(ghostHead);
+const ghostPlate=new THREE.Mesh(new THREE.BoxGeometry(.13,.67,.99),ghostMat);
+ghostHead.add(ghostPlate);
+const ghostFace=new THREE.Mesh(new THREE.BoxGeometry(.035,.62,.90),
+ new THREE.MeshBasicMaterial({color:0xe2fdff,transparent:true,opacity:.78,depthWrite:false,depthTest:false}));
+ghostFace.position.x=-.09;ghostHead.add(ghostFace);
+
 function updatePlacementPreview(e){
  if(!selected||(!placementMode&&!draggedPiece)){placementPreview.visible=false;return}
  mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);
@@ -482,6 +498,9 @@ function updatePlacementPreview(e){
  previewMat.color.setHex(occupied?0xff728c:0x72eac1);
  previewEdgeMat.color.setHex(occupied?0xff728c:0xa8f9d3);
  placementPreview.position.copy(vec(x,y,.075));
+ ghostHead.rotation.y=-selected.rot*Math.PI/4;
+ ghostMat.color.setHex(occupied?0xff8fa7:0xa7f3ff);
+ ghostMirror.visible=selected.type==='mirror'||selected.type==='bender';
  placementPreview.visible=true;
 }
 let down=null;
