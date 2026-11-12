@@ -162,3 +162,26 @@ body{background:#102238;color:var(--ui-ink)}
  .header-right .icon-btn{height:27px;width:26px}
 }
 @media(prefers-reduced-motion:reduce){#inventory button.inventory-item.coach-focus{animation:none}}
+
+/* Explicit optic transformations — click selects, dragging moves, left/right rotate. */
+.transform-tools{margin:13px 0 10px;padding:12px 10px;border:1px solid rgba(112,229,255,.68);border-radius:9px;background:linear-gradient(120deg,rgba(30,75,96,.84),rgba(13,39,58,.93));box-shadow:0 0 22px rgba(35,190,235,.16)}
+.transform-tools.hidden{display:none}
+.transform-caption{font:700 10px 'Rajdhani',sans-serif;letter-spacing:1.15px;color:#d6f8ff;line-height:1.4;margin-bottom:9px}
+.transform-controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.transform-controls button{border:1px solid #69b9d6;color:#e7faff;border-radius:7px;background:#1d4359;padding:7px 3px;cursor:pointer;font:700 21px 'Rajdhani',sans-serif;line-height:1.1}
+.transform-controls button span{display:block;font:700 9px 'Space Grotesk',sans-serif;opacity:.7;letter-spacing:.8px}
+.transform-controls button:hover{background:#367d91;border-color:#aff5ff}
+.transform-controls button:focus-visible{outline:2px solid #aff5ff;outline-offset:2px}
+#inventory button.inventory-item:disabled{opacity:.5;cursor:not-allowed}
+#inventory button.inventory-item:disabled:hover{box-shadow:none;background:transparent}
+#scene canvas{touch-action:none}
+@media(max-width:680px){
+ .transform-tools{display:inline-block;margin:3px 5px 1px 0;padding:7px;vertical-align:top;max-width:180px}
+ .transform-tools.hidden{display:none}
+ .transform-caption{font-size:8px;margin-bottom:5px}
+ .transform-controls{gap:4px}
+ .transform-controls button{font-size:17px;padding:3px 10px}
+ .transform-controls button span{font-size:8px}
+ .tool-panel:has(.transform-tools:not(.hidden)){max-height:195px}
+ .tool-panel:has(.transform-tools:not(.hidden)) ~ .hud-bottom{bottom:205px}
+}
