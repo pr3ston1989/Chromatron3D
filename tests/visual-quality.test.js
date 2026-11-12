@@ -8,6 +8,9 @@ test('quality profiles are finite and ordered by GPU cost',()=>{
  assert.equal(profileFor('performance').reflectorCount,0);
  assert.ok(profileFor('cinematic').reflectionSize>profileFor('balanced').reflectionSize);
  assert.ok(profileFor('cinematic').pixelRatio>profileFor('balanced').pixelRatio);
+ assert.ok(profileFor('performance').maxBeamLights<profileFor('balanced').maxBeamLights);
+ assert.ok(profileFor('balanced').maxBeamLights<=profileFor('cinematic').maxBeamLights);
+ assert.ok(profileFor('performance').maxOpticLights<profileFor('cinematic').maxOpticLights);
 });
 test('a selected mirror gets the real reflection before other mirrors',()=>{
  const a={type:'mirror',id:1,inTray:false},b={type:'mirror',id:2,inTray:false},c={type:'mirror',id:3,inTray:true};
