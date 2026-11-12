@@ -12,7 +12,7 @@ export function toWheelPixels(deltaY,deltaMode=0,pageHeight=750){
  if(deltaMode===2)return deltaY*Math.max(200,pageHeight);
  return deltaY;
 }
-export function createWheelRotation({threshold=78,resetAfterMs=260,maxSteps=2}={}){
+export function createWheelRotation({threshold=78,resetAfterMs=1200,maxSteps=2}={}){
  let carry=0,last=-Infinity;
  function consume(deltaY,deltaMode=0,now=0,pageHeight=750){
   let pixels=toWheelPixels(deltaY,deltaMode,pageHeight);
