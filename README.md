@@ -2,6 +2,16 @@
 
 A cinematic, browser-based 3D laser-puzzle prototype built with **Three.js + Vite**.
 
+## Windows 10 / 11 — one-click start
+
+1. Install **Node.js LTS** from https://nodejs.org/ (Node.js 22.12+ recommended).
+2. From this GitHub repository choose **Code → Download ZIP**, then unzip the whole project.
+3. Double-click **`Uruchom-gre-Windows.bat`** in the folder containing `package.json`.
+4. On the first run, the launcher downloads npm dependencies (Internet needed); after that it starts Vite and opens the game in your browser at http://localhost:5173.
+5. Stop the server with **Ctrl+C** in the command window.
+
+If the launcher warns that port 5173 is busy, close any previously running copy first. Windows SmartScreen may prompt you about downloaded batch files; you can read the launcher in a text editor before running it. Nothing is installed system-wide apart from Node.js.
+
 ## Run locally
 
 Requires Node.js 20.19+ or 22.12+.
