@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
-import {COLORS,trace,movable} from './optics.js';
+import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,nextHint,hintFor,progressKey} from './hints.js';
@@ -99,20 +99,45 @@ function rebuildPieces(){
    const crystal=mesh(new THREE.IcosahedronGeometry(.235,1),glow,g);
    crystal.position.y=.56;crystal.userData.spin=true;
   }else if(p.type==='wall'){
-   const wall=mesh(new THREE.BoxGeometry(.98,.81,.98),dark,g);wall.position.y=.45;
-   const cap=mesh(new THREE.BoxGeometry(1.03,.07,1.03),trim,g);cap.position.y=.88;
-   const stripe=mesh(new THREE.BoxGeometry(.85,.025,.06),new THREE.MeshBasicMaterial({color:0xffaa55}),g);stripe.position.set(0,.93,-.3);
+   // A proper light-blocking bulkhead with inset armored faces and safety marks.
+   const wall=mesh(new THREE.BoxGeometry(1.05,.88,1.05),dark,g);wall.position.y=.48;
+   const top=mesh(new THREE.BoxGeometry(1.11,.095,1.11),trim,g);top.position.y=.95;
+   const panelMat=new THREE.MeshStandardMaterial({color:0x233848,metalness:.7,roughness:.42});
+   for(const side of [-1,1]){
+    const panel=mesh(new THREE.BoxGeometry(.83,.64,.035),panelMat,g);
+    panel.position.set(0,.48,side*.545);
+    const stripe=mesh(new THREE.BoxGeometry(.75,.065,.045),new THREE.MeshBasicMaterial({color:0xf9b45b}),g);
+    stripe.position.set(0,.69,side*.576);
+   }
+   for(const x of [-.4,.4])for(const z of [-.4,.4]){
+    const bolt=mesh(new THREE.CylinderGeometry(.052,.052,.025,8),trim,g);
+    bolt.position.set(x,.995,z);
+   }
   }else{
    const stem=mesh(new THREE.CylinderGeometry(.14,.19,.37,12),metal,g);stem.position.y=.36;
    const head=new THREE.Group();head.position.y=.65;head.rotation.y=-p.rot*Math.PI/4;g.add(head);
    if(p.type==='mirror'||p.type==='bender'){
-    const plate=mesh(new THREE.BoxGeometry(.97,.72,.105),silver,head);
-    plate.position.y=.045;
-    const edgeMat=new THREE.MeshBasicMaterial({color:p.type==='bender'?0xffc177:0x85dcff});
-    for(const side of [-.51,.51]){
-     const stripe=mesh(new THREE.BoxGeometry(.055,.82,.14),edgeMat,head);stripe.position.set(side,0,0);
+    // Original rule: optic axis rot=0 runs NORTH-SOUTH, not East-West.
+    // The forward-facing reflective surface is local -X; the back is dark +X.
+    // At rot=1 an eastbound ray strikes the reflective NW face and goes NORTH.
+    const support=mesh(new THREE.BoxGeometry(.19,.82,1.06),trim,head);support.position.y=.04;
+    const front=mesh(new THREE.BoxGeometry(.026,.70,.95),silver,head);
+    front.position.set(-.113,.065,0);
+    const rearMat=new THREE.MeshStandardMaterial({color:0x081522,metalness:.35,roughness:.75});
+    const rear=mesh(new THREE.BoxGeometry(.035,.71,.96),rearMat,head);
+    rear.position.set(.116,.065,0);
+    const edgeMat=new THREE.MeshBasicMaterial({color:p.type==='bender'?0xffc177:0x82eaff});
+    for(const end of [-.53,.53]){
+     const trimRail=mesh(new THREE.BoxGeometry(.21,.81,.045),edgeMat,head);
+     trimRail.position.set(0,.045,end);
     }
-    const lip=mesh(new THREE.BoxGeometry(1.06,.065,.17),trim,head);lip.position.y=-.38;
+    const lip=mesh(new THREE.BoxGeometry(.29,.064,1.16),trim,head);lip.position.y=-.39;
+    if(p===selected){
+     const outward=(p.rot+6)%8;
+     const guide=new THREE.ArrowHelper(new THREE.Vector3(DX[outward],0,DY[outward]).normalize(),
+       new THREE.Vector3(0,.88,0),.58,0x86ebff,.19,.11);
+     g.add(guide);
+    }
    }else if(p.type==='prism'){
     const prism=mesh(new THREE.ConeGeometry(.49,.78,3),glass,head);prism.rotation.y=Math.PI/6;
     const base=mesh(new THREE.CylinderGeometry(.32,.35,.08,3),glow,head);base.position.y=-.37;
