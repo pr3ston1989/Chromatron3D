@@ -78,6 +78,6 @@ export function validateLevels(levels){
   const hints=Array.isArray(level.hints)?level.hints.slice(0,3).filter(validText):[];
   const f=level.hintFocus;
   const hintFocus=f&&Number.isInteger(f.x)&&Number.isInteger(f.y)&&f.x>=0&&f.x<15&&f.y>=0&&f.y<15?{x:f.x,y:f.y}:null;
-  return {title,description,hints,hintFocus,pieces:level.pieces.map(p=>[...p])};
+  return {title,description,hints,hintFocus,startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p])};
  });
 }
