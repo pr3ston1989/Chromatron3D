@@ -49,8 +49,10 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await expect(mirror).toHaveClass(/coach-focus/);
  await mirror.click();
  await expect(page.locator('#coach-title')).toContainText('Ustaw lustro');
- const bounds=await page.locator('#scene canvas').boundingBox();
- await page.mouse.click(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+ const center=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ const intent=await page.evaluate(({x,y})=>window.chromatron.inspectPointer(x,y),center);
+ expect(intent).toMatchObject({intent:'place',placementMode:true});
+ await page.mouse.click(center.x,center.y);
  await expect.poll(async()=>page.evaluate(()=>window.chromatron.getState().pieces.find(x=>x.type==='mirror').inTray)).toBe(false);
  await expect(page.locator('#coach-title')).toContainText('Obróć lustro');
  await page.keyboard.press('e');
@@ -105,6 +107,8 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  const start=(await state()).pieces.filter(p=>p.type==='mirror');
  expect(start).toHaveLength(2);
  const m1=await point(5,11),m2=await point(9,11);
+ const hit1=await page.evaluate(({x,y})=>window.chromatron.inspectPointer(x,y),m1);
+ expect(hit1).toMatchObject({intent:'select',hit:{pieceType:'mirror'}});
  await page.mouse.click(m1.x,m1.y);
  expect((await state()).selectedId).toBe(start[0].id);
  await page.mouse.click(m2.x,m2.y);
