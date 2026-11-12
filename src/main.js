@@ -404,6 +404,7 @@ function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
  $('level-desc').textContent=loc(l.description,language);
+ $('level-pack-label').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
