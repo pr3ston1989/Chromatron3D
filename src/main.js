@@ -196,21 +196,21 @@ function rebuildPieces(){
     // Original rule: optic axis rot=0 runs NORTH-SOUTH, not East-West.
     // The forward-facing reflective surface is local -X; the back is dark +X.
     // At rot=1 an eastbound ray strikes the reflective NW face and goes NORTH.
-    const support=mesh(new THREE.BoxGeometry(.19,.82,1.06),trim,head);support.position.y=.04;
-    const front=mesh(new THREE.BoxGeometry(.026,.70,.95),silver,head);
+    const support=mesh(new THREE.BoxGeometry(.19,1.04,1.15),trim,head);support.position.y=.09;
+    const front=mesh(new THREE.BoxGeometry(.026,.93,1.06),silver,head);
     front.position.set(-.113,.065,0);
     // The interactive mirror's silvered front receives a real reflection of
     // the 3D scene. The other faces retain PBR environment reflections.
     if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
     const rearMat=new THREE.MeshStandardMaterial({color:0x081522,metalness:.35,roughness:.75});
-    const rear=mesh(new THREE.BoxGeometry(.035,.71,.96),rearMat,head);
+    const rear=mesh(new THREE.BoxGeometry(.035,.94,1.07),rearMat,head);
     rear.position.set(.116,.065,0);
     const edgeMat=new THREE.MeshBasicMaterial({color:p.type==='bender'?0xffc177:0x82eaff});
     for(const end of [-.53,.53]){
-     const trimRail=mesh(new THREE.BoxGeometry(.21,.81,.045),edgeMat,head);
-     trimRail.position.set(0,.045,end);
+     const trimRail=mesh(new THREE.BoxGeometry(.21,1.04,.055),edgeMat,head);
+     trimRail.position.set(0,.09,end);
     }
-    const lip=mesh(new THREE.BoxGeometry(.29,.064,1.16),trim,head);lip.position.y=-.39;
+    const lip=mesh(new THREE.BoxGeometry(.31,.075,1.23),trim,head);lip.position.y=-.44;
     // Long, thin line on the pedestal is the actual tangent of the mirror:
     // readable even from a near top-down camera. Cyan = reflective/front;
     // charcoal = opaque/back. Orientation matches the ray tracer.
@@ -223,7 +223,7 @@ function rebuildPieces(){
     const backMark=mesh(new THREE.BoxGeometry(.14,.036,1.14),
       new THREE.MeshBasicMaterial({color:0x152232}),surfaceFootprint);
     backMark.position.x=.12;
-    const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.52,.10),
+    const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.60,.07),
       new THREE.MeshBasicMaterial({color:0xf0ffff,transparent:true,opacity:.88,toneMapped:false}),head);
     reflectionStrip.position.set(-.145,.13,-.25);
     if(p===selected){
