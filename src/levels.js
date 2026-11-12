@@ -1,4 +1,4 @@
-// Five independently authored tutorial puzzles for prototype QA.
+// Eight independently authored tutorial puzzles for prototype QA.
 // These are NOT the copyrighted 200 original Chromatron puzzle arrangements.
 // Direction 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SW, 6=W, 7=NW.
 // Colors are bitmasks 1=red, 2=green, 4=blue (prototype palette).
@@ -52,6 +52,36 @@ export const PROTOTYPE_LEVELS = [
    {pl:'Czerwona wiązka musi zejść niżej przed barierą, potem skręcić w stronę odbiornika.',en:'Turn the red beam downward before the barrier, then right toward its target.'},
    {pl:'Ustaw pierwsze lustro na (4, 5), obrót 7; drugie na (4, 8), obrót 3.',en:'Place the first mirror at (4, 5), rotation 7; the second at (4, 8), rotation 3.'}
   ],hintFocus:{x:4,y:5}
+ },
+ {
+  title:{pl:'PRZESUNIĘCIE WIDMA',en:'SPECTRAL SHIFT'},
+  description:{pl:'Czerwony laser, zielony rezonator. Zmień barwę za pomocą modułu Dopplera.',en:'A red emitter and a green receiver. Shift the wavelength using a Doppler module.'},
+  pieces:[['laser',2,7,2,1],['target',12,7,0,2],['doppler',7,10,3,0]],
+  hints:[
+   {pl:'Moduł Dopplera zmienia kolor przepuszczanego światła. W tym układzie potrzebna jest zamiana czerwieni na zieleń.',en:'The Doppler module changes the color of transmitted light. Here red must become green.'},
+   {pl:'Wstaw moduł w poziomą wiązkę między laserem a odbiornikiem. Nie wystarczy obrót — element musi leżeć na trasie.',en:'Move the module onto the horizontal beam between emitter and receiver. Rotating it off the path will not work.'},
+   {pl:'Umieść moduł Dopplera na (7, 7) i ustaw obrót 0.',en:'Place the Doppler module at (7, 7), rotation 0.'}
+  ],hintFocus:{x:7,y:7}
+ },
+ {
+  title:{pl:'TRZY BARWY',en:'THREE WAVELENGTHS'},
+  description:{pl:'Biała wiązka kryje trzy kolory. Jeden pryzmat rozdzieli je między trzy rezonatory.',en:'White light contains three colors. One prism can separate them into three receivers.'},
+  pieces:[['laser',3,7,2,7],['target',12,7,0,4],['target',10,10,0,2],['target',7,12,0,1],['prism',7,9,3,0]],
+  hints:[
+   {pl:'Biel to połączenie czerwieni, zieleni i błękitu. Pryzmat wysyła składowe kolory w różnych kierunkach.',en:'White combines red, green, and blue. The prism directs its components along different paths.'},
+   {pl:'Szukaj punktu, w którym niebieska trasa biegnie dalej w prawo, zielona ukośnie w dół, a czerwona pionowo w dół.',en:'Look for a cell where blue continues right, green travels diagonally downward, and red heads straight down.'},
+   {pl:'Przesuń pryzmat na (7, 7) i obróć do pozycji 0.',en:'Move the prism to (7, 7) and set rotation 0.'}
+  ],hintFocus:{x:7,y:7}
+ },
+ {
+  title:{pl:'ROZDWOJONY PROMIEŃ',en:'SPLIT RAY'},
+  description:{pl:'Jeden niebieski laser ma zasilić dwa rezonatory. Rozdziel wiązkę bez utraty koloru.',en:'One blue emitter must feed two receivers. Split its beam without changing the wavelength.'},
+  pieces:[['laser',2,8,2,4],['target',12,8,0,4],['target',7,3,0,4],['splitter',7,11,3,0]],
+  hints:[
+   {pl:'Rozdzielacz przekazuje część światła prosto i część odbija na drugi tor.',en:'A splitter allows one part of the beam to continue and redirects another part.'},
+   {pl:'Punkt rozdzielenia leży w kolumnie górnego rezonatora i na poziomie lasera. Odbita część musi pójść ku górze.',en:'The branching cell shares the upper receiver’s column and the emitter’s row. The diverted ray must head upward.'},
+   {pl:'Ustaw rozdzielacz na (7, 8) z obrotem 1.',en:'Place the splitter at (7, 8), rotation 1.'}
+  ],hintFocus:{x:7,y:8}
  }
 ];
 
