@@ -172,3 +172,43 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
  expect(mirror.inTray).toBe(true);
  expect(errors).toEqual([]);
 });
+
+
+test('real planar mirror reflections and GPU quality presets are switchable',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/');
+ await expect(page.locator('#graphics-quality')).toHaveValue('auto');
+ const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await page.mouse.click(point.x,point.y);
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().planarReflections)).toBe(1);
+ await page.locator('#graphics-quality').selectOption('performance');
+ let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.planarReflections).toBe(0);
+ expect(stats.pixelRatio).toBeLessThanOrEqual(1);
+ await page.locator('#graphics-quality').selectOption('cinematic');
+ stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.planarReflections).toBe(1);
+ expect(stats.effectiveQuality).toBe('cinematic');
+ expect(stats.pixelRatio).toBeGreaterThanOrEqual(1);
+ await page.screenshot({path:'test-results/chromatron-true-mirror.png'});
+ await page.reload();
+ await expect(page.locator('#graphics-quality')).toHaveValue('cinematic');
+ expect(errors).toEqual([]);
+});
+
+test('rotation eases visually without delaying the optical logic',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/');
+ const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
+ await page.mouse.click(point.x,point.y);
+ await page.locator('#turn-left').click();
+ const result=await page.evaluate(()=>window.chromatron.getState());
+ expect(result.pieces.find(p=>p.type==='mirror').rot).toBe(7);
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().activeOpticTweens)).toBe(0);
+ await page.locator('#turn-right').click();
+ expect((await page.evaluate(()=>window.chromatron.getState())).pieces.find(p=>p.type==='mirror').rot).toBe(0);
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().activeOpticTweens)).toBe(0);
+ expect(errors).toEqual([]);
+});
