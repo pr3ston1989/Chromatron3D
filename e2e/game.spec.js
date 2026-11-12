@@ -111,12 +111,15 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  const start=(await state()).pieces.filter(p=>p.type==='mirror');
  expect(start).toHaveLength(2);
  const m1=await point(5,11),m2=await point(9,11);
+ const previousRebuilds=await page.evaluate(()=>window.chromatron.getVisualStats().componentRebuilds);
  const hit1=await page.evaluate(({x,y})=>window.chromatron.inspectPointer(x,y),m1);
  expect(hit1).toMatchObject({intent:'select',hit:{pieceType:'mirror'}});
  await page.mouse.click(m1.x,m1.y);
  expect((await state()).selectedId).toBe(start[0].id);
  await page.mouse.click(m2.x,m2.y);
  expect((await state()).selectedId).toBe(start[1].id);
+ // Switching between mirrors must not recreate all optical hardware.
+ expect(await page.evaluate(()=>window.chromatron.getVisualStats().componentRebuilds)).toBe(previousRebuilds);
  expect((await state()).pieces.find(p=>p.id===start[0].id)).toMatchObject({x:5,y:11});
  const dest=await point(8,11);
  await page.mouse.move(m2.x,m2.y);
