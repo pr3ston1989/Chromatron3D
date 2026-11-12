@@ -442,7 +442,7 @@ test('original numeric level JSON imports privately with full 50 level index ord
   levels:Array.from({length:50},(_,i)=>({
    text:'Synthetic sample '+i,
    pieces:[{type:2,rotation:2,color:4,x:2,y:7},
-    {type:10,rotation:0,color:4,x:12,y:7}]
+    {type:10,rotation:0,color:1,x:12,y:7}]
   })),
   level_order:Array.from({length:50},(_,i)=>i)
  };
