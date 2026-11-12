@@ -379,7 +379,11 @@ function rebuildBeams(){
   if(victoryFX)victoryFX.dispose();
   victoryFX=createVictoryFX(THREE,world,pieces,COLORS,vec);
   victorySince=performance.now();
-  if(!solved.includes(levelIndex)){solved.push(levelIndex);store('chromatron-reborn-solved',JSON.stringify(solved))}
+  if(!solved.includes(levelIndex)){
+   solved.push(levelIndex);
+   store('chromatron-reborn-solved-'+currentPackId,JSON.stringify(solved));
+   if(currentPackId===demoPackId)store('chromatron-reborn-solved',JSON.stringify(solved));
+  }
   const earned=rewardOnce(wallet,currentLevelKey());
   wallet=earned.wallet;saveWallet();
   $('win-reward').textContent=earned.awarded?
@@ -410,6 +414,24 @@ function setLanguage(next){
  syncFullscreenButton();syncBoardFocus();
  $('language').textContent=language.toUpperCase();
  updateLocalizedLevel();
+}
+function switchLevelPack(nextLevels){
+ if(!Array.isArray(nextLevels)||!nextLevels.length||nextLevels.length>250)
+  throw new Error('Expected 1–250 validated puzzles');
+ // Preserve earlier progress separately; a user's privately imported pack
+ // must not overwrite achievements from the eight bundled demonstrations.
+ store('chromatron-reborn-solved-'+currentPackId,JSON.stringify(solved));
+ store('chromatron-reborn-skipped-'+currentPackId,JSON.stringify(skipped));
+ levels=nextLevels;currentPackId=packFingerprint(levels);
+ verifiedSolutions.clear();
+ try{
+  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved-'+currentPackId)||'[]');
+  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped-'+currentPackId)||'[]');
+  if(!Array.isArray(solved))solved=[];
+  if(!Array.isArray(skipped))skipped=[];
+ }catch{solved=[];skipped=[]}
+ load(0);
+ return levels.length;
 }
 function load(i){
  cancelSolutionSearch();
@@ -1059,7 +1081,11 @@ $('reveal-hint').onclick=()=>{
 $('skip-level').onclick=()=>{
  if(hintCount<3)return;
  if(levelIndex>=levels.length-1){toast(t(language,'lastLevel'));return}
- if(!skipped.includes(levelIndex)){skipped.push(levelIndex);store('chromatron-reborn-skipped',JSON.stringify(skipped))}
+ if(!skipped.includes(levelIndex)){
+  skipped.push(levelIndex);
+  store('chromatron-reborn-skipped-'+currentPackId,JSON.stringify(skipped));
+  if(currentPackId===demoPackId)store('chromatron-reborn-skipped',JSON.stringify(skipped));
+ }
  load(levelIndex+1);toast(t(language,'skipNotice'))
 };
 $('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dismissed','yes');updateCoach();renderInventory()};
