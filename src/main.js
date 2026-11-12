@@ -517,7 +517,21 @@ function updateCamera(){
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
-function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);composer.setSize(w,h)}window.addEventListener('resize',resize);resize();updateCamera();
+function resize(){
+ const w=innerWidth,h=innerHeight;
+ camera.aspect=w/h;camera.updateProjectionMatrix();
+ renderer.setSize(w,h);composer.setSize(w,h);
+}
+function applyGraphicsQuality(){
+ graphicsProfile=profileFor(graphicsMode,autoLevel);
+ renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
+ composer.setPixelRatio(renderer.getPixelRatio());
+ bloomPass.strength=graphicsProfile.bloomStrength;
+ resize();
+ if(pieces.length)rebuildPieces();
+ $('graphics-quality').value=graphicsMode;
+}
+window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function cellAt(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
@@ -735,9 +749,38 @@ $('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dism
 $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
 $('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('enabled',audioEnabled);beep(700,.08)};
-let start=performance.now();
+$('graphics-quality').value=graphicsMode;
+$('graphics-quality').addEventListener('change',e=>{
+ graphicsMode=normalizeQuality(e.target.value);autoLevel='balanced';
+ store('chromatron-graphics-quality',graphicsMode);
+ applyGraphicsQuality();
+});
+let start=performance.now(),fpsMark=0,fpsFrames=0,slowWindows=0,fastWindows=0;
+function trackFrameRate(time){
+ fpsFrames++;
+ if(!fpsMark){fpsMark=time;return}
+ const windowMs=time-fpsMark;
+ if(windowMs<1500)return;
+ const fps=Math.round(fpsFrames*1000/windowMs);
+ $('graphics-fps').textContent=fps+' FPS';
+ $('graphics-fps').classList.toggle('low',fps<42);
+ if(graphicsMode==='auto'&&!document.hidden){
+  // Only sustained low frame rate degrades quality; recovery is deliberately
+  // much slower so the render target does not flap on individual frames.
+  if(fps<42){slowWindows++;fastWindows=0}
+  else if(fps>57){fastWindows++;slowWindows=0}
+  else {slowWindows=0;fastWindows=0}
+  const next=nextAutoProfile(autoLevel,slowWindows,fastWindows);
+  if(next!==autoLevel){
+   autoLevel=next;slowWindows=0;fastWindows=0;
+   applyGraphicsQuality();
+  }
+ }
+ fpsFrames=0;fpsMark=time;
+}
 function animate(time){
  requestAnimationFrame(animate);
+ trackFrameRate(time);
  if(cameraTween){
   const f=Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
   yaw=cameraTween.yaw0+(cameraTween.yaw1-cameraTween.yaw0)*ease;
@@ -782,7 +825,7 @@ load(Math.min(Math.max(saved,0),levels.length-1));requestAnimationFrame(animate)
 // For QA / external validation, expose read-only state and import API.
 window.chromatron={
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
