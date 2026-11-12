@@ -17,6 +17,7 @@ import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
+import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import './style.css';
 import './redesign.css';
@@ -88,6 +89,8 @@ buildLaboratory(THREE,scene,world,T);
 const starGeo=new THREE.BufferGeometry(),pos=[];for(let i=0;i<1000;i++)pos.push((Math.random()-.5)*150,Math.random()*58-5,(Math.random()-.5)*150);
 starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x76aaff,size:.035,transparent:true,opacity:.6})));
 const componentGroup=new THREE.Group();world.add(componentGroup);
+const opticTweens=[];
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 const beamGroup=new THREE.Group();world.add(beamGroup);
 const assistGroup=new THREE.Group();world.add(assistGroup);
 const guideGroup=new THREE.Group();world.add(guideGroup);
@@ -114,6 +117,16 @@ const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLO
 function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
+ // Capture current *visual* poses before rebuilding so interaction remains
+ // responsive while optical hardware glides and rotates smoothly.
+ const previous=new Map();
+ for(const obj of componentGroup.children){
+  if(!obj.userData.piece)continue;
+  const head=obj.children.find(c=>c.userData.motionHead);
+  previous.set(obj.userData.piece.id,{position:obj.position.clone(),rotation:head?.rotation.y});
+ }
+ opticTweens.length=0;
+ const frameTime=performance.now();
  // Planar reflections own GPU render targets in addition to their meshes.
  disposeReflectionTargets(componentGroup);
  disposeGroupChildren(componentGroup,new Set([metal,dark,cyan]));
@@ -177,7 +190,8 @@ function rebuildPieces(){
    }
   }else{
    const stem=mesh(new THREE.CylinderGeometry(.14,.19,.37,12),metal,g);stem.position.y=.36;
-   const head=new THREE.Group();head.position.y=.65;head.rotation.y=-p.rot*Math.PI/4;g.add(head);
+   const head=new THREE.Group();head.position.y=.65;head.rotation.y=-p.rot*Math.PI/4;
+   head.userData.motionHead=true;g.add(head);
    if(p.type==='mirror'||p.type==='bender'){
     // Original rule: optic axis rot=0 runs NORTH-SOUTH, not East-West.
     // The forward-facing reflective surface is local -X; the back is dark +X.
@@ -201,6 +215,7 @@ function rebuildPieces(){
     // readable even from a near top-down camera. Cyan = reflective/front;
     // charcoal = opaque/back. Orientation matches the ray tracer.
     const surfaceFootprint=new THREE.Group();surfaceFootprint.rotation.y=-p.rot*Math.PI/4;
+    surfaceFootprint.userData.motionFootprint=true;
     surfaceFootprint.position.y=.205;g.add(surfaceFootprint);
     const frontMark=mesh(new THREE.BoxGeometry(.14,.035,1.14),
       new THREE.MeshBasicMaterial({color:0xc6f8ff,toneMapped:false}),surfaceFootprint);
@@ -238,6 +253,34 @@ function rebuildPieces(){
   if(p===selected){
    const halo=torus(.64,.028,new THREE.MeshBasicMaterial({color:0xa5f1ff,transparent:true,opacity:.68,depthTest:false}),g);
    halo.position.y=.04;halo.renderOrder=20;
+  }
+  // Animate the model, not its logical placement. The ray tracer resolves
+  // instantly; the optical hardware settles with an unobtrusive ease-out.
+  if(!reducedMotion.matches){
+   const old=previous.get(p.id);
+   if(old){
+    const target=g.position.clone(),distance=old.position.distanceTo(target);
+    if(distance>.002){
+     g.position.copy(old.position);
+     opticTweens.push({object:g,kind:'move',from:old.position,to:target,
+       start:frameTime,duration:travelDuration(distance/T)});
+    }
+    const rotHead=g.children.find(c=>c.userData.motionHead);
+    if(rotHead&&Number.isFinite(old.rotation)){
+     const final=rotHead.rotation.y,delta=shortestAngle(old.rotation,final);
+     if(Math.abs(delta)>.001){
+      rotHead.rotation.y=old.rotation;
+      const footprint=g.children.find(c=>c.userData.motionFootprint);
+      if(footprint)footprint.rotation.y=old.rotation;
+      opticTweens.push({object:rotHead,footprint,kind:'rotate',from:old.rotation,
+        to:old.rotation+delta,start:frameTime,duration:225});
+     }
+    }
+   }else{
+    g.position.y-=.18;g.scale.setScalar(.62);
+    opticTweens.push({object:g,kind:'appear',start:frameTime,duration:245,
+      toY:g.position.y+.18});
+   }
   }
  }
  // These are shared within this rebuild, but disposed next time by the group's
@@ -781,6 +824,20 @@ function trackFrameRate(time){
 function animate(time){
  requestAnimationFrame(animate);
  trackFrameRate(time);
+ for(let i=opticTweens.length-1;i>=0;i--){
+  const a=opticTweens[i];
+  const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
+  const e=easeOutCubic(fraction);
+  if(a.kind==='move')a.object.position.copy(a.from).lerp(a.to,e);
+  else if(a.kind==='rotate'){
+   a.object.rotation.y=a.from+(a.to-a.from)*e;
+   if(a.footprint)a.footprint.rotation.y=a.object.rotation.y;
+  }else if(a.kind==='appear'){
+   a.object.position.y=a.toY-.18*(1-e);
+   a.object.scale.setScalar(.62+.38*e);
+  }
+  if(fraction===1)opticTweens.splice(i,1);
+ }
  if(cameraTween){
   const f=Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
   yaw=cameraTween.yaw0+(cameraTween.yaw1-cameraTween.yaw0)*ease;
