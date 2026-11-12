@@ -18,6 +18,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   fragmentShader:`
    uniform vec3 uColor;
    uniform float uTime;
+   uniform float uStrength;
    varying vec2 vUv;
    void main(){
     float radial=abs(vUv.y-.5)*2.0;
@@ -27,20 +28,21 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
     float energy=(halo*.18+middle*.55+core*.62)*ripples;
     vec3 radiance=uColor*(halo*.55+middle*1.72+core*2.9)+mix(uColor,vec3(1.0),.23)*core*.62;
-    gl_FragColor=vec4(radiance*energy,clamp(halo*.19+middle*.47+core*.9,0.0,.94));
+    gl_FragColor=vec4(radiance*energy*uStrength,clamp(halo*.19+middle*.47+core*.9,0.0,.94)*uStrength);
    }
   `
  };
- function material(mask){
-  if(!materials.has(mask)){
+ function material(mask,floor=false){
+  const key=mask+':'+(floor?'floor':'beam');
+  if(!materials.has(key)){
    const mat=new THREE.ShaderMaterial({
-    ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0}},
+    ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0},uStrength:{value:floor?.18:1}},
     transparent:true,depthWrite:false,side:THREE.DoubleSide,
     blending:THREE.AdditiveBlending,toneMapped:false
    });
-   materials.set(mask,mat);
+   materials.set(key,mat);
   }
-  return materials.get(mask);
+  return materials.get(key);
  }
  const flareData=new Uint8Array(64*64*4);
  for(let y=0;y<64;y++)for(let x=0;x<64;x++){
@@ -111,6 +113,9 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   core.renderOrder=9;parent.add(core);
   ribbon(a,b,.66,false,material(s.color));
   ribbon(a,b,.47,true,material(s.color));
+  // A low-intensity pool of colored light on the board under the beam.
+  // This ground-level optical light spill makes the ray feel spatial.
+  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,false,material(s.color,true));
  }
 
  // Directional moving photons reveal how the light travels, especially with
@@ -173,6 +178,16 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   photons.renderOrder=11;
   photons.frustumCulled=false;
   parent.add(photons);
+ }
+ // A handful of real point lights let surrounding metallic tiles respond to
+ // the laser wavelength. Bound the cost for integrated laptop GPUs.
+ const glowLights=Math.min(4,segments.length);
+ const stride=Math.max(1,Math.floor(segments.length/Math.max(1,glowLights)));
+ for(let i=0;i<glowLights;i++){
+  const s=segments[Math.min(segments.length-1,i*stride)];
+  const l=new THREE.PointLight(new THREE.Color(palette[s.color]),5.5,4.3,2);
+  l.position.copy(point(s.nx,s.ny,1.65));
+  parent.add(l);
  }
  const flareCells=new Set();
  function flareOnce(x,y,color,scale){
