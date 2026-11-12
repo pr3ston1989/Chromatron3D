@@ -7,7 +7,7 @@
 - Original models, original interface, reactive lighting and restrained atmospheric audio.
 
 ## Milestones
-1. **Vertical slice** — 3D scene, optics, click-to-move, rotation, camera, save progress, responsive HUD, five clearly labeled demo levels. This is the current phase.
+1. **Vertical slice** — 3D scene, optics, click-to-move, rotation, camera, save progress, responsive HUD, eight clearly labeled demo levels. This is the current phase.
 2. **Fidelity engine** — independently validate ALL original interaction rules (reflectors, benders, filters, prisms, dopplers, splitters, entanglers, conduits, teleporters, color mixes, special cases). Add golden trace tests.
 3. **Original puzzles** — verify authoritative source data for four 50-level games; design a legally appropriate user-supplied-game-data importer where distribution rights are unclear. Compare every puzzle and each game order against the source.
 4. **Presentation pass** — custom PBR optics, emissive material and bloom, contact shadows, particle scattering, subtle camera transitions, level-completion effects, audio, accessibility.
