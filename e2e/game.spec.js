@@ -1,5 +1,17 @@
 import {test,expect} from '@playwright/test';
 
+// SwiftShader in CI renders real Three.js postprocessing on the CPU. Reserve
+// expensive live reflections and SMAA for the dedicated graphics-quality test.
+// Other interaction tests use the same gameplay, but laptop-friendly settings.
+test.beforeEach(async({page},testInfo)=>{
+ if(process.env.CI&&!testInfo.title.includes('real planar mirror reflections')){
+  await page.addInitScript(()=>{
+   if(!localStorage.getItem('chromatron-graphics-quality'))
+    localStorage.setItem('chromatron-graphics-quality','performance');
+  });
+ }
+});
+
 test('3D gameplay loads, switches languages and exposes optical diagnostics',async({page})=>{
  const exceptions=[];page.on('pageerror',error=>exceptions.push(error.message));
  await page.goto('/');
