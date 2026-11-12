@@ -53,6 +53,34 @@ All eight independently authored demo levels have automated **golden solution te
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
+## Classic 200-level compatibility and hint credits
+
+The eight bundled puzzles are independently authored. **The classic 200
+layouts are not shipped**; the original creator is Sean Barrett / Silver
+Spaceship Software. You may now select your own original Chromatron 1.14
+**UPX-unpacked Windows EXE** or exported original-level JSON via **? Help →
+Import levels**, entirely in your browser. Multi-file JSON selection can
+combine the four original 50-level collections. The first original game has
+a verified PE32 *structural* loader; exact engine parity remains a separate
+task. See [classic compatibility and rights](docs/CLASSIC_COMPATIBILITY.md).
+
+A fair, completely offline hint wallet has been added:
+
+- Start with **3 credits**, win **5 credits once** per genuinely solved level
+  (no earning points by repeatedly resetting/replaying).
+- **First hint free**, second costs **2**, third costs **3** credits.
+- Initial hints inspect real receiver colors and optics. The third hint only
+  gives coordinates and rotation from a **verified solution**; if the engine
+  cannot solve an advanced original puzzle, it does not invent an answer.
+- Advanced analysis runs in a Web Worker so the 3D game stays interactive.
+  Current bounded search is intended for simple puzzles with 0–2 movable
+  optics, not a guarantee to solve all 200.
+
+Textures and edges are improved with deterministic offline **PBR micro-maps**
+for brushed and polished metal. The composer now includes **FXAA** in
+Performance mode and **SMAA** in Balanced/Cinematic mode, ahead of tone mapping.
+No texture downloads or user-paid purchases are required.
+
 ## Better rendering without sacrificing laptop FPS
 
 - **GPU laser batching:** each wavelength is assembled into shared shader
