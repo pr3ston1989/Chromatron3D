@@ -4,9 +4,9 @@
  */
 export const QUALITY_MODES=Object.freeze(['auto','performance','balanced','cinematic']);
 export const QUALITY_PROFILES=Object.freeze({
- performance:Object.freeze({pixelRatio:1,bloomStrength:.22,reflectorCount:0,reflectionSize:0,maxBeamLights:1,maxOpticLights:2}),
- balanced:Object.freeze({pixelRatio:1.35,bloomStrength:.39,reflectorCount:1,reflectionSize:160,maxBeamLights:3,maxOpticLights:5}),
- cinematic:Object.freeze({pixelRatio:1.8,bloomStrength:.57,reflectorCount:2,reflectionSize:320,maxBeamLights:4,maxOpticLights:9})
+ performance:Object.freeze({pixelRatio:1,bloomStrength:.22,reflectorCount:0,reflectionSize:0,maxBeamLights:1,maxOpticLights:2,antialias:'fxaa'}),
+ balanced:Object.freeze({pixelRatio:1.35,bloomStrength:.39,reflectorCount:1,reflectionSize:160,maxBeamLights:3,maxOpticLights:5,antialias:'smaa'}),
+ cinematic:Object.freeze({pixelRatio:1.8,bloomStrength:.57,reflectorCount:2,reflectionSize:320,maxBeamLights:4,maxOpticLights:9,antialias:'smaa'})
 });
 export const normalizeQuality=value=>QUALITY_MODES.includes(value)?value:'auto';
 export const profileFor=(value,autoLevel='balanced')=>QUALITY_PROFILES[value==='auto'?autoLevel:value]||QUALITY_PROFILES.balanced;
