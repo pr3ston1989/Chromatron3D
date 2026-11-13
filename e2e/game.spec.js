@@ -471,6 +471,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await expect(page.locator('#level-grid [data-level-index="0"]')).toBeEnabled();
  await expect(page.locator('#level-grid [data-level-index="1"]')).toBeDisabled();
  await expect(page.locator('#level-atlas-summary')).toContainText('0 Z 8');
+ await page.screenshot({path:'test-results/chromatron-level-map-laptop.png',animations:'disabled'});
  await page.keyboard.press('Escape');
  await expect(page.locator('#level-menu')).toBeHidden();
  await page.locator('#language').click();
@@ -485,7 +486,10 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  expect(bounds.x).toBeGreaterThanOrEqual(0);
  expect(bounds.x+bounds.width).toBeLessThanOrEqual(390);
  expect(bounds.y+bounds.height).toBeLessThanOrEqual(844);
+ await page.screenshot({path:'test-results/chromatron-level-map-mobile.png',animations:'disabled'});
  await page.locator('#levels-close').click();
+ await page.emulateMedia({reducedMotion:'reduce'});
+ expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
  expect(errors).toEqual([]);
 });
 
