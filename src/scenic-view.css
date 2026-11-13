@@ -1,0 +1,41 @@
+/*
+ * Panoramic / scenic camera mode. Only while explicitly selected.
+ * The player can return to the exact prior zoom and camera orientation.
+ * Input is always kept available in the top toolbar.
+ */
+.scenic-btn[aria-pressed="true"]{
+ border-color:rgba(149,236,226,.9);
+ color:#baffed;
+ background:rgba(36,111,121,.40);
+ box-shadow:0 0 14px rgba(76,205,202,.18);
+}
+#app.scenic-view .mission{
+ transform:none!important;
+ visibility:hidden!important;
+ opacity:0!important;
+ pointer-events:none!important;
+}
+#app.scenic-view .tool-panel{
+ transform:none!important;
+ visibility:hidden!important;
+ opacity:0!important;
+ pointer-events:none!important;
+}
+#app.scenic-view .mission .drawer-handle,
+#app.scenic-view .tool-panel .drawer-handle{
+ visibility:hidden!important;pointer-events:none!important;
+}
+#app.scenic-view .coach,
+#app.scenic-view .optic-tooltip{
+ opacity:0!important;
+ pointer-events:none!important;
+}
+#app.scenic-view .hud-bottom .controls{opacity:0}
+#app.scenic-view .hud-bottom .camera-label{opacity:.77}
+@media(max-width:800px){
+ #scenic-view{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #app.scenic-view .mission,#app.scenic-view .tool-panel,
+ #app.scenic-view .coach{transition:none!important}
+}

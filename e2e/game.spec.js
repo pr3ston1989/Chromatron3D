@@ -499,6 +499,39 @@ test('board focus mode expands usable puzzle space without losing equipment acce
 });
 
 
+test('panorama reveals the living scenery then restores the exact puzzle view',async({page})=>{
+ await page.setViewportSize({width:1093,height:614});
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ const before=await page.evaluate(()=>({
+  visual:window.chromatron.getVisualStats(),
+  pieces:window.chromatron.getState().pieces
+ }));
+ await expect(page.locator('#scenic-view')).toBeVisible();
+ await expect(page.locator('#scenic-view')).toHaveAttribute('aria-pressed','false');
+ await page.locator('#scenic-view').click();
+ await expect(page.locator('#app')).toHaveClass(/scenic-view/);
+ await expect(page.locator('#scenic-view')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#app .mission')).toHaveCSS('opacity','0');
+ await expect(page.locator('#app .tool-panel')).toHaveCSS('opacity','0');
+ const framed=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(framed.cameraScenicView).toBe(true);
+ expect(framed.cameraZoomTarget).toBe(60);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1094);
+ await page.screenshot({path:'test-results/chromatron-scenic-panorama.png',animations:'disabled'});
+ await page.keyboard.press('p');
+ await expect(page.locator('#app')).not.toHaveClass(/scenic-view/);
+ await expect(page.locator('#scenic-view')).toHaveAttribute('aria-pressed','false');
+ const after=await page.evaluate(()=>({
+  visual:window.chromatron.getVisualStats(),
+  pieces:window.chromatron.getState().pieces
+ }));
+ expect(after.visual.cameraScenicView).toBe(false);
+ expect(after.visual.cameraZoomTarget).toBe(before.visual.cameraZoomTarget);
+ expect(after.pieces).toEqual(before.pieces);
+ await page.setViewportSize({width:390,height:844});
+ await expect(page.locator('#scenic-view')).toBeHidden();
+});
+
 test('credits are spent once per hint stage and solved-level rewards cannot be farmed',async({page})=>{
  test.setTimeout(120000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
