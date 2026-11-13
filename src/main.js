@@ -20,6 +20,7 @@ import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments} from './world-biomes.js';
+import {buildLevelAtlas} from './level-atlas.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {opticIcon} from './optic-icons.js';
 import {opticDescription,opticExample} from './optic-help.js';
@@ -40,6 +41,7 @@ import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
 import './redesign.css';
 import './compact-layout.css';
+import './level-atlas.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
@@ -170,6 +172,16 @@ for(const level of solved){
   wallet=rewardOnce(wallet,stageKey(currentPackId,level)).wallet;
 }
 try{localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify(wallet))}catch{}
+// The old prototype allowed direct navigation to any level. Preserve the
+// last previously visited level once, even if the new atlas locks later ones.
+let accessFloor=0;
+try{
+ const key='chromatron-reborn-access-'+currentPackId;
+ const previous=localStorage.getItem(key);
+ const value=previous===null?saved:Number(previous);
+ accessFloor=Number.isFinite(value)?Math.min(levels.length-1,Math.max(0,Math.trunc(value))):0;
+ if(previous===null)store(key,String(accessFloor));
+}catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
 const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[color||7]),emissive:new THREE.Color(COLORS[color||7]),emissiveIntensity:1.8,metalness:.3,roughness:.18});
@@ -406,7 +418,7 @@ function rebuildBeams(){
   wallet=earned.wallet;saveWallet();
   $('win-reward').textContent=earned.awarded?
    t(language,'earnedCredits',{amount:earned.awarded}):t(language,'noRewardRepeat');
-  updateStatus();
+  updateStatus();syncLevelControls();renderLevelAtlas();
   const completedIndex=levelIndex;
   setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},650)
  }
@@ -449,13 +461,23 @@ function switchLevelPack(nextLevels){
   if(!Array.isArray(solved))solved=[];
   if(!Array.isArray(skipped))skipped=[];
  }catch{solved=[];skipped=[]}
+ try{
+  const remembered=Number(localStorage.getItem('chromatron-reborn-access-'+currentPackId));
+  accessFloor=Number.isFinite(remembered)?Math.max(0,Math.min(levels.length-1,Math.trunc(remembered))):0;
+ }catch{accessFloor=0}
  load(0);
  return levels.length;
 }
 function load(i){
+ if(!Number.isInteger(i))return false;
+ const requested=(i%levels.length+levels.length)%levels.length;
+ if(!getLevelAtlas().entries[requested].unlocked){
+  toast(t(language,'atlasLockedHint'));
+  return false;
+ }
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
- levelIndex=(i+levels.length)%levels.length;
+ levelIndex=requested;
  applyLevelEnvironment();
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
@@ -469,9 +491,11 @@ function load(i){
  saveWallet();
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
  $('total-levels').textContent=String(levels.length).padStart(3,'0');
- $('prev').disabled=levelIndex===0;$('next').disabled=levelIndex===levels.length-1;
+ syncLevelControls();
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level',String(levelIndex));
+ showLevelIntro();
+ return true;
 }
 function rebuildSelectionGuides(){
  disposeGroupChildren(guideGroup);
@@ -1299,7 +1323,7 @@ function renderHints(){
  $('skip-level').classList.toggle('hidden',hintCount<3 || levels.length<=1);
 }
 setLanguage(language);
-load(Math.min(Math.max(saved,0),levels.length-1));
+load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
 syncWalletUI();
 requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
@@ -1316,5 +1340,6 @@ window.chromatron={
  },
  loadLevels(json){const next=loadLevelBundle(json);const count=switchLevelPack(next);toast(t(language,'imported',{count}));return count},
  getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),
+ getLevelAtlas:()=>getLevelAtlas(),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
