@@ -22,6 +22,7 @@ import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments} from './world-biomes.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {opticIcon} from './optic-icons.js';
+import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
@@ -516,10 +517,20 @@ function renderInventory(){
   item.className='inventory-item'+(movableType?' selectable':'');
   if(levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
   item.type=movableType?'button':undefined;
+  item.dataset.opticType=type;
+  item.title=t(language,'type'+type[0].toUpperCase()+type.slice(1))+' — '+opticDescription(type,language);
+  item.setAttribute('aria-description',opticDescription(type,language));
+  if(!movableType)item.tabIndex=0;
+  item.addEventListener('mouseenter',e=>showInventoryMechanics(type,e.clientX,e.clientY));
+  item.addEventListener('mouseleave',hideOpticTooltip);
+  item.addEventListener('focus',()=>{const b=item.getBoundingClientRect();showInventoryMechanics(type,b.left,b.top+b.height/2)});
+  item.addEventListener('blur',hideOpticTooltip);
   if(movableType){
    item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
    if(selected?.inTray && selected?.type===type)item.classList.add('selected');
-   item.disabled=tray.length===0;
+   // Keep exhausted equipment focusable so its explanation is still
+   // available with the mouse and keyboard.
+   item.setAttribute('aria-disabled',String(tray.length===0));
    item.addEventListener('click',()=>{
     const first=nextTrayPiece(pieces,type);
     if(first)selectFromTray(first);
@@ -537,6 +548,13 @@ function renderInventory(){
   const count=document.createElement('strong');
   count.textContent=tray.length?tray.length+' / '+candidates.length:String(candidates.length).padStart(2,'0');
   item.append(icon,name,count);el.appendChild(item);
+ }
+ const details=$('optic-info');
+ details.classList.toggle('hidden',!selected);
+ if(selected){
+  const heading=t(language,'type'+selected.type[0].toUpperCase()+selected.type.slice(1));
+  details.textContent=heading+' — '+opticDescription(selected.type,language)+
+   (opticExample(selected.type,language)?' '+opticExample(selected.type,language):'');
  }
  $('return-tray').disabled=!(selected&&!selected.inTray&&movable.has(selected.type));
  renderSpectrum();
@@ -934,6 +952,25 @@ function updatePlacementPreview(e){
  placementPreview.visible=true;
 }
 function hideOpticTooltip(){$('optic-tooltip').classList.add('hidden')}
+function positionOpticTooltip(x,y){
+ const tooltip=$('optic-tooltip');
+ tooltip.style.left='0px';tooltip.style.top='0px';
+ const b=tooltip.getBoundingClientRect();
+ const width=Math.min(innerWidth-18,b.width||320);
+ const height=Math.min(innerHeight-18,b.height||140);
+ const nextX=x>innerWidth*.62?x-width-12:x+15;
+ tooltip.style.left=Math.max(9,Math.min(innerWidth-width-9,nextX))+'px';
+ tooltip.style.top=Math.max(9,Math.min(innerHeight-height-9,y+9))+'px';
+}
+function showInventoryMechanics(type,x,y){
+ const name=t(language,'type'+type[0].toUpperCase()+type.slice(1));
+ const message=name+'\\n'+opticDescription(type,language)+
+  (opticExample(type,language)?'\\n'+opticExample(type,language):'');
+ const tip=$('optic-tooltip');
+ tip.textContent=message;tip.dataset.optic=type;
+ tip.classList.remove('hidden','blocked');
+ positionOpticTooltip(x,y);
+}
 function showOpticTooltip(e,hovered){
  const tooltip=$('optic-tooltip');
  let message='',blocked=false;
@@ -946,14 +983,15 @@ function showOpticTooltip(e,hovered){
  }else if(hovered?.piece){
   const p=hovered.piece;
   const key='type'+p.type[0].toUpperCase()+p.type.slice(1);
-  message=t(language,key)+' · '+t(language,movable.has(p.type)?'tipSelect':'tipFixed');
+  message=t(language,key)+'\\n'+opticDescription(p.type,language)+
+   (opticExample(p.type,language)?'\\n'+opticExample(p.type,language):'')+
+   '\\n'+t(language,movable.has(p.type)?'tipSelect':'tipFixed');
  }
  tooltip.classList.toggle('hidden',!message);
  tooltip.classList.toggle('blocked',blocked);
  if(message){
-  tooltip.textContent=message;
-  tooltip.style.left=Math.max(9,Math.min(innerWidth-255,e.clientX+19))+'px';
-  tooltip.style.top=Math.max(9,Math.min(innerHeight-65,e.clientY+23))+'px';
+  if(tooltip.textContent!==message)tooltip.textContent=message;
+  positionOpticTooltip(e.clientX,e.clientY);
  }
 }
 let down=null;
