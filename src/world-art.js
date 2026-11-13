@@ -1,5 +1,26 @@
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
+/** Stable, decorative variations for the platform's distant architecture. */
+export function stageLayoutForLevel(themeId,packId='demo',index=0,seed=0){
+ if(!Number.isInteger(index)||index<0)throw new Error('Invalid stage index');
+ const text=String(packId)+':'+seed+':'+index;
+ let hash=2166136261;
+ for(const c of text){
+  hash^=c.charCodeAt(0);
+  hash=Math.imul(hash,16777619);
+ }
+ const layout=(hash>>>0)%4;
+ // The greener biomes feel abandoned; orbital environments keep active
+ // docking structures. All meshes are cached and well outside the board.
+ const density={
+  orbital:[[3,4],[3,3],[2,4],[2,3]],
+  verdant:[[1,1],[1,2],[2,1],[2,2]],
+  polar:[[2,2],[2,3],[1,3],[1,2]],
+  nebula:[[2,2],[3,2],[2,3],[3,3]]
+ }[themeId]||[[3,4],[3,3],[2,4],[2,3]];
+ return {orientation:layout,arcCount:density[layout][0],dockCount:density[layout][1]};
+}
+
 /**
  * The stage is a FLOATING OPTICAL INSTRUMENT, not a square grid ending
  * abruptly between four glowing pillars. All decorations are outside the
@@ -73,13 +94,16 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
  architecture.name='distant-orbital-architecture';
  scene.add(architecture);
  const distant=new THREE.MeshStandardMaterial({color:0x102b39,metalness:.72,roughness:.40});
+ const arcs=[];
  for(const radius of [16.3,20.8,27.0]){
   const geometry=new THREE.TorusGeometry(radius,radius===16.3?.11:.055,8,100,Math.PI*1.65);
   const arc=add(geometry,distant,0,-2.92,0,'suspended-docking-arc',architecture);
   arc.rotation.x=Math.PI/2;
   arc.rotation.z=radius*.07;
+  arcs.push(arc);
  }
  // Structural plates suspended well outside gameplay, mostly horizontal.
+ const docks=[];
  for(const [x,z,angle] of [[-17,-18,.64],[19,-16,-.55],[-19,18,-.35],[18,19,.83]]){
   const deck=add(new RoundedBoxGeometry(4.5,.36,2.8,3,.18),
    hull,x,-2.35,z,'distant-floating-dock',architecture);
@@ -90,6 +114,7 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
   const strip=add(new RoundedBoxGeometry(3.7,.025,.065,2,.012),
    accent,x,-2.10,z,'dock-marker',architecture);
   strip.rotation.y=angle;
+  docks.push([deck,inset,strip]);
  }
  // An underside halo fades smoothly into the void, without a giant 85×85
  // ground plane blocking the sky and making a hard horizon.
@@ -104,9 +129,15 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
  workLightB.position.set(11,3,10);scene.add(workLightB);
  const bounce=new THREE.PointLight(0x2f84ad,7,20,2);
  bounce.position.set(0,-1.72,0);scene.add(bounce);
- // Material changes are cheap and never rebuild the stage.
- group.userData.setTheme=theme=>{
+ // Changing a level never creates meshes: only the composition and palette
+ // of the distant scaffolding change. It is deliberately non-interactive.
+ group.userData.setTheme=(theme,level={})=>{
   if(!theme)return;
+  const layout=stageLayoutForLevel(theme.id,level.packId,level.index??0,level.seed??0);
+  architecture.rotation.y=layout.orientation*Math.PI/2;
+  arcs.forEach((arc,i)=>arc.visible=i<layout.arcCount);
+  docks.forEach((parts,i)=>parts.forEach(mesh=>mesh.visible=i<layout.dockCount));
+  group.userData.stageLayout=layout;
   accent.color.setHex(theme.edge);
   accent.emissive.setHex(theme.edge);
   markerMat.color.setHex(theme.accent);
