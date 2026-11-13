@@ -82,6 +82,16 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await page.keyboard.press('e');
  await expect(page.locator('#counter')).toContainText('1 / 1');
  await expect(page.locator('#win')).toBeVisible();
+ await expect(page.locator('#next')).toBeEnabled();
+ await page.locator('#levels-from-win').click();
+ await expect(page.locator('#level-menu')).toBeVisible();
+ await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
+ await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','available');
+ await expect(page.locator('#level-grid [data-level-index="2"]')).toBeDisabled();
+ await page.locator('#level-grid [data-level-index="1"]').click();
+ await expect(page.locator('#level-index')).toHaveText('002');
+ await expect(page.locator('#level-intro-title')).toContainText('PODWÓJNY ZAKRĘT');
+ await expect(page.locator('#level-menu')).toBeHidden();
  expect(errors).toEqual([]);
 });
 
@@ -124,6 +134,8 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
 
 test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // The mirror regression needs level 2, unlocked by prior level 1 completion.
+ await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.goto('/');
  await page.locator('#graphics-quality').selectOption('balanced');
  await page.locator('#next').click();
@@ -339,6 +351,7 @@ test('small laptop layouts keep essential controls on screen without horizontal 
 });
 
 test('short viewport uses scrollable side panels instead of clipping interactive optics',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.setViewportSize({width:1093,height:550});
  await page.goto('/');
  const panel=page.locator('.tool-panel');
@@ -444,6 +457,42 @@ test('credits are spent once per hint stage and solved-level rewards cannot be f
  expect(errors).toEqual([]);
 });
 
+
+test('level atlas is accessible on laptop and mobile, localized, and never blocks the board',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.setViewportSize({width:1093,height:614});
+ await page.goto('/');
+ await expect(page.locator('#level-intro-title')).toContainText('PIERWSZE ŚWIATŁO');
+ await expect(page.locator('#level-intro')).toHaveClass(/show/);
+ expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
+ await page.locator('#levels-button').click();
+ await expect(page.locator('#level-menu')).toBeVisible();
+ await expect(page.locator('#level-grid button.level-atlas-card')).toHaveCount(8);
+ await expect(page.locator('#level-grid [data-level-index="0"]')).toBeEnabled();
+ await expect(page.locator('#level-grid [data-level-index="1"]')).toBeDisabled();
+ await expect(page.locator('#level-atlas-summary')).toContainText('0 Z 8');
+ await page.screenshot({path:'test-results/chromatron-level-map-laptop.png',animations:'disabled'});
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#level-menu')).toBeHidden();
+ await page.locator('#language').click();
+ await page.keyboard.press('m');
+ await expect(page.locator('#level-menu-title')).toContainText('SELECT A LEVEL');
+ await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','locked');
+ await page.locator('#levels-close').click();
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('#levels-open').click();
+ await expect(page.locator('#level-menu')).toBeVisible();
+ const bounds=await page.locator('.level-atlas-modal').boundingBox();
+ expect(bounds.x).toBeGreaterThanOrEqual(0);
+ expect(bounds.x+bounds.width).toBeLessThanOrEqual(390);
+ expect(bounds.y+bounds.height).toBeLessThanOrEqual(844);
+ await page.screenshot({path:'test-results/chromatron-level-map-mobile.png',animations:'disabled'});
+ await page.locator('#levels-close').click();
+ await page.emulateMedia({reducedMotion:'reduce'});
+ expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
+ expect(errors).toEqual([]);
+});
+
 test('original numeric level JSON imports privately with full 50 level index order',async({page})=>{
  test.setTimeout(90000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -465,7 +514,12 @@ test('original numeric level JSON imports privately with full 50 level index ord
  await expect(page.locator('#total-levels')).toHaveText('050');
  await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');
  expect((await page.evaluate(()=>window.chromatron.getState())).pieces).toHaveLength(2);
- await page.locator('#next').click();
- await expect(page.locator('#level-index')).toHaveText('002');
+ await expect(page.locator('#next')).toBeDisabled();
+ await page.locator('#levels-button').click();
+ await expect(page.locator('#level-grid button.level-atlas-card')).toHaveCount(50);
+ await expect(page.locator('#level-grid [data-level-index="0"]')).toBeEnabled();
+ await expect(page.locator('#level-grid [data-level-index="1"]')).toBeDisabled();
+ await expect(page.locator('#level-grid [data-level-index="49"]')).toBeDisabled();
+ expect((await page.evaluate(()=>window.chromatron.getLevelAtlas())).unlockedCount).toBe(1);
  expect(errors).toEqual([]);
 });

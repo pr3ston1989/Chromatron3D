@@ -20,6 +20,7 @@ import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments} from './world-biomes.js';
+import {buildLevelAtlas} from './level-atlas.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {opticIcon} from './optic-icons.js';
 import {opticDescription,opticExample} from './optic-help.js';
@@ -40,6 +41,7 @@ import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
 import './redesign.css';
 import './compact-layout.css';
+import './level-atlas.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
@@ -154,7 +156,8 @@ let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,draggedPiece=null;
 let saved=0;
 try{
- saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
+ saved=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)??
+  localStorage.getItem('chromatron-reborn-level')??0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
  coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
@@ -170,6 +173,16 @@ for(const level of solved){
   wallet=rewardOnce(wallet,stageKey(currentPackId,level)).wallet;
 }
 try{localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify(wallet))}catch{}
+// The old prototype allowed direct navigation to any level. Preserve the
+// last previously visited level once, even if the new atlas locks later ones.
+let accessFloor=0;
+try{
+ const key='chromatron-reborn-access-'+currentPackId;
+ const previous=localStorage.getItem(key);
+ const value=previous===null?saved:Number(previous);
+ accessFloor=Number.isFinite(value)?Math.min(levels.length-1,Math.max(0,Math.trunc(value))):0;
+ if(previous===null)store(key,String(accessFloor));
+}catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
 const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[color||7]),emissive:new THREE.Color(COLORS[color||7]),emissiveIntensity:1.8,metalness:.3,roughness:.18});
@@ -406,7 +419,7 @@ function rebuildBeams(){
   wallet=earned.wallet;saveWallet();
   $('win-reward').textContent=earned.awarded?
    t(language,'earnedCredits',{amount:earned.awarded}):t(language,'noRewardRepeat');
-  updateStatus();
+  updateStatus();syncLevelControls();renderLevelAtlas();
   const completedIndex=levelIndex;
   setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},650)
  }
@@ -417,6 +430,87 @@ function updateStatus(){
  el.textContent=solved.includes(levelIndex)?t(language,'statusSolved'):skipped.includes(levelIndex)?t(language,'statusSkipped'):'';
  el.classList.toggle('solved',solved.includes(levelIndex));
 }
+function getLevelAtlas(){
+ return buildLevelAtlas(levels.length,solved,skipped,accessFloor);
+}
+function syncLevelControls(){
+ const atlas=getLevelAtlas();
+ $('prev').disabled=levelIndex===0;
+ $('next').disabled=levelIndex>=levels.length-1||!atlas.entries[levelIndex+1]?.unlocked;
+}
+let levelAtlasOpener=null;
+function renderLevelAtlas(){
+ if($('level-menu').classList.contains('hidden'))return;
+ const atlas=getLevelAtlas(),grid=$('level-grid');
+ $('level-atlas-summary').textContent=t(language,'atlasSummary',{
+  done:atlas.solvedCount,total:atlas.total,unlocked:atlas.unlockedCount
+ });
+ grid.replaceChildren();
+ const fragment=document.createDocumentFragment();
+ for(const entry of atlas.entries){
+  const name=loc(levels[entry.index].title,language);
+  const button=document.createElement('button');
+  button.type='button';button.className='level-atlas-card';
+  button.dataset.levelIndex=String(entry.index);
+  button.dataset.status=entry.status;
+  button.disabled=!entry.unlocked;
+  if(entry.index===levelIndex)button.setAttribute('aria-current','step');
+  const number=String(entry.index+1).padStart(3,'0');
+  const label=t(language,'atlasLevel',{number});
+  const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
+  button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status:status));
+  button.title=entry.unlocked?name:t(language,'atlasLockedHint');
+  const n=document.createElement('span');n.className='level-atlas-card-number';n.textContent=number;
+  const title=document.createElement('strong');title.className='level-atlas-card-title';
+  title.textContent=entry.unlocked?name:'···';
+  const caption=document.createElement('span');caption.className='level-atlas-card-status';
+  caption.textContent=entry.index===levelIndex?
+   t(language,'atlasNow')+' · '+status:status;
+  button.append(n,title,caption);
+  if(entry.unlocked)button.addEventListener('click',()=>{
+   if(load(entry.index))closeLevelAtlas();
+  });
+  fragment.appendChild(button);
+ }
+ grid.append(fragment);
+}
+function openLevelAtlas(opener=document.activeElement){
+ levelAtlasOpener=opener;
+ $('level-menu').classList.remove('hidden');
+ renderLevelAtlas();
+ const current=$('level-grid').querySelector('[aria-current="step"]');
+ (current&&!current.disabled?current:$('levels-close')).focus();
+}
+function closeLevelAtlas(){
+ $('level-menu').classList.add('hidden');
+ const opener=levelAtlasOpener;
+ levelAtlasOpener=null;
+ if(opener?.isConnected&&opener.getClientRects().length)opener.focus();
+ else $('levels-button').focus();
+}
+function focusWithinLevelAtlas(e){
+ const active=[...$('level-menu').querySelectorAll('button:not(:disabled)')];
+ if(!active.length)return;
+ const first=active[0],last=active[active.length-1];
+ if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+ else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+}
+function syncLevelIntroText(){
+ const l=levels[levelIndex];if(!l)return;
+ $('level-intro-index').textContent=t(language,'atlasIntro',{
+  number:String(levelIndex+1).padStart(3,'0'),total:String(levels.length).padStart(3,'0')
+ });
+ $('level-intro-title').textContent=loc(l.title,language);
+ $('level-intro-pack').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
+}
+function showLevelIntro(){
+ syncLevelIntroText();
+ const overlay=$('level-intro');
+ overlay.classList.remove('show');
+ // Restart the CSS keyframes even if the user quickly chooses another level.
+ void overlay.offsetWidth;
+ overlay.classList.add('show');
+}
 function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
@@ -425,6 +519,7 @@ function updateLocalizedLevel(){
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
+ syncLevelIntroText();renderLevelAtlas();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
@@ -449,13 +544,25 @@ function switchLevelPack(nextLevels){
   if(!Array.isArray(solved))solved=[];
   if(!Array.isArray(skipped))skipped=[];
  }catch{solved=[];skipped=[]}
- load(0);
+ try{
+  const remembered=Number(localStorage.getItem('chromatron-reborn-access-'+currentPackId));
+  accessFloor=Number.isFinite(remembered)?Math.max(0,Math.min(levels.length-1,Math.trunc(remembered))):0;
+ }catch{accessFloor=0}
+ let resume=0;
+ try{resume=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)||0)}catch{}
+ load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
  return levels.length;
 }
 function load(i){
+ if(!Number.isInteger(i))return false;
+ const requested=(i%levels.length+levels.length)%levels.length;
+ if(!getLevelAtlas().entries[requested].unlocked){
+  toast(t(language,'atlasLockedHint'));
+  return false;
+ }
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
- levelIndex=(i+levels.length)%levels.length;
+ levelIndex=requested;
  applyLevelEnvironment();
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
@@ -469,9 +576,12 @@ function load(i){
  saveWallet();
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
  $('total-levels').textContent=String(levels.length).padStart(3,'0');
- $('prev').disabled=levelIndex===0;$('next').disabled=levelIndex===levels.length-1;
+ syncLevelControls();
  update();updateLocalizedLevel();syncUndoButtons();
- store('chromatron-reborn-level',String(levelIndex));
+ store('chromatron-reborn-level-'+currentPackId,String(levelIndex));
+ if(currentPackId===demoPackId)store('chromatron-reborn-level',String(levelIndex));
+ showLevelIntro();
+ return true;
 }
 function rebuildSelectionGuides(){
  disposeGroupChildren(guideGroup);
@@ -1092,8 +1202,14 @@ renderer.domElement.addEventListener('wheel',e=>{
 },{passive:false});
 document.addEventListener('keydown',e=>{
  if(e.target instanceof HTMLInputElement)return;
+ if(!$('level-menu').classList.contains('hidden')){
+  if(e.code==='Escape'){e.preventDefault();closeLevelAtlas()}
+  else if(e.code==='Tab')focusWithinLevelAtlas(e);
+  return;
+ }
  if(e.code==='Escape'){clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
+ if(e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();openLevelAtlas();return}
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
  if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
@@ -1104,6 +1220,13 @@ document.addEventListener('keydown',e=>{
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
  else if(e.code==='KeyZ'&&e.ctrlKey){e.preventDefault();undo()}
+});
+$('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
+$('levels-open').onclick=()=>openLevelAtlas($('levels-open'));
+$('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
+$('levels-close').onclick=closeLevelAtlas;
+$('level-menu').addEventListener('click',event=>{
+ if(event.target===$('level-menu'))closeLevelAtlas();
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 $('reset').onclick=()=>load(levelIndex);
@@ -1299,7 +1422,7 @@ function renderHints(){
  $('skip-level').classList.toggle('hidden',hintCount<3 || levels.length<=1);
 }
 setLanguage(language);
-load(Math.min(Math.max(saved,0),levels.length-1));
+load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
 syncWalletUI();
 requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
@@ -1316,5 +1439,6 @@ window.chromatron={
  },
  loadLevels(json){const next=loadLevelBundle(json);const count=switchLevelPack(next);toast(t(language,'imported',{count}));return count},
  getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),
+ getLevelAtlas:()=>getLevelAtlas(),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
