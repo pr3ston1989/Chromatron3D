@@ -1,0 +1,51 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {SPACE_BIOMES,environmentForLevel,createSpaceEnvironments,makeNebulaTexture} from '../src/world-biomes.js';
+
+test('four varied atmospheres are shuffled without repetition on adjacent levels',()=>{
+ assert.equal(SPACE_BIOMES.length,4);
+ const ids=Array.from({length:200},(_,i)=>environmentForLevel('private-pack',i,1234).id);
+ for(let i=1;i<ids.length;i++)assert.notEqual(ids[i],ids[i-1],'no consecutive duplicate at '+i);
+ for(let i=0;i<200;i+=4)assert.equal(new Set(ids.slice(i,i+4)).size,4,'each level block contains all environments');
+ assert.deepEqual(ids,Array.from({length:200},(_,i)=>environmentForLevel('private-pack',i,1234).id));
+ assert.notDeepEqual(ids.slice(0,12),Array.from({length:12},(_,i)=>environmentForLevel('different-pack',i,567).id));
+ assert.throws(()=>environmentForLevel('p',-1),/Invalid level/);
+});
+test('one cached scene set changes active biome, sky and decoration without rebuilding geometry',()=>{
+ const scene=new THREE.Scene(),world=new THREE.Group();scene.add(world);
+ scene.fog=new THREE.FogExp2('#101625',.01);
+ const director=createSpaceEnvironments(THREE,scene,world);
+ const beforeSceneChildren=scene.children.length,beforeWorldChildren=world.children.length;
+ director.setQuality('performance');
+ const a=director.setLevel('demo',0,{seed:777});
+ const first=director.getStats();
+ assert.equal(first.biome,a.id);
+ assert.equal(first.stars,290);
+ assert.equal(first.foliage,65);
+ assert.equal(first.nebulae,1);
+ assert.equal(scene.background.getHex(),a.sky);
+ director.setLevel('demo',1,{seed:777});
+ const next=director.getStats();
+ assert.notEqual(first.biome,next.biome);
+ assert.equal(scene.children.length,beforeSceneChildren);
+ assert.equal(world.children.length,beforeWorldChildren);
+ assert.equal(scene.children.filter(c=>c.name.startsWith('space-biome-')&&c.visible).length,1);
+ assert.equal(world.children.filter(c=>c.name.startsWith('board-decor-')&&c.visible).length,1);
+ director.setQuality('cinematic');
+ assert.equal(director.getStats().stars,1000);
+ assert.equal(director.getStats().foliage,196);
+ assert.equal(director.getStats().nebulae,3);
+ director.update(4,false);
+});
+test('nebula is a GPU-ready transparent procedural texture',()=>{
+ const map=makeNebulaTexture(THREE);
+ assert.equal(map.isDataTexture,true);
+ assert.equal(map.image.width,128);
+ assert.equal(map.image.height,128);
+ assert.equal(map.image.data.length,128*128*4);
+ const alpha=map.image.data.filter((v,i)=>i%4===3);
+ assert.ok(Math.max(...alpha)>80);
+ assert.equal(alpha[0],0,'outer corners remain transparent');
+ map.dispose();
+});
