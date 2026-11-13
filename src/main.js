@@ -45,6 +45,7 @@ import './style.css';
 import './redesign.css';
 import './compact-layout.css';
 import './level-atlas.css';
+import './stage-arrival.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
