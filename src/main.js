@@ -156,7 +156,8 @@ let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,draggedPiece=null;
 let saved=0;
 try{
- saved=Number(localStorage.getItem('chromatron-reborn-level')||0);
+ saved=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)??
+  localStorage.getItem('chromatron-reborn-level')??0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
  coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
@@ -547,7 +548,9 @@ function switchLevelPack(nextLevels){
   const remembered=Number(localStorage.getItem('chromatron-reborn-access-'+currentPackId));
   accessFloor=Number.isFinite(remembered)?Math.max(0,Math.min(levels.length-1,Math.trunc(remembered))):0;
  }catch{accessFloor=0}
- load(0);
+ let resume=0;
+ try{resume=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)||0)}catch{}
+ load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
  return levels.length;
 }
 function load(i){
@@ -575,7 +578,8 @@ function load(i){
  $('total-levels').textContent=String(levels.length).padStart(3,'0');
  syncLevelControls();
  update();updateLocalizedLevel();syncUndoButtons();
- store('chromatron-reborn-level',String(levelIndex));
+ store('chromatron-reborn-level-'+currentPackId,String(levelIndex));
+ if(currentPackId===demoPackId)store('chromatron-reborn-level',String(levelIndex));
  showLevelIntro();
  return true;
 }
