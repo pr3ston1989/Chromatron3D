@@ -25,7 +25,34 @@ Browser-first and compatible with a future Windows wrapper without reauthoring t
 
 Auto degrades only after sustained low frame rates, not after one slow frame or background tab. Recovery has deliberately larger hysteresis to prevent GPU resource churn. Every quality switch tears down and rebuilds offscreen mirror targets cleanly; the visual selection stays in the same logical cell.
 
-## Asset design
+## Sky composition and distant activity
+
+The four biome palettes (orbital, verdant, polar, nebula) now also vary the
+planet position, ring orientation, cloud arrangement, and sky rotation per
+level. Variants use a seeded layout: revisiting a level within the same
+session restores its composition, while a new session can choose a different
+one. The stage and all optical pieces keep their exact 15×15 positions.
+
+Each backdrop has four lightweight, reusable distant drifters with biome-
+specific silhouettes (orbital craft, floating spores, ice-like shards, or
+crystalline debris). Only 1 / 2 / 4 are visible in Performance / Balanced /
+Cinematic, respectively. Their motion is disabled when the OS requests
+reduced motion. Their orbital tracks stay far outside the gameplay space,
+never participate in optical collision tests, and allocate no new geometry
+when changing levels. Starfields and clouds likewise reuse their buffers.
+
+## Structural variation outside the puzzle
+
+A seeded, four-way station layout changes how many distant docking arcs
+and external landing decks appear around the floating instrument. Orbital
+regions look more industrial; overgrown regions have fewer surviving docks,
+and polar/crimson variants sit between them. Docking structures stay at
+least 19 world units radially from the board center; rotating the scenery
+around the platform does not touch any of the 15×15 optical cells.
+Only visibility and orientation change between levels, with zero mesh
+creation per level. Returning to the same pack, level and session seed
+restores the same composition.
+
 
 All coordinates are local to a 1.3-unit grid tile, with Y as vertical.
 

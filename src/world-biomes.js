@@ -1,3 +1,5 @@
+import {createDistantTraffic} from './distant-traffic.js';
+
 /**
  * Lightweight procedural environments for each puzzle. No downloaded skyboxes,
  * copyrighted background images or GPU-heavy simulated vegetation.
@@ -200,6 +202,12 @@ function makePlanet(THREE,group,theme,random){
  */
 export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
  const nebulaTexture=makeNebulaTexture(THREE);
+ // Shared across all four cached biomes; no per-level buffer allocation.
+ const trafficGeometry={
+  body:new THREE.OctahedronGeometry(.54,0),
+  wake:new THREE.ConeGeometry(.22,2.5,6),
+  wings:new THREE.BoxGeometry(2.5,.08,.34)
+ };
  const scenes=SPACE_BIOMES.map((theme,index)=>{
   const sky=new THREE.Group();sky.name='space-biome-'+theme.id;scene.add(sky);
   const foliage=new THREE.Group();foliage.name='board-decor-'+theme.id;world.add(foliage);
@@ -207,6 +215,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   const stars=makeStarfield(THREE,sky,theme,random);
   const rocks=addDebris(THREE,sky,random,theme.tileB);
   const planet=makePlanet(THREE,sky,theme,random);
+  const traffic=createDistantTraffic(THREE,sky,theme,random,trafficGeometry);
   const nebulae=[];
   for(let i=0;i<3;i++){
    const material=new THREE.SpriteMaterial({
@@ -222,7 +231,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   }
   const patches=addSurfacePatches(THREE,foliage,theme.decor,random);
   sky.visible=false;foliage.visible=false;
-  return {theme,sky,foliage,stars,rocks,planet,nebulae,patches};
+  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches};
  });
  let active=null,quality='balanced',sessionSeed=0;
  function setQuality(profile='balanced'){
@@ -235,6 +244,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    const leaves=group.patches.stems.children.find(c=>c.isInstancedMesh);
    if(leaves)leaves.count=perf?38:quality==='cinematic'?128:85;
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
+   group.traffic.setQuality(quality);
   }
  }
  function setLevel(packId,index,{seed=0}={}){
@@ -245,6 +255,23 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    group.sky.visible=show;group.foliage.visible=show;
    if(show)active=group;
   }
+  // One biome can still have many recognizable skies, depending on the
+  // level and the session. Composition is repeatable for the same seed.
+  const variant=rngFrom(hashText(packId+':'+index+':'+seed+':sky-layout'));
+  active.sky.rotation.y=(variant()-.5)*1.55;
+  const planetPosition=active.planet.planet.position;
+  planetPosition.set(-42+(variant()-.5)*31,23+variant()*25,-68+(variant()-.5)*29);
+  active.planet.rings.position.copy(planetPosition);
+  active.planet.rings.rotation.z=-.45+variant()*.9;
+  active.nebulae.forEach((cloud,i)=>{
+   const bases=[[-46,20,-70],[43,38,-64],[26,16,72]];
+   const base=bases[i];
+   cloud.position.set(base[0]+(variant()-.5)*25,
+    base[1]+(variant()-.5)*15,base[2]+(variant()-.5)*17);
+   const size=.82+variant()*.44;
+   cloud.scale.set((64+i*20)*size,(37+i*11)*size,1);
+  });
+  active.traffic.setLayout(variant);
   scene.background=new THREE.Color(theme.sky);
   if(scene.fog){
    scene.fog.color.setHex(theme.fog);
@@ -256,6 +283,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   if(!active||reducedMotion)return;
   // Extremely slow motion; the starfield remains steady enough for aiming.
   active.stars.rotation.y=Math.sin(seconds*.018)*.014;
+  active.traffic.update(seconds);
   active.nebulae.forEach((cloud,i)=>{
    cloud.material.opacity=(.15+i*.055)*(1+.11*Math.sin(seconds*.19+i*2));
   });
@@ -263,7 +291,8 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
  function getStats(){
   return {biome:active?.theme.id||null,stars:active?.stars.geometry.drawRange.count||0,
    foliage:active?.patches.mesh.count||0,shrubs:active?.patches.stems.children[0]?.count||0,
-   nebulae:active?.nebulae.filter(s=>s.visible).length||0};
+   nebulae:active?.nebulae.filter(s=>s.visible).length||0,
+   traffic:active?.traffic.getVisibleCount()||0};
  }
  setQuality('balanced');
  return {setLevel,setQuality,update,getStats};
