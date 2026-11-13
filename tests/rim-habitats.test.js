@@ -41,12 +41,13 @@ test('habitats retain meshes on level changes and scale with graphics quality',(
  growth.getMatrixAt(0,matrix);
  const original=matrix.clone();
  const group=world.getObjectByName('board-decor-'+first.id);
+ const childrenCount=group.children.length;
  let visited=false;
  for(let i=1;i<=32;i++){
   const theme=env.setLevel('demo',i,{seed:45});
   if(theme.id!==first.id)continue;
   visited=true;
-  assert.equal(group.children.length,group.children.length);
+  assert.equal(group.children.length,childrenCount);
   assert.equal(growth,group.getObjectByName('environment-rim-habitat'));
   assert.equal(world.children.length,baseline);
   assert.ok([0,Math.PI/2,Math.PI,3*Math.PI/2].some(
