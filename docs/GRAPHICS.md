@@ -84,3 +84,20 @@ Review in desktop Chromium and at phone widths; compare screenshots from GitHub 
 ## Original levels
 
 The five included levels are **independently designed demonstration puzzles**, not reproductions. No original Chromatron puzzle layouts are distributed. The intended 4×50 classic level campaigns are a separate fidelity milestone and require verified authorized layout data and rule-by-rule compatibility tests.
+
+## Procedural edge habitats
+
+Each of the four cached space biomes gains a single InstancedMesh of 180
+distant rim silhouettes, complementing the existing sparse foliage and edge
+stains. These never overlap the 15×15 puzzle:
+- **Verdant:** low rounded clumps of moss and soft foliage, varied greens.
+- **Polar:** jagged translucent-looking frost spires in icy tones.
+- **Crimson nebula:** tall crystalline shards with violet highlights.
+- **Orbital shipyard:** short rusted-looking metal fragments on the structure.
+
+The nearest habitat anchor is at least 10.12 world units from the center
+along one axis; optical cells occupy only ±9.75 world units. Per-level
+composition may rotate only in 90-degree steps, preserving that clearance.
+Instances are cached once per biome with no texture allocations and reuse
+a single material; Performance / Balanced / Cinematic render 35 / 105 /
+180 of those instances. No additional lighting or physics is required.
