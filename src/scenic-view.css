@@ -10,12 +10,14 @@
  box-shadow:0 0 14px rgba(76,205,202,.18);
 }
 #app.scenic-view .mission{
- transform:translateX(calc(-100% - 32px))!important;
+ transform:none!important;
+ visibility:hidden!important;
  opacity:0!important;
  pointer-events:none!important;
 }
 #app.scenic-view .tool-panel{
- transform:translateX(calc(100% + 32px))!important;
+ transform:none!important;
+ visibility:hidden!important;
  opacity:0!important;
  pointer-events:none!important;
 }
