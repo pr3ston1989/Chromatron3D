@@ -20,17 +20,20 @@ export function createSpaceHorizon(THREE,sky,theme,random,nebulaTexture){
  root.name='environment-deep-horizon';root.userData.scenicOnly=true;
  sky.add(root);
  const form=AIR_PALLETTE[theme.decor]||'docking-ring';
+ // Bright enough to read against deep space: these giant silhouettes
+ // must not disappear just because the scene has no close light sources.
  const hull=new THREE.MeshStandardMaterial({
-  color:theme.tileA,metalness:theme.decor==='moss'?.19:.58,
-  roughness:.58,emissive:theme.fog,emissiveIntensity:.22,
+  color:new THREE.Color(theme.tileA).lerp(new THREE.Color(theme.planet),.54),
+  metalness:theme.decor==='moss'?.12:.37,
+  roughness:.64,emissive:theme.planet,emissiveIntensity:.26,
   flatShading:true,fog:false
  });
  const trim=new THREE.MeshStandardMaterial({
-  color:theme.accent,metalness:.55,roughness:.46,
-  emissive:theme.edge,emissiveIntensity:.08,fog:false
+  color:theme.accent,metalness:.34,roughness:.48,
+  emissive:theme.edge,emissiveIntensity:.55,fog:false
  });
  const glow=new THREE.MeshBasicMaterial({
-  color:theme.edge,transparent:true,opacity:.32,depthWrite:false,
+  color:theme.edge,transparent:true,opacity:.70,depthWrite:false,
   fog:false,blending:THREE.AdditiveBlending
  });
  const volumes=[];
