@@ -89,7 +89,7 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','available');
  await expect(page.locator('#level-grid [data-level-index="2"]')).toBeDisabled();
  const nextBiome=await page.locator('#level-grid [data-level-index="1"]').getAttribute('data-biome');
- const nextBiomeLabel=await page.locator('#level-grid [data-level-index="1"] .level-atlas-card-biome').innerText();
+ const nextBiomeLabel=await page.locator('#level-grid [data-level-index="1"] .level-atlas-card-biome').textContent();
  await page.locator('#level-grid [data-level-index="1"]').click();
  await expect(page.locator('#level-intro-mode')).toHaveText('NOWY POZIOM');
  await expect(page.locator('#level-intro')).toHaveAttribute('data-biome',nextBiome);
