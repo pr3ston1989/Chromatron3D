@@ -219,6 +219,30 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 });
 
 
+
+test('scenery uses cached, genuine GLB hero models without touching optics',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ const first=await page.evaluate(()=>window.chromatron.getVisualStats());
+ const biome=first.environment.biome;
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().heroScenery.status),
+  {timeout:process.env.CI?30000:15000}).toBe('ready');
+ const loaded=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(loaded.heroScenery.biome).toBe(biome);
+ expect(loaded.heroScenery.loaded).toBe(true);
+ expect(loaded.heroScenery.meshParts).toBeGreaterThanOrEqual(6);
+ expect(loaded.heroScenery.visible).toBe(process.env.CI?2:3);
+ expect(loaded.heroScenery.loadError).toBeNull();
+ expect(loaded.environment.rimHabitat).toBeLessThanOrEqual(8);
+ expect(loaded.beamSegments).toBe(first.beamSegments);
+ await page.locator('#levels-button').click();
+ await expect(page.locator('#level-menu')).toBeVisible();
+ await page.locator('#levels-close').click();
+ const restored=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(restored.heroScenery.visible).toBe(loaded.heroScenery.visible);
+ expect(errors).toEqual([]);
+});
+
 test('real planar mirror reflections and GPU quality presets are switchable',async({page})=>{
  // Mirror quality requires GPU-intensive render targets: SwiftShader on CI
  // is software-rendered and may be much slower than a normal laptop GPU.
