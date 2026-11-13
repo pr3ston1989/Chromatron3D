@@ -20,6 +20,7 @@ import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
+import {createHeroScenery} from './hero-scenery.js';
 import {stageEntryMode,stagePresentation} from './stage-presentation.js';
 import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {buildLevelAtlas} from './level-atlas.js';
@@ -123,11 +124,13 @@ boardLines.instanceMatrix.needsUpdate=true;
 gridGroup.add(boardTiles,boardLines);
 const laboratory=buildLaboratory(THREE,scene,world,T);
 const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T});
+const heroScenery=createHeroScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/biomes/'});
 const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
 let activeEnvironment=null;
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
  activeEnvironment=theme;
+ heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  deck.material.color.setHex(theme.tileB);
  const finish=deckSurfaceProfile(theme.decor);
@@ -1076,6 +1079,7 @@ function resize(){
 function applyGraphicsQuality(){
  graphicsProfile=profileFor(graphicsMode,autoLevel);
  spaceEnvironments.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ heroScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
@@ -1523,7 +1527,7 @@ requestAnimationFrame(animate);
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),heroScenery:heroScenery.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
