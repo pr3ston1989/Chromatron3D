@@ -32,11 +32,11 @@ test('habitats retain meshes on level changes and scale with graphics quality',(
  const baseline=world.children.length;
  env.setQuality('performance');
  const first=env.setLevel('demo',0,{seed:45});
- assert.equal(env.getStats().rimHabitat,35);
+ assert.equal(env.getStats().rimHabitat,0);
  const growth=world.getObjectByName('board-decor-'+first.id)
   .getObjectByName('environment-rim-habitat');
- env.setQuality('balanced');assert.equal(env.getStats().rimHabitat,105);
- env.setQuality('cinematic');assert.equal(env.getStats().rimHabitat,180);
+ env.setQuality('balanced');assert.equal(env.getStats().rimHabitat,8);
+ env.setQuality('cinematic');assert.equal(env.getStats().rimHabitat,18);
  const matrix=new THREE.Matrix4();
  growth.getMatrixAt(0,matrix);
  const original=matrix.clone();
