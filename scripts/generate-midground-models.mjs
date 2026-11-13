@@ -4,7 +4,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 function makeSetpieces(){
  const TAU=Math.PI*2;
  const V=(x,y,z)=>[x,y,z],add=(a,b)=>a.map((n,i)=>n+b[i]),sub=(a,b)=>a.map((n,i)=>n-b[i]),mul=(a,k)=>a.map(n=>n*k);
- const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]*0+a[0]*b[1]-a[1]*b[0]];
+ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
  const norm=a=>{const d=Math.hypot(...a)||1;return mul(a,1/d)};
  const material=(name,color,metal=.35,rough=.62,emissive=0,alpha=1)=>({
   name,pbrMetallicRoughness:{baseColorFactor:[((color>>16)&255)/255,((color>>8)&255)/255,(color&255)/255,alpha],metallicFactor:metal,roughnessFactor:rough},
@@ -49,7 +49,31 @@ function makeSetpieces(){
    const left=add(middle,mul(axis,width)),right=sub(middle,mul(axis,width));
    tri(m,p,left,tip);tri(m,p,tip,right);tri(m,p,tip,left);tri(m,p,right,tip);
   }
-  draw({V,box,beam,tube,ring,shard,leaf,tri,quad});
+  function cylinder(x,y,z,r,h,m,sides=8){
+   const bottom=[],top=[];
+   for(let i=0;i<sides;i++){
+    const a=TAU*i/sides;
+    bottom.push(V(x+r*Math.cos(a),y,z+r*Math.sin(a)));
+    top.push(V(x+r*Math.cos(a),y+h,z+r*Math.sin(a)));
+   }
+   for(let i=0;i<sides;i++){const j=(i+1)%sides;quad(m,bottom[i],bottom[j],top[j],top[i]);tri(m,V(x,y,z),bottom[i],bottom[j]);tri(m,V(x,y+h,z),top[j],top[i])}
+  }
+  function sphere(cx,cy,cz,r,m,lat=4,lon=5){
+   const verts=[];
+   for(let i=0;i<=lat;i++){const t=i*Math.PI/lat;for(let j=0;j<=lon;j++){const p=j*TAU/lon;verts.push(V(cx+r*Math.sin(t)*Math.cos(p),cy+r*Math.cos(t),cz+r*Math.sin(t)*Math.sin(p)))}}
+   for(let i=0;i<lat;i++)for(let j=0;j<lon;j++){const a=i*(lon+1)+j,b=a+lon+1;if(i>0)tri(m,verts[a],verts[b],verts[a+1]);if(i<lat-1)tri(m,verts[a+1],verts[b],verts[b+1])}
+  }
+  function boulder(x,y,z,rx,ry,rz,m,sides=7){
+   const bottom=[],wide=[],top=[];
+   for(let j=0;j<sides;j++){
+    const a=TAU*j/sides,rough=.82+.17*Math.sin(j*17+rx*3);
+    bottom.push(V(x+Math.cos(a)*rx*.61*rough,y,z+Math.sin(a)*rz*.61*rough));
+    wide.push(V(x+Math.cos(a)*rx*rough,y+ry*.44,z+Math.sin(a)*rz*rough));
+    top.push(V(x+Math.cos(a)*rx*.48*rough,y+ry*.86,z+Math.sin(a)*rz*.48*rough));
+   }
+   for(let j=0;j<sides;j++){const k=(j+1)%sides;quad(m,bottom[j],bottom[k],wide[k],wide[j]);quad(m,wide[j],wide[k],top[k],top[j]);tri(m,top[j],top[k],V(x,y+ry,z));tri(m,bottom[k],bottom[j],V(x,y,z))}
+  }
+  draw({V,box,beam,tube,ring,shard,leaf,tri,quad,cylinder,sphere,boulder});
   const arrays=[],views=[],accessors=[],primitives=[];let offset=0;
   function acc(floatValues,bounds){
    while(offset%4){arrays.push(0);offset++}
@@ -63,7 +87,7 @@ function makeSetpieces(){
   }
   for(let i=0;i<buffers.length;i++){const b=buffers[i];if(!b.p.length)continue;const a=acc(b.p,true),n=acc(b.n,false);primitives.push({attributes:{POSITION:a,NORMAL:n},material:i,mode:4})}
   while(arrays.length%4)arrays.push(0);
-  const doc={asset:{version:'2.0',generator:'Chromatron3D modular midground 1.0'},scene:0,scenes:[{nodes:[0]}],
+  const doc={asset:{version:'2.0',generator:'Chromatron3D modular midground 1.1'},scene:0,scenes:[{nodes:[0]}],
    nodes:[{mesh:0,name}],meshes:[{name,primitives}],materials:palette,
    accessors,bufferViews:views,buffers:[{byteLength:arrays.length}]};
   const j=JSON.stringify(doc),chars=[];for(let i=0;i<j.length;i++)chars.push(j.charCodeAt(i));
@@ -76,116 +100,338 @@ function makeSetpieces(){
   return{bytes:file,triangles,materialCount:primitives.length};
  }
  const res={};
- const orbital=[material('steel plating',0x3b5364,.7,.5),material('silver machined metal',0xa2b4b6,.5,.41),material('amber safety lanes',0xf3b96d,.26,.47,0x713b15),material('electric-blue instrument lamps',0x60cde5,.2,.28,0x177e9a)];
- res['orbital-dock']=sculpt('Orbital maintenance dock',orbital,({V,box,beam})=>{
+
+ // ═════════════════ ORBITAL MIDGROUND ═════════════════
+ const orbital=[
+  material('steel plating',0x3b5364,.7,.5),
+  material('silver machined metal',0xa2b4b6,.5,.41),
+  material('amber safety lanes',0xf3b96d,.26,.47,0x713b15),
+  material('electric-blue instrument lamps',0x60cde5,.2,.28,0x177e9a),
+  material('dark grating',0x283a45,.8,.55)
+ ];
+
+ res['orbital-dock']=sculpt('Orbital maintenance dock',orbital,({V,box,beam,cylinder,sphere})=>{
+  // Main platform
   box(0,.17,0,6,.32,3,0);
+  // Vertical supports
   for(const x of [-2.7,2.7]){box(x,.95,0,.19,1.6,3.2,0);box(x,1.85,0,.44,.12,3.1,2)}
-  for(let i=0;i<4;i++){const x=-1.85+i*1.2;box(x,.84,.4,1,.93,1.18,1);box(x,1.37,.4,1.03,.1,1.25,0);for(let j=0;j<3;j++)box(x-.32+j*.32,1.07,1,.17,.21,.06,2)}
+  // Cargo containers — more varied
+  for(let i=0;i<4;i++){
+   const x=-1.85+i*1.2;
+   box(x,.84,.4,1,.93,1.18,1);
+   box(x,1.37,.4,1.03,.1,1.25,0);
+   for(let j=0;j<3;j++)box(x-.32+j*.32,1.07,1,.17,.21,.06,2);
+  }
+  // Stacked smaller crates
+  box(-1.0,.52,-1.2,.65,.52,.48,1);
+  box(-.85,.82,-1.15,.55,.08,.42,0);
+  box(1.5,.48,-1.1,.58,.44,.55,1);
+
+  // Overhead crane rail
   beam(V(-2.8,2.73,-.95),V(2.8,2.73,-.95),.19,.28,0);
   for(let i=0;i<6;i++)beam(V(-2.72+i*1.08,1.84,-.95),V(-2.72+i*1.08,2.76,-.95),.11,.12,0);
+
+  // Walkway grating along front
+  box(0,.34,-1.56,5.4,.04,.32,4);
+  for(let i=0;i<8;i++)box(-2.4+i*.68,.36,-1.56,.04,.08,.32,0);
+
+  // Floor markings
   for(let i=0;i<6;i++)box(-2.55+i*.98,.36,-1.42,.48,.04,.06,2);
-  for(const x of [-2.8,2.8])box(x,2.93,-1.01,.22,.36,.12,3);
+
+  // Pipe runs along ceiling
+  beam(V(-2.7,2.50,.80),V(2.7,2.50,.80),.065,.065,0);
+  beam(V(-2.7,2.35,.95),V(2.7,2.35,.95),.05,.05,1);
+
+  // Warning lamps on top
+  for(const x of [-2.8,2.8]){box(x,2.93,-1.01,.22,.36,.12,3);sphere(x,3.15,-1.01,.06,3)}
+  // Additional small warning lights
+  sphere(0,2.78,-.95,.05,3);
  });
- res['orbital-comms']=sculpt('Orbital transmission mast',orbital,({V,box,beam,ring,shard})=>{
+
+ res['orbital-comms']=sculpt('Orbital transmission mast',orbital,({V,box,beam,ring,shard,cylinder,sphere})=>{
+  // Foundation pad
   box(0,.21,0,3.65,.4,3,0);
+  // Main lattice struts
   for(const x of [-1,1])for(const z of [-1,1]){
    beam(V(x*1.4,.35,z*1),V(x*.32,5.3,z*.28),.17,.16,0);
    beam(V(x*1.25,.48,z*.88),V(-x*.7,3,z*.55),.10,.10,1);
   }
+  // Horizontal bracing at multiple levels
   for(let h=1;h<5;h++){
    const y=h*1.05,rx=1.46-y*.20;
    beam(V(-rx,y,-rx*.71),V(rx,y,-rx*.71),.11,.10,1);
    beam(V(-rx,y,rx*.71),V(rx,y,rx*.71),.11,.10,1);
+   // Cross bracing
+   if(h%2===1){
+    beam(V(-rx,y,-rx*.71),V(rx,y,rx*.71),.06,.06,4);
+   }
   }
+  // Central mast
   beam(V(0,5.1,0),V(0,7,0),.13,.17,1);
-  ring(-.6,4.3,.4,.9,.88,0,.1,1,30);ring(.6,5.1,-.3,.69,.68,0,.1,3,30);
+  // Dish antennas
+  ring(-.6,4.3,.4,.9,.88,0,.1,1,30);
+  ring(.6,5.1,-.3,.69,.68,0,.1,3,30);
+  // Smaller secondary dish
+  ring(-.3,6.0,.2,.42,.40,0,.06,1,20);
+  // Top beacon
   box(0,7.15,0,.25,.3,.25,2);
+  sphere(0,7.35,0,.08,3);
+  // Equipment boxes on foundation
   for(const x of [-1.15,1.15])shard(x,.44,1.12,.5,.18,3);
+  // Cable runs
+  beam(V(-1.3,.42,.8),V(-.6,4.0,.45),.04,.04,4);
+  beam(V(1.1,.42,-.7),V(.5,4.8,-.35),.04,.04,4);
  });
- const verdant=[material('oxided structural alloy',0x4f6d62,.36,.71),material('weathered mint glazing',0x82aea0,.1,.64),material('old living vines',0x426c47,.02,.94),material('foliage blades',0x65b978,.01,.93),material('spore lamps',0x85e5b4,.02,.32,0x248e69)];
- res['verdant-greenhouse']=sculpt('Verdant greenhouse and leaf canopy',verdant,({V,box,beam,tube,leaf})=>{
+
+ // ═════════════════ VERDANT MIDGROUND ═════════════════
+ const verdant=[
+  material('oxided structural alloy',0x4f6d62,.36,.71),
+  material('weathered mint glazing',0x82aea0,.1,.64),
+  material('old living vines',0x426c47,.02,.94),
+  material('foliage blades',0x65b978,.01,.93),
+  material('spore lamps',0x85e5b4,.02,.32,0x248e69),
+  material('mossy boulder',0x5a7055,.04,.92)
+ ];
+
+ res['verdant-greenhouse']=sculpt('Verdant greenhouse and leaf canopy',verdant,({V,box,beam,tube,leaf,boulder})=>{
+  // Main platform
   box(0,.22,0,5.8,.44,3.15,0);
+  // Greenhouse arches
   for(const x of [-2.7,-1.35,0,1.35,2.7]){
    beam(V(x,.44,-1.26),V(x,2.85,-1.26),.15,.15,0);
    beam(V(x,.44,1.26),V(x,2.85,1.26),.15,.15,0);
    beam(V(x,2.85,-1.26),V(x,3.64,0),.15,.15,0);
    beam(V(x,3.64,0),V(x,2.85,1.26),.15,.15,0);
   }
+  // Glass panels
   for(const z of [-1.24,1.24])box(0,2.13,z,5.3,1.2,.07,1);
   for(const z of [-.62,.62])box(0,3.20,z,5.3,.07,1.15,1);
-  for(let i=0;i<20;i++){
-   const x=-2.4+(i%10)*.52,z=i<10?1.24:-1.24;
-   const root=V(x,.37,z),tip=V(x+.16,.98+(i%4)*.23,z+.25);
-   tube([root,V(x+.08,.67,z+.08),tip],.036,2);
-   leaf(root,V(x+(i%2?.50:-.50),1.15+(i%3)*.12,z+.26),.24,i%2?3:2);
-   leaf(V(x,.73,z),V(x+(i%2?-.34:.34),1.56,z+.38),.17,3);
+
+  // Dense vegetation inside and around
+  for(let i=0;i<24;i++){
+   const x=-2.4+(i%12)*.44,z=i<12?1.24:-1.24;
+   const root=V(x,.37,z),tip=V(x+.14,.92+(i%4)*.20,z+.22);
+   tube([root,V(x+.07,.64,z+.07),tip],.032,2);
+   leaf(root,V(x+(i%2?.46:-.46),1.08+(i%3)*.11,z+.24),.22,i%2?3:2);
+   leaf(V(x,.68,z),V(x+(i%2?-.30:.30),1.44,z+.34),.15,3);
   }
+  // Ground-level foliage spilling out
+  for(let i=0;i<6;i++){
+   const x=-2.2+i*.88,z=1.55;
+   leaf(V(x,.30,z),V(x+.25,.82,z+.35),.20,3);
+   leaf(V(x+.10,.28,z),V(x-.20,.70,z+.30),.17,2);
+  }
+  // Mossy boulders near foundation
+  boulder(-2.5,.18,1.55,.40,.28,.45,5);
+  boulder(2.2,.18,-1.50,.35,.25,.38,5);
+  boulder(0,.16,1.65,.50,.22,.42,5);
+
+  // Spore lamp
   box(1.94,1.01,-1.43,.55,.74,.16,4);
  });
- res['verdant-root-tower']=sculpt('Verdant rooting memory spire',verdant,({V,box,beam,tube,ring,leaf})=>{
+
+ res['verdant-root-tower']=sculpt('Verdant rooting memory spire',verdant,({V,box,beam,tube,ring,leaf,boulder})=>{
+  // Foundation
   box(0,.21,0,3.8,.4,3,0);
-  box(0,2.25,0,1.54,3.7,1.17,0);box(0,4.2,0,1.8,.19,1.45,0);
-  for(let j=0;j<7;j++){
-   const a=j*6.28318/7,x=Math.cos(a),z=Math.sin(a);
-   tube([V(x*1.7,.32,z*1.22),V(x*1.16,.88,z*1.00),V(x*.75,2.33,z*.58),V(x*.46,4.25,z*.36)],.12+(j%3)*.03,2,8);
-   for(let k=0;k<3;k++){
-    const h=.9+k*.98;
-    leaf(V(x*.9,h,z*.72),V(x*.9+(j%2?.6:-.64),h+.44,z*.72+.45),.22,k%2?2:3);
+  // Central tower structure
+  box(0,2.25,0,1.54,3.7,1.17,0);
+  box(0,4.2,0,1.8,.19,1.45,0);
+
+  // Wrapping root vines — more of them
+  for(let j=0;j<9;j++){
+   const a=j*TAU/9,x=Math.cos(a),z=Math.sin(a);
+   tube([V(x*1.7,.32,z*1.22),V(x*1.16,.88,z*1.00),V(x*.75,2.33,z*.58),V(x*.46,4.25,z*.36)],.10+(j%3)*.025,2,7);
+   // Leaves on each root
+   for(let k=0;k<4;k++){
+    const h=.7+k*.82;
+    leaf(V(x*.9,h,z*.72),V(x*.9+(j%2?.55:-.58),h+.40,z*.72+.40),.20,k%2?2:3);
    }
   }
+
+  // Crown foliage — denser
   ring(0,4.52,0,.8,.12,.82,.07,4);
   box(.79,1.45,.62,.08,.93,.08,4);
-  for(let j=0;j<8;j++)leaf(V(-.6+j*.17,4.2,.3),V(-.3+j*.15,5.12,.7),.25,3);
+  for(let j=0;j<12;j++){
+   const spread=-.7+j*.12;
+   leaf(V(spread,4.2,.28),V(spread-.05+j*.08,5.05+.15*Math.sin(j),.65),.22,j%2?3:2);
+  }
+
+  // Boulders at the base
+  boulder(-1.6,.18,.95,.42,.30,.38,5);
+  boulder(1.4,.18,-1.05,.38,.25,.42,5);
+  boulder(.2,.16,1.35,.48,.22,.40,5);
+
+  // Hanging vine tendrils from crown
+  for(let j=0;j<4;j++){
+   const a=j*TAU/4+.3,cx=Math.cos(a)*.65,cz=Math.sin(a)*.55;
+   tube([V(cx,4.30,cz),V(cx*1.2,3.80,cz*1.1),V(cx*1.35,3.20,cz*1.25)],.04,2);
+  }
  });
- const polar=[material('polar station steel',0x425a76,.62,.52),material('translucent-look ice blue',0x87c6e3,.12,.29),material('glacial white ice',0xc7e7f0,.07,.31),material('azure warning relay',0x79d9f2,.12,.28,0x168bbd)];
- res['polar-bridge']=sculpt('Polar frozen relay bridge',polar,({V,box,beam,shard,ring})=>{
+
+ // ═════════════════ POLAR MIDGROUND ═════════════════
+ const polar=[
+  material('polar station steel',0x425a76,.62,.52),
+  material('translucent-look ice blue',0x87c6e3,.12,.29),
+  material('glacial white ice',0xc7e7f0,.07,.31),
+  material('azure warning relay',0x79d9f2,.12,.28,0x168bbd),
+  material('compacted snow',0xdce8ef,.06,.85)
+ ];
+
+ res['polar-bridge']=sculpt('Polar frozen relay bridge',polar,({V,box,beam,shard,ring,boulder})=>{
+  // Bridge foundations
   for(const x of [-2.45,2.45])box(x,.23,0,1.18,.45,2.8,0);
+  // Main bridge deck
   beam(V(-2.55,1.93,0),V(2.55,1.93,0),.38,1.22,0);
+  // Railings
   for(const z of [-.56,.56])beam(V(-2.55,2.25,z),V(2.55,2.25,z),.16,.13,1);
+
+  // Ice spires growing along bridge
+  for(let j=0;j<9;j++){
+   const x=-2.55+j*.64;
+   shard(x,.49,.68,1.15+(j%3)*.38,.23,j%2?1:2,.18,6);
+  }
+  // Vertical supports with ice growth
   for(let j=0;j<7;j++){
    const x=-2.25+j*.75;
-   shard(x,.49,.68,1.22+(j%3)*.42,.25,j%2?1:2,.2,6);
    beam(V(x,2.18,-.56),V(x,2.9,-.56),.095,.095,0);
   }
-  for(const x of [-2.4,2.4]){shard(x,.35,-.75,2.8,.42,2,.24,7);box(x,3.15,0,.12,.26,.11,3)}
+  // Tall ice pillars at ends
+  for(const x of [-2.4,2.4]){
+   shard(x,.35,-.75,3.2,.46,2,.26,7);
+   box(x,3.55,0,.12,.28,.11,3);
+  }
+  // Ice bridge between pillars
+  beam(V(-2.3,2.8,-.75),V(2.3,2.8,-.75),.10,.08,2);
+
+  // Snow drifts at base
+  boulder(-1.8,.16,.95,.55,.18,.48,4);
+  boulder(.5,.16,1.05,.62,.16,.52,4);
+  boulder(2.0,.15,-.90,.48,.15,.42,4);
+
+  // Signal ring
   ring(0,3.33,-.52,.69,.56,0,.07,3,32);
+
+  // Icicle hanging from bridge
+  for(let j=0;j<5;j++){
+   const x=-1.5+j*.75;
+   shard(x,1.45,.0,.45+.12*(j%3),.06,2,.08,5);
+  }
  });
- res['polar-geolab']=sculpt('Polar geology outpost cabin',polar,({V,box,beam,shard,ring})=>{
+
+ res['polar-geolab']=sculpt('Polar geology outpost cabin',polar,({V,box,beam,shard,ring,boulder})=>{
+  // Foundation
   box(0,.27,0,4.8,.49,2.75,0);
-  box(0,1.65,0,3.8,2.2,2.15,0);box(0,2.82,0,4.24,.33,2.42,1);
-  box(-.94,1.55,1.16,1.1,1.12,.08,1);box(.93,1.48,1.18,1.08,1,.09,2);
+  // Main cabin structure
+  box(0,1.65,0,3.8,2.2,2.15,0);
+  box(0,2.82,0,4.24,.33,2.42,1);
+  // Windows
+  box(-.94,1.55,1.16,1.1,1.12,.08,1);
+  box(.93,1.48,1.18,1.08,1,.09,2);
   box(.93,1.48,1.25,.47,.4,.04,3);
+
+  // Support struts
   for(const x of [-2.06,2.06])beam(V(x,.31,-1.11),V(x,1.38,-1.11),.16,.13,1);
-  beam(V(1.26,2.96,-.37),V(1.26,4.72,-.37),.12,.15,0);
-  ring(1.26,4.35,-.37,.8,.75,0,.07,2);
-  for(let j=0;j<10;j++){const x=-1.9+(j%5)*.92,z=j<5?1.12:-1.14;shard(x,.45,z,.6+(j%3)*.31,.22,j%2?1:2,.1,6)}
+
+  // Antenna mast and ring
+  beam(V(1.26,2.96,-.37),V(1.26,5.0,-.37),.11,.13,0);
+  ring(1.26,4.65,-.37,.85,.80,0,.07,2);
+  // Secondary smaller ring
+  ring(1.26,4.15,-.37,.55,.50,0,.05,1);
+
+  // Ice formations around cabin
+  for(let j=0;j<12;j++){
+   const x=-2.1+(j%6)*.82,z=j<6?1.12:-1.14;
+   shard(x,.45,z,.65+(j%3)*.35,.24,j%2?1:2,.12,6);
+  }
+
+  // Snow drifts piling against walls
+  boulder(-2.2,.20,.50,.60,.22,.55,4);
+  boulder(2.1,.20,-.45,.55,.20,.50,4);
+  boulder(0,.18,1.50,.70,.18,.55,4);
+  boulder(-1.5,.16,-1.40,.55,.16,.45,4);
+
+  // Equipment on roof
   box(-1.52,3.08,1.01,.52,.17,.12,3);
+  box(.60,3.06,-.85,.38,.14,.28,0);
+  // Frozen-over equipment box
+  shard(.65,3.12,-.85,.35,.18,2,.08,5);
  });
- const nebula=[material('reactor graphite frame',0x343047,.7,.46),material('amethyst crystal',0x9470b8,.13,.33),
-  material('magenta electric core',0xea8ac8,.10,.29,0xa43e97),material('aged copper coils',0x967978,.62,.41)];
- res['nebula-resonators']=sculpt('Nebula paired resonance chambers',nebula,({V,box,beam,shard,ring})=>{
+
+ // ═════════════════ NEBULA MIDGROUND ═════════════════
+ const nebula=[
+  material('reactor graphite frame',0x343047,.7,.46),
+  material('amethyst crystal',0x9470b8,.13,.33),
+  material('magenta electric core',0xea8ac8,.10,.29,0xa43e97),
+  material('aged copper coils',0x967978,.62,.41),
+  material('deep void crystal',0x5c3a82,.15,.30,0x3a1565)
+ ];
+
+ res['nebula-resonators']=sculpt('Nebula paired resonance chambers',nebula,({V,box,beam,shard,ring,tube})=>{
+  // Base platform
   box(0,.2,0,5.6,.42,2.7,0);
+  // Twin resonator pedestals
   for(const x of [-1.65,1.65]){
    box(x,.50,0,1.2,.29,1.2,3);
-   shard(x,.69,0,3.85,.67,1,x>0?.24:-.25,8);
-   for(let j=0;j<3;j++)ring(x,1.67+j*.79,0,1.02,.18,.97,.09,j===1?2:3);
-   box(x,4.47,.08,.36,.18,.35,2);
+   // Main crystal spire
+   shard(x,.69,0,4.2,.72,1,x>0?.26:-.28,8);
+   // Resonance rings
+   for(let j=0;j<4;j++)ring(x,1.45+j*.68,0,1.05,.20,1.0,.08,j===1||j===3?2:3);
+   // Crystal tip
+   box(x,4.85,.08,.32,.16,.30,2);
   }
-  for(let j=0;j<6;j++){const x=-2.48+j*.99;box(x,.45,1.20,.25,.34,.13,2);beam(V(x,.45,.96),V(x,.93,.68),.055,.065,3)}
+
+  // Energy conduit connecting the two spires
+  tube([V(-1.65,3.2,0),V(-.8,3.5,.15),V(0,3.65,0),V(.8,3.5,-.15),V(1.65,3.2,0)],.065,2,6);
+
+  // Ground-level crystal debris
+  for(let j=0;j<8;j++){
+   const x=-2.48+j*.72;
+   box(x,.45,1.20,.25,.34,.13,2);
+   beam(V(x,.45,.96),V(x,.93,.68),.055,.065,3);
+  }
+
+  // Small crystal shards around base
+  for(let j=0;j<6;j++){
+   const a=j*TAU/6,r=2.5;
+   shard(Math.cos(a)*r,.18,Math.sin(a)*r,.55+.15*(j%3),.15,j%2?1:4,.12,6);
+  }
  });
- res['nebula-wreckage']=sculpt('Nebula drifting crystal wreck',nebula,({V,box,shard,ring})=>{
+
+ res['nebula-wreckage']=sculpt('Nebula drifting crystal wreck',nebula,({V,box,shard,ring,tube,beam})=>{
+  // Floating hull fragments at various levels
   for(const [x,y,z,w,h,d] of [[-1.9,1.15,.3,1.52,.35,1.10],[-.15,.52,-.64,1.32,.30,1.05],[1.8,1.44,0,1.9,.43,1.20],[-.88,2.7,-.34,1.43,.32,.72],[1.10,3.13,-.85,1.14,.35,.9]]){
-   box(x,y,z,w,h,d,0);box(x,y+h*.54,z,.32,.08,d*.82,3);
-   shard(x+.20,y+h*.54,z,1.08,.37,2,.22,6);
+   box(x,y,z,w,h,d,0);
+   box(x,y+h*.54,z,.32,.08,d*.82,3);
+   shard(x+.20,y+h*.54,z,1.15,.40,2,.24,6);
   }
-  for(let j=0;j<9;j++){const a=j*6.28318/9,r=1.67+(j%3)*.47;shard(Math.cos(a)*r,.2+(j%4)*.22,Math.sin(a)*r,.81+(j%3)*.51,.27,j%2?1:2,.29,7)}
-  ring(0,2.25,-.24,2.6,.27,1.80,.08,3);ring(.12,2.24,.12,1.60,.38,1.15,.07,1);
+
+  // Dense crystal growth around wreckage
+  for(let j=0;j<12;j++){
+   const a=j*TAU/12,r=1.67+(j%3)*.47;
+   shard(Math.cos(a)*r,.2+(j%4)*.22,Math.sin(a)*r,.88+(j%3)*.55,.30,j%2?1:2,.32,7);
+  }
+
+  // Resonance rings at different angles
+  ring(0,2.25,-.24,2.6,.27,1.80,.08,3);
+  ring(.12,2.24,.12,1.60,.38,1.15,.07,1);
+  // Additional tilted ring
+  ring(-.25,1.65,.40,2.1,.15,1.40,.06,4);
+
+  // Energy conduit fragments
+  tube([V(-1.5,1.5,.2),V(-.5,2.0,.1),V(.5,2.3,-.2)],.055,2,6);
+  tube([V(1.0,2.0,-.5),V(1.5,2.8,-.7),V(1.1,3.2,-.85)],.045,2,6);
+
+  // Floating crystal debris
+  shard(2.2,.55,.8,.72,.22,4,.20,6);
+  shard(-2.1,.42,-.5,.65,.20,4,.18,5);
+  shard(.3,.35,1.5,.55,.18,1,.15,6);
  });
+
  return res;
 }
 const models=makeSetpieces();
 await mkdir('public/models/midground',{recursive:true});
 for(const [name,model] of Object.entries(models)){
  await writeFile('public/models/midground/'+name+'.glb',model.bytes);
- console.log(name+'.glb',model.bytes.byteLength,'bytes');
+ console.log(name+'.glb',model.bytes.byteLength,'bytes',model.triangles,'triangles');
 }

@@ -33,13 +33,27 @@ test('bounded search solves an unannotated one-mirror optics puzzle',()=>{
  assert.ok(found.checks<=5000);
  assert.equal(verifyPuzzleSolution(level,found.solution).valid,true);
 });
-test('very complex puzzles report limits rather than pretending to know the answer',()=>{
+test('puzzles exceeding maxMovables report complex status',()=>{
  const pieces=[['laser',1,7,2,1],['target',12,7,0,4],
-  ...[[1,1],[2,2],[3,3]].map(([x,y])=>['mirror',x,y,0,0])];
+  ...[[1,1],[2,2],[3,3],[4,4],[5,5]].map(([x,y])=>['mirror',x,y,0,0])];
  const [level]=validateLevels([{title:'Many optics',pieces}]);
- const result=solvePuzzle(level,{maxMovables:2});
+ const result=solvePuzzle(level,{maxMovables:4});
  assert.equal(result.status,'complex');
  assert.equal(result.solution,null);
+});
+test('bounded search solves a puzzle with three movable mirrors',()=>{
+ // Laser shoots east from (1,7). Three mirrors must route beam:
+ //   (1,7)→E to mirror at (5,7) rot=1 →N to mirror at (5,3) rot=5 →E
+ //   to mirror at (10,3) rot=7 →S to target at (10,10).
+ const pieces=[
+  ['laser',1,7,2,4],['target',10,10,0,4],
+  ['mirror',5,12,0,0],['mirror',5,14,0,0],['mirror',10,14,0,0]
+ ];
+ const [level]=validateLevels([{title:'Three mirrors',pieces}]);
+ const found=solvePuzzle(level,{maxChecks:80000,maxMovables:4});
+ assert.equal(found.status,'solved');
+ assert.equal(found.solution.length,3);
+ assert.equal(verifyPuzzleSolution(level,found.solution).valid,true);
 });
 test('state-aware progressive hints use current colors, validate next step and never fabricate',()=>{
  const [level]=validateLevels(PROTOTYPE_LEVELS);

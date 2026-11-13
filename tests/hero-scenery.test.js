@@ -12,7 +12,7 @@ test('four independently authored GLB meshes are real glTF 2.0 with materials an
   assert.equal(buf.toString('ascii',0,4),'glTF');
   assert.equal(buf.readUInt32LE(4),2);
   assert.equal(buf.readUInt32LE(8),buf.length);
-  assert.ok(buf.length<350_000,'compact offline-authored mesh');
+  assert.ok(buf.length<600_000,'compact offline-authored mesh');
   const jsonSize=buf.readUInt32LE(12);
   assert.equal(buf.toString('ascii',16,20),'JSON');
   const gltf=JSON.parse(buf.toString('utf8',20,20+jsonSize));

@@ -1,22 +1,28 @@
 /**
- * Local extractor for a user's OWN, UNPACKED Chromatron 1.14 Win32 executable.
+ * Multi-game PE32 extractor for user's OWN, UNPACKED Chromatron executables.
  *
- * It reads only the documented legacy PE32 address tables and returns the
- * intermediate format consumed by classic-import.js. No game data or original
- * executables are stored in the web application.
+ * Supports all four Chromatron games (1–4):
+ * - Game 1 (v1.14): Known PE32 address tables, fully verified.
+ * - Games 2–4: Scan-based level discovery with structural validation.
  *
- * The freely distributed original .exe is UPX-packed. Users must decompress a
- * copy locally (e.g. upx -d chromatron.exe) before this parser can read the
- * embedded 5-byte puzzle records. Other Chromatron versions and games 2–4
- * use different offsets and are intentionally rejected until separately
- * verified against their original binaries.
+ * No game data or original executables are stored in the web application.
+ * The freely distributed original .exe files are UPX-packed. Users must
+ * decompress their own copies locally (e.g. upx -d chromatron.exe) before
+ * this parser can read the embedded 5-byte puzzle records.
  */
-export function extractChromatron1Executable(bytes){
+
+/* ── Known PE32 virtual addresses for verified game versions ─────── */
+export const KNOWN_PROFILES=Object.freeze({
+ 1:{levelOrderVA:0x0040b168,levelPtrsVA:0x0040e65c,textPtrsVA:0x0040e758,maxLevels:120,playable:50},
+});
+
+/* ── Shared PE32 parser ──────────────────────────────────────────── */
+export function parsePE32(bytes){
  const data=bytes instanceof ArrayBuffer?new Uint8Array(bytes):
   ArrayBuffer.isView(bytes)?new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength):null;
  if(!data||data.length<1024)throw new Error('Expected a Win32 PE32 executable');
  const view=new DataView(data.buffer,data.byteOffset,data.byteLength);
- const byte=(offset)=>{if(offset<0||offset>=data.length)throw new Error('Binary address outside file');return data[offset]};
+ const byte=(o)=>{if(o<0||o>=data.length)throw new Error('Binary address outside file');return data[o]};
  const u16=(o)=>{if(o<0||o+2>data.length)throw new Error('Invalid PE header');return view.getUint16(o,true)};
  const u32=(o)=>{if(o<0||o+4>data.length)throw new Error('Invalid PE header');return view.getUint32(o,true)};
  if(byte(0)!==0x4d||byte(1)!==0x5a)throw new Error('Expected Windows MZ executable');
@@ -34,48 +40,241 @@ export function extractChromatron1Executable(bytes){
  }
  if(sections.some(s=>s.name.startsWith('UPX')))
   throw new Error('UPX-packed original detected. Decompress your own copy with upx -d first.');
- function fileOffset(va,length=1){
+ /** Convert VA→file offset; returns -1 if unmapped (soft fail for scanning). */
+ function toFileOffset(va,length=1){
   const rva=va-imageBase;
-  const section=sections.find(s=>rva>=s.rva&&rva+length<=s.rva+s.rawSize);
-  if(!section)throw new Error('Missing Chromatron 1 address 0x'+va.toString(16));
-  const offset=section.rawPtr+rva-section.rva;
-  if(offset<0||offset+length>data.length)throw new Error('Truncated original game data');
-  return offset;
+  for(const s of sections){
+   if(rva>=s.rva&&rva+length<=s.rva+s.rawSize){
+    const off=s.rawPtr+rva-s.rva;
+    return(off>=0&&off+length<=data.length)?off:-1;
+   }
+  }
+  return -1;
+ }
+ /** Strict version that throws on unmapped addresses. */
+ function fileOffset(va,length=1){
+  const off=toFileOffset(va,length);
+  if(off<0)throw new Error('Missing Chromatron address 0x'+va.toString(16));
+  return off;
  }
  const readByte=va=>byte(fileOffset(va));
  const readPointer=va=>u32(fileOffset(va,4));
  const readAscii=va=>{
   const out=[];
   for(let i=0;i<512;i++){
-   const c=readByte(va+i);
-   if(c===0)break;
+   const c=readByte(va+i);if(c===0)break;
    out.push(c>=32&&c<=126?String.fromCharCode(c):' ');
   }
   return out.join('');
  };
- // Chromatron 1.14: game level # to internal level index, 50 bytes.
- const level_order=Array.from({length:50},(_,i)=>readByte(0x0040b168+i));
- if(new Set(level_order).size!==50)throw new Error('Invalid or unsupported original level order');
+ return {data,view,sections,imageBase,byte,u16,u32,toFileOffset,fileOffset,readByte,readPointer,readAscii};
+}
+
+/* ── Level record validator ──────────────────────────────────────── */
+/** Check whether bytes at `offset` form a valid Chromatron level (5-byte records). */
+export function isValidLevel(data,offset){
+ let pos=offset,count=0;
+ const limit=Math.min(offset+225*5+1,data.length);
+ while(pos<limit){
+  const type=data[pos];
+  if(type===0)return count>=2; // terminated; need at least laser+target
+  if(pos+5>limit)return false; // incomplete record
+  if(type>12)return false;
+  if(data[pos+1]>7)return false;  // rotation 0–7
+  if(data[pos+2]>7)return false;  // color bitmask 0–7
+  if(data[pos+3]>14)return false; // x 0–14
+  if(data[pos+4]>14)return false; // y 0–14
+  count++;pos+=5;
+ }
+ return false; // unterminated
+}
+
+/* ── Scan-based level discovery (games 2–4) ──────────────────────── */
+/**
+ * Scan data sections for an array of 32-bit pointers to valid level records.
+ * Returns {fileOffset, count, pointers} or null.
+ */
+export function scanLevelPointers(pe){
+ const {data,view,sections,imageBase,toFileOffset}=pe;
+ let best=null;
+ for(const section of sections){
+  if(section.name==='.text'||section.name==='.reloc')continue;
+  const start=section.rawPtr,end=Math.min(start+section.rawSize-4,data.length-4);
+  for(let off=start;off<=end;off+=4){
+   const va=view.getUint32(off,true);
+   if(va<imageBase||va>imageBase+0x1000000)continue;
+   const loff=toFileOffset(va,6);
+   if(loff<0||!isValidLevel(data,loff))continue;
+   let count=1;
+   for(let next=off+4;next+4<=end+4&&count<200;next+=4){
+    const nva=view.getUint32(next,true);
+    if(nva<imageBase)break;
+    const noff=toFileOffset(nva,6);
+    if(noff<0||!isValidLevel(data,noff))break;
+    count++;
+   }
+   if(count>=40&&(!best||count>best.count))
+    best={fileOffset:off,count};
+   if(count>1)off+=(count-1)*4;
+  }
+ }
+ if(!best)return null;
+ const pointers=Array.from({length:best.count},(_,i)=>
+  view.getUint32(best.fileOffset+i*4,true));
+ return {...best,pointers};
+}
+
+/**
+ * Scan for a 50-byte level order table (unique indices 0..maxIndex-1).
+ * Falls back to sequential 0..49 if no unique-50 pattern is found.
+ */
+export function scanLevelOrder(pe,maxIndex){
+ const {data,sections}=pe;
+ for(const section of sections){
+  if(section.name==='.text'||section.name==='.reloc')continue;
+  const start=section.rawPtr;
+  const end=Math.min(start+section.rawSize-50,data.length-50);
+  for(let off=start;off<=end;off++){
+   const seen=new Set();
+   let valid=true;
+   for(let i=0;i<50;i++){
+    const v=data[off+i];
+    if(v>=maxIndex||seen.has(v)){valid=false;break}
+    seen.add(v);
+   }
+   if(valid&&seen.size===50)
+    return Array.from({length:50},(_,i)=>data[off+i]);
+  }
+ }
+ return Array.from({length:Math.min(50,maxIndex)},(_,i)=>i);
+}
+
+/**
+ * Scan for a text-pointer array near the level-pointer array.
+ * Text pointers are dword VAs to null-terminated ASCII strings.
+ */
+export function scanTextPointers(pe,levelPtrsFileOffset,levelCount){
+ const {data,view,imageBase,toFileOffset}=pe;
+ // Text pointers are typically in the same section, within 2 KB after level pointers
+ const searchStart=levelPtrsFileOffset+levelCount*4;
+ const searchEnd=Math.min(searchStart+4096,data.length-4);
+ for(let off=searchStart;off<=searchEnd;off+=4){
+  let textCount=0;
+  for(let i=0;i<levelCount&&off+i*4+4<=data.length;i++){
+   const va=view.getUint32(off+i*4,true);
+   if(va===0){textCount++;continue} // null text OK
+   if(va<imageBase)break;
+   const toff=toFileOffset(va,1);
+   if(toff<0)break;
+   const c=data[toff];
+   if(c<32&&c!==0)break; // not printable ASCII
+   textCount++;
+  }
+  if(textCount>=levelCount)return off;
+ }
+ return -1;
+}
+
+/* ── Profile-based extraction (known addresses) ──────────────────── */
+function extractWithProfile(pe,profile){
+ const {readByte,readPointer,readAscii}=pe;
+ const level_order=Array.from({length:profile.playable},(_,i)=>
+  readByte(profile.levelOrderVA+i));
+ if(new Set(level_order).size!==profile.playable)
+  throw new Error('Invalid or unsupported original level order');
  const total=Math.max(...level_order)+1;
- if(total>120)throw new Error('Unexpected original level count');
+ if(total>profile.maxLevels)
+  throw new Error('Unexpected original level count');
  const levels=[];
  for(let i=0;i<total;i++){
-  const gridPtr=readPointer(0x0040e65c+i*4);
-  const textPtr=readPointer(0x0040e758+i*4);
+  const gridPtr=readPointer(profile.levelPtrsVA+i*4);
+  const textPtr=readPointer(profile.textPtrsVA+i*4);
   const text=textPtr?readAscii(textPtr):'';
   const pieces=[];
   for(let k=0;k<225;k++){
    const type=readByte(gridPtr+k*5);
    if(type===0)break;
    if(type>12)throw new Error('Unexpected optical record in original level '+i);
-   pieces.push({
-    type,rotation:readByte(gridPtr+k*5+1),
+   pieces.push({type,rotation:readByte(gridPtr+k*5+1),
     color:readByte(gridPtr+k*5+2),
-    x:readByte(gridPtr+k*5+3),y:readByte(gridPtr+k*5+4)
-   });
+    x:readByte(gridPtr+k*5+3),y:readByte(gridPtr+k*5+4)});
    if(k===224)throw new Error('Unterminated original level '+i);
   }
   levels.push({text,pieces});
  }
  return {levels,level_order};
+}
+
+/* ── Scan-based extraction (games 2–4 or unknown versions) ───────── */
+function extractByScan(pe){
+ const ptrs=scanLevelPointers(pe);
+ if(!ptrs)throw new Error('Could not locate Chromatron level data in this executable. '+
+  'Ensure the file is a decompressed (upx -d) Chromatron game.');
+ const {data,view,toFileOffset}=pe;
+ const levels=[];
+ for(let i=0;i<ptrs.count;i++){
+  const gridOff=toFileOffset(ptrs.pointers[i],6);
+  if(gridOff<0)throw new Error('Bad level pointer at index '+i);
+  const pieces=[];
+  for(let k=0;k<225;k++){
+   const pos=gridOff+k*5;
+   if(pos>=data.length)break;
+   const type=data[pos];
+   if(type===0)break;
+   if(type>12)throw new Error('Unexpected record in scanned level '+i);
+   pieces.push({type,rotation:data[pos+1],color:data[pos+2],
+    x:data[pos+3],y:data[pos+4]});
+  }
+  levels.push({text:'',pieces});
+ }
+ // Try to recover level text strings
+ const textOff=scanTextPointers(pe,ptrs.fileOffset,ptrs.count);
+ if(textOff>=0){
+  for(let i=0;i<ptrs.count;i++){
+   const off=textOff+i*4;
+   if(off+4>data.length)break;
+   const va=view.getUint32(off,true);
+   if(!va)continue;
+   const toff=toFileOffset(va,1);
+   if(toff<0)continue;
+   const out=[];
+   for(let j=0;j<512&&toff+j<data.length;j++){
+    const c=data[toff+j];if(c===0)break;
+    out.push(c>=32&&c<=126?String.fromCharCode(c):' ');
+   }
+   levels[i].text=out.join('');
+  }
+ }
+ const level_order=scanLevelOrder(pe,ptrs.count);
+ return {levels,level_order};
+}
+
+/* ── Public API ──────────────────────────────────────────────────── */
+
+/** Backward-compatible: extract Chromatron 1 only (known addresses). */
+export function extractChromatron1Executable(bytes){
+ return extractWithProfile(parsePE32(bytes),KNOWN_PROFILES[1]);
+}
+
+/**
+ * Unified multi-game extractor. Tries known profiles first, then
+ * falls back to scan-based discovery for games 2–4.
+ * @param {ArrayBuffer|Uint8Array} bytes  Decompressed PE32 executable
+ * @param {object} [options]
+ * @param {number} [options.game]  Hint: which game (1–4) this executable is
+ * @returns {{levels,level_order,detectedGame:number}}
+ */
+export function extractChromatronExecutable(bytes,{game}={}){
+ const pe=parsePE32(bytes);
+ // If caller knows the game and we have a profile, use it directly
+ if(game&&KNOWN_PROFILES[game]){
+  return {...extractWithProfile(pe,KNOWN_PROFILES[game]),detectedGame:game};
+ }
+ // Try all known profiles
+ for(const [g,profile] of Object.entries(KNOWN_PROFILES)){
+  try{return {...extractWithProfile(pe,profile),detectedGame:Number(g)}}
+  catch{}
+ }
+ // Fall back to scan-based extraction for unknown versions
+ return {...extractByScan(pe),detectedGame:game||0};
 }

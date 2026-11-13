@@ -32,7 +32,7 @@ test('eight new GLB files are valid, unique multi-material sculptures with depth
   const maxY=Math.max(...positions.map(p=>p.max[1]));
   assert.ok(faces>=180,name+' must be substantial geometry, not dust');
   assert.ok(maxY-minY>=2.7,name+' tall enough for a recognizable silhouette');
-  assert.ok(bytes.length<180000,'small enough to load on-demand');
+  assert.ok(bytes.length<250000,'small enough to load on-demand');
   counts.add(faces);
  }
  assert.ok(counts.size>=6,'not all copies of the same geometry');

@@ -16,7 +16,7 @@ import {normalizeWallet,packFingerprint,stageKey,rewardOnce,ensurePreviousHints,
 import {verifyPuzzleSolution} from './puzzle-solver.js';
 import {contextualHint} from './hint-assistant.js';
 import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
-import {extractChromatron1Executable} from './classic-exe.js';
+import {extractChromatron1Executable,extractChromatronExecutable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
@@ -24,7 +24,9 @@ import {createHeroScenery} from './hero-scenery.js';
 import {createMidgroundScenery} from './midground-scenery.js';
 import {createAmbientLife} from './ambient-life.js';
 import {stageEntryMode,stagePresentation} from './stage-presentation.js';
-import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
+import {deckSurfaceProfile,deckCellFinish,deckCellRoughness} from './deck-finishes.js';
+import {createLivingWorld} from './living-world.js';
+import {createGroundTerrain} from './ground-terrain.js';
 import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -129,6 +131,8 @@ const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T});
 const heroScenery=createHeroScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/biomes/'});
 const midgroundScenery=createMidgroundScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/midground/'});
 const ambientLife=createAmbientLife(THREE,world);
+const livingWorld=createLivingWorld(THREE,scene,world);
+const groundTerrain=createGroundTerrain(THREE,world);
 const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
 let activeEnvironment=null;
 function applyLevelEnvironment(){
@@ -137,6 +141,8 @@ function applyLevelEnvironment(){
  heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  midgroundScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  ambientLife.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
+ livingWorld.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
+ groundTerrain.setTheme(theme);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  deck.material.color.setHex(theme.tileB);
  const finish=deckSurfaceProfile(theme.decor);
@@ -144,6 +150,11 @@ function applyLevelEnvironment(){
  tileMaterial.roughness=finish.tileRoughness;
  deck.material.metalness=finish.deckMetalness;
  deck.material.roughness=finish.deckRoughness;
+ // Subtle per-biome emissive tint on the board surface material
+ const biomeEmissive={moss:0x1a3a22,ice:0x1a3044,crystal:0x2a1830,scrap:0x1a2530};
+ const biomeEmissiveStrength={moss:.04,ice:.06,crystal:.08,scrap:.03};
+ tileMaterial.emissive.setHex(biomeEmissive[theme.decor]||0x000000);
+ tileMaterial.emissiveIntensity=biomeEmissiveStrength[theme.decor]||0;
  // Inlaid grid seams use the same instanced draw call, but each cell
  // reflects its biome's patina instead of an identical glowing strip.
  boardLines.material.color.setHex(0xffffff);
@@ -1088,6 +1099,8 @@ function applyGraphicsQuality(){
  heroScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  midgroundScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  ambientLife.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ livingWorld.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ groundTerrain.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
@@ -1356,16 +1369,15 @@ $('classic-files').addEventListener('change',async event=>{
   const files=[...input.files];
   if(!files.length)return;
   const loaded=await Promise.all(files.map(async(file,i)=>{
-   if(file.size>8_000_000)throw new Error('JSON file is too large');
+   if(file.size>8_000_000)throw new Error('File is too large');
    const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
    const game=match?Number(match[1]):i+1;
    const isExecutable=/\.exe$/i.test(file.name);
-   if(isExecutable&&game!==1)
-    throw new Error('Direct executable extraction currently supports Chromatron 1 only; use JSON for 2–4.');
-   const data=isExecutable?
-    extractChromatron1Executable(await file.arrayBuffer()):
-    JSON.parse(await file.text());
-   return {game,data};
+   if(isExecutable){
+    const result=extractChromatronExecutable(await file.arrayBuffer(),{game});
+    return {game:result.detectedGame||game,data:result};
+   }
+   return {game,data:JSON.parse(await file.text())};
   }));
   const next=loaded.length===1?
    loadLevelBundle(loaded[0].data,{game:loaded[0].game}):
@@ -1378,6 +1390,45 @@ $('classic-files').addEventListener('change',async event=>{
   const message=String(error?.message||error).slice(0,180);
   $('classic-import-status').textContent=t(language,'classicImportError',{message});
  }finally{input.value=''}
+});
+// ── Drag-and-drop import: drop .exe or .json files onto the game board ──
+async function handleDroppedFiles(fileList){
+ const files=[...fileList].filter(f=>/\.(json|exe)$/i.test(f.name));
+ if(!files.length)return;
+ try{
+  const loaded=await Promise.all(files.map(async(file,i)=>{
+   if(file.size>8_000_000)throw new Error('File is too large');
+   const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
+   const game=match?Number(match[1]):i+1;
+   const isExecutable=/\.exe$/i.test(file.name);
+   if(isExecutable){
+    const result=extractChromatronExecutable(await file.arrayBuffer(),{game});
+    return {game:result.detectedGame||game,data:result};
+   }
+   return {game,data:JSON.parse(await file.text())};
+  }));
+  const next=loaded.length===1?
+   loadLevelBundle(loaded[0].data,{game:loaded[0].game}):
+   convertClassicCollection(loaded);
+  const count=switchLevelPack(next);
+  toast(t(language,'classicImportSuccess',{count}));
+ }catch(error){
+  toast(t(language,'classicImportError',{message:String(error?.message||error).slice(0,140)}));
+ }
+}
+let dragCounter=0;
+document.addEventListener('dragenter',e=>{
+ e.preventDefault();
+ if(++dragCounter===1)$('drop-zone').classList.remove('hidden');
+});
+document.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy'});
+document.addEventListener('dragleave',e=>{
+ e.preventDefault();
+ if(--dragCounter<=0){dragCounter=0;$('drop-zone').classList.add('hidden')}
+});
+document.addEventListener('drop',e=>{
+ e.preventDefault();dragCounter=0;$('drop-zone').classList.add('hidden');
+ if(e.dataTransfer?.files?.length)handleDroppedFiles(e.dataTransfer.files);
 });
 $('hint').onclick=()=>{
  $('hint-overlay').classList.remove('hidden');
@@ -1450,6 +1501,8 @@ function animate(time){
  spaceEnvironments.update(time*.001,reducedMotion.matches);
  midgroundScenery.update(time*.001,reducedMotion.matches);
  ambientLife.update(time*.001,reducedMotion.matches);
+ livingWorld.update(time*.001,reducedMotion.matches);
+ groundTerrain.update(time*.001,reducedMotion.matches);
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
  zoomLastFrame=time;

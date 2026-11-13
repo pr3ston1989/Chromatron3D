@@ -21,10 +21,11 @@ confirmed with the rights holder, Sean Barrett / Silver Spaceship Software.
 
 | Source | Status | Limits |
 |---|---|---|
-| Original Chromatron 1.14 Windows EXE | **Local unpacked PE32 structural decoder implemented** | Must be decompressed from UPX locally; known executable layout only |
-| Chromatron 1 extracted-data JSON | **50-level order and piece conversion** | JSON must contain `levels` and `level_order` |
-| Chromatron 2–4 extracted-data JSON | **Same structural conversion when it has the same 5-byte piece schema** | Original binaries and offsets not yet reverse-verified |
-| Four JSON packs in one selection | **Up to 200 local levels** | Filenames should identify game (chromatron1/2/3/4); otherwise selection order 1–4 |
+| Chromatron 1.14 Windows EXE | **Known-address PE32 extraction** | Must be decompressed from UPX locally; verified addresses |
+| Chromatron 2–4 Windows EXE | **Scan-based PE32 extraction** | Must be decompressed from UPX locally; uses structural pattern matching |
+| Chromatron 1–4 extracted-data JSON | **50-level order and piece conversion** | JSON must contain `levels` and `level_order` |
+| Four JSON/EXE packs in one selection | **Up to 200 local levels** | Filenames should identify game (chromatron1/2/3/4); otherwise selection order 1–4 |
+| Drag-and-drop import | **Supported** | Drop .exe or .json files onto the game board |
 | Arbitrary custom `levels` JSON | **Supported** | Uses the game's existing 15×15 schema |
 
 All imports run only inside the user's browser. The original .exe or .json is
@@ -40,12 +41,14 @@ never committed to this repository or uploaded to an external server.
 5. Verify the resulting boards against the official game; **do not assume all
    specialty interactions match yet**.
 
-For games 2–4, use JSON exported locally from your original installation,
-with `{levels:[{text,pieces:[{type,rotation,color,x,y}]}],level_order:[...]}`.
-The game does not yet extract the 2–4 executables directly. Scripts and format
-analysis in [chromatron-oxide](https://github.com/stared/chromatron-oxide)
-are useful *technical references*; that independent project does not grant a
-license to redistribute the original data.
+For games 2–4, either use JSON exported locally from your original installation
+(`{levels:[{text,pieces:[{type,rotation,color,x,y}]}],level_order:[...]}`),
+or drag the UPX-decompressed `.exe` files directly onto the game board. The
+scan-based extractor searches the PE32 data sections for 5-byte level records
+and does not require hardcoded addresses. Scripts and format analysis in
+[chromatron-oxide](https://github.com/stared/chromatron-oxide) are useful
+*technical references*; that independent project does not grant a license to
+redistribute the original data.
 
 ## Classic data normalization
 

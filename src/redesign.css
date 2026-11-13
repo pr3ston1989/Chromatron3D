@@ -243,3 +243,16 @@ body{background:#102238;color:var(--ui-ink)}
  letter-spacing:.8px}
 #inventory button.inventory-item.selected:not(:disabled){border-left:3px solid #70cbb4}
 @media(max-width:680px){.rotation-angle{min-width:38px;font-size:11px;padding:3px}.transform-heading{gap:4px;margin-bottom:4px}}
+
+/* ── Drag-and-drop import overlay ─────────────────────────────────── */
+.drop-zone{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+ background:rgba(2,10,18,.86);backdrop-filter:blur(8px);pointer-events:all}
+.drop-zone.hidden{display:none!important}
+.drop-zone-inner{display:flex;flex-direction:column;align-items:center;gap:16px;
+ padding:48px 56px;border:2px dashed var(--ui-bright);border-radius:20px;
+ background:rgba(14,42,62,.52);text-align:center;pointer-events:none;
+ animation:dropPulse 1.8s ease-in-out infinite}
+.drop-zone-icon{font-size:56px;color:var(--ui-bright);filter:drop-shadow(0 0 18px #42ceff80);line-height:1}
+.drop-zone h2{margin:0;font:700 28px 'Space Grotesk',sans-serif;color:#f2fbff;letter-spacing:1.2px}
+.drop-zone p{margin:0;font:500 14px 'Rajdhani',sans-serif;color:var(--ui-muted);letter-spacing:.4px}
+@keyframes dropPulse{0%,100%{border-color:var(--ui-bright)}50%{border-color:var(--ui-gold)}}
