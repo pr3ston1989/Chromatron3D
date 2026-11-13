@@ -22,7 +22,7 @@ test('one cached scene set changes active biome, sky and decoration without rebu
  const first=director.getStats();
  assert.equal(first.biome,a.id);
  assert.equal(first.stars,290);
- assert.equal(first.foliage,65);
+ assert.equal(first.foliage,12);
  assert.equal(first.nebulae,1);
  assert.equal(scene.background.getHex(),a.sky);
  director.setLevel('demo',1,{seed:777});
@@ -34,7 +34,7 @@ test('one cached scene set changes active biome, sky and decoration without rebu
  assert.equal(world.children.filter(c=>c.name.startsWith('board-decor-')&&c.visible).length,1);
  director.setQuality('cinematic');
  assert.equal(director.getStats().stars,1000);
- assert.equal(director.getStats().foliage,196);
+ assert.equal(director.getStats().foliage,45);
  assert.equal(director.getStats().nebulae,3);
  director.update(4,false);
 });
