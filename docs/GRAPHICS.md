@@ -120,3 +120,22 @@ The finish also adjusts only the existing board surface and chassis material's
 roughness/metalness when the biome changes. Each map is deterministic for the
 same pack, level and session seed, and is different for other levels. The tile
 collision model, optical solver, hit targets and ray paths remain untouched.
+
+## Biome-linked stage arrival and level atlas
+
+The level map previews each **unlocked** stage's session-selected environment
+(orbital shipyard, overgrown station, frozen observatory, or crimson nebula)
+using the same palette and deterministic biome shuffle as the live scene.
+Locked levels remain unnamed and reveal no puzzle content.
+
+Opening a new level now briefly displays the localized puzzle title, stage
+number, actual biome name, and whether it is a **new puzzle**, a **resumed
+draft**, or a **replay** of a solved level. The scene gets a matching color-
+coded scan/edge frame for about 2.5 seconds. The introduction cannot capture
+mouse, touch, or keyboard input, and no new WebGL geometry, shader passes,
+textures, or scene rebuilds are involved beyond normal level loading.
+
+A quick reset does not replay the intro: it only resets puzzle state. Players
+who request reduced motion see no arrival animation, while the standard mission
+panel continues to display the permanent title. The card and opening overlay
+follow the currently selected language, and do not store further player data.
