@@ -3,6 +3,16 @@
  * deliberately avoid solution spoilers. No player credits are spent.
  */
 export const OPTIC_GUIDE=Object.freeze({
+ multiFilter:{pl:'Kąt wejścia wybiera kanał niebieski, zielony, czerwony lub całe widmo.',en:'Entry angle selects blue, green, red or the full spectrum.'},
+ twister:{pl:'Obraca każdy wpadający promień o 90° w lewo.',en:'Turns every incoming ray a quarter-turn counterclockwise.'},
+ complementor:{pl:'Emituje brakujące składowe RGB wzdłuż zgodnych osi. Sprzężenie zwrotne może wyłączyć emisję.',en:'Sends missing RGB channels along matching axes. Conflicting feedback can shut it down.'},
+ logicGate:{pl:'Wysyła wspólne kanały z dwóch wejść pod kątem 45° do osi wyjścia.',en:'Emits channels shared by both inputs at 45° to the output axis.'},
+ starburst:{pl:'Zmienia wiązkę osiową w cztery ukośne, a ukośną w cztery osiowe.',en:'Fans an axial ray into four diagonals, or a diagonal into four axial rays.'},
+ mobileTeleporter:{pl:'Możesz przenieść ten portal, aby połączyć go z kolejnym na linii wiązki.',en:'Move this portal to connect to the next portal along a beam line.'},
+ dualReflector:{pl:'Obie strony odbijają światło. Wiązka styczna do lustra zostaje pochłonięta.',en:'Both faces reflect. Light travelling parallel to the mirror is absorbed.'},
+ quadBender:{pl:'Z każdego wejścia odchyla promień o dodatkowe 45° względem odbicia lustrzanego.',en:'Bends rays from every direction an extra 45° from the mirror reflection.'},
+ occupiedSquare:{pl:'Światło przechodzi przez to pole. Nie można na nim ustawić przyrządu.',en:'Light passes through this cell. Instruments cannot be placed on it.'},
+ primaryLogicGate:{pl:'Bramka emituje światło, tylko gdy wspólny sygnał jej wejść ma dokładnie jeden kanał.',en:'Fires only when its two inputs share exactly one primary colour channel.'},
  laser:{
   pl:'Emituje promień w kierunku wskazywanym przez głowicę. Barwa lasera określa jego kanały RGB.',
   en:'Emits light in the direction of its aperture. The laser color defines its RGB channels.'

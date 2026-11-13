@@ -9,6 +9,7 @@ import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {EXPERT_LEVELS,EXPERT_CHAPTERS} from './expert-levels.js';
+import {createSoundscape} from './soundscape.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
@@ -16,8 +17,7 @@ import {clampHints,hintFor,progressKey} from './hints.js';
 import {normalizeWallet,packFingerprint,stageKey,rewardOnce,ensurePreviousHints,buyNextHint,HINT_COSTS} from './hint-economy.js';
 import {verifyPuzzleSolution} from './puzzle-solver.js';
 import {contextualHint} from './hint-assistant.js';
-import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
-import {extractChromatron1Executable,extractChromatronExecutable} from './classic-exe.js';
+import {loadLevelBundle} from './classic-import.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
@@ -40,6 +40,10 @@ import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js'
 import {createMirrorHardware} from './mirror-asset.js';
 import {applyOpticFinish} from './optic-textures.js';
 import {detailEmitter,detailResonator} from './optical-assets.js';
+import {createOpticModelLoader} from './optic-model-loader.js';
+import {createCinematicPass} from './cinematic-pass.js';
+import {createBoardEdgeGlow} from './board-edge-glow.js';
+import {createAtmosphereParticles} from './atmosphere-particles.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
@@ -80,6 +84,9 @@ const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
 const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),graphicsProfile.bloomStrength,.27,1.10);
 composer.addPass(bloomPass);
+// Cinematic color grading: per-biome tint, vignette, saturation, film grain
+const cinematic=createCinematicPass(THREE,ShaderPass);
+composer.addPass(cinematic.pass);
 // WebGL's canvas antialias flag does not smooth postprocessed render targets.
 // Use native postprocessing AA: inexpensive FXAA for laptops, SMAA for HQ.
 const fxaaPass=new ShaderPass(FXAAShader);
@@ -134,16 +141,32 @@ const midgroundScenery=createMidgroundScenery(THREE,world,{baseUrl:import.meta.e
 const ambientLife=createAmbientLife(THREE,world);
 const livingWorld=createLivingWorld(THREE,scene,world);
 const groundTerrain=createGroundTerrain(THREE,world);
+const boardEdgeGlow=createBoardEdgeGlow(THREE,world,{tileSize:T,half:HALF});
+const atmosphereParticles=createAtmosphereParticles(THREE,scene);
+let modelRefresh=0;
+const opticModels=createOpticModelLoader(THREE,{
+ baseUrl:import.meta.env.BASE_URL+'models/optics/',
+ onReady(type){
+  if(modelRefresh||!pieces.some(p=>p.type===type&&!p.inTray))return;
+  modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;rebuildPieces()});
+ }
+});
 const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
+const soundscape=createSoundscape();
 let activeEnvironment=null;
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
  activeEnvironment=theme;
+ soundscape.setBiome(theme.id);
  heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  midgroundScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  ambientLife.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  livingWorld.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  groundTerrain.setTheme(theme);
+ boardEdgeGlow.setTheme(theme);
+ atmosphereParticles.setBiome(theme.id);
+ atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ cinematic.setBiome(theme.id);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  deck.material.color.setHex(theme.tileB);
  const finish=deckSurfaceProfile(theme.decor);
@@ -192,6 +215,16 @@ let wallet=normalizeWallet(null);
 let currentPackId=packFingerprint(levels);
 const demoPackId=currentPackId;
 const expertPackId=packFingerprint(expertLevels);
+const classicLibrary=new Map();
+for(let game=1;game<=4;game++){
+ try{
+  const json=localStorage.getItem('chromatron-classic-'+game);
+  if(json){
+   const pack=validateLevels(JSON.parse(json));
+   if(pack.length===50&&pack.every(l=>l.sourceGame===game))classicLibrary.set(game,pack);
+  }
+ }catch{}
+}
 let campaignPreference='demo';
 const verifiedSolutions=new Map();
 let hintWorker=null,solvingId=null,solverStatus='';
@@ -203,7 +236,7 @@ try{
   localStorage.getItem('chromatron-reborn-level')??0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
- campaignPreference=localStorage.getItem('chromatron-reborn-campaign')==='expert'?'expert':'demo';
+ campaignPreference=localStorage.getItem('chromatron-reborn-campaign')||'demo';
  coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
@@ -255,11 +288,31 @@ function rebuildPieces(){
  const glass=new THREE.MeshPhysicalMaterial({color:0x97eaff,metalness:.42,roughness:.12,transparent:true,opacity:.83,clearcoat:1,side:THREE.DoubleSide});
  applyOpticFinish(THREE,silver,'polished');
  applyOpticFinish(THREE,trim,'brushed');
+ const walls=pieces.filter(p=>p.type==='wall'&&!p.inTray);
+ if(walls.length)opticModels.load('wall');
+ const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24));
+ if(wallBatch){componentGroup.add(wallBatch);hitObjects.push(...wallBatch.children)}
  for(const p of pieces){
   if(p.inTray)continue;
+  if(wallBatch&&p.type==='wall')continue;
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
-  const color=new THREE.Color(COLORS[p.color||7]);
-  const glow=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.3,metalness:.24,roughness:.18});
+  const color=new THREE.Color(COLORS[p.type==='target'?p.color:(p.color||7)]);
+  opticModels.load(p.type);
+  const energized=p.type==='target'&&(currentResult?.received.get(p.id)||0)===p.color;
+  const model=opticModels.cloneOptic(p.type,color,{energized});
+  if(model){
+   const head=new THREE.Group();
+   head.userData.motionHead=true;
+   head.rotation.y=-p.rot*Math.PI/4;
+   head.position.y=.65;
+   model.position.y=-.65;
+   head.add(model);g.add(head);
+   if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
+   if(p.type==='target')g.userData.modelActive=energized;
+   model.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
+  }else{
+   const glow=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.3,metalness:.24,roughness:.18});
+  // ── Procedural fallback ─────────────────────────────────────────────
   const base=mesh(new THREE.CylinderGeometry(.53,.60,.24,12),metal,g);base.position.y=.025;
   const foot=mesh(new THREE.CylinderGeometry(.47,.49,.06,24),trim,g);foot.position.y=.17;
   const outlineMaterial=new THREE.MeshBasicMaterial({color:0x467e96,transparent:true,opacity:.43});
@@ -286,7 +339,7 @@ function rebuildPieces(){
    flare.position.set(nozzleAxis.x*.70,.53,nozzleAxis.z*.70);
    detailEmitter(THREE,g,p.rot,color);
   }else if(p.type==='target'){
-   const energized=currentResult?.received.get(p.id)===p.color;
+   const energized=(currentResult?.received.get(p.id)||0)===p.color;
    glow.emissiveIntensity=energized?5.2:1.7;
    const housing=mesh(new THREE.CylinderGeometry(.35,.42,.24,24),dark,g);housing.position.y=.27;
    const receiverRing=torus(.41,.074,energized?glow:silver,g);receiverRing.position.y=.40;
@@ -361,6 +414,7 @@ function rebuildPieces(){
    torus(.50,.03,baseRingMaterial,g).position.y=.29;
   }
   g.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
+  }
   // Precise four-corner reticle is shared by all optics, never rebuilt.
   // Animate the model, not its logical placement. The ray tracer resolves
   // instantly; the optical hardware settles with an unobtrusive ease-out.
@@ -395,6 +449,7 @@ function rebuildPieces(){
  // resource collector. Avoid disposing them before every piece has been rendered.
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
+let levelTransition=null;
 function currentLevelKey(){return stageKey(currentPackId,levelIndex)}
 function saveWallet(){
  store('chromatron-reborn-credit-wallet',JSON.stringify(wallet));
@@ -613,20 +668,23 @@ function packLabelKey(){
  return currentPackId===demoPackId?'prototype':currentPackId===expertPackId?'expertPack':'classicPack';
 }
 function currentCampaign(){
+ for(const [game,pack] of classicLibrary)if(pack===levels)return 'classic'+game;
  return currentPackId===expertPackId?'expert':currentPackId===demoPackId?'demo':'imported';
 }
 function syncCampaignTabs(){
  const campaign=currentCampaign();
  for(const tab of document.querySelectorAll('.campaign-tab')){
-  const active=tab.dataset.campaign===campaign;
+  const key=tab.dataset.campaign;
+  if(key.startsWith('classic'))tab.hidden=!classicLibrary.has(Number(key.slice(7)));
+  const active=key===campaign;
   tab.classList.toggle('active',active);
   tab.setAttribute('aria-selected',String(active));
  }
 }
 function switchCampaign(next){
- if(next!=='expert'&&next!=='demo')return currentCampaign();
- const targetId=next==='expert'?expertPackId:demoPackId;
- if(currentPackId!==targetId)switchLevelPack(next==='expert'?expertLevels:demoLevels);
+ const pack=next==='demo'?demoLevels:next==='expert'?expertLevels:classicLibrary.get(Number(next.slice(7)));
+ if(!pack)return currentCampaign();
+ if(levels!==pack)switchLevelPack(pack);
  campaignPreference=next;
  store('chromatron-reborn-campaign',next);
  syncCampaignTabs();
@@ -644,6 +702,8 @@ function updateLocalizedLevel(){
  if(l.chapter){
   chapter.removeAttribute('data-i18n');
   chapter.textContent=loc(l.chapter,language);
+ }else if(l.sourceGame){
+  chapter.removeAttribute('data-i18n');chapter.textContent='CHROMATRON '+l.sourceGame;
  }else{
   chapter.setAttribute('data-i18n','chapter');
   chapter.textContent=t(language,'chapter');
@@ -669,6 +729,7 @@ function switchLevelPack(nextLevels){
  store('chromatron-reborn-solved-'+currentPackId,JSON.stringify(solved));
  store('chromatron-reborn-skipped-'+currentPackId,JSON.stringify(skipped));
  levels=nextLevels;currentPackId=packFingerprint(levels);
+ levelIndex=0;
  verifiedSolutions.clear();
  try{
   solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved-'+currentPackId)||'[]');
@@ -694,10 +755,21 @@ function load(i,{silentIntro=false}={}){
  }
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
+ // ── Level transition animation: fog-in → swap → fog-out ──
+ const prevBiome=activeEnvironment?.id;
  levelIndex=requested;
  applyLevelEnvironment();
+ const newBiome=activeEnvironment?.id;
+ if(prevBiome&&prevBiome!==newBiome&&!reducedMotion.matches){
+  levelTransition={start:performance.now(),duration:800,
+   fogFrom:scene.fog.density,fogPeak:0.035,fogTo:scene.fog.density,
+   exposureFrom:cinematic.pass.uniforms.uExposure.value,phase:'in'};
+ }
 
- const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
+ const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>{
+  const inTray=Boolean(l.startMovablesInTray&&movable.has(type));
+  return {id:++nextId,type,x,y,color,rot:l.sourceGame&&inTray?0:rot,sourceGame:l.sourceGame,inTray};
+ });
  let restoredDraft=false;
  // Restore a private, validated per-level draft. Invalid or old versions
  // cannot modify the board and are discarded without losing the puzzle.
@@ -770,8 +842,16 @@ function update(){
 }
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
- for(const type of ['laser','mirror','bender','filter','prism','doppler','splitter','tangler','target','wall','conduit','teleporter']){
-  const candidates=pieces.filter(p=>p.type===type);if(!candidates.length)continue;
+ const groups=new Map();
+ for(const piece of pieces){
+  const key=piece.type==='filter'?'filter:'+piece.color:piece.type;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(piece);
+ }
+ for(const candidates of groups.values()){
+  const {type,color}=candidates[0];
+  const typeLabel=t(language,'type'+type[0].toUpperCase()+type.slice(1));
+  const label=type==='filter'?typeLabel+' · '+colorName(color,language):typeLabel;
   const tray=candidates.filter(p=>p.inTray);
   const movableType=movable.has(type);
   const item=document.createElement(movableType?'button':'div');
@@ -779,7 +859,7 @@ function renderInventory(){
   if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
   item.type=movableType?'button':undefined;
   item.dataset.opticType=type;
-  item.title=t(language,'type'+type[0].toUpperCase()+type.slice(1))+' — '+opticDescription(type,language);
+  item.title=label+' — '+opticDescription(type,language);
   item.setAttribute('aria-description',opticDescription(type,language));
   if(!movableType)item.tabIndex=0;
   item.addEventListener('mouseenter',e=>showInventoryMechanics(type,e.clientX,e.clientY));
@@ -787,25 +867,25 @@ function renderInventory(){
   item.addEventListener('focus',()=>{const b=item.getBoundingClientRect();showInventoryMechanics(type,b.left,b.top+b.height/2)});
   item.addEventListener('blur',hideOpticTooltip);
   if(movableType){
-   item.setAttribute('aria-label',t(language,'type'+type[0].toUpperCase()+type.slice(1)));
-   if(selected?.inTray && selected?.type===type)item.classList.add('selected');
+   item.setAttribute('aria-label',label);
+   if(selected?.inTray && candidates.includes(selected))item.classList.add('selected');
    // Keep exhausted equipment focusable so its explanation is still
    // available with the mouse and keyboard.
    item.setAttribute('aria-disabled',String(tray.length===0));
    item.addEventListener('click',()=>{
-    const first=nextTrayPiece(pieces,type);
+    const first=nextTrayPiece(candidates,type);
     if(first)selectFromTray(first);
     else toast(t(language,'emptyTray'));
    });
    if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{
-    const piece=nextTrayPiece(pieces,type);
+    const piece=nextTrayPiece(candidates,type);
     if(piece){selected=piece;placementMode=true;updateCoach();syncTransformTools()}
     e.dataTransfer?.setData('text/plain','chromatron-optic');if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
    })}
   }
   const icon=document.createElement('span');icon.className='component-icon';
   icon.innerHTML=opticIcon(type);
-  const name=document.createElement('span');name.textContent=t(language,'type'+type[0].toUpperCase()+type.slice(1));
+  const name=document.createElement('span');name.textContent=label;
   const count=document.createElement('strong');
   count.textContent=tray.length?tray.length+' / '+candidates.length:String(candidates.length).padStart(2,'0');
   item.append(icon,name,count);el.appendChild(item);
@@ -982,8 +1062,16 @@ function animateRotationTo(piece,previousRotation,dir){
 function syncTargetGlow(){
  for(const group of componentGroup.children){
   const piece=group.userData.piece,visual=group.userData.targetVisual;
-  if(piece?.type!=='target'||!visual)continue;
-  const active=currentResult?.received.get(piece.id)===piece.color;
+  if(piece?.type!=='target')continue;
+  const active=(currentResult?.received.get(piece.id)||0)===piece.color;
+  if(group.userData.modelActive!==undefined){
+   if(group.userData.modelActive!==active){
+    opticModels.tint(group,new THREE.Color(COLORS[piece.color]),active);
+    group.userData.modelActive=active;
+   }
+   continue;
+  }
+  if(!visual)continue;
   if(visual.active===active)continue;
   visual.active=active;
   visual.glow.emissiveIntensity=active?5.2:1.7;
@@ -1039,8 +1127,7 @@ function returnToTray(){
 }
 let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
-let ctx;
-function beep(freq,duration){if(!audioEnabled)return;try{ctx??=new AudioContext();const o=ctx.createOscillator(),gain=ctx.createGain();o.type='sine';o.frequency.value=freq;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);o.connect(gain).connect(ctx.destination);o.start();o.stop(ctx.currentTime+duration)}catch{}}
+const beep=soundscape.effect;
 
 let cameraTween=null,cameraTop=false;
 function syncCameraLabel(){
@@ -1142,9 +1229,13 @@ function applyGraphicsQuality(){
  ambientLife.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  livingWorld.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  groundTerrain.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ boardEdgeGlow.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ cinematic.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
+ bloomPass.enabled=graphicsProfile.bloomStrength>0&&(graphicsMode==='auto'?autoLevel:graphicsMode)!=='performance';
  fxaaPass.enabled=graphicsProfile.antialias==='fxaa';
  smaaPass.enabled=graphicsProfile.antialias==='smaa';
  resize();
@@ -1177,7 +1268,10 @@ function hit(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
  ray.setFromCamera(mouse,camera);
  const objs=ray.intersectObjects(hitObjects,false);
- if(objs.length)return {piece:objs[0].object.userData.piece};
+ if(objs.length){
+  const {object,instanceId}=objs[0];
+  return {piece:object.userData.instances?.[instanceId]||object.userData.piece};
+ }
  return cell;
 }
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
@@ -1286,11 +1380,70 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  if(draggingCandidate)select(origin.piece);
  renderer.domElement.setPointerCapture(e.pointerId);
 });
+// ── Hover glow system: emissive boost + ground glow sprite on movable pieces ──
+let hoveredPieceId=null;
+const hoverGlowSprite=(()=>{
+ const tex=(() => {
+  const d=new Uint8Array(32*32*4);
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){
+   const r=Math.hypot((x-15.5)/15.5,(y-15.5)/15.5);
+   const i=(y*32+x)*4;
+   d[i]=255;d[i+1]=255;d[i+2]=255;
+   d[i+3]=Math.round(255*Math.max(0,Math.exp(-r*r*3.5)*.6));
+  }
+  const t=new THREE.DataTexture(d,32,32,THREE.RGBAFormat);
+  t.needsUpdate=true;return t;
+ })();
+ const mat=new THREE.SpriteMaterial({map:tex,color:0x4fc3f7,transparent:true,
+  opacity:.45,depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending});
+ const s=new THREE.Sprite(mat);s.scale.setScalar(2.0);s.visible=false;s.renderOrder=3;
+ s.name='hover-glow';world.add(s);
+ return s;
+})();
+function setHoverGlow(piece){
+ if(piece&&piece.id===hoveredPieceId)return;
+ // Clear previous hover
+ if(hoveredPieceId!==null){
+  for(const g of componentGroup.children){
+   if(g.userData.piece?.id===hoveredPieceId){
+    g.traverse(c=>{if(c.isMesh&&c.material&&!Array.isArray(c.material)){
+     if(c.userData._hoverEmissive!==undefined){
+      c.material.emissiveIntensity=c.userData._hoverEmissive;delete c.userData._hoverEmissive;
+     }
+    }});
+    break;
+   }
+  }
+  hoveredPieceId=null;
+  hoverGlowSprite.visible=false;
+ }
+ if(!piece||!movable.has(piece.type))return;
+ hoveredPieceId=piece.id;
+ // Apply emissive boost
+ for(const g of componentGroup.children){
+  if(g.userData.piece?.id===piece.id){
+   g.traverse(c=>{if(c.isMesh&&c.material&&!Array.isArray(c.material)){
+    c.userData._hoverEmissive=c.material.emissiveIntensity;
+    c.material.emissiveIntensity=Math.max(c.material.emissiveIntensity,0.3)+0.45;
+   }});
+   // Show ground glow sprite under the piece
+   const pos=g.position;
+   hoverGlowSprite.position.set(pos.x,0.03,pos.z);
+   hoverGlowSprite.material.color.setHex(
+    activeEnvironment?.id==='verdant'?0x3ddc84:
+    activeEnvironment?.id==='polar'?0x5bc0eb:
+    activeEnvironment?.id==='nebula'?0xc06dde:0x4fc3f7);
+   hoverGlowSprite.visible=true;
+   break;
+  }
+ }
+}
 renderer.domElement.addEventListener('pointermove',e=>{
  if(!down){
   updatePlacementPreview(e);
   const hovered=hit(e.clientX,e.clientY);
   renderer.domElement.style.cursor=hovered?.piece&&movable.has(hovered.piece.type)?'grab':placementMode?'crosshair':'default';
+  setHoverGlow(hovered?.piece&&movable.has(hovered.piece.type)?hovered.piece:null);
   showOpticTooltip(e,hovered);
   return;
  }
@@ -1406,60 +1559,47 @@ $('continue').onclick=()=>load(levelIndex<levels.length-1?levelIndex+1:0);
 $('language').onclick=()=>setLanguage(language==='pl'?'en':'pl');
 // User-owned classic data stays local; neither source binaries nor extracted
 // levels are included in the shipped bundle or uploaded to any server.
-$('import-classic').onclick=()=>$('classic-files').click();
-$('classic-files').addEventListener('change',async event=>{
- const input=event.target;
- try{
-  const files=[...input.files];
-  if(!files.length)return;
-  const loaded=await Promise.all(files.map(async(file,i)=>{
-   if(file.size>8_000_000)throw new Error('File is too large');
-   const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
-   const game=match?Number(match[1]):i+1;
-   const isExecutable=/\.exe$/i.test(file.name);
-   if(isExecutable){
-    const result=extractChromatronExecutable(await file.arrayBuffer(),{game});
-    return {game:result.detectedGame||game,data:result};
-   }
-   return {game,data:JSON.parse(await file.text())};
-  }));
-  const next=loaded.length===1?
-   loadLevelBundle(loaded[0].data,{game:loaded[0].game}):
-   convertClassicCollection(loaded);
-  const count=switchLevelPack(next);
-  $('classic-import-status').textContent=t(language,'classicImportSuccess',{count});
-  $('help-overlay').classList.add('hidden');
-  toast(t(language,'classicImportSuccess',{count}));
- }catch(error){
-  const message=String(error?.message||error).slice(0,180);
-  $('classic-import-status').textContent=t(language,'classicImportError',{message});
- }finally{input.value=''}
-});
-// ── Drag-and-drop import: drop .exe or .json files onto the game board ──
+$('import-classic').onclick=$('atlas-import').onclick=()=>$('classic-files').click();
+let importing=false;
 async function handleDroppedFiles(fileList){
  const files=[...fileList].filter(f=>/\.(json|exe)$/i.test(f.name));
- if(!files.length)return;
+ if(!files.length||importing)return;
+ importing=true;
+ let worker;
  try{
-  const loaded=await Promise.all(files.map(async(file,i)=>{
-   if(file.size>8_000_000)throw new Error('File is too large');
-   const match=file.name.match(/(?:chromatron|chroma)[-_ ]?([1-4])/i);
-   const game=match?Number(match[1]):i+1;
-   const isExecutable=/\.exe$/i.test(file.name);
-   if(isExecutable){
-    const result=extractChromatronExecutable(await file.arrayBuffer(),{game});
-    return {game:result.detectedGame||game,data:result};
+  if(files.length>4)throw Error(language==='pl'?'Wybierz maksymalnie cztery pliki.':'Choose up to four files.');
+  worker=new Worker(new URL('./classic-import-worker.js',import.meta.url),{type:'module'});
+  const packs=await new Promise((resolve,reject)=>{
+   worker.onmessage=({data})=>data.error?reject(Error(data.error)):resolve(data.packs);
+   worker.onerror=event=>reject(Error(event.message));
+   worker.postMessage(files);
+  });
+  const games=packs.flatMap(({levels})=>levels.map(l=>l.sourceGame));
+  if(games.every(Boolean)){
+   const groups=new Map();
+   for(const level of packs.flatMap(p=>p.levels)){
+    if(!groups.has(level.sourceGame))groups.set(level.sourceGame,[]);
+    groups.get(level.sourceGame).push(level);
    }
-   return {game,data:JSON.parse(await file.text())};
-  }));
-  const next=loaded.length===1?
-   loadLevelBundle(loaded[0].data,{game:loaded[0].game}):
-   convertClassicCollection(loaded);
-  const count=switchLevelPack(next);
-  toast(t(language,'classicImportSuccess',{count}));
+   if([...groups.values()].some(pack=>pack.length!==50))throw Error(language==='pl'?'Wybierz jeden plik na część.':'Choose one file per game.');
+   for(const [game,pack] of groups){
+    classicLibrary.set(game,pack);
+    store('chromatron-classic-'+game,JSON.stringify(pack));
+   }
+   switchCampaign('classic'+Math.min(...groups.keys()));
+  }else switchLevelPack(packs.flatMap(p=>p.levels));
+  $('help-overlay').classList.add('hidden');
+  const message=t(language,'classicImportSuccess',{count:games.length});
+  $('classic-import-status').textContent=message;toast(message);
  }catch(error){
-  toast(t(language,'classicImportError',{message:String(error?.message||error).slice(0,140)}));
- }
+  const message=t(language,'classicImportError',{message:String(error.message||error).slice(0,180)});
+  $('classic-import-status').textContent=message;toast(message);
+ }finally{worker?.terminate();importing=false}
 }
+$('classic-files').addEventListener('change',event=>{
+ handleDroppedFiles(event.target.files);
+ event.target.value='';
+});
 let dragCounter=0;
 document.addEventListener('dragenter',e=>{
  e.preventDefault();
@@ -1509,7 +1649,12 @@ $('tool-drawer').onclick=()=>toggleBoardDrawer('.tool-panel');
 $('fullscreen').onclick=toggleFullscreen;
 $('help').onclick=()=>$('help-overlay').classList.remove('hidden');
 $('close-help').onclick=()=>$('help-overlay').classList.add('hidden');
-$('audio').onclick=()=>{audioEnabled=!audioEnabled;$('audio').classList.toggle('enabled',audioEnabled);beep(700,.08)};
+$('audio').onclick=async()=>{
+ audioEnabled=!audioEnabled;
+ try{await soundscape.setEnabled(audioEnabled)}catch{audioEnabled=false;await soundscape.setEnabled(false)}
+ $('audio').setAttribute('aria-pressed',String(audioEnabled));
+ $('audio').classList.toggle('enabled',audioEnabled);beep(700,.08);
+};
 $('graphics-quality').value=graphicsMode;
 $('graphics-quality').addEventListener('change',e=>{
  graphicsMode=normalizeQuality(e.target.value);autoLevel='balanced';
@@ -1547,6 +1692,9 @@ function animate(time){
  ambientLife.update(time*.001,reducedMotion.matches);
  livingWorld.update(time*.001,reducedMotion.matches);
  groundTerrain.update(time*.001,reducedMotion.matches);
+ boardEdgeGlow.update(reducedMotion.matches?0:time*.001);
+ atmosphereParticles.update(reducedMotion.matches?0:time*.001);
+ cinematic.update(reducedMotion.matches?0:time*.001);
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
  zoomLastFrame=time;
@@ -1575,6 +1723,29 @@ function animate(time){
  if(laserVisuals)laserVisuals.update(time*.001);
  if(victoryFX && !victoryFX.update((time-victorySince)*.001)){
   victoryFX.dispose();victoryFX=null;
+ }
+ // ── Level transition fog+exposure animation ──
+ if(levelTransition){
+  const lt=levelTransition;
+  const elapsed=time-lt.start;
+  const half=lt.duration/2;
+  if(elapsed<half){
+   // Phase 1: fog in, exposure down
+   const f=elapsed/half;
+   const ease=f*f;
+   scene.fog.density=lt.fogFrom+(lt.fogPeak-lt.fogFrom)*ease;
+   cinematic.pass.uniforms.uExposure.value=1.0-0.35*ease;
+  }else if(elapsed<lt.duration){
+   // Phase 2: fog out, exposure up
+   const f=(elapsed-half)/half;
+   const ease=1-Math.pow(1-f,2);
+   scene.fog.density=lt.fogPeak+(lt.fogTo-lt.fogPeak)*ease;
+   cinematic.pass.uniforms.uExposure.value=0.65+0.35*ease;
+  }else{
+   scene.fog.density=lt.fogTo;
+   cinematic.pass.uniforms.uExposure.value=1.0;
+   levelTransition=null;
+  }
  }
  composer.render();
 }
@@ -1630,7 +1801,7 @@ setLanguage(language);
 // Apply the persisted GPU preset before loading the first puzzle or any GLB.
 // Previously only interactive quality changes updated the environment.
 applyGraphicsQuality();
-if(campaignPreference==='expert')switchLevelPack(expertLevels);
+if(campaignPreference==='expert'||(campaignPreference.startsWith('classic')&&classicLibrary.has(Number(campaignPreference.slice(7)))))switchCampaign(campaignPreference);
 else load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
 syncCampaignTabs();
 syncWalletUI();

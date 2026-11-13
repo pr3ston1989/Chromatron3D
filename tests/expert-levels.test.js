@@ -70,6 +70,11 @@ test('every expert solution is accepted by the live puzzle engine',()=>{
   assert.equal(verdict.result.won,true,'level '+(index+1)+': target reaches the exact colour');
   assert.equal(verdict.result.truncated,false);
   assert.deepEqual(verdict.result.unsupported,[]);
+  for(const step of level.solution){
+   const shortened=level.solution.filter(other=>other.index!==step.index);
+   assert.equal(verifyPuzzleSolution(level,shortened).valid,false,
+    'level '+(index+1)+' has an unused instrument in its provided route');
+  }
   // A level must require work: the untouched board cannot already win.
   const initial=trace(level.pieces.map(([type,x,y,rot,color],id)=>({id,type,x,y,rot,color,inTray:movable.has(type)})));
   assert.equal(initial.won,false,'level '+(index+1)+' must not start solved');

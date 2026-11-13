@@ -18,7 +18,10 @@ Chromatron / Reborn uses a JSON representation of a 15×15 grid.
 
 Each piece is `[type, x, y, rotation, color]`. Positions range 0–14. Directions are 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SW, 6=W, 7=NW. Colors use additive RGB masks: 1=red, 2=green, 4=blue, 3=yellow, 5=magenta, 6=cyan, 7=white.
 
-Allowed types: laser, target, mirror, wall, filter, splitter, prism, bender, doppler, tangler, conduit, teleporter. All of them are simulated by `src/optics.js`; exact parity with original-game data still needs separate verification. Conduits and teleporters are fixed scenery in the classic rules, while the other optics can be movable.
+The 22 supported types are listed in `src/classic-pieces.js` in original record
+order. The 14 tray-compatible instruments are defined by `movable` in
+`src/optics.js`. Imported packs carry `sourceGame` (1–4) to select the
+original prism and splitter rules.
 
 Import in the browser developer console with `window.chromatron.loadLevels(yourLevelArray)`.
 

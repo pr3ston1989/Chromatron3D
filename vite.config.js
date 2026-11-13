@@ -5,6 +5,6 @@ import {defineConfig} from 'vite';
 // This only affects `vite dev` / `vite preview`; the production build and the
 // static bundle are unchanged.
 export default defineConfig({
- server:{allowedHosts:true},
+ server:{allowedHosts:true,fs:{deny:['.env','.env.*','*.{crt,pem}','**/.git/**','**/original/**','**/remake/**']}},
  preview:{allowedHosts:true}
 });

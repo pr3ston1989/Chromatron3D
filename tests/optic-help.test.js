@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {OPTIC_GUIDE,opticDescription,opticExample} from '../src/optic-help.js';
 
-test('all twelve optical devices have Polish and English help text',()=>{
- assert.equal(Object.keys(OPTIC_GUIDE).length,12);
+test('all twenty-two optical devices have Polish and English help text',()=>{
+ assert.equal(Object.keys(OPTIC_GUIDE).length,22);
  for(const [type,description] of Object.entries(OPTIC_GUIDE)){
   assert.ok(description.pl.length>38,type+' Polish description');
   assert.ok(description.en.length>38,type+' English description');

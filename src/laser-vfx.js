@@ -210,9 +210,33 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    }
   }
  }
- // An energy ray now physically touches the inner face of its collector.
- // Reuse the cached flare atlas: no dynamic lights or shader passes added.
- for(const hit of boundaryHits)flare(hit.nx,hit.ny,hit.color,.52);
+ // ── Wall-impact VFX: glow halos, point lights & GPU spark particles ──
+ // Collect all wall-impact points (board edges + wall pieces)
+ const impactPoints=[];
+ for(const hit of boundaryHits){
+  const impactPos=point(hit.nx,hit.ny,.78);
+  const beamDir=new THREE.Vector3(hit.nx-hit.x,0,hit.ny-hit.y).normalize();
+  impactPoints.push({pos:impactPos,dir:beamDir,color:hit.color});
+  // Large primary flare
+  flare(hit.nx,hit.ny,hit.color,1.4);
+  // Secondary bloom halo — softer, wider
+  const bloomMat=new THREE.SpriteMaterial({
+   map:flareTexture,color:new THREE.Color(palette[hit.color]),transparent:true,
+   opacity:.35,depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending
+  });
+  const bloom=new THREE.Sprite(bloomMat);
+  bloom.position.copy(impactPos);bloom.position.y=.85;
+  bloom.scale.setScalar(2.8);bloom.renderOrder=10;parent.add(bloom);
+  flicker.push({sprite:bloom,scale:2.8});
+  // Budget-limited point light per impact
+  if(lightBudget<maxOpticLights){
+   lightBudget++;
+   const l=new THREE.PointLight(new THREE.Color(palette[hit.color]),12,5.5,2);
+   l.position.copy(impactPos);l.position.y=1.2;parent.add(l);
+  }
+ }
+ // Wall-piece impacts get the same treatment
+ const wallHitSegments=[];
  for(const s of segments){
   const piece=positions.get(s.nx+','+s.ny);
   if(!piece||piece.type==='laser')continue;
@@ -224,11 +248,123 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),24,8,2);
     l.position.copy(point(piece.x,piece.y,1));parent.add(l);
    }
-  }else if(piece.type!=='wall'){
-   flareOnce(piece.x,piece.y,s.color,.38);
+  }else if(piece.type==='wall'){
+   wallHitSegments.push(s);
+   const impactPos=point(piece.x,piece.y,.78);
+   const beamDir=new THREE.Vector3(s.nx-s.x,0,s.ny-s.y).normalize();
+   impactPoints.push({pos:impactPos,dir:beamDir,color:s.color});
+   flareOnce(piece.x,piece.y,s.color,1.2);
+   // Bloom halo for wall-piece hits
+   const key='wallbloom:'+piece.x+','+piece.y;
+   if(!flareCells.has(key)){
+    flareCells.add(key);
+    const bloomMat=new THREE.SpriteMaterial({
+     map:flareTexture,color:new THREE.Color(palette[s.color]),transparent:true,
+     opacity:.28,depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending
+    });
+    const bloom=new THREE.Sprite(bloomMat);
+    bloom.position.copy(impactPos);bloom.position.y=.85;
+    bloom.scale.setScalar(2.2);bloom.renderOrder=10;parent.add(bloom);
+    flicker.push({sprite:bloom,scale:2.2});
+   }
+   if(lightBudget<maxOpticLights){
+    lightBudget++;
+    const l=new THREE.PointLight(new THREE.Color(palette[s.color]),8,4.5,2);
+    l.position.copy(impactPos);l.position.y=1.1;parent.add(l);
+   }
   }else{
-   flareOnce(piece.x,piece.y,s.color,.44);
+   flareOnce(piece.x,piece.y,s.color,.38);
   }
+ }
+ // ── GPU spark particle system for all impacts ──
+ let sparks=null;
+ if(impactPoints.length){
+  const SPARKS_PER_IMPACT=20;
+  const totalSparks=impactPoints.length*SPARKS_PER_IMPACT;
+  const sparkOrigins=new Float32Array(totalSparks*3);
+  const sparkVelocities=new Float32Array(totalSparks*3);
+  const sparkColors=new Float32Array(totalSparks*3);
+  const sparkPhases=new Float32Array(totalSparks);
+  const sparkLifetimes=new Float32Array(totalSparks);
+  let si=0;
+  for(const imp of impactPoints){
+   const c=new THREE.Color(palette[imp.color]);
+   // Reflect direction: sparks fly back from the wall
+   const reflect=imp.dir.clone().negate();
+   for(let n=0;n<SPARKS_PER_IMPACT;n++){
+    const idx=si*3;
+    sparkOrigins[idx]=imp.pos.x;
+    sparkOrigins[idx+1]=imp.pos.y;
+    sparkOrigins[idx+2]=imp.pos.z;
+    // Random spray around reflected direction
+    const spread=0.7+Math.random()*1.3;
+    const angle=(Math.random()-.5)*Math.PI*.85;
+    const upKick=0.5+Math.random()*2.0;
+    sparkVelocities[idx]=reflect.x*spread+Math.sin(angle)*0.9;
+    sparkVelocities[idx+1]=upKick;
+    sparkVelocities[idx+2]=reflect.z*spread+Math.cos(angle)*0.9;
+    sparkColors[si*3]=c.r;
+    sparkColors[si*3+1]=c.g;
+    sparkColors[si*3+2]=c.b;
+    sparkPhases[si]=Math.random();
+    sparkLifetimes[si]=0.35+Math.random()*0.55;
+    si++;
+   }
+  }
+  const sparkGeo=new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position',new THREE.Float32BufferAttribute(sparkOrigins,3));
+  sparkGeo.setAttribute('aVelocity',new THREE.Float32BufferAttribute(sparkVelocities,3));
+  sparkGeo.setAttribute('aColor',new THREE.Float32BufferAttribute(sparkColors,3));
+  sparkGeo.setAttribute('aPhase',new THREE.Float32BufferAttribute(sparkPhases,1));
+  sparkGeo.setAttribute('aLifetime',new THREE.Float32BufferAttribute(sparkLifetimes,1));
+  const sparkMat=new THREE.ShaderMaterial({
+   transparent:true,depthWrite:false,depthTest:true,toneMapped:false,
+   blending:THREE.AdditiveBlending,
+   uniforms:{uTime:{value:0}},
+   vertexShader:`
+    attribute vec3 aVelocity;
+    attribute vec3 aColor;
+    attribute float aPhase;
+    attribute float aLifetime;
+    uniform float uTime;
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main(){
+     float cycle=aLifetime*1.3;
+     float t=mod(uTime*0.9+aPhase*cycle,cycle);
+     float life=clamp(t/aLifetime,0.0,1.0);
+     // Ballistic trajectory: pos + vel*t + 0.5*gravity*t^2
+     vec3 p=position+aVelocity*t+vec3(0.0,-3.8,0.0)*0.5*t*t;
+     // Dampen lateral velocity over time
+     p.xz=position.xz+aVelocity.xz*t*(1.0-life*0.4);
+     p.y=position.y+aVelocity.y*t-3.8*0.5*t*t;
+     vec4 eye=modelViewMatrix*vec4(p,1.0);
+     gl_Position=projectionMatrix*eye;
+     // Sparks start bright and small, grow slightly, then fade
+     float sizePulse=mix(2.5,4.5,life*0.3)*smoothstep(0.0,0.05,life);
+     gl_PointSize=clamp(sizePulse*65.0/max(1.0,-eye.z),1.0,8.0);
+     // Hot white core fading to beam color
+     vColor=mix(vec3(1.0),aColor,smoothstep(0.0,0.35,life));
+     vAlpha=smoothstep(1.0,0.7,life)*smoothstep(0.0,0.04,life);
+    }
+   `,
+   fragmentShader:`
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main(){
+     float d=length(gl_PointCoord-vec2(0.5))*2.0;
+     float core=exp(-d*d*16.0);
+     float glow=exp(-d*d*4.0);
+     float alpha=vAlpha*(0.9*core+0.35*glow);
+     if(alpha<0.01)discard;
+     gl_FragColor=vec4(vColor*(2.2*core+0.7*glow),alpha);
+    }
+   `
+  });
+  sparks=new THREE.Points(sparkGeo,sparkMat);
+  sparks.renderOrder=13;
+  sparks.frustumCulled=false;
+  parent.add(sparks);
  }
  return {
   geometryStats:laserGeometryStats,
@@ -236,6 +372,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   update(seconds){
    for(const m of materials.values())m.uniforms.uTime.value=seconds;
    if(photons)photons.material.uniforms.uTime.value=seconds;
+   if(sparks)sparks.material.uniforms.uTime.value=seconds;
    for(const f of flicker){
     const pulse=1+.055*Math.sin(seconds*7+f.sprite.position.x*.4);
     f.sprite.scale.setScalar(f.scale*pulse);

@@ -1,4 +1,8 @@
 import {validateLevels} from './levels.js';
+import {CLASSIC_TYPE_NAMES} from './classic-pieces.js';
+import {movable} from './optics.js';
+import {verifyPuzzleSolution} from './puzzle-solver.js';
+export {CLASSIC_TYPE_NAMES};
 
 /**
  * Private, user-supplied compatibility bridge for original Chromatron levels.
@@ -13,10 +17,6 @@ import {validateLevels} from './levels.js';
  * The Tangler/teleporter and additive-channel interactions require further
  * golden-master comparisons before an entire game can be certified.
  */
-export const CLASSIC_TYPE_NAMES=Object.freeze([
- 'empty','wall','laser','mirror','bender','filter','prism',
- 'doppler','splitter','tangler','target','conduit','teleporter'
-]);
 export const CLASSIC_PACK_ORDER=Object.freeze([1,2,3,4]);
 
 export function classicColorToWeb(mask){
@@ -51,8 +51,7 @@ export function convertClassicPack(raw,{game=1,strict=true}={}){
   // Instruction copy remains LOCAL from the user's chosen file.
   const instruction=typeof entry.text==='string'?entry.text:'';
   return {
-   title:{pl:`CHROMATRON ${game} — ${String(sequence+1).padStart(2,'0')}`,
-          en:`CHROMATRON ${game} — ${String(sequence+1).padStart(2,'0')}`},
+   title:Object.fromEntries(['pl','en'].map(lang=>[lang,`CHROMATRON ${game} — ${String(sequence+1).padStart(2,'0')}`+(entry.name?' · '+entry.name:'')])),
    description:{pl:instruction,en:instruction},
    pieces,startMovablesInTray:true,
    sourceGame:game,sourceIndex:originalIndex,
@@ -61,7 +60,29 @@ export function convertClassicPack(raw,{game=1,strict=true}={}){
    hints:[]
   };
  });
- return validateLevels(levels);
+ const normalized=validateLevels(levels);
+ for(const level of normalized){
+  const plan=level.pieces.flatMap(([type,x,y,rot],index)=>movable.has(type)?[{index,x,y,rot}]:[]);
+  if(verifyPuzzleSolution(level,plan).valid){level.solution=plan;continue}
+  // A stored placement can contain one misplaced instrument. Search one
+  // piece at a time around the supplied plan, retaining only proven wins.
+  // Limit this recovery to the known anomalous retail record.
+  if(game===1&&level.sourceIndex===32){
+   const occupied=new Set(level.pieces.map(([,x,y])=>15*y+x));
+   search:for(const step of plan){
+    const original={...step};
+    for(let cell=0;cell<225;cell++){
+     if(occupied.has(cell)&&cell!==original.y*15+original.x)continue;
+     for(let rot=0;rot<8;rot++){
+      Object.assign(step,{x:cell%15,y:Math.floor(cell/15),rot});
+      if(verifyPuzzleSolution(level,plan).valid){level.solution=plan;break search}
+     }
+    }
+    Object.assign(step,original);
+   }
+  }
+ }
+ return normalized;
 }
 export function convertClassicCollection(sources,{strict=true}={}){
  if(!Array.isArray(sources)||sources.length===0||sources.length>4)

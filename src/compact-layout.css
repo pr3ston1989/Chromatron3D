@@ -269,3 +269,6 @@
  .optic-tooltip{display:none!important}
 }
 /* Keep decor from capturing mouse input or moving the logical board. */
+
+#inventory .inventory-item > span:nth-child(2){min-width:0;overflow-wrap:anywhere;line-height:1.15}
+#inventory .inventory-item strong{flex-shrink:0}

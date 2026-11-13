@@ -21,7 +21,7 @@ test('expert campaign is selectable, persists and stays separate from the protot
 
  await page.locator('#level-grid [data-level-index="0"]').click();
  await expect(page.locator('#level-title')).toHaveText('PIERWSZY ODDECH');
- await expect(page.locator('#level-pack-label')).toHaveText('EKSPERT');
+ await expect(page.locator('#level-pack-label')).toHaveText('WYGENEROWANE');
  await expect(page.locator('#level-menu')).toBeHidden();
 
  // The chosen campaign is remembered across reloads, but its saved progress

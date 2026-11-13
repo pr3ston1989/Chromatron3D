@@ -102,7 +102,8 @@ export const DEMO_SOLUTIONS=Object.freeze([
 ]);
 for(let i=0;i<PROTOTYPE_LEVELS.length;i++)PROTOTYPE_LEVELS[i].solution=DEMO_SOLUTIONS[i];
 
-const types=new Set(['laser','target','mirror','wall','filter','splitter','prism','bender','doppler','tangler','conduit','teleporter']);
+import {CLASSIC_TYPE_NAMES} from './classic-pieces.js';
+const types=new Set(CLASSIC_TYPE_NAMES.slice(1));
 const validText=value=>typeof value==='string'||(value && typeof value==='object' && ['pl','en'].some(k=>typeof value[k]==='string'));
 export function validateLevels(levels){
  if(!Array.isArray(levels)||levels.length===0)throw Error('Expected a non-empty levels array');
@@ -139,6 +140,7 @@ export function validateLevels(levels){
    return {index:step.index,x:step.x,y:step.y,rot:step.rot};
   }):null;
   return {title,description,hints,hintFocus,solution,
+   ...([1,2,3,4].includes(level.sourceGame)?{sourceGame:level.sourceGame,sourceIndex:level.sourceIndex}:{}),
    startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p]),
    chapter,difficulty,mechanics};
  });

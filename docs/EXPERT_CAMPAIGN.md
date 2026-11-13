@@ -2,7 +2,7 @@
 
 The **expert campaign** is a separate, independently authored 50-level pack
 built to extend the eight demonstration puzzles. It is available from **Mapa
-poziomów / Level map → EKSPERT · 50**; its progress is stored under its own
+poziomów / Level map → WYGENEROWANE · 50**; its progress is stored under its own
 pack fingerprint, so it never overwrites the prototype or imported packs.
 
 These layouts are original. They use the Chromatron *piece vocabulary* —
@@ -23,6 +23,16 @@ classic 200 layouts remain unshipped.
 Every level moves 3–5 optics from the tray. Boards are 15×15 and carry
 between 13 and 30 fixed walls/conduits; later chapters combine more colours
 and more simultaneous beams.
+
+## Difficulty review
+
+All 50 start unsolved, and removing any single placed instrument from the
+provided route breaks that route. The first chapter requires 3–4 instruments
+and one receiver per puzzle. Chapter three requires 4–5 instruments and two
+receivers on every board. Chapters four and five vary from one to three
+receivers and introduce colour conversion, decomposition and entanglement.
+These are five teaching tiers based on mechanics. Individual puzzle times and
+relative human difficulty within a tier have not been measured.
 
 ## What is guaranteed
 

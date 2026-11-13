@@ -38,13 +38,16 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.
 - Navigate demo puzzles with arrows. Progress saves locally.
 
-## Current status: prototype
+## Campaigns
 
-**The 200 original puzzles are not included yet.** Eight independently authored demo layouts are supplied to exercise the renderer, puzzles and optics. The three newest cover wavelength shifting, RGB dispersion and beam splitting. Those demonstrations are joined by a separate **50-level expert campaign** (five chapters: reflections, bends, splits, spectrum, entanglement) with route-verified solutions, bilingual hints and its own progress slot in the level map. The optical simulator supports angle-gated mirrors, benders, filters, prisms, Dopplers, splitters, conduits, teleporters and tanglers; exact original-game data fidelity remains a separate task. See [expert campaign](docs/EXPERT_CAMPAIGN.md).
+The atlas offers eight tutorials and a generated 50-stage campaign with five
+chapters, bilingual hints and separate progress. Import the four Windows EXEs
+to play the 200 original puzzles. Each of their 22 instrument types has a
+Blender model. [Generated campaign](docs/EXPERT_CAMPAIGN.md).
 
 The Chromatron series (4 × 50 original levels) was created by Sean Barrett / Silver Spaceship Software. Official games: https://www.silverspaceship.com/chromatron/
 
-The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for development. This is not a complete original-game importer. See [roadmap](docs/ROADMAP.md).
+The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for development. See [roadmap](docs/ROADMAP.md).
 
 ## Quality assurance
 
@@ -55,14 +58,16 @@ GitHub Actions runs the unit suite and Vite build on every push. A passing build
 
 ## Classic 200-level compatibility and hint credits
 
-The eight bundled puzzles are independently authored. **The classic 200
-layouts are not shipped**; the original creator is Sean Barrett / Silver
-Spaceship Software. You may now select your own original Chromatron 1.14
-**UPX-unpacked Windows EXE** or exported original-level JSON via **? Help →
-Import levels**, entirely in your browser. Multi-file JSON selection can
-combine the four original 50-level collections. The first original game has
-a verified PE32 *structural* loader; exact engine parity remains a separate
-task. See [classic compatibility and rights](docs/CLASSIC_COMPATIBILITY.md).
+Open **Mapa poziomów → Wczytaj oryginały** and select your four Windows EXEs
+from `original/` in one selection. Their packed level data is decoded in a
+browser worker. The atlas remembers Chromatron 1, 2, 3 and 4 as four
+independent 50-puzzle campaigns in this browser. The **Wygenerowane · 50**
+tab contains the independently generated campaign. The eight tutorials have
+their own tab. [Compatibility and verification](docs/CLASSIC_COMPATIBILITY.md).
+
+All 22 instruments have Blender models. The speaker button enables the
+original synthesized score and interaction cues. To rebuild the instruments,
+run Blender in background mode with `--python scripts/blender_optical_bench.py`.
 
 A fair, completely offline hint wallet has been added:
 

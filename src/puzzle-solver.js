@@ -5,7 +5,7 @@ import {validateLevels} from './levels.js';
  * for gameplay; a guessed layout is never presented as a verified answer. */
 export function createPuzzlePieces(level){
  return level.pieces.map(([type,x,y,rot,color],index)=>({
-  id:index+1,type,x,y,rot,color,inTray:movable.has(type)
+  id:index+1,type,x,y,rot,color,sourceGame:level.sourceGame,inTray:movable.has(type)
  }));
 }
 export function verifyPuzzleSolution(level,solution){

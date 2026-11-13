@@ -5,6 +5,17 @@
  */
 const common='viewBox="0 0 48 48" width="42" height="42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"';
 const ico={
+ multiFilter:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M9 28l9-16 9 16zm17-6 8-13 8 13z" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ twister:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M10 32c18 14 33-7 19-18l-3 9m3-9 10 2" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ complementor:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M10 24h28m-14-14v28m8-20-16 12" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ logicGate:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M10 36l14-12 14 12M24 24V8" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ starburst:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M7 24h34M24 7v34M12 12l24 24m0-24L12 36" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ mobileTeleporter:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M11 34V21a13 13 0 0 1 26 0v13M7 38h34" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ dualReflector:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M13 35l20-24M17 38l20-24M7 18l6-6m21 22 6-6" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ quadBender:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M7 30l13-13 8 7 13-13M7 36l13-13 8 7 13-13" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ occupiedSquare:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M10 10h28v28H10zM15 15l18 18m0-18L15 33" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+ primaryLogicGate:'<circle cx="24" cy="24" r="21" fill="#163447" stroke="#9b8265"/><path d="M10 36l14-12 14 12M24 24V8m-6 8 6-8 6 8" stroke="#b8ebf0" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>',
+
  laser:'<path d="M8 34l12-12 7 7-12 12-7-7Z" fill="#193246" stroke="#91d5ee" stroke-width="2"/><path d="M19 22l12-12 7 7-11 12-8-7Z" fill="#5b7f9d" stroke="#d6edfc" stroke-width="2"/><circle cx="35" cy="13" r="4" fill="#ddffff"/><path d="M36 7l3-5m-6 6-5-3m11 12 5 3" stroke="#7bdcff" stroke-width="2"/>',
  mirror:'<path d="M9 40h30" stroke="#4a708c" stroke-width="3" stroke-linecap="round"/><path d="M21 10h7v28h-7z" transform="rotate(42 24 24)" fill="#162433" stroke="#536b7f" stroke-width="2"/><path d="M19.2 12.4l4 2.4-13.3 21.6-4-2.4z" transform="translate(7 -1)" fill="#dcfaff" stroke="#6bdcff" stroke-width="1"/><path d="M34 12l5-5m-4 11 8-1" stroke="#8ce9ff" stroke-width="2" stroke-linecap="round"/>',
  wall:'<path d="M9 17l16-9 15 8v22l-15 7L9 36V17Z" fill="#263849" stroke="#abc8d9" stroke-width="1.8"/><path d="M9 17l16 9 15-10M25 26v19" stroke="#69899b" stroke-width="2"/><path d="M12 26l8 5m-6 0 6 4" stroke="#ffbd70" stroke-width="3"/><path d="M30 28l6-3" stroke="#ffbd70" stroke-width="2"/>',

@@ -1,27 +1,19 @@
-/**
- * Multi-game PE32 extractor for user's OWN, UNPACKED Chromatron executables.
- *
- * Supports all four Chromatron games (1–4):
- * - Game 1 (v1.14): Known PE32 address tables, fully verified.
- * - Games 2–4: Scan-based level discovery with structural validation.
- *
- * No game data or original executables are stored in the web application.
- * The freely distributed original .exe files are UPX-packed. Users must
- * decompress their own copies locally (e.g. upx -d chromatron.exe) before
- * this parser can read the embedded 5-byte puzzle records.
- */
-
-/* ── Known PE32 virtual addresses for verified game versions ─────── */
+import {unpackClassicImage} from './classic-packed.js';
+// Data addresses for the four local Windows retail releases. Index zero
+// can be a null pointer; only read records referenced by the playable order.
 export const KNOWN_PROFILES=Object.freeze({
  1:{levelOrderVA:0x0040b168,levelPtrsVA:0x0040e65c,textPtrsVA:0x0040e758,maxLevels:120,playable:50},
+ 2:{levelOrderVA:0x40c178,levelPtrsVA:0x40e9e8,textPtrsVA:0x40eb98,namePtrsVA:0x40eac0,maxLevels:53,playable:50},
+ 3:{levelOrderVA:0x40c178,levelPtrsVA:0x411680,textPtrsVA:0x411900,namePtrsVA:0x4117c0,maxLevels:79,playable:50},
+ 4:{levelOrderVA:0x40b174,levelPtrsVA:0x40ebd0,textPtrsVA:0x40ed88,namePtrsVA:0x40ecac,maxLevels:55,playable:50},
 });
 
 /* ── Shared PE32 parser ──────────────────────────────────────────── */
 export function parsePE32(bytes){
- const data=bytes instanceof ArrayBuffer?new Uint8Array(bytes):
+ let data=bytes instanceof ArrayBuffer?new Uint8Array(bytes):
   ArrayBuffer.isView(bytes)?new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength):null;
  if(!data||data.length<1024)throw new Error('Expected a Win32 PE32 executable');
- const view=new DataView(data.buffer,data.byteOffset,data.byteLength);
+ let view=new DataView(data.buffer,data.byteOffset,data.byteLength);
  const byte=(o)=>{if(o<0||o>=data.length)throw new Error('Binary address outside file');return data[o]};
  const u16=(o)=>{if(o<0||o+2>data.length)throw new Error('Invalid PE header');return view.getUint16(o,true)};
  const u32=(o)=>{if(o<0||o+4>data.length)throw new Error('Invalid PE header');return view.getUint32(o,true)};
@@ -38,8 +30,13 @@ export function parsePE32(bytes){
   const name=String.fromCharCode(...data.slice(o,o+8)).replace(/\0/g,'');
   sections.push({name,virtualSize:u32(o+8),rva:u32(o+12),rawSize:u32(o+16),rawPtr:u32(o+20)});
  }
- if(sections.some(s=>s.name.startsWith('UPX')))
-  throw new Error('UPX-packed original detected. Decompress your own copy with upx -d first.');
+ if(sections.some(s=>s.name.startsWith('UPX'))){
+  const decoded=unpackClassicImage(data);
+  if(!decoded)throw new Error('Unsupported UPX-packed original');
+  data=decoded;
+  view=new DataView(data.buffer);
+  sections.splice(0,sections.length,{name:'.image',rva:0x1000,rawSize:data.length,rawPtr:0});
+ }
  /** Convert VA→file offset; returns -1 if unmapped (soft fail for scanning). */
  function toFileOffset(va,length=1){
   const rva=va-imageBase;
@@ -79,7 +76,7 @@ export function isValidLevel(data,offset){
   const type=data[pos];
   if(type===0)return count>=2; // terminated; need at least laser+target
   if(pos+5>limit)return false; // incomplete record
-  if(type>12)return false;
+  if(type>22)return false;
   if(data[pos+1]>7)return false;  // rotation 0–7
   if(data[pos+2]>7)return false;  // color bitmask 0–7
   if(data[pos+3]>14)return false; // x 0–14
@@ -126,7 +123,7 @@ export function scanLevelPointers(pe){
 
 /**
  * Scan for a 50-byte level order table (unique indices 0..maxIndex-1).
- * Falls back to sequential 0..49 if no unique-50 pattern is found.
+ * An unrecognized order must not expose unpublished stages.
  */
 export function scanLevelOrder(pe,maxIndex){
  const {data,sections}=pe;
@@ -146,7 +143,7 @@ export function scanLevelOrder(pe,maxIndex){
     return Array.from({length:50},(_,i)=>data[off+i]);
   }
  }
- return Array.from({length:Math.min(50,maxIndex)},(_,i)=>i);
+ throw Error('Could not identify a playable 50-level order');
 }
 
 /**
@@ -185,22 +182,24 @@ function extractWithProfile(pe,profile){
  const total=Math.max(...level_order)+1;
  if(total>profile.maxLevels)
   throw new Error('Unexpected original level count');
- const levels=[];
- for(let i=0;i<total;i++){
+ const levels=Array(total).fill(null);
+ for(const i of level_order){
   const gridPtr=readPointer(profile.levelPtrsVA+i*4);
   const textPtr=readPointer(profile.textPtrsVA+i*4);
   const text=textPtr?readAscii(textPtr):'';
   const pieces=[];
-  for(let k=0;k<225;k++){
+  for(let k=0;k<=225;k++){
    const type=readByte(gridPtr+k*5);
    if(type===0)break;
-   if(type>12)throw new Error('Unexpected optical record in original level '+i);
+   if(k===225)throw new Error('Unterminated original level '+i);
+   if(type>22)throw new Error('Unexpected optical record in original level '+i);
    pieces.push({type,rotation:readByte(gridPtr+k*5+1),
     color:readByte(gridPtr+k*5+2),
     x:readByte(gridPtr+k*5+3),y:readByte(gridPtr+k*5+4)});
-   if(k===224)throw new Error('Unterminated original level '+i);
   }
-  levels.push({text,pieces});
+  if(!pieces.length)throw Error('Empty original level');
+  const name=profile.namePtrsVA?readAscii(readPointer(profile.namePtrsVA+i*4)):'';
+  levels[i]={text,name,pieces};
  }
  return {levels,level_order};
 }
@@ -221,7 +220,7 @@ function extractByScan(pe){
    if(pos>=data.length)break;
    const type=data[pos];
    if(type===0)break;
-   if(type>12)throw new Error('Unexpected record in scanned level '+i);
+   if(type>22)throw new Error('Unexpected record in scanned level '+i);
    pieces.push({type,rotation:data[pos+1],color:data[pos+2],
     x:data[pos+3],y:data[pos+4]});
   }
@@ -268,7 +267,7 @@ export function extractChromatronExecutable(bytes,{game}={}){
  const pe=parsePE32(bytes);
  // If caller knows the game and we have a profile, use it directly
  if(game&&KNOWN_PROFILES[game]){
-  return {...extractWithProfile(pe,KNOWN_PROFILES[game]),detectedGame:game};
+  try{return {...extractWithProfile(pe,KNOWN_PROFILES[game]),detectedGame:game}}catch{}
  }
  // Try all known profiles
  for(const [g,profile] of Object.entries(KNOWN_PROFILES)){

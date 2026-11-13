@@ -38,7 +38,9 @@ export function inspectLight(pieces,result){
    case 'doppler':blocked=rel!==2&&rel!==6;break;
    case 'splitter':blocked=rel===0||rel===4;break;
    case 'conduit':blocked=rel!==0&&rel!==4;break;
-   case 'tangler':blocked=true;break; // not yet supported by the prototype
+   case 'tangler':blocked=rel!==2;break;
+   case 'multiFilter':blocked=!(segment.color & [4,2,1,7][rel%4]);break;
+   case 'dualReflector':blocked=rel%4===0;break;
    default:break;
   }
   if(blocked){

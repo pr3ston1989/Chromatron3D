@@ -14,7 +14,7 @@
   <div class="header-right"><span class="status-dot"></span><span data-i18n="online">SYSTEM OPTYCZNY AKTYWNY</span>
     <button id="levels-button" class="icon-btn level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog" title="Mapa poziomów (M)">▦</button>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
-    <button id="audio" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
+    <button id="audio" aria-pressed="false" data-i18n-aria="soundAria" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
     <button id="analysis-toggle" class="icon-btn analyzer-btn" type="button" aria-pressed="false" data-i18n-title="analysisToggle" data-i18n-aria="analysisToggle" title="Analiza światła (V)">∿</button>
     <button id="board-focus" class="icon-btn focus-btn" type="button" data-i18n-title="focusEnter" aria-pressed="false" aria-label="Tryb skupienia na planszy">▣</button>
     <button id="fullscreen" class="icon-btn fullscreen-btn" type="button" data-i18n-title="fullscreenEnter" aria-label="Pełny ekran" aria-pressed="false">⛶</button>
@@ -100,7 +100,12 @@
    </div>
    <div class="campaign-switch" role="tablist" data-i18n-aria="campaignTabsAria" aria-label="Kampanie">
     <button class="campaign-tab" type="button" role="tab" data-campaign="demo" aria-selected="true" data-i18n="campaignDemo">PROTOTYP · 8</button>
-    <button class="campaign-tab" type="button" role="tab" data-campaign="expert" aria-selected="false" data-i18n="campaignExpert">EKSPERT · 50</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="expert" aria-selected="false" data-i18n="campaignExpert">WYGENEROWANE · 50</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="classic1" hidden>Chromatron 1 · 50</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="classic2" hidden>Chromatron 2 · 50</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="classic3" hidden>Chromatron 3 · 50</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="classic4" hidden>Chromatron 4 · 50</button>
+    <button id="atlas-import" type="button" class="ui-button" data-i18n="importOriginal">Wczytaj oryginały</button>
    </div>
    <p id="level-atlas-summary" class="level-atlas-summary" aria-live="polite"></p>
    <div class="level-atlas-legend">
