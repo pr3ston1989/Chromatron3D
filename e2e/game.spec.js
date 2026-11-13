@@ -231,7 +231,7 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(loaded.heroScenery.biome).toBe(biome);
  expect(loaded.heroScenery.loaded).toBe(true);
  expect(loaded.heroScenery.meshParts).toBeGreaterThanOrEqual(6);
- expect(loaded.heroScenery.visible).toBe(process.env.CI?2:3);
+ expect(loaded.heroScenery.visible).toBe({performance:2,balanced:3,cinematic:4}[loaded.effectiveQuality]);
  expect(loaded.heroScenery.loadError).toBeNull();
  expect(loaded.environment.rimHabitat).toBeLessThanOrEqual(8);
  expect(loaded.beamSegments).toBe(first.beamSegments);
