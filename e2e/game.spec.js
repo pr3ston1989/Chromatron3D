@@ -245,6 +245,11 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(dressed.beamSegments).toBe(first.beamSegments);
  await page.screenshot({path:'test-results/chromatron-premium-glb-world.png',animations:'disabled'});
  await page.screenshot({path:'test-results/chromatron-layered-midground.png',animations:'disabled'});
+ const far=loaded.environment.horizon;
+ expect(far).toBeTruthy();
+ expect(far.structures).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
+ expect(far.clouds).toBe(far.structures);
+ await page.screenshot({path:'test-results/chromatron-deep-horizon.png',animations:'disabled'});
  expect(loaded.environment.rimHabitat).toBeLessThanOrEqual(8);
  expect(loaded.beamSegments).toBe(first.beamSegments);
  await page.locator('#levels-button').click();
