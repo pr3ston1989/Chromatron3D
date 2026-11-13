@@ -276,6 +276,14 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(terrain.rocks).toBe({performance:14,balanced:30,cinematic:48}[loaded.effectiveQuality]);
  expect(terrain.features).toBe({performance:24,balanced:52,cinematic:90}[loaded.effectiveQuality]);
  await page.screenshot({path:'test-results/chromatron-textured-biome-ground.png',animations:'disabled'});
+ const sky=loaded.environment.celestial;
+ expect(sky).toBeTruthy();
+ expect(sky.biome).toBe(biome);
+ expect([1,2]).toContain(sky.suns);
+ expect(sky.strongCorona).toBe(true);
+ expect(sky.asteroidBodies).toBe({performance:46,balanced:125,cinematic:260}[loaded.effectiveQuality]);
+ expect(sky.fragments).toBe({performance:22,balanced:66,cinematic:120}[loaded.effectiveQuality]);
+ await page.screenshot({path:'test-results/chromatron-dual-suns-asteroids.png',animations:'disabled'});
  const far=loaded.environment.horizon;
  expect(far).toBeTruthy();
  expect(far.structures).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);

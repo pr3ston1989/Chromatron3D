@@ -103,7 +103,9 @@ export function createBiomeTerrain(THREE,group,theme,random){
  root.userData.scenicOnly=true;group.add(root);
  const texture=buildTerrainTexture(THREE,kind,theme.edge&65535);
  const material=new THREE.MeshStandardMaterial({
-  color:0xffffff,map:texture,metalness:kind==='scrap'?.54:kind==='moss'?.03:.17,
+  // Muted ground avoids overpowering the board under the lab's studio lights.
+  color:kind==='ice'?0xa2bcca:kind==='moss'?0xc0d6b9:kind==='crystal'?0xc7b1c6:0xb2c1c7,
+  map:texture,metalness:kind==='scrap'?.54:kind==='moss'?.03:.17,
   roughness:kind==='moss'?.97:kind==='ice'?.54:.77,
   side:THREE.DoubleSide
  });
@@ -113,8 +115,10 @@ export function createBiomeTerrain(THREE,group,theme,random){
  // Four broad crescent-like courtyards around the square instrument.
  // Their inner edge starts outside the 25-unit outer stage hull.
  const platforms=[
-  {w:54,d:14,x:0,z:-20},{w:54,d:14,x:0,z:20},
-  {w:14,d:26,x:-20,z:0},{w:14,d:26,x:20,z:0}
+  // A broken geological ring leaves deliberate views into the sky,
+  // particularly for the two visible stellar systems above the board.
+  {w:31,d:11,x:0,z:-19},{w:31,d:11,x:0,z:19},
+  {w:11,d:31,x:-19,z:0},{w:11,d:31,x:19,z:0}
  ];
  const slabs=[];
  platforms.forEach((p,i)=>{
@@ -140,6 +144,20 @@ export function createBiomeTerrain(THREE,group,theme,random){
   foundation.position.set(p.x,-2.22,p.z);
   foundation.userData.scenicOnly=true;root.add(foundation);
  });
+ // Four nearby support islands anchor the large GLB modules at the
+ // courtyard corners instead of allowing them to float above empty sky.
+ const islandGeo=new THREE.CylinderGeometry(5.2,5.6,.72,8);
+ const islandTop=new THREE.CylinderGeometry(5.25,5.23,.07,8);
+ for(const sx of [-1,1])for(const sz of [-1,1]){
+  const island=new THREE.Mesh(islandGeo,cliffMat);
+  island.name='landmark-terrain-island';
+  island.position.set(sx*18,-2.10,sz*17);
+  island.userData.scenicOnly=true;root.add(island);
+  const surface=new THREE.Mesh(islandTop,material);
+  surface.name='landmark-terrain-surface';
+  surface.position.set(sx*18,-1.70,sz*17);
+  surface.userData.scenicOnly=true;root.add(surface);
+ }
  const stoneGeo=new THREE.DodecahedronGeometry(1.03,1);
  const stoneMat=new THREE.MeshStandardMaterial({
   color:0xffffff,metalness:kind==='scrap'?.44:.12,
