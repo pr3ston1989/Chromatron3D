@@ -123,6 +123,11 @@ export function validateLevels(levels){
   const title=validText(level.title)?level.title:{en:'EXPERIMENT '+(index+1),pl:'EKSPERYMENT '+(index+1)};
   const description=validText(level.description)?level.description:'';
   const hints=Array.isArray(level.hints)?level.hints.slice(0,3).filter(validText):[];
+  // Campaign metadata is optional; it never changes optical behaviour.
+  const chapter=validText(level.chapter)?level.chapter:null;
+  const difficulty=Number.isInteger(level.difficulty)&&level.difficulty>=1&&level.difficulty<=5?level.difficulty:null;
+  const mechanics=Array.isArray(level.mechanics)
+  ?level.mechanics.filter(m=>typeof m==='string'&&types.has(m)).slice(0,8):[];
   const f=level.hintFocus;
   const hintFocus=f&&Number.isInteger(f.x)&&Number.isInteger(f.y)&&f.x>=0&&f.x<15&&f.y>=0&&f.y<15?{x:f.x,y:f.y}:null;
   const solution=Array.isArray(level.solution)?level.solution.map(step=>{
@@ -134,6 +139,7 @@ export function validateLevels(levels){
    return {index:step.index,x:step.x,y:step.y,rot:step.rot};
   }):null;
   return {title,description,hints,hintFocus,solution,
-   startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p])};
+   startMovablesInTray:Boolean(level.startMovablesInTray),pieces:level.pieces.map(p=>[...p]),
+   chapter,difficulty,mechanics};
  });
 }

@@ -116,3 +116,23 @@
  border-color:#5c9cba;background:linear-gradient(150deg,#194355,#112d42);
 }
 .level-atlas-card[data-draft="true"] .level-atlas-card-status{color:#9bdfd6}
+
+/* Campaign switcher: the bundled prototype and the 50-level expert pack keep
+   separate progress, so the atlas exposes both without leaving the overlay. */
+.campaign-switch{display:flex;gap:8px;flex-wrap:wrap}
+.campaign-tab{
+ flex:1 1 150px;min-height:34px;padding:6px 12px;border-radius:8px;
+ border:1px solid #345a72;background:#0d2233;color:#9fc3d6;
+ font:700 10px 'Space Grotesk',sans-serif;letter-spacing:1.4px;cursor:pointer;
+ transition:border-color .18s,background .18s,color .18s;
+}
+.campaign-tab:hover{border-color:#6cc7e2;background:#173a4f;color:#d8f6ff}
+.campaign-tab:focus-visible{outline:2px solid #a1f6ff;outline-offset:2px}
+.campaign-tab[aria-selected="true"]{
+ border-color:#7fe6ff;color:#effdff;
+ background:linear-gradient(145deg,#1c4f66,#123044);
+ box-shadow:inset 0 0 0 1px #7fe6ff33,0 0 16px #2fc7e51f;
+}
+@media(max-width:680px){
+ .campaign-tab{min-height:30px;padding:5px 8px;font-size:9px;letter-spacing:1px}
+}
