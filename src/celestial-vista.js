@@ -22,8 +22,8 @@ export const STELLAR_PALETTES=Object.freeze({
 // Screen-aligned backdrop sockets in world space, evaluated for the game's
 // default oblique camera. Counter-rotation cancels randomized star-sky yaw.
 const SUN_ANCHORS=Object.freeze([
- Object.freeze({x:20,y:-70,z:-65,r:4.1}),
- Object.freeze({x:95,y:-85,z:25,r:3.8})
+ Object.freeze({x:37.85,y:-59.04,z:-81.91,r:4.1}),
+ Object.freeze({x:92.41,y:-63.72,z:9.50,r:3.8})
 ]);
 const BELT_CENTRE=Object.freeze({x:47,y:-80,z:-54});
 const BASE_CAMERA=Object.freeze({x:-17.31223167,y:39.21312384,z:9.93063709});
@@ -74,14 +74,14 @@ export function createCelestialVista(THREE,sky,biome,random=()=>.5){
    blending:THREE.AdditiveBlending,depthWrite:false,depthTest:true,
    fog:false,toneMapped:false
   }));
-  corona.name='stellar-corona';corona.scale.setScalar(anchor.r*14);
+  corona.name='stellar-corona';corona.scale.setScalar(anchor.r*8.8);
   group.add(corona);
   const inner=new THREE.Sprite(new THREE.SpriteMaterial({
    map:coronaMap,color:0xffffff,transparent:true,opacity:.67,
    blending:THREE.AdditiveBlending,depthWrite:false,depthTest:true,
    fog:false,toneMapped:false
   }));
-  inner.name='stellar-white-hot-flare';inner.scale.setScalar(anchor.r*6.6);
+  inner.name='stellar-white-hot-flare';inner.scale.setScalar(anchor.r*4.8);
   group.add(inner);
   const core=new THREE.Mesh(
    new THREE.SphereGeometry(anchor.r,24,14),
@@ -168,7 +168,7 @@ export function createCelestialVista(THREE,sky,biome,random=()=>.5){
  function update(seconds,reducedMotion=false){
   for(const [i,s] of suns.entries()){
    const v=reducedMotion?1:1+.055*Math.sin(seconds*.37+i*1.9+phase);
-   s.corona.scale.setScalar(SUN_ANCHORS[i].r*14*v);
+   s.corona.scale.setScalar(SUN_ANCHORS[i].r*8.8*v);
    s.corona.material.opacity=reducedMotion?.95:.87+.10*Math.sin(seconds*.24+i*1.1);
    s.inner.material.opacity=reducedMotion?.67:.61+.08*Math.sin(seconds*.31+i*.8);
   }
