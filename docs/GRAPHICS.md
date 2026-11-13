@@ -200,3 +200,45 @@ recorded in [LIVING_SCENERY_PLAN.md](LIVING_SCENERY_PLAN.md). Stage 1 ships
 the new asset vocabulary and compositions. The far-field and animation
 chapters require separate testing and visual review: their completion should
 not be inferred from the midground PR.
+
+## Radiant binary stars and a recognizable asteroid belt
+
+The old nearly empty sky is supplemented with an independent, cached
+`src/celestial-vista.js` layer. Every biome has **strongly luminous suns**,
+often a colorful binary star pair, with a sharp hot photosphere, white-hot
+inner flare, and large soft corona built from a small authored procedural
+`DataTexture`. Solar palettes are intentionally distinct:
+
+| Biome | Stellar palette |
+|---|---|
+| Orbital shipyard | Warm yellow/orange + cold electric blue |
+| Overgrown station | Bright amber/gold + turquoise green |
+| Frozen observatory | White-blue + orange-red companion |
+| Crimson nebula | Magenta-red + bright cyan |
+
+Some orbital/polar level configurations feature one sun, others two; verdant
+and nebula scenes emphasize two colorful stars. Variation follows the level's
+seed and remains repeatable. Core and corona materials use
+`toneMapped:false`, additive glow and `fog:false`, so their light is
+clearly visible even against deep space; they do not create additional
+high-cost realtime lights or shadows.
+
+The orbital debris scatter is complemented by a **large, coherent 3D
+asteroid arc** crossing the visible sky. It mixes big angular rocks and
+smaller fragments, with two GPU-instanced draw calls and noticeable depth.
+There are 46 / 125 / 260 primary asteroids and 22 / 66 / 120 fragments in
+Performance / Balanced / Cinematic modes. The band is placed in
+camera-visible background sockets, well behind the playable board, and drifts
+only slightly. The near-stellar system stays in a consistent composition even
+when the rest of the sky is randomized, rather than leaving the most important
+visual focal points offscreen.
+
+Finally the pre-existing huge station silhouettes have lighter, moderately
+self-lit hulls and stronger edge/navigation lights. This specifically addresses
+the previous issue that they were present in the scene graph but too dark
+to see in screenshots.
+
+None of these objects participate in puzzle raycasts, laser tracing, level
+imports, saved progress or achievements. The original sun texture and rocks
+are built once per biome; motion is disabled with
+`prefers-reduced-motion`.
