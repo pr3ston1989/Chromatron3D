@@ -19,6 +19,8 @@ import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
 import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
+import {createSpaceEnvironments} from './world-biomes.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {opticIcon} from './optic-icons.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
@@ -84,8 +86,7 @@ const dark=new THREE.MeshStandardMaterial({color:0x0a1225,metalness:.45,roughnes
 const cyan=new THREE.MeshStandardMaterial({color:0x1fa9c5,emissive:0x0a83c5,emissiveIntensity:1.3,metalness:.35,roughness:.22});
 const tileGeo=new THREE.BoxGeometry(T*.97,.22,T*.97);
 function mesh(geo,mat,parent=world){const m=new THREE.Mesh(geo,mat);parent.add(m);return m;}
-const deck=mesh(new THREE.BoxGeometry(21,.75,21),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.3}));deck.position.y=-.62;
-const edge=new THREE.EdgesGeometry(new THREE.BoxGeometry(21,.75,21));const wire=new THREE.LineSegments(edge,new THREE.LineBasicMaterial({color:0x1c89bd,transparent:true,opacity:.35}));wire.position.copy(deck.position);world.add(wire);
+const deck=mesh(new RoundedBoxGeometry(21,.75,21,4,.26),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.32}));deck.position.y=-.62;
 const gridGroup=new THREE.Group();world.add(gridGroup);
 // Two instanced draw calls replace 450 independent tile/line meshes.
 // This preserves every logical cell and its coloring while keeping GPU headroom.
@@ -112,9 +113,23 @@ boardTiles.instanceMatrix.needsUpdate=true;
 boardTiles.instanceColor.needsUpdate=true;
 boardLines.instanceMatrix.needsUpdate=true;
 gridGroup.add(boardTiles,boardLines);
-buildLaboratory(THREE,scene,world,T);
-const starGeo=new THREE.BufferGeometry(),pos=[];for(let i=0;i<1000;i++)pos.push((Math.random()-.5)*150,Math.random()*58-5,(Math.random()-.5)*150);
-starGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x76aaff,size:.035,transparent:true,opacity:.6})));
+const laboratory=buildLaboratory(THREE,scene,world,T);
+const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T});
+const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
+let activeEnvironment=null;
+function applyLevelEnvironment(){
+ const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
+ activeEnvironment=theme;
+ laboratory.userData.setTheme(theme);
+ deck.material.color.setHex(theme.tileB);
+ const color=new THREE.Color();
+ for(let n=0;n<GRID*GRID;n++){
+  color.setHex(Math.floor(n/GRID)+n%GRID&1?theme.tileA:theme.tileB);
+  boardTiles.setColorAt(n,color);
+ }
+ boardTiles.instanceColor.needsUpdate=true;
+ return theme;
+}
 const componentGroup=new THREE.Group();world.add(componentGroup);
 const opticShadows=createOpticContactShadows(THREE,world,{tileSize:T,half:HALF});
 let componentRebuilds=0;
@@ -439,6 +454,7 @@ function load(i){
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  levelIndex=(i+levels.length)%levels.length;
+ applyLevelEnvironment();
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
@@ -839,6 +855,7 @@ function resize(){
 }
 function applyGraphicsQuality(){
  graphicsProfile=profileFor(graphicsMode,autoLevel);
+ spaceEnvironments.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
@@ -1162,6 +1179,7 @@ function trackFrameRate(time){
 function animate(time){
  requestAnimationFrame(animate);
  trackFrameRate(time);
+ spaceEnvironments.update(time*.001,reducedMotion.matches);
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
  zoomLastFrame=time;
@@ -1256,7 +1274,7 @@ requestAnimationFrame(animate);
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
