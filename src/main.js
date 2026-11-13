@@ -37,7 +37,7 @@ import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js'
 import {createMirrorHardware} from './mirror-asset.js';
 import {applyOpticFinish} from './optic-textures.js';
 import {detailEmitter,detailResonator} from './optical-assets.js';
-import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
+import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile,shouldUseBloom} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
@@ -76,6 +76,7 @@ pmremGenerator.dispose();
 const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
 const bloomPass=new UnrealBloomPass(new THREE.Vector2(1,1),graphicsProfile.bloomStrength,.27,1.10);
+bloomPass.enabled=shouldUseBloom(graphicsMode,autoLevel);
 composer.addPass(bloomPass);
 // WebGL's canvas antialias flag does not smooth postprocessed render targets.
 // Use native postprocessing AA: inexpensive FXAA for laptops, SMAA for HQ.
@@ -1091,6 +1092,7 @@ function applyGraphicsQuality(){
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
  bloomPass.strength=graphicsProfile.bloomStrength;
+ bloomPass.enabled=shouldUseBloom(graphicsMode,autoLevel);
  fxaaPass.enabled=graphicsProfile.antialias==='fxaa';
  smaaPass.enabled=graphicsProfile.antialias==='smaa';
  resize();
@@ -1540,7 +1542,7 @@ requestAnimationFrame(animate);
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,absorberHits:currentResult?.boundaryHits?.length||0,absorberStructure:laboratory.userData.beamPerimeter.getStats(),beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),heroScenery:heroScenery.getStats(),midgroundScenery:midgroundScenery.getStats(),ambientLife:ambientLife.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,bloomEnabled:bloomPass.enabled,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,absorberHits:currentResult?.boundaryHits?.length||0,absorberStructure:laboratory.userData.beamPerimeter.getStats(),beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),heroScenery:heroScenery.getStats(),midgroundScenery:midgroundScenery.getStats(),ambientLife:ambientLife.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);
