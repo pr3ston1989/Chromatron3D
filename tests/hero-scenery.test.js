@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
-import {createHeroScenery,heroLayout,HERO_BIOMES,HERO_CLEARANCE,HERO_COUNTS}
+import {createHeroScenery,heroLayout,HERO_BIOMES,HERO_CLEARANCE,HERO_COUNTS,tuneHeroMaterials}
  from '../src/hero-scenery.js';
 
 test('four independently authored GLB meshes are real glTF 2.0 with materials and clear silhouettes',()=>{
@@ -104,4 +104,20 @@ test('unavailable model falls back without affecting optical gameplay',()=>{
  hero.setLevel('polar','demo',4,8);
  assert.equal(calls.length,1,'avoid repeated requests for a failed resource');
  hero.dispose();
+});
+
+test('authored PBR detail remains colored instead of clipping under studio light',()=>{
+ const root=new THREE.Group();
+ const material=new THREE.MeshStandardMaterial({
+  color:0xc7b2de,metalness:.93,roughness:.17
+ });
+ root.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),material));
+ root.add(new THREE.Mesh(new THREE.BoxGeometry(.5,.5,.5),material));
+ assert.equal(tuneHeroMaterials(root,'nebula'),1,'shared material tuned only once');
+ assert.equal(material.envMapIntensity,.20);
+ assert.equal(material.metalness,.70);
+ assert.equal(material.roughness,.47);
+ assert.ok(material.color.getHex()!==0xc7b2de,'colored surface toned down');
+ root.traverse(n=>{if(n.isMesh)n.geometry.dispose()});
+ material.dispose();
 });
