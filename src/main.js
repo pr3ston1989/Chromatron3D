@@ -20,6 +20,7 @@ import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments} from './world-biomes.js';
+import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -127,12 +128,26 @@ function applyLevelEnvironment(){
  activeEnvironment=theme;
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  deck.material.color.setHex(theme.tileB);
- const color=new THREE.Color();
+ const finish=deckSurfaceProfile(theme.decor);
+ tileMaterial.metalness=finish.tileMetalness;
+ tileMaterial.roughness=finish.tileRoughness;
+ deck.material.metalness=finish.deckMetalness;
+ deck.material.roughness=finish.deckRoughness;
+ // Inlaid grid seams use the same instanced draw call, but each cell
+ // reflects its biome's patina instead of an identical glowing strip.
+ boardLines.material.color.setHex(0xffffff);
+ boardLines.material.opacity=theme.decor==='moss'?.49:
+  theme.decor==='ice'?.75:.65;
+ const color=new THREE.Color(),line=new THREE.Color();
  for(let n=0;n<GRID*GRID;n++){
-  color.setHex(Math.floor(n/GRID)+n%GRID&1?theme.tileA:theme.tileB);
-  boardTiles.setColorAt(n,color);
+  const x=n%GRID,y=Math.floor(n/GRID);
+  const surface=deckCellFinish(theme,currentPackId,levelIndex,
+   environmentSessionSeed,x,y);
+  boardTiles.setColorAt(n,color.setHex(surface.tileColor));
+  boardLines.setColorAt(n,line.setHex(surface.lineColor));
  }
  boardTiles.instanceColor.needsUpdate=true;
+ boardLines.instanceColor.needsUpdate=true;
  return theme;
 }
 const componentGroup=new THREE.Group();world.add(componentGroup);

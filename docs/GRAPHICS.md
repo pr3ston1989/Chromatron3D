@@ -101,3 +101,22 @@ composition may rotate only in 90-degree steps, preserving that clearance.
 Instances are cached once per biome with no texture allocations and reuse
 a single material; Performance / Balanced / Cinematic render 35 / 105 /
 180 of those instances. No additional lighting or physics is required.
+
+## Patinated board surfaces
+
+The 15×15 **logical** grid is unchanged, but the existing two instanced
+rendering layers (tiles and inlaid seams) get independent, seeded colors for
+each cell and each level. These are written into per-instance colors on the
+already cached meshes, with no new textures, geometry, lights or draw calls.
+
+- **Orbital shipyard:** brushed metallic panels and regular plate joins.
+- **Overgrown station:** matte, weathered metal with green patina concentrated
+  near the outer two rows, leaving the central laser route comparatively calm.
+- **Frozen observatory:** smoother, reflective panels and bright, irregular
+  frost-like seams along the edges.
+- **Crimson nebula:** deeper metal with subtle diagonal crystalline veins.
+
+The finish also adjusts only the existing board surface and chassis material's
+roughness/metalness when the biome changes. Each map is deterministic for the
+same pack, level and session seed, and is different for other levels. The tile
+collision model, optical solver, hit targets and ray paths remain untouched.
