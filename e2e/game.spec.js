@@ -220,6 +220,23 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 
 
 
+
+test('physical laser absorber walls stop rays at their visible edge',async({page})=>{
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ const result=await page.evaluate(()=>window.chromatron.getState().result);
+ const stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.absorberStructure.segments).toBe(60);
+ expect(stats.absorberStructure.collectors).toBe(60);
+ expect(stats.absorberStructure.boundary).toBeCloseTo(9.75,3);
+ expect(stats.absorberHits).toBeGreaterThan(0);
+ expect(result.boundaryHits.length).toBe(stats.absorberHits);
+ for(const hit of result.boundaryHits){
+  expect(hit.boundary).toBe(true);
+  expect(hit.nx===-.5||hit.nx===14.5||hit.ny===-.5||hit.ny===14.5).toBe(true);
+ }
+ await page.screenshot({path:'test-results/chromatron-physical-laser-walls.png',animations:'disabled'});
+});
+
 test('scenery uses cached, genuine GLB hero models without touching optics',async({page})=>{
  test.setTimeout(process.env.CI?120000:75000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));

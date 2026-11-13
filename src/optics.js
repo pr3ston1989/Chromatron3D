@@ -34,7 +34,7 @@ const MAX_BEAM_LAYERS=1024;
 export function trace(allPieces){
  const pieces=allPieces.filter(p=>!p.inTray&&inBounds(p.x,p.y));
  const map=new Map(pieces.map(p=>[id(p.x,p.y),p]));
- const segments=[],received=new Map(),unsupported=new Set(),visited=new Set();
+ const segments=[],boundaryHits=[],received=new Map(),unsupported=new Set(),visited=new Set();
  let queue=pieces.filter(p=>p.type==='laser'&&p.color)
   .map(p=>({x:p.x,y:p.y,dir:wrap(p.rot),color:p.color&7,eid:0}));
  let steps=0,entangleCounter=0,layer=0;
@@ -48,7 +48,15 @@ export function trace(allPieces){
    if(visited.has(state))continue;
    visited.add(state);
    const nx=b.x+DX[b.dir],ny=b.y+DY[b.dir];
-   if(!inBounds(nx,ny))continue;
+   if(!inBounds(nx,ny)){
+    // Rays travel all the way to the physical absorber face, halfway
+    // beyond the last cell center. This is visual metadata only: the
+    // 15x15 logical trace and target/optics interactions stay unchanged.
+    boundaryHits.push({x:b.x,y:b.y,
+     nx:b.x+DX[b.dir]*.5,ny:b.y+DY[b.dir]*.5,
+     color:b.color,boundary:true});
+    continue;
+   }
    segments.push({x:b.x,y:b.y,nx,ny,color:b.color});
    const p=map.get(id(nx,ny));
    if(!p){next.push({...b,x:nx,y:ny});continue}
@@ -145,7 +153,7 @@ export function trace(allPieces){
  const targets=pieces.filter(p=>p.type==='target');
  const active=targets.filter(p=>(received.get(p.id)||0)===p.color);
  const truncated=queue.length>0&&(steps>=MAX_BEAM_STEPS||layer>=MAX_BEAM_LAYERS);
- return {segments,received,total:targets.length,active:active.length,
+ return {segments,boundaryHits,received,total:targets.length,active:active.length,
   won:targets.length>0&&active.length===targets.length&&!truncated,
   unsupported:[...unsupported],truncated,entangledPairs:entangleCounter};
 }
