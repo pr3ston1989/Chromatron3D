@@ -221,6 +221,7 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 
 
 test('scenery uses cached, genuine GLB hero models without touching optics',async({page})=>{
+ test.setTimeout(process.env.CI?120000:75000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');
  const first=await page.evaluate(()=>window.chromatron.getVisualStats());
@@ -233,7 +234,17 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(loaded.heroScenery.meshParts).toBeGreaterThanOrEqual(6);
  expect(loaded.heroScenery.visible).toBe({performance:2,balanced:3,cinematic:4}[loaded.effectiveQuality]);
  expect(loaded.heroScenery.loadError).toBeNull();
+ await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().midgroundScenery.status),
+  {timeout:process.env.CI?45000:20000}).toBe('ready');
+ const dressed=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(dressed.midgroundScenery.biome).toBe(biome);
+ expect(dressed.midgroundScenery.readyModels).toBe(2);
+ expect(dressed.midgroundScenery.distinct).toBe(2);
+ expect(dressed.midgroundScenery.visible).toBe({performance:3,balanced:6,cinematic:10}[dressed.effectiveQuality]);
+ expect(dressed.midgroundScenery.loadErrors).toEqual([]);
+ expect(dressed.beamSegments).toBe(first.beamSegments);
  await page.screenshot({path:'test-results/chromatron-premium-glb-world.png',animations:'disabled'});
+ await page.screenshot({path:'test-results/chromatron-layered-midground.png',animations:'disabled'});
  expect(loaded.environment.rimHabitat).toBeLessThanOrEqual(8);
  expect(loaded.beamSegments).toBe(first.beamSegments);
  await page.locator('#levels-button').click();
@@ -241,6 +252,7 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  await page.locator('#levels-close').click();
  const restored=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(restored.heroScenery.visible).toBe(loaded.heroScenery.visible);
+ expect(restored.midgroundScenery.visible).toBe(dressed.midgroundScenery.visible);
  expect(errors).toEqual([]);
 });
 
