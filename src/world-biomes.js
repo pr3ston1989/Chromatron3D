@@ -290,10 +290,10 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    const perf=quality==='performance';
    group.stars.geometry.setDrawRange(0,perf?290:quality==='cinematic'?1000:620);
    group.rocks.count=perf?12:quality==='cinematic'?65:35;
-   group.patches.mesh.count=perf?65:quality==='cinematic'?196:140;
-   group.habitat.count=perf?35:quality==='cinematic'?180:105;
+   group.patches.mesh.count=perf?12:quality==='cinematic'?45:26;
+   group.habitat.count=perf?0:quality==='cinematic'?18:8;
    const leaves=group.patches.stems.children.find(c=>c.isInstancedMesh);
-   if(leaves)leaves.count=perf?38:quality==='cinematic'?128:85;
+   if(leaves)leaves.count=perf?0:quality==='cinematic'?28:12;
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
    group.traffic.setQuality(quality);
   }
