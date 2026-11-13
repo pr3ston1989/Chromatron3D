@@ -66,7 +66,7 @@ All coordinates are local to a 1.3-unit grid tile, with Y as vertical.
 | Filter | Tinted transparent slab | Color-coded glass; no reflective silver front |
 | Splitter | Semitransparent optical slab with two clear beam ports | Thin silver rails and an unmistakable beam-splitting motif |
 
-### Production-ready asset conventions (future .glb files)
+### Asset conventions (optical component GLB integration is a future milestone)
 
 - **Format:** glTF 2.0 Binary (`.glb`). Keep source files independent (Blender or other modeler).
 - **Origin:** bottom center of the component base. Forward for a mirror is its **reflective front**; include clearly named `reflective_surface`, `dark_back`, and `hit_volume` objects.
@@ -85,22 +85,47 @@ Review in desktop Chromium and at phone widths; compare screenshots from GitHub 
 
 The five included levels are **independently designed demonstration puzzles**, not reproductions. No original Chromatron puzzle layouts are distributed. The intended 4×50 classic level campaigns are a separate fidelity milestone and require verified authorized layout data and rule-by-rule compatibility tests.
 
-## Procedural edge habitats
+## Premium 3D biome monuments (baked GLB)
 
-Each of the four cached space biomes gains a single InstancedMesh of 180
-distant rim silhouettes, complementing the existing sparse foliage and edge
-stains. These never overlap the 15×15 puzzle:
-- **Verdant:** low rounded clumps of moss and soft foliage, varied greens.
-- **Polar:** jagged translucent-looking frost spires in icy tones.
-- **Crimson nebula:** tall crystalline shards with violet highlights.
-- **Orbital shipyard:** short rusted-looking metal fragments on the structure.
+Unlike the previous scattered primitive debris, the scene now includes four
+**original, authored geometry assets** stored as actual glTF 2.0 binary files
+under `public/models/biomes/`:
 
-The nearest habitat anchor is at least 10.12 world units from the center
-along one axis; optical cells occupy only ±9.75 world units. Per-level
-composition may rotate only in 90-degree steps, preserving that clearance.
-Instances are cached once per biome with no texture allocations and reuse
-a single material; Performance / Balanced / Cinematic render 35 / 105 /
-180 of those instances. No additional lighting or physics is required.
+| Biome | GLB asset | Identifiable silhouette |
+|---|---|---|
+| Orbital shipyard | `orbital.glb` | A large suspended cargo gantry with an industrial bridge, warning lights and hanging reactor |
+| Overgrown station | `verdant.glb` | A damaged ancient technical arch overtaken by full-sized sculpted leaves, hanging roots, vines and moss |
+| Frozen observatory | `polar.glb` | Tall angular ice spires on a research foundation with a ringed signal array |
+| Crimson nebula | `nebula.glb` | A prominent crystal reactor, large suspended ring structures, resonant columns and glowing satellites |
+
+Assets include 6–7 distinct metallic/roughness PBR materials, authored
+normals and some emissive accents. All geometry is baked in the GLB
+files; the browser no longer builds those large prop meshes with
+Three.js geometry constructors. The original authored source is
+`scripts/generate-biome-models.mjs` (regenerate using
+`node scripts/generate-biome-models.mjs`). The generator is deterministic,
+uses no network service and does not require an extra npm dependency.
+
+`GLTFLoader` fetches **only the active biome's asset** and caches its loaded
+model. Changing levels within the same biome repositions shared meshes;
+switching back does not refetch or recreate GPU resources. Three material/
+geometry references are reused among 2 / 3 / 4 visible sculptures for
+Performance / Balanced / Cinematic modes, respectively. The rendered
+monuments stand on the non-interactive exterior around the 15×15 board.
+They never enter the optical collision or raycasting data.
+
+The small previous procedural rim clusters have been cut back dramatically:
+12 / 26 / 45 sparse surface stains and 0 / 8 / 18 little rim props
+remain at the three graphics settings. Their only purpose now is secondary
+weathering—not the main focal point. If a GLB is missing, these lightweight
+existing surroundings remain visible and gameplay is unaffected.
+
+The four bundled assets total less than 1 MB and load on demand. The
+optical parts and imported source data are untouched. To keep the scene
+readable on low-power machines we use no extra real-time shadow map,
+fog volume, reflection pass or particle simulation for the monuments.
+The real asset geometry and materials are checked in unit tests and loaded
+by Playwright in Chromium.
 
 ## Patinated board surfaces
 
