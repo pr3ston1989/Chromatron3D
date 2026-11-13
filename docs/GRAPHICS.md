@@ -201,6 +201,22 @@ the new asset vocabulary and compositions. The far-field and animation
 chapters require separate testing and visual review: their completion should
 not be inferred from the midground PR.
 
+## Physical laser absorber walls
+
+Previously, beams that reached the last cell simply disappeared. The optical
+solver still computes the exact same puzzle outcomes, but now additionally
+reports a list of `boundaryHits` at the outer surface of the 15×15 grid
+(half a cell beyond the final cell centre). The laser renderer extends its
+cached ribbons and photons to these points and shows a small impact flare.
+
+A new biome-tinted **continuous perimeter absorber** gives this ending a
+physical cause: sixty overlapping armored wall panels with inset black
+collector lips, sixty low-power guide strips, robust corners and support ribs.
+The wall is a reusable instanced asset parented to the floating stage, outside
+the selectable optics geometry. All four side walls remain visible across
+levels. They consume no additional dynamic lights and cannot alter mirror
+behavior, target activation, rewards or level imports.
+
 ## The world has a real ground layer — four curated biomes
 
 `src/terrain-biomes.js` supplies four **broad surface courtyards** around

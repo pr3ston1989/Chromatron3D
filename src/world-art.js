@@ -1,4 +1,5 @@
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {createBeamPerimeter} from './beam-perimeter.js';
 
 /** Stable, decorative variations for the platform's distant architecture. */
 export function stageLayoutForLevel(themeId,packId='demo',index=0,seed=0){
@@ -33,6 +34,8 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
  const group=new THREE.Group();
  group.name='Floating optical laboratory architecture';
  world.add(group);
+ const beamPerimeter=createBeamPerimeter(THREE,group,tileSize);
+ group.userData.beamPerimeter=beamPerimeter;
  const hull=new THREE.MeshStandardMaterial({color:0x142b3c,metalness:.78,roughness:.31});
  const structural=new THREE.MeshStandardMaterial({color:0x324e61,metalness:.79,roughness:.3});
  const underside=new THREE.MeshStandardMaterial({color:0x081522,metalness:.68,roughness:.42});
@@ -134,6 +137,7 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
  group.userData.setTheme=(theme,level={})=>{
   if(!theme)return;
   const layout=stageLayoutForLevel(theme.id,level.packId,level.index??0,level.seed??0);
+  beamPerimeter.setTheme(theme);
   architecture.rotation.y=layout.orientation*Math.PI/2;
   arcs.forEach((arc,i)=>arc.visible=i<layout.arcCount);
   docks.forEach((parts,i)=>parts.forEach(mesh=>mesh.visible=i<layout.dockCount));
