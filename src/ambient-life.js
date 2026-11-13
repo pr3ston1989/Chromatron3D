@@ -179,6 +179,7 @@ export function createAmbientLife(THREE,world){
   });
   const beacons=new THREE.InstancedMesh(shared.beacon,signalMaterial,12);
   beacons.name='perimeter-signals';beacons.frustumCulled=false;
+  beacons.userData.scenicOnly=true;
   const bright=new THREE.Color(colors[2]),dim=new THREE.Color(biome==='orbital'?0xf9ba59:colors[1]);
   for(let i=0;i<12;i++)beacons.setColorAt(i,bright.clone().lerp(dim,i/15));
   beacons.instanceColor.needsUpdate=true;
@@ -189,6 +190,7 @@ export function createAmbientLife(THREE,world){
    new THREE.TetrahedronGeometry(.14,0);
   const motes=new THREE.InstancedMesh(moteGeo,moteMaterial,32);
   motes.name='ambient-'+biome+'-particles';motes.frustumCulled=false;
+  motes.userData.scenicOnly=true;
   root.add(motes);
   sceneRecords.set(biome,{root,machineries,vehicles,beacons,motes,
    moteGeo,signalMaterial,moteMaterial,layout:null});
