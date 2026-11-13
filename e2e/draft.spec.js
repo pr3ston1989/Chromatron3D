@@ -15,6 +15,8 @@ test.beforeEach(async({page})=>{
 });
 
 test('partial mirror layout and inventory rotation survive reload; reset clears it',async({page})=>{
+ // Three full Three.js reloads cost much more under software WebGL on CI.
+ test.setTimeout(process.env.CI?150000:75000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.goto('/',{waitUntil:'domcontentloaded'});
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
