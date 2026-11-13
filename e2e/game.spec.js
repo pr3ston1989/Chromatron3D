@@ -6,6 +6,13 @@ import {test,expect} from '@playwright/test';
 test.beforeEach(async({page},testInfo)=>{
  if(process.env.CI&&!testInfo.title.includes('real planar mirror reflections')){
   await page.addInitScript(()=>{
+   // Functional checks run real WebGL, but SwiftShader renders entirely on
+   // the CI CPU. Lower the framebuffer resolution without changing CSS
+   // viewport sizes, hit testing, layouts or underlying game logic.
+   // The dedicated reflection/graphics-quality test keeps native DPR.
+   Object.defineProperty(window,'devicePixelRatio',{
+    configurable:true,get:()=>.7
+   });
    if(!localStorage.getItem('chromatron-graphics-quality'))
     localStorage.setItem('chromatron-graphics-quality','performance');
   });
