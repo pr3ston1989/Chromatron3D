@@ -964,8 +964,8 @@ function positionOpticTooltip(x,y){
 }
 function showInventoryMechanics(type,x,y){
  const name=t(language,'type'+type[0].toUpperCase()+type.slice(1));
- const message=name+'\\n'+opticDescription(type,language)+
-  (opticExample(type,language)?'\\n'+opticExample(type,language):'');
+ const message=name+'\n'+opticDescription(type,language)+
+  (opticExample(type,language)?'\n'+opticExample(type,language):'');
  const tip=$('optic-tooltip');
  tip.textContent=message;tip.dataset.optic=type;
  tip.classList.remove('hidden','blocked');
@@ -983,9 +983,9 @@ function showOpticTooltip(e,hovered){
  }else if(hovered?.piece){
   const p=hovered.piece;
   const key='type'+p.type[0].toUpperCase()+p.type.slice(1);
-  message=t(language,key)+'\\n'+opticDescription(p.type,language)+
-   (opticExample(p.type,language)?'\\n'+opticExample(p.type,language):'')+
-   '\\n'+t(language,movable.has(p.type)?'tipSelect':'tipFixed');
+  message=t(language,key)+'\n'+opticDescription(p.type,language)+
+   (opticExample(p.type,language)?'\n'+opticExample(p.type,language):'')+
+   '\n'+t(language,movable.has(p.type)?'tipSelect':'tipFixed');
  }
  tooltip.classList.toggle('hidden',!message);
  tooltip.classList.toggle('blocked',blocked);
