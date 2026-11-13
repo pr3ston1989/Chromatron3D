@@ -121,7 +121,7 @@ let activeEnvironment=null;
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
  activeEnvironment=theme;
- laboratory.userData.setTheme(theme);
+ laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  deck.material.color.setHex(theme.tileB);
  const color=new THREE.Color();
  for(let n=0;n<GRID*GRID;n++){
