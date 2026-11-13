@@ -10,7 +10,7 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
  * Perimeter meshes never enter the 15x15 grid and are not raycast targets.
  */
 export const ABSORBER_PANELS_PER_SIDE=15;
-export const ABSORBER_HEIGHT=.94;
+export const ABSORBER_HEIGHT=.96;
 export function createBeamPerimeter(THREE,parent,tileSize=1.3){
  const half=tileSize*7.5;
  const group=new THREE.Group();
@@ -29,14 +29,14 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
   metalness:.43,roughness:.37
  });
  const panels=new THREE.InstancedMesh(
-  new RoundedBoxGeometry(tileSize*.98,.82,.29,2,.06),
+  new RoundedBoxGeometry(tileSize*1.004,.96,.29,2,.06),
   outer,ABSORBER_PANELS_PER_SIDE*4
  );
  panels.name='optical-perimeter-armor';
  panels.frustumCulled=false;panels.userData.scenicOnly=true;
  group.add(panels);
  const collectors=new THREE.InstancedMesh(
-  new RoundedBoxGeometry(tileSize*.94,.38,.13,2,.045),
+  new RoundedBoxGeometry(tileSize*1.01,.38,.13,2,.045),
   black,ABSORBER_PANELS_PER_SIDE*4
  );
  collectors.name='laser-absorber-contact-surfaces';
@@ -59,7 +59,7 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
    const anchor=sign*(half+.145);
    // Back of each plate is outside the board. The mathematical inward face
    // is exactly ±7.5 * tileSize; the red/blue laser contacts this surface.
-   dummy.position.set(horizontal?along:anchor,.01,
+   dummy.position.set(horizontal?along:anchor,.20,
     horizontal?anchor:along);
    dummy.rotation.set(0,azimuth,0);
    dummy.scale.setScalar(1);
