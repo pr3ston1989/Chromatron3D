@@ -216,3 +216,35 @@ The wall is a reusable instanced asset parented to the floating stage, outside
 the selectable optics geometry. All four side walls remain visible across
 levels. They consume no additional dynamic lights and cannot alter mirror
 behavior, target activation, rewards or level imports.
+
+## The world has a real ground layer — four curated biomes
+
+`src/terrain-biomes.js` supplies four **broad surface courtyards** around
+the floating optical board (the ground starts outside the structural rim at
+approximately 13 world units). Unlike the former disconnected dust particles,
+these surfaces give each environment an actual visual foundation.
+
+Each biome has a distinct, repeatable CPU-authored **128×128 RGBA texture**,
+cached as a WebGL `DataTexture`. This includes multi-frequency weathering and
+large-scale material patterns, not downloaded stock assets:
+
+| Biome | Surface treatment | Three instanced 3D set-dressing layers |
+|---|---|---|
+| Orbital | Painted, scratched plate joins | Large rubble, maintenance crates, strips of deck hardware |
+| Verdant | Mossy stone and broad living growth | Rock boulders, rounded moss mounds, tall grass |
+| Polar | Frosted, blue-white ice and snow | Icy boulders, tall faceted shards, small frost clumps |
+| Nebula | Dark volcanic mineral and brighter glowing seams | Broken stone, large purple crystals, energy growth |
+
+Substantial courtyards and foundation slabs wrap around the board without
+touching the puzzle 15×15 grid or changing the optics. Placement is clustered
+around meaningful scene hubs, not uniformly randomized. The entire biome
+terrain is cached once and the existing shuffle orbits it with the biome.
+
+The 3D set dressing uses just **three instanced draw calls** per active
+biome, irrespective of the number of rocks, crystals, or grass tufts:
+`Performance` 14/24/35, `Balanced` 30/52/80, `Cinematic` 48/90/135
+major rocks / biome features / vegetation details. Ground stays visible
+in every mode; optional details thin out with quality to preserve framerate.
+
+No user-uploaded textures are accessed. The stage, imported puzzle files,
+save data, laser solver and raycaster are unchanged.

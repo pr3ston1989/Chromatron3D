@@ -269,6 +269,13 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(life.beacons).toBe({performance:4,balanced:8,cinematic:12}[loaded.effectiveQuality]);
  expect(life.motes).toBe({performance:6,balanced:16,cinematic:32}[loaded.effectiveQuality]);
  await page.screenshot({path:'test-results/chromatron-living-ambient.png',animations:'disabled'});
+ const terrain=loaded.environment.terrain;
+ expect(terrain.biome).toBe(biome);
+ expect(terrain.courtyards).toBe(4);
+ expect(terrain.textured).toBe(true);
+ expect(terrain.rocks).toBe({performance:14,balanced:30,cinematic:48}[loaded.effectiveQuality]);
+ expect(terrain.features).toBe({performance:24,balanced:52,cinematic:90}[loaded.effectiveQuality]);
+ await page.screenshot({path:'test-results/chromatron-textured-biome-ground.png',animations:'disabled'});
  const far=loaded.environment.horizon;
  expect(far).toBeTruthy();
  expect(far.structures).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
