@@ -19,7 +19,7 @@ test('four biomes get distinct far-field silhouettes and three layered haze plan
   const info=horizon.getStats();forms.add(info.form);
   assert.equal(info.structures,2);
   assert.equal(info.clouds,2);
-  const architectures=horizon.root.children.filter(g=>g.name.startsWith('distant-'));
+  const architectures=horizon.root.children.filter(g=>g.isGroup&&g.name.startsWith('distant-'));
   assert.equal(architectures.length,3);
   assert.ok(architectures.every(g=>Math.hypot(g.position.x,g.position.z)>70));
   const meshNames=new Set();
