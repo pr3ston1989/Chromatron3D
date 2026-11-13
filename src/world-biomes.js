@@ -1,5 +1,6 @@
 import {createDistantTraffic} from './distant-traffic.js';
 import {createSpaceHorizon} from './space-horizon.js';
+import {createCelestialVista} from './celestial-vista.js';
 
 /**
  * Lightweight procedural environments for each puzzle. No downloaded skyboxes,
@@ -280,10 +281,11 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    sky.add(sprite);nebulae.push(sprite);
   }
   const horizon=createSpaceHorizon(THREE,sky,theme,random,nebulaTexture);
+  const celestial=createCelestialVista(THREE,sky,theme.id,random);
   const patches=addSurfacePatches(THREE,foliage,theme.decor,random);
   const habitat=addRimHabitat(THREE,foliage,theme.decor,random);
   sky.visible=false;foliage.visible=false;
-  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat,horizon};
+  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat,horizon,celestial};
  });
  let active=null,quality='balanced',sessionSeed=0;
  function setQuality(profile='balanced'){
@@ -299,6 +301,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
    group.traffic.setQuality(quality);
    group.horizon.setQuality(quality);
+   group.celestial.setQuality(quality);
   }
  }
  function setLevel(packId,index,{seed=0}={}){
@@ -314,6 +317,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   const variant=rngFrom(hashText(packId+':'+index+':'+seed+':sky-layout'));
   active.sky.rotation.y=(variant()-.5)*1.55;
   active.horizon.setLayout(variant,active.sky.rotation.y);
+  active.celestial.setLayout(variant,active.sky.rotation.y);
   // Ninety-degree turns preserve a safe perimeter around the square board.
   active.foliage.rotation.y=Math.floor(variant()*4)*Math.PI/2;
   const planetPosition=active.planet.planet.position;
@@ -347,6 +351,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    });
   }
   active.horizon.update(seconds,reducedMotion);
+  active.celestial.update(seconds,reducedMotion);
  }
  function getStats(){
   return {biome:active?.theme.id||null,stars:active?.stars.geometry.drawRange.count||0,
@@ -354,7 +359,8 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    nebulae:active?.nebulae.filter(s=>s.visible).length||0,
    traffic:active?.traffic.getVisibleCount()||0,
    rimHabitat:active?.habitat.count||0,
-   horizon:active?.horizon.getStats()||null};
+   horizon:active?.horizon.getStats()||null,
+   celestial:active?.celestial.getStats()||null};
  }
  setQuality('balanced');
  return {setLevel,setQuality,update,getStats};
