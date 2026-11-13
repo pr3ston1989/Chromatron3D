@@ -1,8 +1,10 @@
 import {defineConfig,devices} from '@playwright/test';
 export default defineConfig({
  testDir:'./e2e',
- timeout:45000,
- expect:{timeout:10000},
+ // Browser tests still check real Three.js rendering. Allow CI's software
+ // rasterizer a larger scheduling budget without changing local feedback.
+ timeout:process.env.CI?75000:45000,
+ expect:{timeout:process.env.CI?15000:10000},
  fullyParallel:false,
  retries:process.env.CI?1:0,
  reporter:process.env.CI?[['list'],['html',{open:'never',outputFolder:'playwright-report'}]]:'list',
