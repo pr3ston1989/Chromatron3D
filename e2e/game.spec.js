@@ -210,6 +210,9 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
  await page.setViewportSize({width:1024,height:720});
  await page.goto('/',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#graphics-quality')).toHaveValue('auto');
+ // Auto legitimately lowers GPU cost after sustained low FPS. A SwiftShader
+ // runner would otherwise switch away from real mirrors during this test.
+ await page.locator('#graphics-quality').selectOption('balanced');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(point.x,point.y);
