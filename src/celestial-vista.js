@@ -91,7 +91,13 @@ export function createCelestialVista(THREE,sky,biome,random=()=>.5){
   group.add(core);
   const center=new THREE.Mesh(new THREE.SphereGeometry(anchor.r*.58,18,12),
    new THREE.MeshBasicMaterial({color:0xfff9ef,fog:false,toneMapped:false}));
-  center.name='brilliant-stellar-core';center.position.z=.14;
+  center.name='brilliant-stellar-core';
+  // The incandescent inner photosphere must protrude towards the viewer;
+  // a concentric smaller sphere would be hidden by the outer opaque shell.
+  const facing=new THREE.Vector3(
+   BASE_CAMERA.x-anchor.x,BASE_CAMERA.y-anchor.y,BASE_CAMERA.z-anchor.z
+  ).normalize().multiplyScalar(anchor.r*.44);
+  center.position.copy(facing);
   group.add(center);
   return {group,corona,inner,core};
  });
