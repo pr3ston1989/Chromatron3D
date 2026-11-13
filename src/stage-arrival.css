@@ -1,0 +1,114 @@
+/* Lightweight stage arrival: one DOM overlay, two CSS animations, no new WebGL. */
+.level-arrival{
+ position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;
+ --level-accent:#80e9ff;
+}
+.level-arrival.show{animation:stage-arrival-frame 2.35s ease-out both}
+.level-arrival-rails{
+ position:absolute;inset:clamp(78px,12vh,140px) clamp(18px,6vw,105px)
+  clamp(62px,11vh,110px);
+ border-left:1px solid color-mix(in srgb,var(--level-accent) 65%,transparent);
+ border-right:1px solid color-mix(in srgb,var(--level-accent) 65%,transparent);
+ border-radius:8px;
+ background:
+  linear-gradient(90deg,color-mix(in srgb,var(--level-accent) 9%,transparent),transparent 18%,transparent 82%,color-mix(in srgb,var(--level-accent) 9%,transparent)),
+  linear-gradient(180deg,color-mix(in srgb,var(--level-accent) 6%,transparent),transparent 42%);
+ box-shadow:inset 0 0 38px color-mix(in srgb,var(--level-accent) 8%,transparent);
+}
+.level-arrival-rails::before,.level-arrival-rails::after{
+ content:'';position:absolute;height:13px;width:clamp(48px,13vw,200px);
+ border-top:1px solid color-mix(in srgb,var(--level-accent) 65%,transparent);
+}
+.level-arrival-rails::before{left:0;top:0;border-radius:8px 0 0 0}
+.level-arrival-rails::after{right:0;bottom:0;border-top:0;border-bottom:1px solid color-mix(in srgb,var(--level-accent) 65%,transparent);border-radius:0 0 8px 0}
+.level-arrival-sweep{
+ position:absolute;inset:0 auto 0 0;width:38vw;min-width:190px;
+ transform:translate3d(-110%,0,0);
+ background:linear-gradient(90deg,transparent 0%,color-mix(in srgb,var(--level-accent) 3%,transparent) 45%,color-mix(in srgb,var(--level-accent) 14%,transparent) 88%,transparent);
+}
+.level-arrival.show .level-arrival-sweep{animation:stage-arrival-scan 1.45s .1s cubic-bezier(.17,.58,.34,1) both}
+@keyframes stage-arrival-frame{
+ 0%{opacity:0}9%{opacity:.93}36%{opacity:.86}72%{opacity:.38}100%{opacity:0}
+}
+@keyframes stage-arrival-scan{
+ 0%{transform:translate3d(-110%,0,0)}
+ 100%{transform:translate3d(290vw,0,0)}
+}
+/* The text sits above the optical board, but does not intercept any input. */
+.level-intro{
+ --level-accent:#80e9ff;
+ top:47%;width:min(630px,60vw);max-width:94vw;
+ filter:drop-shadow(0 14px 33px rgba(0,3,10,.67));
+}
+.level-intro-inner{
+ position:relative;padding:17px clamp(20px,3vw,38px) 16px;
+ border:1px solid color-mix(in srgb,var(--level-accent) 45%,transparent);
+ border-top:2px solid var(--level-accent);
+ border-radius:12px;
+ background:
+  linear-gradient(125deg,color-mix(in srgb,var(--level-accent) 11%,rgba(4,18,32,.94)),rgba(4,14,30,.96) 44%,rgba(8,25,41,.93));
+ box-shadow:0 1px 0 #dffaff20 inset,0 0 38px color-mix(in srgb,var(--level-accent) 17%,transparent);
+}
+.level-intro-meta,.level-intro-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.level-intro-index,.level-intro-pack,.level-intro-mode,.level-intro-biome{font:700 10px/1.4 'Space Grotesk',sans-serif;letter-spacing:1.5px}
+.level-intro-index{color:#d5e5ec}
+.level-intro-mode{color:var(--level-accent);text-align:right;letter-spacing:1.1px}
+.level-intro-biome{color:var(--level-accent);letter-spacing:1.1px}
+.level-intro-pack{color:#a6c8d6;text-align:right}
+#level-intro-title{
+ margin:14px 0 12px;font:700 clamp(28px,4.8vw,60px)/.98 'Rajdhani',sans-serif;
+ color:#f3fcff;letter-spacing:.4px;text-align:center;
+ text-shadow:0 2px 20px color-mix(in srgb,var(--level-accent) 35%,transparent);
+ overflow-wrap:anywhere;
+}
+.level-intro-meter{
+ width:100%;height:2px;border-radius:2px;
+ margin-top:16px;background:color-mix(in srgb,var(--level-accent) 16%,transparent);
+ overflow:hidden;
+}
+.level-intro-meter::before{
+ content:'';display:block;width:100%;height:100%;background:var(--level-accent);
+ transform-origin:left;transform:scaleX(0);
+}
+.level-intro.show{animation:stage-arrival-title 2.55s both}
+.level-intro.show .level-intro-meter::before{animation:stage-arrival-meter 2.55s ease-out both}
+@keyframes stage-arrival-title{
+ 0%{opacity:0;transform:translate(-50%,-40%) scale(.965)}
+ 13%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+ 63%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+ 100%{opacity:0;transform:translate(-50%,-58%) scale(1.018)}
+}
+@keyframes stage-arrival-meter{
+ 0%{transform:scaleX(0)}75%{transform:scaleX(1)}100%{transform:scaleX(1)}
+}
+/* The level map previews the same session-selected space region. */
+.level-atlas-card{min-height:115px}
+.level-atlas-card::before{
+ content:'';position:absolute;top:0;left:0;right:0;height:2px;
+ background:var(--level-accent,#75cce8);opacity:.95;
+}
+.level-atlas-card[data-status="locked"]::before{background:#687a90;opacity:.35}
+.level-atlas-card-biome{
+ display:block;max-width:100%;font:600 9px/1.3 'Rajdhani',sans-serif;
+ text-transform:uppercase;letter-spacing:.55px;color:var(--level-accent,#91cee3);
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:680px){
+ .level-arrival-rails{inset:70px 13px 60px}
+ .level-arrival-sweep{width:60vw}
+ .level-intro{top:49%;width:min(92vw,430px);max-width:92vw}
+ .level-intro-inner{padding:12px 17px 14px;border-radius:9px}
+ .level-intro-meta,.level-intro-footer{gap:8px}
+ .level-intro-index,.level-intro-pack,.level-intro-mode,.level-intro-biome{font-size:8px;letter-spacing:.65px}
+ #level-intro-title{margin:12px 0;font-size:clamp(28px,8vw,43px)}
+ .level-intro-meter{margin-top:13px}
+ .level-atlas-card{min-height:98px}
+ .level-atlas-card-biome{font-size:8px;letter-spacing:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .level-arrival.show,.level-arrival.show .level-arrival-sweep,
+ .level-intro.show,.level-intro.show .level-intro-meter::before{
+  animation:none!important;
+ }
+ .level-arrival.show,.level-intro.show{opacity:0!important}
+}
