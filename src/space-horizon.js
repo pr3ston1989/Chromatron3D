@@ -127,6 +127,7 @@ export function createSpaceHorizon(THREE,sky,theme,random,nebulaTexture){
  }
  for(let i=0;i<3;i++)volumes.push(createStructure(i));
  const clouds=[];
+ const cloudBases=[[50,-24,-105],[92,-31,30],[-47,-38,-91]];
  for(let i=0;i<3;i++){
   const mat=new THREE.SpriteMaterial({
    map:nebulaTexture,color:theme.nebula,transparent:true,
@@ -134,7 +135,7 @@ export function createSpaceHorizon(THREE,sky,theme,random,nebulaTexture){
    blending:THREE.AdditiveBlending,fog:false
   });
   const cloud=new THREE.Sprite(mat);cloud.name='distant-parallax-haze-'+i;
-  const at=[[50,-24,-105],[92,-31,30],[-47,-38,-91]][i];
+  const at=cloudBases[i];
   cloud.position.set(...at);
   cloud.scale.set(105+i*15,53+i*8,1);
   cloud.userData.scenicOnly=true;
@@ -160,10 +161,11 @@ export function createSpaceHorizon(THREE,sky,theme,random,nebulaTexture){
    v.body.rotation.y=v.base;
    v.phase=layoutRandom()*Math.PI*2;
   }
-  for(const cloud of clouds){
-   cloud.position.x+=(layoutRandom()-.5)*8;
-   cloud.position.z+=(layoutRandom()-.5)*8;
-  }
+  clouds.forEach((cloud,i)=>{
+   const at=cloudBases[i];
+   cloud.position.set(at[0]+(layoutRandom()-.5)*8,at[1],
+    at[2]+(layoutRandom()-.5)*8);
+  });
  }
  function update(seconds,reducedMotion=false){
   for(const v of volumes){
