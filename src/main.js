@@ -19,7 +19,8 @@ import {loadLevelBundle,convertClassicCollection} from './classic-import.js';
 import {extractChromatron1Executable} from './classic-exe.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
-import {createSpaceEnvironments} from './world-biomes.js';
+import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
+import {stageEntryMode,stagePresentation} from './stage-presentation.js';
 import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
@@ -474,6 +475,10 @@ function renderLevelAtlas(){
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
+  const biome=stagePresentation(environmentForLevel(
+   currentPackId,entry.index,environmentSessionSeed),language);
+  button.dataset.biome=biome.biome;
+  button.style.setProperty('--level-accent',biome.accent);
   let hasDraft=false;
   if(entry.unlocked&&entry.status!=='solved'){
    try{hasDraft=Boolean(localStorage.getItem(draftKey(currentPackId,entry.index)))}catch{}
@@ -488,7 +493,14 @@ function renderLevelAtlas(){
   const caption=document.createElement('span');caption.className='level-atlas-card-status';
   caption.textContent=(entry.index===levelIndex?t(language,'atlasNow')+' · ':'')+
    (hasDraft?t(language,'atlasInProgress')+' · ':'')+status;
-  button.append(n,title,caption);
+  button.append(n,title);
+  if(entry.unlocked){
+   const biomeLabel=document.createElement('span');
+   biomeLabel.className='level-atlas-card-biome';
+   biomeLabel.textContent=biome.biomeLabel;
+   button.appendChild(biomeLabel);
+  }
+  button.appendChild(caption);
   if(entry.unlocked)button.addEventListener('click',()=>{
    if(load(entry.index))closeLevelAtlas();
   });
@@ -517,6 +529,7 @@ function focusWithinLevelAtlas(e){
  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
 }
+let currentStageEntry='new';
 function syncLevelIntroText(){
  const l=levels[levelIndex];if(!l)return;
  $('level-intro-index').textContent=t(language,'atlasIntro',{
@@ -524,13 +537,30 @@ function syncLevelIntroText(){
  });
  $('level-intro-title').textContent=loc(l.title,language);
  $('level-intro-pack').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
+ if(activeEnvironment){
+  const info=stagePresentation(activeEnvironment,language,currentStageEntry);
+  $('level-intro-mode').textContent=t(language,info.statusKey);
+  $('level-intro-biome').textContent=info.biomeLabel;
+  for(const id of ['level-intro','level-arrival']){
+   const element=$(id);
+   element.dataset.biome=info.biome;
+   element.style.setProperty('--level-accent',info.accent);
+  }
+ }
+}
+function hideLevelIntro(){
+ $('level-intro').classList.remove('show');
+ $('level-arrival').classList.remove('show');
 }
 function showLevelIntro(){
  syncLevelIntroText();
  const overlay=$('level-intro');
- overlay.classList.remove('show');
- // Restart the CSS keyframes even if the user quickly chooses another level.
+ const arrival=$('level-arrival');
+ hideLevelIntro();
+ // Restart all CSS keyframes even on rapid level changes. Neither surface
+ // accepts mouse, touch, or keyboard input.
  void overlay.offsetWidth;
+ arrival.classList.add('show');
  overlay.classList.add('show');
 }
 
@@ -593,7 +623,7 @@ function switchLevelPack(nextLevels){
  load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
  return levels.length;
 }
-function load(i){
+function load(i,{silentIntro=false}={}){
  if(!Number.isInteger(i))return false;
  const requested=(i%levels.length+levels.length)%levels.length;
  if(!getLevelAtlas().entries[requested].unlocked){
@@ -606,6 +636,7 @@ function load(i){
  applyLevelEnvironment();
 
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
+ let restoredDraft=false;
  // Restore a private, validated per-level draft. Invalid or old versions
  // cannot modify the board and are discarded without losing the puzzle.
  try{
@@ -613,7 +644,7 @@ function load(i){
   const raw=localStorage.getItem(key);
   if(raw){
    const restored=restorePuzzleDraft(l,pieces,raw,movable);
-   if(restored)pieces=restored;
+   if(restored){pieces=restored;restoredDraft=true}
    else localStorage.removeItem(key);
   }
  }catch{}
@@ -629,10 +660,14 @@ function load(i){
  $('level-index').textContent=String(levelIndex+1).padStart(3,'0');
  $('total-levels').textContent=String(levels.length).padStart(3,'0');
  syncLevelControls();
+ currentStageEntry=stageEntryMode({
+  restored:restoredDraft,completed:solved.includes(levelIndex)
+ });
  update();updateLocalizedLevel();syncUndoButtons();
  store('chromatron-reborn-level-'+currentPackId,String(levelIndex));
  if(currentPackId===demoPackId)store('chromatron-reborn-level',String(levelIndex));
- showLevelIntro();
+ if(silentIntro)hideLevelIntro();
+ else showLevelIntro();
  return true;
 }
 function rebuildSelectionGuides(){
@@ -1286,7 +1321,7 @@ $('level-menu').addEventListener('click',event=>{
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 $('reset').onclick=()=>{
  try{localStorage.removeItem(draftKey(currentPackId,levelIndex))}catch{}
- load(levelIndex);
+ load(levelIndex,{silentIntro:true});
 };
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
