@@ -66,11 +66,22 @@
  </section>
  <div id="optic-tooltip" class="optic-tooltip hidden" role="status" aria-live="off"></div>
  <div id="toast" role="status" aria-live="polite"></div>
+ <div id="level-arrival" class="level-arrival" aria-hidden="true">
+  <div class="level-arrival-rails"></div>
+  <div class="level-arrival-sweep"></div>
+ </div>
  <section id="level-intro" class="level-intro" aria-hidden="true">
   <div class="level-intro-inner">
-   <span id="level-intro-index" class="level-intro-index"></span>
+   <div class="level-intro-meta">
+    <span id="level-intro-index" class="level-intro-index"></span>
+    <span id="level-intro-mode" class="level-intro-mode"></span>
+   </div>
    <h2 id="level-intro-title"></h2>
-   <span id="level-intro-pack" class="level-intro-pack"></span>
+   <div class="level-intro-footer">
+    <span id="level-intro-biome" class="level-intro-biome"></span>
+    <span id="level-intro-pack" class="level-intro-pack"></span>
+   </div>
+   <div class="level-intro-meter" aria-hidden="true"></div>
   </div>
  </section>
  <div id="level-menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="level-menu-title">

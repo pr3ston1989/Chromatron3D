@@ -88,7 +88,12 @@ test('first puzzle teaches the three interactions and can be solved using the UI
  await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
  await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','available');
  await expect(page.locator('#level-grid [data-level-index="2"]')).toBeDisabled();
+ const nextBiome=await page.locator('#level-grid [data-level-index="1"]').getAttribute('data-biome');
+ const nextBiomeLabel=await page.locator('#level-grid [data-level-index="1"] .level-atlas-card-biome').textContent();
  await page.locator('#level-grid [data-level-index="1"]').click();
+ await expect(page.locator('#level-intro-mode')).toHaveText('NOWY POZIOM');
+ await expect(page.locator('#level-intro')).toHaveAttribute('data-biome',nextBiome);
+ await expect(page.locator('#level-intro-biome')).toHaveText(nextBiomeLabel);
  await expect(page.locator('#level-index')).toHaveText('002');
  await expect(page.locator('#level-intro-title')).toContainText('PODWÓJNY ZAKRĘT');
  await expect(page.locator('#level-menu')).toBeHidden();
@@ -463,12 +468,17 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await page.setViewportSize({width:1093,height:614});
  await page.goto('/');
  await expect(page.locator('#level-intro-title')).toContainText('PIERWSZE ŚWIATŁO');
+ await expect(page.locator('#level-intro-mode')).toHaveText('NOWY POZIOM');
  await expect(page.locator('#level-intro')).toHaveClass(/show/);
+ await expect(page.locator('#level-arrival')).toHaveClass(/show/);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1094);
  expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
+ expect(await page.locator('#level-arrival').evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
  await page.locator('#levels-button').click();
  await expect(page.locator('#level-menu')).toBeVisible();
  await expect(page.locator('#level-grid button.level-atlas-card')).toHaveCount(8);
  await expect(page.locator('#level-grid [data-level-index="0"]')).toBeEnabled();
+ await expect(page.locator('#level-grid [data-level-index="0"] .level-atlas-card-biome')).not.toBeEmpty();
  await expect(page.locator('#level-grid [data-level-index="1"]')).toBeDisabled();
  await expect(page.locator('#level-atlas-summary')).toContainText('0 Z 8');
  await page.screenshot({path:'test-results/chromatron-level-map-laptop.png',animations:'disabled'});
@@ -490,6 +500,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await page.locator('#levels-close').click();
  await page.emulateMedia({reducedMotion:'reduce'});
  expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
+ expect(await page.locator('#level-arrival').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
  expect(errors).toEqual([]);
 });
 

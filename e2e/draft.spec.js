@@ -41,9 +41,12 @@ test('partial mirror layout and inventory rotation survive reload; reset clears 
  await page.reload({waitUntil:'domcontentloaded'});
  mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
  expect(mirror).toMatchObject({x:6,y:7,rot:1,inTray:false});
+ await expect(page.locator('#level-intro-mode')).toHaveText('WZNOWIENIE ZAGADKI');
  // A fresh page does not claim to have historical undo records.
  await expect(page.locator('#undo')).toBeDisabled();
  await page.locator('#reset').click();
+ await expect(page.locator('#level-intro')).not.toHaveClass(/show/);
+ await expect(page.locator('#level-arrival')).not.toHaveClass(/show/);
  mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
  expect(mirror).toMatchObject({x:7,y:9,rot:0,inTray:true});
  await expect(page.locator('#draft-status')).toBeEmpty();
@@ -70,6 +73,8 @@ test('undo removes a pending draft, redo restores it, and solving clears it',asy
  await page.locator('#levels-from-win').click();
  await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
  await expect(page.locator('#level-grid [data-level-index="0"]')).not.toHaveAttribute('data-draft','true');
+ await page.locator('#level-grid [data-level-index="0"]').click();
+ await expect(page.locator('#level-intro-mode')).toHaveText('POWTÓRKA');
 });
 
 test('reimported private puzzle resumes only its own saved optic state',async({page})=>{
