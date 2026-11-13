@@ -52,3 +52,26 @@ A level may use localized text objects in `title`, `description` and `hints`:
 The 3-stage guidance is optional, saved per puzzle, non-punitive and allows skipping at stage 3. Skipping a level does not mark it solved. Original 200 puzzle integration requires exact source verification and user-data rights review; no original layouts ship yet.
 
 **Color encoding warning:** the browser prototype uses red=1, green=2, blue=4. The original Chromatron data format documented in reverse-engineered sources uses blue=1, green=2, red=4. An original-data importer must convert the masks to preserve the intended beam and target colors.
+
+## Level atlas and progression
+
+The **level map** is available from the top-bar grid icon, the puzzle sidebar
+and the completion dialog; keyboard shortcut **M** opens it and **Escape**
+closes it. Each level is marked as solved, skipped, available, or locked, and
+completed puzzles can be replayed.
+
+A new pack begins with its first level available. Solving a level or using
+the existing paid skip mechanic reveals the next one; skipping is **not**
+a solve and gives no completion reward. Locked levels cannot be loaded using
+the map or the next-level arrow. Existing achievements are read from the
+pack-specific local browser progress, never sent to a server. For users of
+older versions, a one-time per-pack access floor preserves already visited
+demo levels when upgrading to this sequential progression.
+
+The level transition title is a short non-interactive CSS animation that
+uses the localized puzzle title and never intercepts mouse or touch input.
+With the operating system's reduced-motion preference, the title animation
+is suppressed. The permanent title in the mission panel remains visible.
+
+Imported user-owned packs get their own map and progress; no original puzzle
+content is bundled by the level-map UI.
