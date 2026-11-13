@@ -16,7 +16,7 @@ test('orbital board is rounded, floating, and has no old corner towers',()=>{
  assert.ok(names.includes('low-profile-corner-vent'));
  assert.equal(names.some(n=>/pillar|tall-corner/i.test(n)),false);
  const shoulder=stage.children.find(c=>c.name==='rounded-deck-shoulder');
- assert.ok(shoulder.geometry.type.includes('BufferGeometry')||shoulder.geometry.type==='BoxGeometry');
+ assert.equal(shoulder.geometry.type,'RoundedBoxGeometry');
  const dock=scene.children.find(c=>c.name==='distant-orbital-architecture');
  assert.ok(dock);
  const hover=dock.children.find(c=>c.name==='suspended-docking-arc');
