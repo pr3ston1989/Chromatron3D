@@ -107,3 +107,12 @@
  .level-intro.show{animation:none;opacity:0}
  .level-atlas-card{transition:none}
 }
+
+/* A saved in-progress puzzle is distinct from a completed one. */
+.draft-status{font:700 9px/1.5 'Rajdhani',sans-serif;color:#9bdfd6;
+ letter-spacing:1.05px;min-height:0;margin-top:4px}
+.draft-status:empty{display:none}
+.level-atlas-card[data-draft="true"]:not([data-status="solved"]){
+ border-color:#5c9cba;background:linear-gradient(150deg,#194355,#112d42);
+}
+.level-atlas-card[data-draft="true"] .level-atlas-card-status{color:#9bdfd6}

@@ -22,6 +22,7 @@ import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments} from './world-biomes.js';
 import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {buildLevelAtlas} from './level-atlas.js';
+import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {opticIcon} from './optic-icons.js';
 import {opticDescription,opticExample} from './optic-help.js';
@@ -473,14 +474,20 @@ function renderLevelAtlas(){
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
-  button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status:status));
+  let hasDraft=false;
+  if(entry.unlocked&&entry.status!=='solved'){
+   try{hasDraft=Boolean(localStorage.getItem(draftKey(currentPackId,entry.index)))}catch{}
+  }
+  if(hasDraft)button.dataset.draft='true';
+  button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status+
+   (hasDraft?' · '+t(language,'atlasInProgress'):''):status));
   button.title=entry.unlocked?name:t(language,'atlasLockedHint');
   const n=document.createElement('span');n.className='level-atlas-card-number';n.textContent=number;
   const title=document.createElement('strong');title.className='level-atlas-card-title';
   title.textContent=entry.unlocked?name:'···';
   const caption=document.createElement('span');caption.className='level-atlas-card-status';
-  caption.textContent=entry.index===levelIndex?
-   t(language,'atlasNow')+' · '+status:status;
+  caption.textContent=(entry.index===levelIndex?t(language,'atlasNow')+' · ':'')+
+   (hasDraft?t(language,'atlasInProgress')+' · ':'')+status;
   button.append(n,title,caption);
   if(entry.unlocked)button.addEventListener('click',()=>{
    if(load(entry.index))closeLevelAtlas();
@@ -526,6 +533,24 @@ function showLevelIntro(){
  void overlay.offsetWidth;
  overlay.classList.add('show');
 }
+
+function syncDraftIndicator(){
+ const el=$('draft-status');
+ let hasDraft=false;
+ try{hasDraft=Boolean(localStorage.getItem(draftKey(currentPackId,levelIndex)))}catch{}
+ el.textContent=hasDraft&&!won?t(language,'draftSaved'):'';
+}
+function persistDraft(){
+ if(!pieces.length)return;
+ const value=won?null:encodePuzzleDraft(levels[levelIndex],pieces,movable);
+ try{
+  const key=draftKey(currentPackId,levelIndex);
+  if(value)localStorage.setItem(key,value);
+  else localStorage.removeItem(key);
+ }catch{}
+ syncDraftIndicator();
+ if(!$('level-menu').classList.contains('hidden'))renderLevelAtlas();
+}
 function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
@@ -534,7 +559,7 @@ function updateLocalizedLevel(){
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
- syncLevelIntroText();renderLevelAtlas();
+ syncLevelIntroText();renderLevelAtlas();syncDraftIndicator();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
@@ -579,7 +604,19 @@ function load(i){
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  levelIndex=requested;
  applyLevelEnvironment();
+
  const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>({id:++nextId,type,x,y,rot,color,inTray:Boolean(l.startMovablesInTray&&movable.has(type))}));
+ // Restore a private, validated per-level draft. Invalid or old versions
+ // cannot modify the board and are discarded without losing the puzzle.
+ try{
+  const key=draftKey(currentPackId,levelIndex);
+  const raw=localStorage.getItem(key);
+  if(raw){
+   const restored=restorePuzzleDraft(l,pieces,raw,movable);
+   if(restored)pieces=restored;
+   else localStorage.removeItem(key);
+  }
+ }catch{}
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  let legacyHints=0;
@@ -632,6 +669,7 @@ function update(){
  selectionReticle.setPiece(selected);
  rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
  placementPreview.visible=false;
+ persistDraft();
 }
 function renderInventory(){
  const el=$('inventory');el.replaceChildren();
@@ -871,6 +909,7 @@ function rotate(dir){
   // Preview the new angle immediately without rebuilding board meshes.
   ghostHead.rotation.y=-selected.rot*Math.PI/4;
   syncTransformTools();
+  persistDraft();
   beep(540,.045);
   return;
  }
@@ -882,6 +921,7 @@ function rotate(dir){
  syncTargetGlow();
  rebuildSelectionGuides();
  renderAnalyzer();updateCoach();syncTransformTools();
+ persistDraft();
  beep(540,.05);
 }
 function move(x,y,fromDrag=false){
@@ -1244,7 +1284,10 @@ $('level-menu').addEventListener('click',event=>{
  if(event.target===$('level-menu'))closeLevelAtlas();
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
-$('reset').onclick=()=>load(levelIndex);
+$('reset').onclick=()=>{
+ try{localStorage.removeItem(draftKey(currentPackId,levelIndex))}catch{}
+ load(levelIndex);
+};
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
 $('turn-left').onclick=()=>rotate(-1);

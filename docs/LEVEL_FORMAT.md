@@ -75,3 +75,24 @@ is suppressed. The permanent title in the mission panel remains visible.
 
 Imported user-owned packs get their own map and progress; no original puzzle
 content is bundled by the level-map UI.
+
+## Resuming an unfinished puzzle
+
+The app autosaves **movable optical hardware only** (cell positions, eight-way
+rotation and whether an optic is still in the tray). The draft is kept in the
+same browser's localStorage under a versioned key containing the pack
+fingerprint and level index. It neither uploads a puzzle nor stores a private
+imported pack's full board definition. Close/reopen the page to resume a demo
+puzzle; reimport the same user-owned level file to resume that pack.
+
+- Drafts are validated before being applied: wrong versions, out-of-range
+  coordinates, invalid rotations, count mismatches and overlapping fixed or
+  movable optics all cause a safe fallback to the untouched starting board.
+- The level atlas distinguishes **in-progress** from solved, skipped and
+  untouched levels. Resuming is automatic when selecting that level.
+- **Reset** discards only the current puzzle's draft; **undo/redo** update it.
+  Completing a puzzle clears its draft while preserving the already earned
+  completion and hint-credit rewards.
+- Moves cannot modify the original immutable laser, target or obstacle data.
+  The user's uploaded puzzle files stay on their machine and must still be
+  reimported if the browser session is closed.
