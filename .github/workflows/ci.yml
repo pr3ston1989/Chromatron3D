@@ -29,7 +29,21 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Browser UI and screenshots
-        run: npm run test:e2e
+        run: |
+          set -o pipefail
+          npm run test:e2e 2>&1 | tee e2e.log
+      - name: Report browser test failure
+        if: failure()
+        run: |
+          if [ -f e2e.log ]; then
+            # Workflow logs are not always reachable from external tooling;
+            # surface the first failing Playwright block as check annotations.
+            block=$(awk '/^  [0-9]+\) /{flag=1} flag{print}' e2e.log | head -c 3200)
+            if [ -z "$block" ]; then block=$(tail -c 3200 e2e.log); fi
+            while IFS= read -r line; do
+              echo "::error title=Playwright failure::${line}"
+            done <<< "$block"
+          fi
       - name: Publish screenshots and browser report
         if: always()
         uses: actions/upload-artifact@v4

@@ -10,7 +10,8 @@
     "test": "node --test tests/*.test.js",
     "check": "npm run test && npm run build",
     "test:browser": "playwright test",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "generate:expert": "node scripts/generate-expert-levels.mjs"
   },
   "dependencies": {
     "three": "^0.180.0"

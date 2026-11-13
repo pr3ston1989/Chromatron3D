@@ -40,7 +40,7 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 
 ## Current status: prototype
 
-**The 200 original puzzles are not included yet.** Eight independently authored demo layouts are supplied to exercise the renderer, puzzles and optics. The three newest cover wavelength shifting, RGB dispersion and beam splitting. The optical simulator now supports angle-gated mirrors, benders, filters, prisms, dopplers, splitters, conduits and teleporters; entanglement and exact original fidelity still need verification and implementation.
+**The 200 original puzzles are not included yet.** Eight independently authored demo layouts are supplied to exercise the renderer, puzzles and optics. The three newest cover wavelength shifting, RGB dispersion and beam splitting. Those demonstrations are joined by a separate **50-level expert campaign** (five chapters: reflections, bends, splits, spectrum, entanglement) with route-verified solutions, bilingual hints and its own progress slot in the level map. The optical simulator supports angle-gated mirrors, benders, filters, prisms, Dopplers, splitters, conduits, teleporters and tanglers; exact original-game data fidelity remains a separate task. See [expert campaign](docs/EXPERT_CAMPAIGN.md).
 
 The Chromatron series (4 × 50 original levels) was created by Sean Barrett / Silver Spaceship Software. Official games: https://www.silverspaceship.com/chromatron/
 
@@ -49,7 +49,7 @@ The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for
 ## Quality assurance
 
 Run `npm run check` to execute simulation/localization/scene-lifecycle tests and build the production bundle.
-All eight independently authored demo levels have automated **golden solution tests** that confirm their authored third-tier hints can lead to a win.
+All eight demo levels have automated **golden solution tests**, and all 50 expert levels are checked by `verifyPuzzleSolution()` plus campaign-wide structural, hint and diversity tests.
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
@@ -91,9 +91,10 @@ No texture downloads or user-paid purchases are required.
 - **Adaptive optical light budgets:** the Performance, Balanced and Cinematic
   presets now scale real dynamic point lights as well as pixel ratio, bloom
   and genuine planar mirror reflections.
-- **More puzzles:** eight original demonstration levels, including Doppler
-  wavelength shifting, a three-channel prism and two-way splitting. They are
-  NOT reproduced from the original Chromatron series.
+- **More puzzles:** eight original demonstration levels plus a 50-level expert
+  campaign, including Doppler wavelength shifting, three-channel prisms, twin
+  emitters, splitters, teleporters and entangled tanglers. They are NOT
+  reproduced from the original Chromatron series.
 
 ## Board focus and smoother camera
 

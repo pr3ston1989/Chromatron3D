@@ -23,7 +23,7 @@
  </header>
  <aside class="mission"><button id="mission-drawer" class="drawer-handle mission-handle" type="button" aria-expanded="false" aria-label="Rozwiń panel zagadki">☰ <span>INFO</span></button>
   <span class="eyebrow"><span data-i18n="experiment">EKSPERYMENT</span> <span id="level-index">001</span> / <span id="total-levels">008</span> · <span id="level-pack-label" data-i18n="prototype">PROTOTYP</span></span>
-  <div class="rule"></div><div class="tag" data-i18n="chapter">ROZDZIAŁ 01 // PODSTAWY</div>
+  <div class="rule"></div><div id="chapter" class="tag" data-i18n="chapter">ROZDZIAŁ 01 // PODSTAWY</div>
   <h1 id="level-title">FIRST LIGHT</h1><p id="level-desc"></p>
   <div class="mission-progress"><span data-i18n="resonators">AKTYWNE REZONATORY</span><strong id="counter">0 / 1</strong></div>
   <div class="progress-track"><div id="progress"></div></div>
@@ -97,6 +97,10 @@
     <div><span class="eyebrow" data-i18n="atlasEyebrow">CHROMATRON / MAPA MISJI</span>
      <h2 id="level-menu-title" data-i18n="atlasTitle">WYBÓR POZIOMU</h2></div>
     <button id="levels-close" class="level-atlas-close" type="button" data-i18n-aria="atlasClose" aria-label="Zamknij mapę">×</button>
+   </div>
+   <div class="campaign-switch" role="tablist" data-i18n-aria="campaignTabsAria" aria-label="Kampanie">
+    <button class="campaign-tab" type="button" role="tab" data-campaign="demo" aria-selected="true" data-i18n="campaignDemo">PROTOTYP · 8</button>
+    <button class="campaign-tab" type="button" role="tab" data-campaign="expert" aria-selected="false" data-i18n="campaignExpert">EKSPERT · 50</button>
    </div>
    <p id="level-atlas-summary" class="level-atlas-summary" aria-live="polite"></p>
    <div class="level-atlas-legend">

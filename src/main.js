@@ -8,6 +8,7 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
+import {EXPERT_LEVELS,EXPERT_CHAPTERS} from './expert-levels.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
@@ -183,11 +184,15 @@ const guideGroup=new THREE.Group();world.add(guideGroup);
 const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T),T);
 const wheelRotation=createWheelRotation();
 const hitObjects=[];
-let levels=validateLevels(PROTOTYPE_LEVELS),levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
+const demoLevels=validateLevels(PROTOTYPE_LEVELS);
+const expertLevels=validateLevels(EXPERT_LEVELS);
+let levels=demoLevels,levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let wallet=normalizeWallet(null);
 let currentPackId=packFingerprint(levels);
 const demoPackId=currentPackId;
+const expertPackId=packFingerprint(expertLevels);
+let campaignPreference='demo';
 const verifiedSolutions=new Map();
 let hintWorker=null,solvingId=null,solverStatus='';
 let coachDismissed=false,tutorialPlaced=false;
@@ -198,6 +203,7 @@ try{
   localStorage.getItem('chromatron-reborn-level')??0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
+ campaignPreference=localStorage.getItem('chromatron-reborn-campaign')==='expert'?'expert':'demo';
  coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
@@ -479,6 +485,7 @@ function syncLevelControls(){
 let levelAtlasOpener=null;
 function renderLevelAtlas(){
  if($('level-menu').classList.contains('hidden'))return;
+ syncCampaignTabs();
  const atlas=getLevelAtlas(),grid=$('level-grid');
  $('level-atlas-summary').textContent=t(language,'atlasSummary',{
   done:atlas.solvedCount,total:atlas.total,unlocked:atlas.unlockedCount
@@ -557,7 +564,7 @@ function syncLevelIntroText(){
   number:String(levelIndex+1).padStart(3,'0'),total:String(levels.length).padStart(3,'0')
  });
  $('level-intro-title').textContent=loc(l.title,language);
- $('level-intro-pack').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
+ $('level-intro-pack').textContent=t(language,packLabelKey());
  if(activeEnvironment){
   const info=stagePresentation(activeEnvironment,language,currentStageEntry);
   $('level-intro-mode').textContent=t(language,info.statusKey);
@@ -602,15 +609,49 @@ function persistDraft(){
  syncDraftIndicator();
  if(!$('level-menu').classList.contains('hidden'))renderLevelAtlas();
 }
+function packLabelKey(){
+ return currentPackId===demoPackId?'prototype':currentPackId===expertPackId?'expertPack':'classicPack';
+}
+function currentCampaign(){
+ return currentPackId===expertPackId?'expert':currentPackId===demoPackId?'demo':'imported';
+}
+function syncCampaignTabs(){
+ const campaign=currentCampaign();
+ for(const tab of document.querySelectorAll('.campaign-tab')){
+  const active=tab.dataset.campaign===campaign;
+  tab.classList.toggle('active',active);
+  tab.setAttribute('aria-selected',String(active));
+ }
+}
+function switchCampaign(next){
+ if(next!=='expert'&&next!=='demo')return currentCampaign();
+ const targetId=next==='expert'?expertPackId:demoPackId;
+ if(currentPackId!==targetId)switchLevelPack(next==='expert'?expertLevels:demoLevels);
+ campaignPreference=next;
+ store('chromatron-reborn-campaign',next);
+ syncCampaignTabs();
+ updateLocalizedLevel();
+ return currentCampaign();
+}
 function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
  $('level-desc').textContent=loc(l.description,language);
- $('level-pack-label').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
+ const packLabel=$('level-pack-label');
+ packLabel.removeAttribute('data-i18n');
+ packLabel.textContent=t(language,packLabelKey());
+ const chapter=$('chapter');
+ if(l.chapter){
+  chapter.removeAttribute('data-i18n');
+  chapter.textContent=loc(l.chapter,language);
+ }else{
+  chapter.setAttribute('data-i18n','chapter');
+  chapter.textContent=t(language,'chapter');
+ }
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
- syncLevelIntroText();renderLevelAtlas();syncDraftIndicator();
+ syncLevelIntroText();renderLevelAtlas();syncDraftIndicator();syncCampaignTabs();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
@@ -735,7 +776,7 @@ function renderInventory(){
   const movableType=movable.has(type);
   const item=document.createElement(movableType?'button':'div');
   item.className='inventory-item'+(movableType?' selectable':'');
-  if(levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
+  if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
   item.type=movableType?'button':undefined;
   item.dataset.opticType=type;
   item.title=t(language,'type'+type[0].toUpperCase()+type.slice(1))+' — '+opticDescription(type,language);
@@ -857,7 +898,7 @@ function renderAnalyzer(){
 }
 function updateCoach(){
  const coach=$('coach');
- const show=levelIndex===0&&!coachDismissed&&!currentResult?.won&&Boolean(levels[0]?.startMovablesInTray);
+ const show=currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!currentResult?.won&&Boolean(levels[0]?.startMovablesInTray);
  coach.classList.toggle('hidden',!show);
  if(!show)return;
  // A single clear next action, rather than a wall of controls.
@@ -1341,6 +1382,9 @@ $('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
 $('levels-open').onclick=()=>openLevelAtlas($('levels-open'));
 $('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
 $('levels-close').onclick=closeLevelAtlas;
+for(const tab of document.querySelectorAll('.campaign-tab')){
+ tab.addEventListener('click',()=>switchCampaign(tab.dataset.campaign));
+}
 $('level-menu').addEventListener('click',event=>{
  if(event.target===$('level-menu'))closeLevelAtlas();
 });
@@ -1586,7 +1630,9 @@ setLanguage(language);
 // Apply the persisted GPU preset before loading the first puzzle or any GLB.
 // Previously only interactive quality changes updated the environment.
 applyGraphicsQuality();
-load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
+if(campaignPreference==='expert')switchLevelPack(expertLevels);
+else load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
+syncCampaignTabs();
 syncWalletUI();
 requestAnimationFrame(animate);
 // For QA / external validation, expose read-only state and import API.
@@ -1604,5 +1650,7 @@ window.chromatron={
  loadLevels(json){const next=loadLevelBundle(json);const count=switchLevelPack(next);toast(t(language,'imported',{count}));return count},
  getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),
  getLevelAtlas:()=>getLevelAtlas(),
+ getCampaign:()=>currentCampaign(),switchCampaign,
+ getCampaignInfo:()=>({campaign:currentCampaign(),total:levels.length,chapters:EXPERT_CHAPTERS}),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
