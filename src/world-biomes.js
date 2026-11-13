@@ -1,4 +1,5 @@
 import {createDistantTraffic} from './distant-traffic.js';
+import {createSpaceHorizon} from './space-horizon.js';
 
 /**
  * Lightweight procedural environments for each puzzle. No downloaded skyboxes,
@@ -278,10 +279,11 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    sprite.scale.set(64+i*20,37+i*11,1);
    sky.add(sprite);nebulae.push(sprite);
   }
+  const horizon=createSpaceHorizon(THREE,sky,theme,random,nebulaTexture);
   const patches=addSurfacePatches(THREE,foliage,theme.decor,random);
   const habitat=addRimHabitat(THREE,foliage,theme.decor,random);
   sky.visible=false;foliage.visible=false;
-  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat};
+  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat,horizon};
  });
  let active=null,quality='balanced',sessionSeed=0;
  function setQuality(profile='balanced'){
@@ -296,6 +298,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    if(leaves)leaves.count=perf?0:quality==='cinematic'?28:12;
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
    group.traffic.setQuality(quality);
+   group.horizon.setQuality(quality);
   }
  }
  function setLevel(packId,index,{seed=0}={}){
@@ -310,6 +313,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   // level and the session. Composition is repeatable for the same seed.
   const variant=rngFrom(hashText(packId+':'+index+':'+seed+':sky-layout'));
   active.sky.rotation.y=(variant()-.5)*1.55;
+  active.horizon.setLayout(variant,active.sky.rotation.y);
   // Ninety-degree turns preserve a safe perimeter around the square board.
   active.foliage.rotation.y=Math.floor(variant()*4)*Math.PI/2;
   const planetPosition=active.planet.planet.position;
@@ -333,20 +337,24 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   return theme;
  }
  function update(seconds,reducedMotion=false){
-  if(!active||reducedMotion)return;
-  // Extremely slow motion; the starfield remains steady enough for aiming.
-  active.stars.rotation.y=Math.sin(seconds*.018)*.014;
-  active.traffic.update(seconds);
-  active.nebulae.forEach((cloud,i)=>{
-   cloud.material.opacity=(.15+i*.055)*(1+.11*Math.sin(seconds*.19+i*2));
-  });
+  if(!active)return;
+  if(!reducedMotion){
+   // Extremely slow motion; the starfield remains steady enough for aiming.
+   active.stars.rotation.y=Math.sin(seconds*.018)*.014;
+   active.traffic.update(seconds);
+   active.nebulae.forEach((cloud,i)=>{
+    cloud.material.opacity=(.15+i*.055)*(1+.11*Math.sin(seconds*.19+i*2));
+   });
+  }
+  active.horizon.update(seconds,reducedMotion);
  }
  function getStats(){
   return {biome:active?.theme.id||null,stars:active?.stars.geometry.drawRange.count||0,
    foliage:active?.patches.mesh.count||0,shrubs:active?.patches.stems.children[0]?.count||0,
    nebulae:active?.nebulae.filter(s=>s.visible).length||0,
    traffic:active?.traffic.getVisibleCount()||0,
-   rimHabitat:active?.habitat.count||0};
+   rimHabitat:active?.habitat.count||0,
+   horizon:active?.horizon.getStats()||null};
  }
  setQuality('balanced');
  return {setLevel,setQuality,update,getStats};
