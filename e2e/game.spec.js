@@ -11,7 +11,7 @@ test.beforeEach(async({page},testInfo)=>{
    // viewport sizes, hit testing, layouts or underlying game logic.
    // The dedicated reflection/graphics-quality test keeps native DPR.
    Object.defineProperty(window,'devicePixelRatio',{
-    configurable:true,get:()=>.7
+    configurable:true,get:()=>.55
    });
    if(!localStorage.getItem('chromatron-graphics-quality'))
     localStorage.setItem('chromatron-graphics-quality','performance');
@@ -102,6 +102,7 @@ test('first puzzle teaches the three interactions and can be solved using the UI
 
 
 test('select, place, rotate both ways and never teleport a placed mirror',async({page})=>{
+ test.setTimeout(process.env.CI?120000:75000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
@@ -310,11 +311,13 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
  await page.locator('#graphics-quality').selectOption('performance');
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.planarReflections).toBe(0);
+ expect(stats.bloomEnabled).toBe(false);
  expect(stats.pixelRatio).toBeLessThanOrEqual(1);
  await page.locator('#graphics-quality').selectOption('cinematic');
  stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.planarReflections).toBe(1);
  expect(stats.effectiveQuality).toBe('cinematic');
+ expect(stats.bloomEnabled).toBe(true);
  expect(stats.pixelRatio).toBeGreaterThanOrEqual(1);
  await page.screenshot({path:'test-results/chromatron-true-mirror.png',animations:'disabled'});
  await page.reload({waitUntil:'domcontentloaded'});

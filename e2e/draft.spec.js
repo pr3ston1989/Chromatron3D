@@ -6,7 +6,7 @@ test.beforeEach(async({page})=>{
  if(process.env.CI){
   await page.addInitScript(()=>{
    Object.defineProperty(window,'devicePixelRatio',{
-    configurable:true,get:()=>.7
+    configurable:true,get:()=>.55
    });
    if(!localStorage.getItem('chromatron-graphics-quality'))
     localStorage.setItem('chromatron-graphics-quality','performance');
@@ -16,7 +16,7 @@ test.beforeEach(async({page})=>{
 
 test('partial mirror layout and inventory rotation survive reload; reset clears it',async({page})=>{
  // Three full Three.js reloads cost much more under software WebGL on CI.
- test.setTimeout(process.env.CI?150000:75000);
+ test.setTimeout(process.env.CI?240000:75000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.goto('/',{waitUntil:'domcontentloaded'});
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
@@ -78,6 +78,7 @@ test('undo removes a pending draft, redo restores it, and solving clears it',asy
 });
 
 test('reimported private puzzle resumes only its own saved optic state',async({page})=>{
+ test.setTimeout(process.env.CI?150000:75000);
  const custom=[{
   title:{pl:'PRYWATNA PRÓBA',en:'PRIVATE TEST'},
   description:{pl:'Próba lokalna',en:'Local test'},

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {QUALITY_MODES,normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from '../src/visual-quality.js';
+import {QUALITY_MODES,normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile,shouldUseBloom} from '../src/visual-quality.js';
 test('quality profiles are finite and ordered by GPU cost',()=>{
  assert.deepEqual(QUALITY_MODES,['auto','performance','balanced','cinematic']);
  assert.equal(normalizeQuality('wrong'),'auto');
@@ -24,4 +24,12 @@ test('automatic downgrade and recovery need sustained evidence',()=>{
  assert.equal(nextAutoProfile('balanced',3,0),'performance');
  assert.equal(nextAutoProfile('performance',0,11),'performance');
  assert.equal(nextAutoProfile('performance',0,12),'balanced');
+});
+
+test('performance mode skips expensive bloom while retaining normal higher-quality glow',()=>{
+ assert.equal(shouldUseBloom('performance'),false);
+ assert.equal(shouldUseBloom('auto','performance'),false);
+ assert.equal(shouldUseBloom('balanced'),true);
+ assert.equal(shouldUseBloom('cinematic'),true);
+ assert.equal(shouldUseBloom('auto','balanced'),true);
 });

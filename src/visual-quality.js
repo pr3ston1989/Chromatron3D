@@ -9,6 +9,10 @@ export const QUALITY_PROFILES=Object.freeze({
  cinematic:Object.freeze({pixelRatio:1.8,bloomStrength:.57,reflectorCount:2,reflectionSize:320,maxBeamLights:4,maxOpticLights:9,antialias:'smaa'})
 });
 export const normalizeQuality=value=>QUALITY_MODES.includes(value)?value:'auto';
+// An entirely CPU-rendered laptop cannot afford the multi-pass Gaussian bloom.
+// The laser itself remains luminous thanks to its additive core and sprites.
+export const shouldUseBloom=(mode,autoLevel='balanced')=>
+ (mode==='auto'?autoLevel:mode)!=='performance';
 export const profileFor=(value,autoLevel='balanced')=>QUALITY_PROFILES[value==='auto'?autoLevel:value]||QUALITY_PROFILES.balanced;
 /** Prefer the actively inspected mirror; otherwise prioritize whichever is on board. */
 export function reflectionCandidates(pieces,selected,limit){
