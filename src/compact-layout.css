@@ -241,3 +241,31 @@
  .hint-modal{max-height:90dvh;overflow-y:auto}
  .classic-import .ui-button{font-size:10px}
 }
+
+
+/* Field guide: mechanics are available on mouse hover, on keyboard focus
+ * and as a selected-optic note. Do not hide useful explanations on laptops. */
+.optic-tooltip{max-width:min(350px,calc(100vw - 18px));padding:11px 13px;
+ border-radius:9px;line-height:1.46;font-size:12px;font-weight:500;
+ white-space:pre-line;overflow-wrap:anywhere;
+ border-color:rgba(108,205,204,.65);
+ box-shadow:0 10px 35px rgba(0,0,0,.48);
+ pointer-events:none}
+#inventory .inventory-item:focus-visible{outline:2px solid #94e8c7;outline-offset:-2px}
+#inventory .inventory-item[aria-disabled="true"]{opacity:.58;cursor:help}
+#inventory .inventory-item[aria-disabled="true"]:focus-visible{opacity:1}
+.optic-info{color:#b5d8e0;border:1px solid rgba(83,142,150,.48);
+ background:rgba(10,27,36,.82);border-radius:8px;
+ padding:9px 10px;margin:6px 0 10px;
+ font:500 11px/1.45 'Space Grotesk',sans-serif;
+ overflow-wrap:break-word;max-height:108px;overflow-y:auto;
+ scrollbar-width:thin}
+.optic-info.hidden{display:none}
+@media(min-width:681px) and (max-height:860px){
+ .optic-info{font-size:10px;line-height:1.36;padding:6px 8px;max-height:64px}
+}
+@media(max-width:680px){
+ .optic-info{font-size:11px;max-height:60px}
+ .optic-tooltip{display:none!important}
+}
+/* Keep decor from capturing mouse input or moving the logical board. */
