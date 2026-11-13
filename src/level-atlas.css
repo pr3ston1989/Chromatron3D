@@ -81,6 +81,9 @@
  100%{opacity:0;transform:translate(-50%,-63%) scale(1.035)}
 }
 @media(max-width:680px){
+ /* Mobile already has an easier full-width atlas button inside the puzzle
+    panel. Keep the existing 6 header tools from overflowing narrow phones. */
+ .header-right .level-atlas-toggle{display:none}
  .level-atlas-open{margin-top:6px;min-height:29px;padding:5px 8px;font-size:10px}
  .level-atlas-modal{padding:15px;gap:10px;max-height:calc(100dvh - 24px)}
  .level-atlas-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:57dvh}
