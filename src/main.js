@@ -32,6 +32,7 @@ import {applyOpticFinish} from './optic-textures.js';
 import {detailEmitter,detailResonator} from './optical-assets.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
+import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
 import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
 import {createOpticContactShadows} from './optic-contact-shadows.js';
@@ -312,8 +313,8 @@ function rebuildPieces(){
     const target=g.position.clone(),distance=old.position.distanceTo(target);
     if(distance>.002){
      g.position.copy(old.position);
-     opticTweens.push({object:g,kind:'move',from:old.position,to:target,
-       start:frameTime,duration:travelDuration(distance/T)});
+     enqueueOpticTween(opticTweens,{object:g,kind:'move',from:old.position,to:target,
+       start:frameTime,duration:travelDuration(distance/T)},setTimeout);
     }
     const rotHead=g.children.find(c=>c.userData.motionHead);
     if(rotHead&&Number.isFinite(old.rotation)){
@@ -322,14 +323,14 @@ function rebuildPieces(){
       rotHead.rotation.y=old.rotation;
       const footprint=g.children.find(c=>c.userData.motionFootprint);
       if(footprint)footprint.rotation.y=old.rotation;
-      opticTweens.push({object:rotHead,footprint,kind:'rotate',from:old.rotation,
-        to:old.rotation+delta,start:frameTime,duration:225});
+      enqueueOpticTween(opticTweens,{object:rotHead,footprint,kind:'rotate',from:old.rotation,
+        to:old.rotation+delta,start:frameTime,duration:225},setTimeout);
      }
     }
    }else{
     g.position.y-=.18;g.scale.setScalar(.62);
-    opticTweens.push({object:g,kind:'appear',start:frameTime,duration:245,
-      toY:g.position.y+.18});
+    enqueueOpticTween(opticTweens,{object:g,kind:'appear',start:frameTime,duration:245,
+      toY:g.position.y+.18},setTimeout);
    }
   }
  }
@@ -715,8 +716,8 @@ function animateRotationTo(piece,previousRotation,dir){
  // Longer bursts are eased in one continuous motion, without destroying the
  // mirror mesh, allocating GPU reflector targets or restarting from a snapped angle.
  const degrees=Math.abs(newTarget-currentAngle)/(Math.PI/4);
- opticTweens.push({object:head,footprint,kind:'rotate',from:currentAngle,
-  to:newTarget,start:performance.now(),duration:Math.min(490,155+degrees*68)});
+ enqueueOpticTween(opticTweens,{object:head,footprint,kind:'rotate',from:currentAngle,
+  to:newTarget,start:performance.now(),duration:Math.min(490,155+degrees*68)},setTimeout);
 }
 function syncTargetGlow(){
  for(const group of componentGroup.children){
@@ -1230,14 +1231,7 @@ function animate(time){
   const a=opticTweens[i];
   const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
   const e=easeOutCubic(fraction);
-  if(a.kind==='move')a.object.position.copy(a.from).lerp(a.to,e);
-  else if(a.kind==='rotate'){
-   a.object.rotation.y=a.from+(a.to-a.from)*e;
-   if(a.footprint)a.footprint.rotation.y=a.object.rotation.y;
-  }else if(a.kind==='appear'){
-   a.object.position.y=a.toY-.18*(1-e);
-   a.object.scale.setScalar(.62+.38*e);
-  }
+  applyOpticTween(a,e);
   if(fraction===1)opticTweens.splice(i,1);
  }
  if(cameraTween){
