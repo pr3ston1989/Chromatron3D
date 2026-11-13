@@ -164,3 +164,39 @@ A quick reset does not replay the intro: it only resets puzzle state. Players
 who request reduced motion see no arrival animation, while the standard mission
 panel continues to display the permanent title. The card and opening overlay
 follow the currently selected language, and do not store further player data.
+
+## Midground set dressing: phase 1 of the living-scene plan
+
+The four existing hero monuments are now accompanied by **eight additional,
+distinct 3D assets** baked into real GLB files. The first pair are industrial
+maintenance modules, the second botanical facilities, the third frozen research
+equipment, and the last crystalline reactor machinery:
+
+| Biome | Distinct midsize GLB assets |
+|---|---|
+| Orbital shipyard | `orbital-dock.glb` (cargo dock and stacked containers), `orbital-comms.glb` (lattice signal mast and antennas) |
+| Verdant station | `verdant-greenhouse.glb` (reclaimed glasshouse with foliage), `verdant-root-tower.glb` (root-wrapped memory pillar) |
+| Polar observatory | `polar-bridge.glb` (frozen relay bridge), `polar-geolab.glb` (arctic research cabin and radar) |
+| Crimson nebula | `nebula-resonators.glb` (two harmonically coupled spires), `nebula-wreckage.glb` (levitating broken hull and crystal fragments) |
+
+All are authored offline and generated from
+`scripts/generate-midground-models.mjs`. Run
+`node scripts/generate-midground-models.mjs` to rebuild exact binary assets.
+Like the hero assets, the modules contain baked normal vectors and several
+distinct PBR materials. The browser fetches only the current biome's two GLBs;
+both remain cached when switching levels. Up to ten scene sockets are arranged
+by `src/scenic-composition.js` in deterministic, non-random-looking groups
+between hero monuments, far outside the 15×15 board.
+
+Performance / Balanced / Cinematic show 3 / 6 / 10 midsize modules respectively
+on top of the existing 2 / 3 / 4 hero sculptures. The layout changes by
+pack, level and environment seed, while mesh buffers and materials are shared.
+When one GLB is unavailable, the other compatible biome asset temporarily
+fills those sockets; raycasts, puzzles and solver are never affected.
+
+The full staged plan, including larger distant structures, layered nebula
+depth, animated ambient world activity and screenshot review criteria, is
+recorded in [LIVING_SCENERY_PLAN.md](LIVING_SCENERY_PLAN.md). Stage 1 ships
+the new asset vocabulary and compositions. The far-field and animation
+chapters require separate testing and visual review: their completion should
+not be inferred from the midground PR.
