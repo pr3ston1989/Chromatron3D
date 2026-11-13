@@ -429,6 +429,87 @@ function updateStatus(){
  el.textContent=solved.includes(levelIndex)?t(language,'statusSolved'):skipped.includes(levelIndex)?t(language,'statusSkipped'):'';
  el.classList.toggle('solved',solved.includes(levelIndex));
 }
+function getLevelAtlas(){
+ return buildLevelAtlas(levels.length,solved,skipped,accessFloor);
+}
+function syncLevelControls(){
+ const atlas=getLevelAtlas();
+ $('prev').disabled=levelIndex===0;
+ $('next').disabled=levelIndex>=levels.length-1||!atlas.entries[levelIndex+1]?.unlocked;
+}
+let levelAtlasOpener=null;
+function renderLevelAtlas(){
+ if($('level-menu').classList.contains('hidden'))return;
+ const atlas=getLevelAtlas(),grid=$('level-grid');
+ $('level-atlas-summary').textContent=t(language,'atlasSummary',{
+  done:atlas.solvedCount,total:atlas.total,unlocked:atlas.unlockedCount
+ });
+ grid.replaceChildren();
+ const fragment=document.createDocumentFragment();
+ for(const entry of atlas.entries){
+  const name=loc(levels[entry.index].title,language);
+  const button=document.createElement('button');
+  button.type='button';button.className='level-atlas-card';
+  button.dataset.levelIndex=String(entry.index);
+  button.dataset.status=entry.status;
+  button.disabled=!entry.unlocked;
+  if(entry.index===levelIndex)button.setAttribute('aria-current','step');
+  const number=String(entry.index+1).padStart(3,'0');
+  const label=t(language,'atlasLevel',{number});
+  const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
+  button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status:status));
+  button.title=entry.unlocked?name:t(language,'atlasLockedHint');
+  const n=document.createElement('span');n.className='level-atlas-card-number';n.textContent=number;
+  const title=document.createElement('strong');title.className='level-atlas-card-title';
+  title.textContent=entry.unlocked?name:'···';
+  const caption=document.createElement('span');caption.className='level-atlas-card-status';
+  caption.textContent=entry.index===levelIndex?
+   t(language,'atlasNow')+' · '+status:status;
+  button.append(n,title,caption);
+  if(entry.unlocked)button.addEventListener('click',()=>{
+   if(load(entry.index))closeLevelAtlas();
+  });
+  fragment.appendChild(button);
+ }
+ grid.append(fragment);
+}
+function openLevelAtlas(opener=document.activeElement){
+ levelAtlasOpener=opener;
+ $('level-menu').classList.remove('hidden');
+ renderLevelAtlas();
+ const current=$('level-grid').querySelector('[aria-current="step"]');
+ (current&&!current.disabled?current:$('levels-close')).focus();
+}
+function closeLevelAtlas(){
+ $('level-menu').classList.add('hidden');
+ const opener=levelAtlasOpener;
+ levelAtlasOpener=null;
+ if(opener?.isConnected&&opener.getClientRects().length)opener.focus();
+ else $('levels-button').focus();
+}
+function focusWithinLevelAtlas(e){
+ const active=[...$('level-menu').querySelectorAll('button:not(:disabled)')];
+ if(!active.length)return;
+ const first=active[0],last=active[active.length-1];
+ if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+ else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+}
+function syncLevelIntroText(){
+ const l=levels[levelIndex];if(!l)return;
+ $('level-intro-index').textContent=t(language,'atlasIntro',{
+  number:String(levelIndex+1).padStart(3,'0'),total:String(levels.length).padStart(3,'0')
+ });
+ $('level-intro-title').textContent=loc(l.title,language);
+ $('level-intro-pack').textContent=t(language,currentPackId===demoPackId?'prototype':'classicPack');
+}
+function showLevelIntro(){
+ syncLevelIntroText();
+ const overlay=$('level-intro');
+ overlay.classList.remove('show');
+ // Restart the CSS keyframes even if the user quickly chooses another level.
+ void overlay.offsetWidth;
+ overlay.classList.add('show');
+}
 function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
@@ -437,6 +518,7 @@ function updateLocalizedLevel(){
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
+ syncLevelIntroText();renderLevelAtlas();
 }
 function setLanguage(next){
  language=normalizeLanguage(next);
