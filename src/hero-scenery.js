@@ -38,6 +38,34 @@ export function heroLayout(packId,index,seed=0){
   throw new Error('Unsafe scenic asset placement');
  return positions;
 }
+/**
+ * Keep the sculpture's authored biome colors readable beneath the game's
+ * bright studio environment map. Without this, highly metallic GLB props
+ * become nearly white on some software GPUs, hiding their detail.
+ * Mutates each shared material only once (never each clone/frame).
+ */
+export function tuneHeroMaterials(scene,biome){
+ const settings={
+  orbital:{environment:.24,brightness:.78,roughness:.48},
+  verdant:{environment:.19,brightness:.81,roughness:.61},
+  polar:{environment:.30,brightness:.88,roughness:.42},
+  nebula:{environment:.20,brightness:.77,roughness:.47}
+ }[biome]||{environment:.25,brightness:.80,roughness:.47};
+ const seen=new Set();
+ scene.traverse(node=>{
+  if(!node.isMesh)return;
+  const mats=Array.isArray(node.material)?node.material:[node.material];
+  for(const material of mats){
+   if(!material?.isMeshStandardMaterial||seen.has(material))continue;
+   seen.add(material);
+   material.envMapIntensity=settings.environment;
+   material.roughness=Math.max(settings.roughness,material.roughness);
+   material.metalness=Math.min(.70,material.metalness);
+   material.color.multiplyScalar(settings.brightness);
+  }
+ });
+ return seen.size;
+}
 export function createHeroScenery(THREE,world,{
  loader=new GLTFLoader(),
  baseUrl='/models/biomes/'
@@ -84,6 +112,7 @@ export function createHeroScenery(THREE,world,{
      node.userData.scenicOnly=true;
     });
     if(!meshes)throw new Error('Empty GLB');
+    tuneHeroMaterials(scene,id);
     rec.primitives=meshes;
     for(let i=0;i<ANCHORS.length;i++){
      const instance=scene.clone(true);
