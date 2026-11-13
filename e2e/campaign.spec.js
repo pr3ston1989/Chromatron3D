@@ -1,6 +1,9 @@
 import {test,expect} from '@playwright/test';
 
 test('expert campaign is selectable, persists and stays separate from the prototype',async({page})=>{
+ // SwiftShader builds the whole 3D world on the CPU; a full reload of the
+ // 50-level pack needs a larger budget than a single interaction test.
+ test.setTimeout(180000);
  const exceptions=[];
  page.on('pageerror',error=>exceptions.push(error.message));
  await page.goto('/');
