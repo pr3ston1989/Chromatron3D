@@ -22,6 +22,7 @@ import {buildLaboratory} from './world-art.js';
 import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
 import {createHeroScenery} from './hero-scenery.js';
 import {createMidgroundScenery} from './midground-scenery.js';
+import {SCENIC_CAMERA,snapshotPuzzleCamera,scenicCameraDistance} from './scenic-view-state.js';
 import {stageEntryMode,stagePresentation} from './stage-presentation.js';
 import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {buildLevelAtlas} from './level-atlas.js';
@@ -48,6 +49,7 @@ import './redesign.css';
 import './compact-layout.css';
 import './level-atlas.css';
 import './stage-arrival.css';
+import './scenic-view.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
@@ -56,6 +58,7 @@ const cameraTarget=new THREE.Vector3(0,0,0);
 let yaw=-1.05,pitch=1.10,dist=44;
 let zoomTarget=44,zoomLastFrame=0;
 let boardFocus=false;
+let scenicView=false,scenicReturn=null;
 try{boardFocus=localStorage.getItem('chromatron-board-focus')==='yes'}catch{}
 let graphicsMode='auto',autoLevel='balanced';
 try{graphicsMode=normalizeQuality(localStorage.getItem('chromatron-graphics-quality'))}catch{}
@@ -602,7 +605,7 @@ function setLanguage(next){
  language=normalizeLanguage(next);
  store('chromatron-reborn-language',language);
  applyLanguage(language);
- syncFullscreenButton();syncBoardFocus();
+ syncFullscreenButton();syncBoardFocus();syncScenicViewLabel();
  $('language').textContent=language.toUpperCase();
  updateLocalizedLevel();
 }
@@ -988,11 +991,19 @@ let ctx;
 function beep(freq,duration){if(!audioEnabled)return;try{ctx??=new AudioContext();const o=ctx.createOscillator(),gain=ctx.createGain();o.type='sine';o.frequency.value=freq;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);o.connect(gain).connect(ctx.destination);o.start();o.stop(ctx.currentTime+duration)}catch{}}
 
 let cameraTween=null,cameraTop=false;
+function syncScenicViewLabel(){
+ const button=$('scenic-view');
+ button.setAttribute('aria-pressed',String(scenicView));
+ button.title=t(language,scenicView?'scenicExit':'scenicEnter');
+ button.setAttribute('aria-label',button.title);
+ $('app').classList.toggle('scenic-view',scenicView);
+}
 function syncCameraLabel(){
  $('camera-preset').setAttribute('aria-pressed',String(cameraTop));
  $('camera-preset-label').textContent=t(language,cameraTop?'analysisCameraIso':'analysisCameraTop');
 }
 function toggleCameraPreset(){
+ if(scenicView)toggleScenicView();
  cameraTop=!cameraTop;
  const nextYaw=cameraTop?0:-1.05,nextPitch=cameraTop?1.49:1.10;
  if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
@@ -1006,7 +1017,7 @@ function updateCamera(){
  const portraitScale=viewportWidth<680?Math.max(1.55,720/Math.max(380,viewportWidth)):1;
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&viewportWidth>680?(innerHeight<650 ? .93 : .86):1;
- const cameraDistance=dist*portraitScale*focusScale;
+ const cameraDistance=scenicCameraDistance(dist,portraitScale,focusScale,scenicView);
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
 }
@@ -1035,12 +1046,41 @@ function closeFocusDrawers(){
  syncBoardFocus();
 }
 function toggleBoardFocus(){
+ if(scenicView)toggleScenicView();
  if(innerWidth<=680)return;
  boardFocus=!boardFocus;
  store('chromatron-board-focus',boardFocus?'yes':'no');
  closeFocusDrawers();
  syncBoardFocus();
  updateCamera();
+}
+function toggleScenicView(){
+ // Panoramic mode never mutates the puzzle; the prior zoom, framing and
+ // panel arrangement can be restored instantly, including in reduced motion.
+ if(!scenicView&&innerWidth<800)return;
+ if(!scenicView){
+  scenicReturn=snapshotPuzzleCamera({zoomTarget,boardFocus,yaw,pitch,cameraTop});
+  scenicView=true;boardFocus=true;cameraTop=false;
+  zoomTarget=SCENIC_CAMERA.distance;
+  if(reducedMotion.matches){
+   cameraTween=null;dist=zoomTarget;yaw=SCENIC_CAMERA.yaw;pitch=SCENIC_CAMERA.pitch;
+  }else cameraTween={yaw0:yaw,pitch0:pitch,
+   yaw1:SCENIC_CAMERA.yaw,pitch1:SCENIC_CAMERA.pitch,time:performance.now()};
+ }else{
+  scenicView=false;
+  const saved=scenicReturn;scenicReturn=null;
+  if(saved){
+   zoomTarget=saved.zoomTarget;boardFocus=saved.boardFocus;
+   cameraTop=saved.cameraTop;
+   if(reducedMotion.matches){
+    cameraTween=null;dist=zoomTarget;yaw=saved.yaw;pitch=saved.pitch;
+   }else cameraTween={yaw0:yaw,pitch0:pitch,
+    yaw1:saved.yaw,pitch1:saved.pitch,time:performance.now()};
+  }
+ }
+ $('app').querySelector('.mission').classList.remove('drawer-open');
+ $('app').querySelector('.tool-panel').classList.remove('drawer-open');
+ syncScenicViewLabel();syncBoardFocus();syncCameraLabel();updateCamera();
 }
 function toggleBoardDrawer(selector){
  const panel=$('app').querySelector(selector);
@@ -1072,6 +1112,7 @@ document.addEventListener('fullscreenchange',()=>{
  resize();updateCamera();
 });
 function resize(){
+ if(scenicView&&innerWidth<800)toggleScenicView();
  const w=innerWidth,h=innerHeight;
  camera.aspect=w/h;camera.updateProjectionMatrix();
  renderer.setSize(w,h);composer.setSize(w,h);
@@ -1313,6 +1354,9 @@ document.addEventListener('keydown',e=>{
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
  if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
  if(e.code==='KeyC' && !e.ctrlKey){toggleCameraPreset();return}
+ if(e.code==='KeyP'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+  e.preventDefault();toggleScenicView();return;
+ }
  if(e.code==='KeyF' && !e.ctrlKey && !e.metaKey && !e.altKey){e.preventDefault();void toggleFullscreen();return}
  if(e.code==='KeyB' && !e.ctrlKey && !e.metaKey && !e.altKey){e.preventDefault();toggleBoardFocus();return}
  if(e.code==='KeyH' && !e.ctrlKey){$('hint-overlay').classList.remove('hidden');renderHints()}
@@ -1405,6 +1449,7 @@ $('skip-level').onclick=()=>{
 };
 $('coach-dismiss').onclick=()=>{coachDismissed=true;store('chromatron-coach-dismissed','yes');updateCoach();renderInventory()};
 $('board-focus').onclick=toggleBoardFocus;
+$('scenic-view').onclick=toggleScenicView;
 $('mission-drawer').onclick=()=>toggleBoardDrawer('.mission');
 $('tool-drawer').onclick=()=>toggleBoardDrawer('.tool-panel');
 $('fullscreen').onclick=toggleFullscreen;
