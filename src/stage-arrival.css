@@ -1,6 +1,8 @@
 /* Lightweight stage arrival: one DOM overlay, two CSS animations, no new WebGL. */
 .level-arrival{
  position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;
+ /* The translated scan beam must never enlarge the document scroll area. */
+ overflow:clip;contain:paint;
  --level-accent:#80e9ff;
 }
 .level-arrival.show{animation:stage-arrival-frame 2.35s ease-out both}
