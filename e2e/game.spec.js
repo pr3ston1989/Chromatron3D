@@ -134,6 +134,8 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
 
 test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // The mirror regression needs level 2, unlocked by prior level 1 completion.
+ await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.goto('/');
  await page.locator('#graphics-quality').selectOption('balanced');
  await page.locator('#next').click();
@@ -349,6 +351,7 @@ test('small laptop layouts keep essential controls on screen without horizontal 
 });
 
 test('short viewport uses scrollable side panels instead of clipping interactive optics',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.setViewportSize({width:1093,height:550});
  await page.goto('/');
  const panel=page.locator('.tool-panel');
