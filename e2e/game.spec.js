@@ -471,6 +471,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await expect(page.locator('#level-intro-mode')).toHaveText('NOWY POZIOM');
  await expect(page.locator('#level-intro')).toHaveClass(/show/);
  await expect(page.locator('#level-arrival')).toHaveClass(/show/);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1094);
  expect(await page.locator('#level-intro').evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
  expect(await page.locator('#level-arrival').evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
  await page.locator('#levels-button').click();
