@@ -31,7 +31,8 @@ export function getLaserFlareTexture(THREE){
  * crossed shader ribbons for soft volumetric scatter. Glows at interactions
  * and carefully budgeted dynamic point lights connect the beam to the world.
  */
-export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point, lightingProfile={}) {
+export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point, lightingProfile={}, boundaryHits=[]) {
+ const drawnSegments=boundaryHits.length?segments.concat(boundaryHits):segments;
  const materials=new Map(), flicker=[];
  const beamBatcher=createBeamBatcher(THREE,parent);
  const activePieces=pieces.filter(p=>!p.inTray);
@@ -98,7 +99,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   }
   return coreMaterials.get(mask);
  }
- for(const s of segments){
+ for(const s of drawnSegments){
   const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
   if(positions.get(s.x+','+s.y)?.type==='laser')a.lerp(b,.50); // Beam emerges from actual barrel tip
   const segment=b.clone().sub(a),len=segment.length();
@@ -120,7 +121,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  // Directional moving photons reveal how the light travels, especially with
  // several mirrors. A single GPU points draw call handles the entire board.
  const photonStarts=[],photonEnds=[],photonColors=[],photonPhases=[],photonSizes=[];
- const usedSegments=segments.slice(0,120);
+ const usedSegments=drawnSegments.slice(0,120);
  for(let i=0;i<usedSegments.length;i++){
   const seg=usedSegments[i];
   for(let n=0;n<2;n++){
@@ -209,6 +210,9 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    }
   }
  }
+ // An energy ray now physically touches the inner face of its collector.
+ // Reuse the cached flare atlas: no dynamic lights or shader passes added.
+ for(const hit of boundaryHits)flare(hit.nx,hit.ny,hit.color,.52);
  for(const s of segments){
   const piece=positions.get(s.nx+','+s.ny);
   if(!piece||piece.type==='laser')continue;

@@ -220,6 +220,23 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 
 
 
+
+test('physical laser absorber walls stop rays at their visible edge',async({page})=>{
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ const result=await page.evaluate(()=>window.chromatron.getState().result);
+ const stats=await page.evaluate(()=>window.chromatron.getVisualStats());
+ expect(stats.absorberStructure.segments).toBe(60);
+ expect(stats.absorberStructure.collectors).toBe(60);
+ expect(stats.absorberStructure.boundary).toBeCloseTo(9.75,3);
+ expect(stats.absorberHits).toBeGreaterThan(0);
+ expect(result.boundaryHits.length).toBe(stats.absorberHits);
+ for(const hit of result.boundaryHits){
+  expect(hit.boundary).toBe(true);
+  expect(hit.nx===-.5||hit.nx===14.5||hit.ny===-.5||hit.ny===14.5).toBe(true);
+ }
+ await page.screenshot({path:'test-results/chromatron-physical-laser-walls.png',animations:'disabled'});
+});
+
 test('scenery uses cached, genuine GLB hero models without touching optics',async({page})=>{
  test.setTimeout(process.env.CI?120000:75000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -245,6 +262,20 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(dressed.beamSegments).toBe(first.beamSegments);
  await page.screenshot({path:'test-results/chromatron-premium-glb-world.png',animations:'disabled'});
  await page.screenshot({path:'test-results/chromatron-layered-midground.png',animations:'disabled'});
+ const life=await page.evaluate(()=>window.chromatron.getVisualStats().ambientLife);
+ expect(life.biome).toBe(biome);
+ expect(life.craft).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
+ expect(life.rigs).toBe({performance:1,balanced:2,cinematic:2}[loaded.effectiveQuality]);
+ expect(life.beacons).toBe({performance:4,balanced:8,cinematic:12}[loaded.effectiveQuality]);
+ expect(life.motes).toBe({performance:6,balanced:16,cinematic:32}[loaded.effectiveQuality]);
+ await page.screenshot({path:'test-results/chromatron-living-ambient.png',animations:'disabled'});
+ const terrain=loaded.environment.terrain;
+ expect(terrain.biome).toBe(biome);
+ expect(terrain.courtyards).toBe(4);
+ expect(terrain.textured).toBe(true);
+ expect(terrain.rocks).toBe({performance:14,balanced:30,cinematic:48}[loaded.effectiveQuality]);
+ expect(terrain.features).toBe({performance:24,balanced:52,cinematic:90}[loaded.effectiveQuality]);
+ await page.screenshot({path:'test-results/chromatron-textured-biome-ground.png',animations:'disabled'});
  const far=loaded.environment.horizon;
  expect(far).toBeTruthy();
  expect(far.structures).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
@@ -466,7 +497,6 @@ test('board focus mode expands usable puzzle space without losing equipment acce
  await expect(page.locator('#app')).toHaveClass(/board-focus/);
  expect(errors).toEqual([]);
 });
-
 
 
 test('panorama reveals the living scenery then restores the exact puzzle view',async({page})=>{

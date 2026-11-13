@@ -1,5 +1,6 @@
 import {createDistantTraffic} from './distant-traffic.js';
 import {createSpaceHorizon} from './space-horizon.js';
+import {createBiomeTerrain} from './terrain-biomes.js';
 
 /**
  * Lightweight procedural environments for each puzzle. No downloaded skyboxes,
@@ -280,10 +281,11 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    sky.add(sprite);nebulae.push(sprite);
   }
   const horizon=createSpaceHorizon(THREE,sky,theme,random,nebulaTexture);
+  const terrain=createBiomeTerrain(THREE,foliage,theme,random);
   const patches=addSurfacePatches(THREE,foliage,theme.decor,random);
   const habitat=addRimHabitat(THREE,foliage,theme.decor,random);
   sky.visible=false;foliage.visible=false;
-  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat,horizon};
+  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat,horizon,terrain};
  });
  let active=null,quality='balanced',sessionSeed=0;
  function setQuality(profile='balanced'){
@@ -299,6 +301,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
    group.traffic.setQuality(quality);
    group.horizon.setQuality(quality);
+   group.terrain.setQuality(quality);
   }
  }
  function setLevel(packId,index,{seed=0}={}){
@@ -354,7 +357,8 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    nebulae:active?.nebulae.filter(s=>s.visible).length||0,
    traffic:active?.traffic.getVisibleCount()||0,
    rimHabitat:active?.habitat.count||0,
-   horizon:active?.horizon.getStats()||null};
+   horizon:active?.horizon.getStats()||null,
+   terrain:active?.terrain.getStats()||null};
  }
  setQuality('balanced');
  return {setLevel,setQuality,update,getStats};
