@@ -1520,6 +1520,9 @@ function renderHints(){
  $('skip-level').classList.toggle('hidden',hintCount<3 || levels.length<=1);
 }
 setLanguage(language);
+// Apply the persisted GPU preset before loading the first puzzle or any GLB.
+// Previously only interactive quality changes updated the environment.
+applyGraphicsQuality();
 load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
 syncWalletUI();
 requestAnimationFrame(animate);
