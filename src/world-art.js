@@ -1,87 +1,120 @@
-/**
- * Original Chromatron / Reborn environmental artwork, deliberately independent
- * from puzzle logic. The 15x15 logical grid remains unchanged.
- */
-export function buildLaboratory(THREE, scene, world, tileSize=1.3) {
- const group=new THREE.Group();
- group.name='Spectral chamber environment';
- world.add(group);
- const shell=new THREE.MeshStandardMaterial({color:0x162a3b,metalness:.72,roughness:.32});
- const shellLight=new THREE.MeshStandardMaterial({color:0x324d61,metalness:.76,roughness:.25});
- const graphite=new THREE.MeshStandardMaterial({color:0x0b1625,metalness:.78,roughness:.38});
- const cyan=new THREE.MeshStandardMaterial({color:0x5de7ed,emissive:0x11bedc,emissiveIntensity:.58,roughness:.25});
- const amber=new THREE.MeshStandardMaterial({color:0xffbf78,emissive:0xff9933,emissiveIntensity:1.1,roughness:.28});
- const make=(geometry,material,x,y,z,rotationY=0)=>{
-  const m=new THREE.Mesh(geometry,material);
-  m.position.set(x,y,z);m.rotation.y=rotationY;group.add(m);
-  return m;
- };
- // Industrial plinth, visually lifting the optical puzzle above the room.
- make(new THREE.BoxGeometry(22.3,.65,22.3),graphite,0,-1.32,0);
- make(new THREE.BoxGeometry(21.9,.18,21.9),shellLight,0,-.94,0);
- // Four perimeter light strips: bright enough to define the playable boundary.
- for(const side of [-1,1]){
-  make(new THREE.BoxGeometry(21,.09,.095),cyan,0,-.16,side*10.08);
-  make(new THREE.BoxGeometry(.095,.09,21),cyan,side*10.08,-.16,0);
-  make(new THREE.BoxGeometry(21,.075,.18),shellLight,0,-.27,side*10.24);
-  make(new THREE.BoxGeometry(.18,.075,21),shellLight,side*10.24,-.27,0);
-  make(new THREE.BoxGeometry(20.1,.1,.065),amber,0,-1.05,side*11.05);
-  make(new THREE.BoxGeometry(.065,.1,20.1),amber,side*11.05,-1.05,0);
- }
- // Readable bevels and luminous hardware distinguish the corners of the grid.
- for(const x of [-10.2,10.2])for(const z of [-10.2,10.2]){
-  const pedestal=make(new THREE.CylinderGeometry(.55,.67,.52,8),shell,x,-.45,z);
-  pedestal.rotation.y=Math.PI/8;
-  make(new THREE.CylinderGeometry(.33,.37,.15,12),shellLight,x,-.10,z);
-  const cap=make(new THREE.CylinderGeometry(.22,.22,.085,16),amber,x,.045,z);
-  cap.rotation.y=Math.PI/8;
- }
- // Subtle edge tick marks make board scale and geometry easier to perceive.
- for(let i=-7;i<=7;i++){
-  const p=i*tileSize;
-  make(new THREE.BoxGeometry(.45,.025,.035),i%5===0?amber:cyan,p,.014,-9.95);
-  make(new THREE.BoxGeometry(.035,.025,.45),i%5===0?amber:cyan,-9.95,.014,p);
- }
- // Room architecture outside the puzzle platform; not decorative on the board.
- const beams=new THREE.Group();scene.add(beams);
- const distant=new THREE.MeshStandardMaterial({color:0x0e2338,metalness:.75,roughness:.42});
- for(const [x,z] of [[-17,-15],[17,-15],[-17,15],[17,15]]){
-  const pillar=new THREE.Mesh(new THREE.BoxGeometry(1.15,13,1.15),distant);
-  pillar.position.set(x,4,z);beams.add(pillar);
-  const rail=new THREE.Mesh(new THREE.BoxGeometry(.16,11.5,.16),cyan);
-  rail.position.set(x+.65,4,z+.65);beams.add(rail);
- }
- const hemi=new THREE.HemisphereLight(0xbbebff,0x243448,.65);scene.add(hemi);
- for(const [x,z,color] of [[-10,-9,0x50dcff],[10,10,0xffa45d]]){
-  const light=new THREE.PointLight(color,12,24,2);
-  light.position.set(x,4,z);scene.add(light);
- }
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
- // A quiet, reflective physical room rather than an empty black void.
- // Low contrast preserves focus on the actual puzzle grid.
- const floorMat=new THREE.MeshStandardMaterial({
-  color:0x0b1927,metalness:.57,roughness:.37,side:THREE.DoubleSide
+/**
+ * The stage is a FLOATING OPTICAL INSTRUMENT, not a square grid ending
+ * abruptly between four glowing pillars. All decorations are outside the
+ * 15×15 interactive grid and are excluded from raycasts.
+ *
+ * Reusable textures and four atmospheric themes are controlled externally by
+ * world-biomes.js; no stage geometry is recreated between levels.
+ */
+export function buildLaboratory(THREE,scene,world,tileSize=1.3){
+ const group=new THREE.Group();
+ group.name='Floating optical laboratory architecture';
+ world.add(group);
+ const hull=new THREE.MeshStandardMaterial({color:0x142b3c,metalness:.78,roughness:.31});
+ const structural=new THREE.MeshStandardMaterial({color:0x324e61,metalness:.79,roughness:.3});
+ const underside=new THREE.MeshStandardMaterial({color:0x081522,metalness:.68,roughness:.42});
+ const accent=new THREE.MeshStandardMaterial({
+  color:0x54c9e5,emissive:0x1d8cb3,emissiveIntensity:.66,metalness:.38,roughness:.24
  });
- const chamberFloor=new THREE.Mesh(new THREE.PlaneGeometry(85,85),floorMat);
- chamberFloor.rotation.x=-Math.PI/2;
- chamberFloor.position.y=-2.25;scene.add(chamberFloor);
- const circleMaterial=new THREE.MeshBasicMaterial({
-  color:0x376b8e,transparent:true,opacity:.20,depthWrite:false,side:THREE.DoubleSide
+ const markerMat=new THREE.MeshStandardMaterial({
+  color:0xc19a61,emissive:0x6e481f,emissiveIntensity:.42,metalness:.42,roughness:.34
  });
- for(const [inner,outer] of [[14.7,14.76],[18.3,18.37],[24.5,24.56]]){
-  const arc=new THREE.Mesh(new THREE.RingGeometry(inner,outer,128),circleMaterial);
-  arc.rotation.x=-Math.PI/2;
-  arc.position.y=-2.20;
-  scene.add(arc);
+ const soft=new THREE.MeshBasicMaterial({color:0x4c90af,transparent:true,opacity:.13,depthWrite:false,side:THREE.DoubleSide});
+ const add=(geometry,material,x,y,z,name,container=group)=>{
+  const m=new THREE.Mesh(geometry,material);
+  m.name=name;m.position.set(x,y,z);container.add(m);return m;
+ };
+ // Recessed rounded armor plates give the grid a graded rather than a
+ // clipped edge. The top logical 15x15 board remains untouched.
+ add(new RoundedBoxGeometry(21.9,.28,21.9,4,.22),
+  structural,0,-.94,0,'rounded-deck-shoulder');
+ add(new RoundedBoxGeometry(23.1,.38,23.1,4,.32),
+  hull,0,-1.25,0,'chamfered-middle-hull');
+ add(new RoundedBoxGeometry(24.25,.24,24.25,4,.23),
+  underside,0,-1.49,0,'floating-lower-keel');
+ add(new RoundedBoxGeometry(25.0,.1,25.0,3,.09),
+  structural,0,-1.64,0,'bottom-metal-rim');
+ add(new RoundedBoxGeometry(24.1,.07,24.1,3,.035),
+  accent,0,-1.69,0,'diffuse-keel-luminescence');
+ // Perimeter inlaid lights live lower than optics, not on their sight lines.
+ for(const side of [-1,1]){
+  add(new RoundedBoxGeometry(21.6,.043,.055,3,.018),
+   accent,0,-.44,side*10.67,'recessed-side-light');
+  add(new RoundedBoxGeometry(.055,.043,21.6,3,.018),
+   accent,side*10.67,-.44,0,'recessed-side-light');
+  add(new RoundedBoxGeometry(21.9,.042,.06,2,.015),
+   markerMat,0,-1.38,side*11.7,'lower-safety-seam');
+  add(new RoundedBoxGeometry(.06,.042,21.9,2,.015),
+   markerMat,side*11.7,-1.38,0,'lower-safety-seam');
  }
- const guideMaterial=new THREE.MeshBasicMaterial({color:0x2e6382,transparent:true,opacity:.29,depthWrite:false});
- for(const offset of [-25,-17,17,25]){
-  const strip=new THREE.Mesh(new THREE.BoxGeometry(.048,.01,54),guideMaterial);
-  strip.position.set(offset,-2.18,0);scene.add(strip);
-  const cross=new THREE.Mesh(new THREE.BoxGeometry(54,.01,.048),guideMaterial);
-  cross.position.set(0,-2.18,offset);scene.add(cross);
+ // Corner vents / flush hardware replace the old tall luminous pillars.
+ for(const sx of [-1,1])for(const sz of [-1,1]){
+  const plate=add(new RoundedBoxGeometry(.67,.08,.67,3,.04),
+   structural,sx*10.15,-.23,sz*10.15,'low-profile-corner-vent');
+  plate.rotation.y=Math.PI/4;
+  const light=add(new THREE.BoxGeometry(.24,.014,.025),
+   accent,sx*10.15,-.177,sz*10.15,'corner-status-led');
+  light.rotation.y=Math.PI/4;
  }
- const underlight=new THREE.PointLight(0x2f84ad,9,18,2);
- underlight.position.set(0,-1.45,0);scene.add(underlight);
+ // The grid boundary has small engraved ticks; clear enough to orient the
+ // board, never tall enough to obstruct the optical rays.
+ for(let i=-7;i<=7;i++){
+  const u=i*tileSize;
+  add(new THREE.BoxGeometry(.30,.013,.025),i%5===0?markerMat:accent,
+   u,-.198,-10.22,'scale-engraving');
+  add(new THREE.BoxGeometry(.025,.013,.30),i%5===0?markerMat:accent,
+   -10.22,-.198,u,'scale-engraving');
+ }
+ // Low outer docking arcs suggest a larger inhabited orbital structure
+ // without surrounding the player with an unfinished 4-post cage.
+ const architecture=new THREE.Group();
+ architecture.name='distant-orbital-architecture';
+ scene.add(architecture);
+ const distant=new THREE.MeshStandardMaterial({color:0x102b39,metalness:.72,roughness:.40});
+ for(const radius of [16.3,20.8,27.0]){
+  const geometry=new THREE.TorusGeometry(radius,radius===16.3?.11:.055,8,100,Math.PI*1.65);
+  const arc=add(geometry,distant,0,-2.92,0,'suspended-docking-arc',architecture);
+  arc.rotation.x=Math.PI/2;
+  arc.rotation.z=radius*.07;
+ }
+ // Structural plates suspended well outside gameplay, mostly horizontal.
+ for(const [x,z,angle] of [[-17,-18,.64],[19,-16,-.55],[-19,18,-.35],[18,19,.83]]){
+  const deck=add(new RoundedBoxGeometry(4.5,.36,2.8,3,.18),
+   hull,x,-2.35,z,'distant-floating-dock',architecture);
+  deck.rotation.y=angle;
+  const inset=add(new RoundedBoxGeometry(3.6,.035,2.1,2,.012),
+   structural,x,-2.13,z,'dock-surface',architecture);
+  inset.rotation.y=angle;
+  const strip=add(new RoundedBoxGeometry(3.7,.025,.065,2,.012),
+   accent,x,-2.10,z,'dock-marker',architecture);
+  strip.rotation.y=angle;
+ }
+ // An underside halo fades smoothly into the void, without a giant 85×85
+ // ground plane blocking the sky and making a hard horizon.
+ const floorHalo=add(new THREE.RingGeometry(13.3,31.3,120),
+  soft,0,-3.12,0,'subplatform-diffuse-halo',architecture);
+ floorHalo.rotation.x=-Math.PI/2;
+ const hemi=new THREE.HemisphereLight(0xc7efff,0x243448,.58);
+ scene.add(hemi);
+ const workLightA=new THREE.PointLight(0x50dcff,9,25,2);
+ workLightA.position.set(-11,3,-10);scene.add(workLightA);
+ const workLightB=new THREE.PointLight(0xffae79,5,23,2);
+ workLightB.position.set(11,3,10);scene.add(workLightB);
+ const bounce=new THREE.PointLight(0x2f84ad,7,20,2);
+ bounce.position.set(0,-1.72,0);scene.add(bounce);
+ // Material changes are cheap and never rebuild the stage.
+ group.userData.setTheme=theme=>{
+  if(!theme)return;
+  accent.color.setHex(theme.edge);
+  accent.emissive.setHex(theme.edge);
+  markerMat.color.setHex(theme.accent);
+  markerMat.emissive.setHex(theme.accent);
+  soft.color.setHex(theme.nebula);
+  workLightA.color.setHex(theme.edge);
+  workLightB.color.setHex(theme.accent);
+  bounce.color.setHex(theme.edge);
+ };
  return group;
 }
