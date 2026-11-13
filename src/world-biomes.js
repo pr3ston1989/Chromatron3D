@@ -154,6 +154,55 @@ function addSurfacePatches(THREE,group,kind,random){
  }
  return {mesh,stems};
 }
+/**
+ * Silhouettes beyond the optical grid: clusters of rounded moss/ferns on the
+ * abandoned station, frost spires in polar scenes, volcanic crystals in the
+ * nebula, and low metal scrap around the orbital shipyard.
+ *
+ * One instanced draw call per biome, four cached buffers for the whole game.
+ * Even the closest object is outside the playable 15x15 footprint.
+ */
+function addRimHabitat(THREE,group,kind,random){
+ const moss=kind==='moss',ice=kind==='ice',crystal=kind==='crystal';
+ const geometry=moss?new THREE.IcosahedronGeometry(.29,1):
+  ice?new THREE.ConeGeometry(.16,.75,5):
+  crystal?new THREE.OctahedronGeometry(.32,0):
+  new THREE.BoxGeometry(.42,.2,.58);
+ const material=new THREE.MeshStandardMaterial({
+  color:0xffffff,roughness:moss?.98:ice?.34:crystal?.32:.75,
+  metalness:moss?0:ice?.08:crystal?.16:.66,flatShading:!moss,
+  side:THREE.DoubleSide
+ });
+ const maxCount=180,mesh=new THREE.InstancedMesh(geometry,material,maxCount);
+ mesh.name='environment-rim-habitat';mesh.frustumCulled=false;
+ const base=new THREE.Color(moss?0x397b51:ice?0x8acbdf:crystal?0x9c6fb5:0x526e7a);
+ const bright=new THREE.Color(moss?0x77b979:ice?0xd3f3fc:crystal?0xe3a2cc:0x8d979a);
+ const dummy=new THREE.Object3D();
+ for(let i=0;i<maxCount;i++){
+  const edge=i%4,across=(random()-.5)*20.25;
+  const rim=10.12+random()*.82;
+  dummy.position.set(edge<2?across:(edge===2?-rim:rim),
+   -.16+(moss?random()*.10:ice?.12:random()*.08),
+   edge<2?(edge===0?-rim:rim):across);
+  dummy.rotation.set(
+   moss?(random()-.5)*.34:ice?(random()-.5)*.26:random()*.25,
+   random()*Math.PI*2,
+   (random()-.5)*(moss?.4:.27)
+  );
+  const size=.56+random()*.95;
+  dummy.scale.set(
+   size*(moss?1.15:crystal?.64:1),
+   size*(moss?.42:ice?1.15:crystal?1.6:.48),
+   size*(moss?1.55:ice?.8:1)
+  );
+  dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+  mesh.setColorAt(i,base.clone().lerp(bright,random()));
+ }
+ mesh.instanceMatrix.needsUpdate=true;
+ mesh.instanceColor.needsUpdate=true;
+ group.add(mesh);
+ return mesh;
+}
 function makeStarfield(THREE,group,theme,random){
  const amount=1000,pos=new Float32Array(amount*3),color=new Float32Array(amount*3);
  const cold=new THREE.Color(theme.edge),warm=new THREE.Color(theme.accent);
@@ -230,8 +279,9 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    sky.add(sprite);nebulae.push(sprite);
   }
   const patches=addSurfacePatches(THREE,foliage,theme.decor,random);
+  const habitat=addRimHabitat(THREE,foliage,theme.decor,random);
   sky.visible=false;foliage.visible=false;
-  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches};
+  return {theme,sky,foliage,stars,rocks,planet,traffic,nebulae,patches,habitat};
  });
  let active=null,quality='balanced',sessionSeed=0;
  function setQuality(profile='balanced'){
@@ -241,6 +291,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    group.stars.geometry.setDrawRange(0,perf?290:quality==='cinematic'?1000:620);
    group.rocks.count=perf?12:quality==='cinematic'?65:35;
    group.patches.mesh.count=perf?65:quality==='cinematic'?196:140;
+   group.habitat.count=perf?35:quality==='cinematic'?180:105;
    const leaves=group.patches.stems.children.find(c=>c.isInstancedMesh);
    if(leaves)leaves.count=perf?38:quality==='cinematic'?128:85;
    group.nebulae.forEach((s,i)=>s.visible=!perf||i===0);
@@ -259,6 +310,8 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   // level and the session. Composition is repeatable for the same seed.
   const variant=rngFrom(hashText(packId+':'+index+':'+seed+':sky-layout'));
   active.sky.rotation.y=(variant()-.5)*1.55;
+  // Ninety-degree turns preserve a safe perimeter around the square board.
+  active.foliage.rotation.y=Math.floor(variant()*4)*Math.PI/2;
   const planetPosition=active.planet.planet.position;
   planetPosition.set(-42+(variant()-.5)*31,23+variant()*25,-68+(variant()-.5)*29);
   active.planet.rings.position.copy(planetPosition);
@@ -292,7 +345,8 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
   return {biome:active?.theme.id||null,stars:active?.stars.geometry.drawRange.count||0,
    foliage:active?.patches.mesh.count||0,shrubs:active?.patches.stems.children[0]?.count||0,
    nebulae:active?.nebulae.filter(s=>s.visible).length||0,
-   traffic:active?.traffic.getVisibleCount()||0};
+   traffic:active?.traffic.getVisibleCount()||0,
+   rimHabitat:active?.habitat.count||0};
  }
  setQuality('balanced');
  return {setLevel,setQuality,update,getStats};
