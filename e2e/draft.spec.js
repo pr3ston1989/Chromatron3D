@@ -39,7 +39,6 @@ test('partial mirror layout and inventory rotation survive reload; reset clears 
  await page.reload({waitUntil:'domcontentloaded'});
  mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
  expect(mirror).toMatchObject({x:6,y:7,rot:1,inTray:false});
- await page.locator('#undo').click({force:true}).catch(()=>{});
  // A fresh page does not claim to have historical undo records.
  await expect(page.locator('#undo')).toBeDisabled();
  await page.locator('#reset').click();
