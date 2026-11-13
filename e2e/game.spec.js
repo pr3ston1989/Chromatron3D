@@ -245,6 +245,13 @@ test('scenery uses cached, genuine GLB hero models without touching optics',asyn
  expect(dressed.beamSegments).toBe(first.beamSegments);
  await page.screenshot({path:'test-results/chromatron-premium-glb-world.png',animations:'disabled'});
  await page.screenshot({path:'test-results/chromatron-layered-midground.png',animations:'disabled'});
+ const life=await page.evaluate(()=>window.chromatron.getVisualStats().ambientLife);
+ expect(life.biome).toBe(biome);
+ expect(life.craft).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
+ expect(life.rigs).toBe({performance:1,balanced:2,cinematic:2}[loaded.effectiveQuality]);
+ expect(life.beacons).toBe({performance:4,balanced:8,cinematic:12}[loaded.effectiveQuality]);
+ expect(life.motes).toBe({performance:6,balanced:16,cinematic:32}[loaded.effectiveQuality]);
+ await page.screenshot({path:'test-results/chromatron-living-ambient.png',animations:'disabled'});
  const far=loaded.environment.horizon;
  expect(far).toBeTruthy();
  expect(far.structures).toBe({performance:1,balanced:2,cinematic:3}[loaded.effectiveQuality]);
