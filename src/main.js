@@ -1198,6 +1198,12 @@ renderer.domElement.addEventListener('wheel',e=>{
 },{passive:false});
 document.addEventListener('keydown',e=>{
  if(e.target instanceof HTMLInputElement)return;
+ if(!$('level-menu').classList.contains('hidden')){
+  if(e.code==='Escape'){e.preventDefault();closeLevelAtlas()}
+  else if(e.code==='Tab')focusWithinLevelAtlas(e);
+  return;
+ }
+ if(e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();openLevelAtlas();return}
  if(e.code==='Escape'){clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
@@ -1210,6 +1216,13 @@ document.addEventListener('keydown',e=>{
  if(e.code==='KeyL' && !e.ctrlKey){setLanguage(language==='pl'?'en':'pl')}
  if((e.code==='KeyZ'&&e.ctrlKey&&e.shiftKey)||(e.code==='KeyY'&&e.ctrlKey)){e.preventDefault();redo()}
  else if(e.code==='KeyZ'&&e.ctrlKey){e.preventDefault();undo()}
+});
+$('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
+$('levels-open').onclick=()=>openLevelAtlas($('levels-open'));
+$('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
+$('levels-close').onclick=closeLevelAtlas;
+$('level-menu').addEventListener('click',event=>{
+ if(event.target===$('level-menu'))closeLevelAtlas();
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 $('reset').onclick=()=>load(levelIndex);
