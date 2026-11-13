@@ -31,7 +31,8 @@ test('each biome has recognizable dual-color sun palette and brilliant corona',(
    assert.ok(star.getObjectByName('stellar-corona')?.isSprite);
    assert.ok(star.getObjectByName('stellar-white-hot-flare')?.isSprite);
    assert.equal(star.getObjectByName('stellar-corona').material.blending,THREE.AdditiveBlending);
-   assert.ok(star.getObjectByName('stellar-corona').scale.x>45);
+   const span=star.getObjectByName('stellar-corona').scale.x;
+   assert.ok(span>30&&span<45,'strong but controlled radiance without washing out the board');
   }
   vista.dispose();
   assert.equal(sky.children.length,0);
