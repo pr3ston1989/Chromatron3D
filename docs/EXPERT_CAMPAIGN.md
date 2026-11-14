@@ -1,14 +1,6 @@
-# Expert campaign: 50 machine-verified puzzles
+# Archived generated campaign
 
-The **expert campaign** is a separate, independently authored 50-level pack
-built to extend the eight demonstration puzzles. It is available from **Mapa
-poziomów / Level map → WYGENEROWANE · 50**; its progress is stored under its own
-pack fingerprint, so it never overwrites the prototype or imported packs.
-
-These layouts are original. They use the Chromatron *piece vocabulary* —
-reflectors, benders, filters, prisms, Dopplers, splitters, conduits,
-teleporters and tanglers — but no original level arrangement is copied. The
-classic 200 layouts remain unshipped.
+Withdrawn from the playable atlas after player feedback about repetitive puzzles. The generator and regression fixtures are retained for reference.
 
 ## Chapters
 

@@ -8,10 +8,10 @@ Preserve the complete original 4 × 50 puzzle sequence, exact optical interactio
 | Feature | Benefit | Priority | Status |
 | --- | --- | --- | --- |
 | Polish + English | Full interface and authored level guidance in both languages | P0 | Prototype implemented |
-| Three-tier hints | Gentle clue → geometric direction → actionable move; optional skip | P0 | Implemented; expert levels advance the third tier from a verified trajectory |
+| Three-tier hints | Gentle clue → geometric direction → actionable move; optional skip | P0 | Implemented; local retail levels advance the third tier from a verified trajectory |
 | Undo / redo | Experiment fearlessly; keyboard shortcuts and HUD | P0 | Prototype implemented |
 | Hint focus highlight | Clear in-world marker for the suggested cell | P0 | Prototype implemented |
-| Puzzle validation | Each shipped puzzle has at least one tested winning configuration | P0 | 8 demo + 50 expert layouts tested by CI |
+| Puzzle validation | Each shipped puzzle has at least one tested winning configuration | P0 | 8 tutorials in public CI, 200 original puzzles in local retail tests |
 | Correct original toolbox behavior | All movable pieces start in the tray; place/return/rotate | P0 | Pending |
 | Original 200 puzzles | Legal source verification, importer, exact order and gold solution tests | P0 | Pending |
 

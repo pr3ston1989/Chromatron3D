@@ -1,39 +1,32 @@
 import {test,expect} from '@playwright/test';
 
-test('expert campaign is selectable, persists and stays separate from the prototype',async({page})=>{
- // SwiftShader builds the whole 3D world on the CPU; a full reload of the
- // 50-level pack needs a larger budget than a single interaction test.
- test.setTimeout(180000);
- const exceptions=[];
- page.on('pageerror',error=>exceptions.push(error.message));
+test('dragging a tray mirror to the board never opens file import',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>{
+  localStorage.setItem('chromatron-start-campaign','demo');
+  localStorage.setItem('chromatron-graphics-quality','performance');
+  Object.defineProperty(window,'devicePixelRatio',{get:()=>.65});
+ });
+ const dialogs=[];
+ page.on('filechooser',()=>dialogs.push('filechooser'));
+ await page.setViewportSize({width:1280,height:720});
  await page.goto('/');
- await expect(page.locator('#total-levels')).toHaveText('008');
+ const tray=page.locator('#inventory button[data-optic-type=mirror]');
+ await expect(tray).toBeVisible();
+ await page.evaluate(()=>{
+  window.importShown=false;
+  new MutationObserver(()=>{
+   if(!document.getElementById('drop-zone').classList.contains('hidden'))window.importShown=true;
+  }).observe(document.getElementById('drop-zone'),{attributes:true,attributeFilter:['class']});
+ });
+ const dest=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ const canvas=page.locator('#scene canvas');
+ const rect=await canvas.boundingBox();
+ await tray.dragTo(canvas,{targetPosition:{x:dest.x-rect.x,y:dest.y-rect.y}});
+ await expect.poll(()=>page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror')))
+  .toMatchObject({x:7,y:7,inTray:false});
+ expect(await page.evaluate(()=>window.importShown)).toBe(false);
+ expect(dialogs).toEqual([]);
  await page.locator('#levels-button').click();
- await expect(page.locator('.campaign-tab[data-campaign="demo"]')).toHaveAttribute('aria-selected','true');
- await expect(page.locator('.campaign-tab[data-campaign="expert"]')).toHaveAttribute('aria-selected','false');
-
- await page.locator('.campaign-tab[data-campaign="expert"]').click();
- await expect(page.locator('#total-levels')).toHaveText('050');
- await expect(page.locator('#chapter')).toContainText('ROZDZIAŁ 01 // REFLEKSY');
- await expect(page.locator('#level-grid .level-atlas-card')).toHaveCount(50);
- await expect(page.locator('#level-grid [data-level-index="0"]')).toBeEnabled();
- await expect(page.locator('#level-grid [data-level-index="1"]')).toBeDisabled();
-
- await page.locator('#level-grid [data-level-index="0"]').click();
- await expect(page.locator('#level-title')).toHaveText('PIERWSZY ODDECH');
- await expect(page.locator('#level-pack-label')).toHaveText('WYGENEROWANE');
- await expect(page.locator('#level-menu')).toBeHidden();
-
- // The chosen campaign is remembered across reloads, but its saved progress
- // lives under a different pack fingerprint than the eight demonstrations.
- await page.reload();
- await expect(page.locator('#total-levels')).toHaveText('050');
- await expect(page.locator('#level-title')).toHaveText('PIERWSZY ODDECH');
-
- await page.locator('#levels-button').click();
- await page.locator('.campaign-tab[data-campaign="demo"]').click();
- await expect(page.locator('#total-levels')).toHaveText('008');
- await expect(page.locator('#level-pack-label')).toHaveText('PROTOTYP');
- await expect(page.locator('#chapter')).toContainText('ROZDZIAŁ 01 // PODSTAWY');
- expect(exceptions).toEqual([]);
+ await expect(page.locator('[data-campaign=expert]')).toHaveCount(0);
 });

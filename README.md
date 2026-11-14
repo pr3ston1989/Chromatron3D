@@ -40,10 +40,10 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 
 ## Campaigns
 
-The atlas offers eight tutorials and a generated 50-stage campaign with five
-chapters, bilingual hints and separate progress. Import the four Windows EXEs
-to play the 200 original puzzles. Each of their 22 instrument types has a
-Blender model. [Generated campaign](docs/EXPERT_CAMPAIGN.md).
+Run **Uruchom-gre-Windows.bat** with your four Windows EXEs in `original/`.
+Chromatron I opens on first launch. The level map contains all four original
+50-stage campaigns and eight optional tutorials. Selecting a campaign saves
+your choice for the next visit. Retail data stays on the local computer.
 
 The Chromatron series (4 × 50 original levels) was created by Sean Barrett / Silver Spaceship Software. Official games: https://www.silverspaceship.com/chromatron/
 
@@ -52,18 +52,16 @@ The engine accepts validated JSON via `window.chromatron.loadLevels(levels)` for
 ## Quality assurance
 
 Run `npm run check` to execute simulation/localization/scene-lifecycle tests and build the production bundle.
-All eight demo levels have automated **golden solution tests**, and all 50 expert levels are checked by `verifyPuzzleSolution()` plus campaign-wide structural, hint and diversity tests.
+All eight tutorial solutions run in CI. Local retail tests verify solutions to the 200 original puzzles.
 Temporary 3D geometries and non-shared materials are now disposed after moves, reducing long-play GPU memory growth.
 GitHub Actions runs the unit suite and Vite build on every push. A passing build is not yet a substitute for manual in-browser usability and GPU visual testing.
 
 ## Classic 200-level compatibility and hint credits
 
-Open **Mapa poziomów → Wczytaj oryginały** and select your four Windows EXEs
-from `original/` in one selection. Their packed level data is decoded in a
-browser worker. The atlas remembers Chromatron 1, 2, 3 and 4 as four
-independent 50-puzzle campaigns in this browser. The **Wygenerowane · 50**
-tab contains the independently generated campaign. The eight tutorials have
-their own tab. [Compatibility and verification](docs/CLASSIC_COMPATIBILITY.md).
+The localhost development and preview servers read the original files at
+startup of the game page. No file picker is needed. Restart the server after
+replacing the files. On a static host, **Mapa poziomów → Wczytaj oryginały**
+can add privately owned games to that browser. [Compatibility and verification](docs/CLASSIC_COMPATIBILITY.md).
 
 All 22 instruments have Blender models. The speaker button enables the
 original synthesized score and interaction cues. To rebuild the instruments,
@@ -96,10 +94,7 @@ No texture downloads or user-paid purchases are required.
 - **Adaptive optical light budgets:** the Performance, Balanced and Cinematic
   presets now scale real dynamic point lights as well as pixel ratio, bloom
   and genuine planar mirror reflections.
-- **More puzzles:** eight original demonstration levels plus a 50-level expert
-  campaign, including Doppler wavelength shifting, three-channel prisms, twin
-  emitters, splitters, teleporters and entangled tanglers. They are NOT
-  reproduced from the original Chromatron series.
+- **Campaigns:** four original games, 50 puzzles per game, and eight tutorials.
 
 ## Board focus and smoother camera
 

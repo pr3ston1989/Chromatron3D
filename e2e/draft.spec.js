@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 // These are real browser/localStorage tests; the frame buffer is smaller on
 // CI because software WebGL otherwise dominates test execution time.
 test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-start-campaign','demo'));
  if(process.env.CI){
   await page.addInitScript(()=>{
    Object.defineProperty(window,'devicePixelRatio',{

@@ -8,7 +8,6 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
-import {EXPERT_LEVELS,EXPERT_CHAPTERS} from './expert-levels.js';
 import {createSoundscape} from './soundscape.js';
 import {COLORS,DX,DY,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
@@ -148,7 +147,7 @@ const opticModels=createOpticModelLoader(THREE,{
  baseUrl:import.meta.env.BASE_URL+'models/optics/',
  onReady(type){
   if(modelRefresh||!pieces.some(p=>p.type===type&&!p.inTray))return;
-  modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;rebuildPieces()});
+  modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;if(!selected&&!draggedPiece)rebuildPieces()});
  }
 });
 const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
@@ -208,13 +207,11 @@ const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THRE
 const wheelRotation=createWheelRotation();
 const hitObjects=[];
 const demoLevels=validateLevels(PROTOTYPE_LEVELS);
-const expertLevels=validateLevels(EXPERT_LEVELS);
 let levels=demoLevels,levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let wallet=normalizeWallet(null);
 let currentPackId=packFingerprint(levels);
 const demoPackId=currentPackId;
-const expertPackId=packFingerprint(expertLevels);
 const classicLibrary=new Map();
 for(let game=1;game<=4;game++){
  try{
@@ -225,7 +222,10 @@ for(let game=1;game<=4;game++){
   }
  }catch{}
 }
-let campaignPreference='demo';
+for(const {game,levels:pack} of globalThis.chromatronLocalCampaigns||[])classicLibrary.set(game,pack);
+delete globalThis.chromatronLocalCampaigns;
+const firstOriginal=[...classicLibrary.keys()].sort((a,b)=>a-b)[0];
+let campaignPreference=firstOriginal?'classic'+firstOriginal:'demo';
 const verifiedSolutions=new Map();
 let hintWorker=null,solvingId=null,solverStatus='';
 let coachDismissed=false,tutorialPlaced=false;
@@ -236,7 +236,10 @@ try{
   localStorage.getItem('chromatron-reborn-level')??0);
  language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
  analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
- campaignPreference=localStorage.getItem('chromatron-reborn-campaign')||'demo';
+ const preference=localStorage.getItem('chromatron-start-campaign');
+ const previous=preference||localStorage.getItem('chromatron-reborn-campaign');
+ if(previous==='demo'&&preference)campaignPreference='demo';
+ else if(/^classic[1-4]$/.test(previous)&&classicLibrary.has(Number(previous.slice(7))))campaignPreference=previous;
  coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
@@ -289,7 +292,7 @@ function rebuildPieces(){
  applyOpticFinish(THREE,silver,'polished');
  applyOpticFinish(THREE,trim,'brushed');
  const walls=pieces.filter(p=>p.type==='wall'&&!p.inTray);
- if(walls.length)opticModels.load('wall');
+ for(const type of new Set(pieces.map(p=>p.type)))opticModels.load(type);
  const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24));
  if(wallBatch){componentGroup.add(wallBatch);hitObjects.push(...wallBatch.children)}
  for(const p of pieces){
@@ -297,7 +300,6 @@ function rebuildPieces(){
   if(wallBatch&&p.type==='wall')continue;
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
   const color=new THREE.Color(COLORS[p.type==='target'?p.color:(p.color||7)]);
-  opticModels.load(p.type);
   const energized=p.type==='target'&&(currentResult?.received.get(p.id)||0)===p.color;
   const model=opticModels.cloneOptic(p.type,color,{energized});
   if(model){
@@ -665,11 +667,11 @@ function persistDraft(){
  if(!$('level-menu').classList.contains('hidden'))renderLevelAtlas();
 }
 function packLabelKey(){
- return currentPackId===demoPackId?'prototype':currentPackId===expertPackId?'expertPack':'classicPack';
+ return levels[levelIndex]?.sourceGame?'originalPack':currentPackId===demoPackId?'prototype':'classicPack';
 }
 function currentCampaign(){
  for(const [game,pack] of classicLibrary)if(pack===levels)return 'classic'+game;
- return currentPackId===expertPackId?'expert':currentPackId===demoPackId?'demo':'imported';
+ return currentPackId===demoPackId?'demo':'imported';
 }
 function syncCampaignTabs(){
  const campaign=currentCampaign();
@@ -682,11 +684,11 @@ function syncCampaignTabs(){
  }
 }
 function switchCampaign(next){
- const pack=next==='demo'?demoLevels:next==='expert'?expertLevels:classicLibrary.get(Number(next.slice(7)));
+ const pack=next==='demo'?demoLevels:/^classic[1-4]$/.test(next)?classicLibrary.get(Number(next.slice(7))):null;
  if(!pack)return currentCampaign();
  if(levels!==pack)switchLevelPack(pack);
  campaignPreference=next;
- store('chromatron-reborn-campaign',next);
+ store('chromatron-start-campaign',next);
  syncCampaignTabs();
  updateLocalizedLevel();
  return currentCampaign();
@@ -880,7 +882,7 @@ function renderInventory(){
    if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{
     const piece=nextTrayPiece(candidates,type);
     if(piece){selected=piece;placementMode=true;updateCoach();syncTransformTools()}
-    e.dataTransfer?.setData('text/plain','chromatron-optic');if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
+    e.dataTransfer?.setData('application/x-chromatron-optic',String(piece.id));if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
    })}
   }
   const icon=document.createElement('span');icon.className='component-icon';
@@ -1488,10 +1490,13 @@ renderer.domElement.addEventListener('pointercancel',()=>{
 });
 renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false;hideOpticTooltip()});
 renderer.domElement.addEventListener('dragover',e=>{
- if(placementMode&&selected?.inTray){e.preventDefault();updatePlacementPreview(e)}
+ if(e.dataTransfer?.types.includes('application/x-chromatron-optic')&&placementMode&&selected?.inTray){
+  e.preventDefault();e.dataTransfer.dropEffect='move';updatePlacementPreview(e)
+ }
 });
 renderer.domElement.addEventListener('drop',e=>{
- e.preventDefault();const dest=cellAt(e.clientX,e.clientY);
+ if(!e.dataTransfer?.types.includes('application/x-chromatron-optic'))return;
+ e.preventDefault();e.stopPropagation();const dest=cellAt(e.clientX,e.clientY);
  if(placementMode && selected?.inTray && dest)move(dest.x,dest.y);
  placementPreview.visible=false;
 });
@@ -1600,19 +1605,24 @@ $('classic-files').addEventListener('change',event=>{
  handleDroppedFiles(event.target.files);
  event.target.value='';
 });
+const carriesFiles=e=>e.dataTransfer?.types.includes('Files');
 let dragCounter=0;
 document.addEventListener('dragenter',e=>{
+ if(!carriesFiles(e))return;
  e.preventDefault();
  if(++dragCounter===1)$('drop-zone').classList.remove('hidden');
 });
-document.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy'});
+document.addEventListener('dragover',e=>{
+ if(carriesFiles(e)){e.preventDefault();e.dataTransfer.dropEffect='copy'}
+});
 document.addEventListener('dragleave',e=>{
- e.preventDefault();
- if(--dragCounter<=0){dragCounter=0;$('drop-zone').classList.add('hidden')}
+ if(!dragCounter)return;
+ if(--dragCounter===0)$('drop-zone').classList.add('hidden');
 });
 document.addEventListener('drop',e=>{
+ if(!carriesFiles(e))return;
  e.preventDefault();dragCounter=0;$('drop-zone').classList.add('hidden');
- if(e.dataTransfer?.files?.length)handleDroppedFiles(e.dataTransfer.files);
+ handleDroppedFiles(e.dataTransfer.files);
 });
 $('hint').onclick=()=>{
  $('hint-overlay').classList.remove('hidden');
@@ -1801,7 +1811,7 @@ setLanguage(language);
 // Apply the persisted GPU preset before loading the first puzzle or any GLB.
 // Previously only interactive quality changes updated the environment.
 applyGraphicsQuality();
-if(campaignPreference==='expert'||(campaignPreference.startsWith('classic')&&classicLibrary.has(Number(campaignPreference.slice(7)))))switchCampaign(campaignPreference);
+if(campaignPreference.startsWith('classic')&&classicLibrary.has(Number(campaignPreference.slice(7))))switchCampaign(campaignPreference);
 else load(Number.isFinite(saved)?Math.min(Math.max(Math.trunc(saved),0),levels.length-1):0);
 syncCampaignTabs();
 syncWalletUI();
@@ -1822,6 +1832,6 @@ window.chromatron={
  getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),
  getLevelAtlas:()=>getLevelAtlas(),
  getCampaign:()=>currentCampaign(),switchCampaign,
- getCampaignInfo:()=>({campaign:currentCampaign(),total:levels.length,chapters:EXPERT_CHAPTERS}),
+ getCampaignInfo:()=>({campaign:currentCampaign(),total:levels.length,chapters:[]}),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };

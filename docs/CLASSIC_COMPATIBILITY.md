@@ -1,6 +1,6 @@
 # Chromatron I–IV on the 3D board
 
-In **Mapa poziomów → Wczytaj oryginały**, select the four Windows game executables.
+Run the Windows launcher with the four retail EXEs in `original/`. The localhost server automatically opens the original library. For a static deployment the file picker remains available in the atlas.
 The importer reads the packed NRV2B streams, level tables and playable order
 in a local Web Worker. It also accepts previously unpacked files and level
 JSON. Each part appears separately in the atlas. The browser keeps the
@@ -28,7 +28,7 @@ does not win in its recorded position. The worker tries single-piece repairs
 and keeps the first arrangement that lights all receivers. Exact hints for
 all four packs use solutions rechecked by gameplay physics. Ordinary imports
 retain their source game for version-dependent prism and splitter rules.
-The eight tutorials and generated campaign retain their authored colour rules.
+The eight tutorials retain their authored colour rules.
 
 ## Optical coverage
 

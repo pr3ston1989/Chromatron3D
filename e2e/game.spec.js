@@ -4,6 +4,7 @@ import {test,expect} from '@playwright/test';
 // expensive live reflections and SMAA for the dedicated graphics-quality test.
 // Other interaction tests use the same gameplay, but laptop-friendly settings.
 test.beforeEach(async({page},testInfo)=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-start-campaign','demo'));
  if(process.env.CI&&!testInfo.title.includes('real planar mirror reflections')){
   await page.addInitScript(()=>{
    // Functional checks run real WebGL, but SwiftShader renders entirely on
