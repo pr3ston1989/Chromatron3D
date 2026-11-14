@@ -8,6 +8,8 @@ export default defineConfig({
  timeout:process.env.CI?75000:45000,
  expect:{timeout:process.env.CI?15000:10000},
  fullyParallel:false,
+ // SwiftShader shares the runner's CPU across all browser processes.
+ workers:process.env.CI?1:undefined,
  retries:process.env.CI?1:0,
  reporter:process.env.CI?[['list'],['html',{open:'never',outputFolder:'playwright-report'}]]:'list',
  use:{

@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
  if(process.env.CI){
   await page.addInitScript(()=>{
    Object.defineProperty(window,'devicePixelRatio',{
-    configurable:true,get:()=>.7
+    configurable:true,get:()=>.5
    });
    if(!localStorage.getItem('chromatron-graphics-quality'))
     localStorage.setItem('chromatron-graphics-quality','performance');
