@@ -71,3 +71,33 @@ test('state-aware progressive hints use current colors, validate next step and n
  assert.equal(notVerified.verified,false);
  assert.match(notVerified.body,/No verified solution/);
 });
+
+test('verified clues pick the first reachable optic before a downstream move in the stored solution',()=>{
+ const level={pieces:[['laser',1,7,2,1],['target',11,3,0,1],
+  ['mirror',8,3,5,0],['mirror',8,7,1,0]]};
+ const solution=[{index:2,x:8,y:3,rot:5},{index:3,x:8,y:7,rot:1}];
+ assert.ok(verifyPuzzleSolution(level,solution).valid);
+ const pieces=createPuzzlePieces(level);
+ const clue=contextualHint(level,pieces,1,'en',solution);
+ assert.match(clue.body,/red beam travelling right/i);
+ assert.match(clue.body,/red up/i);
+ assert.equal(clue.focus,null);
+ const exact=contextualHint(level,pieces,3,'pl',solution);
+ assert.deepEqual(exact.focus,{x:8,y:7});
+ // Player chose the other identical mirror and set it correctly upstream.
+ Object.assign(pieces[2],{x:8,y:7,rot:1,inTray:false});
+ assert.deepEqual(contextualHint(level,pieces,3,'pl',solution).focus,{x:8,y:3});
+ Object.assign(pieces[3],{x:8,y:3,rot:0,inTray:false});
+ assert.match(contextualHint(level,pieces,3,'en',solution).body,/Rotate.*225°/);
+});
+
+test('an extra tool interrupting the verified route is removed before a downstream placement',()=>{
+ const level={pieces:[['laser',1,7,2,1],['target',7,3,0,1],
+  ['mirror',7,7,1,0],['filter',4,7,0,4]]};
+ const plan=[{index:2,x:7,y:7,rot:1}],pieces=createPuzzlePieces(level);
+ pieces[3].inTray=false;
+ assert.ok(verifyPuzzleSolution(level,plan).valid);
+ const clue=contextualHint(level,pieces,3,'en',plan);
+ assert.match(clue.body,/Return FILTER.*Blue.*tray/);
+ assert.deepEqual(clue.focus,{x:4,y:7});
+});

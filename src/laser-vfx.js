@@ -202,10 +202,10 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  let lightBudget=0;
  for(const piece of activePieces){
   if(piece.type==='laser'){
-   flareOnce(piece.x,piece.y,piece.color,1.65);
+   flareOnce(piece.x,piece.y,piece.color,.69);
    if(lightBudget<Math.min(5,maxOpticLights)){
     lightBudget++;
-    const light=new THREE.PointLight(new THREE.Color(palette[piece.color]),14,7,2);
+    const light=new THREE.PointLight(new THREE.Color(palette[piece.color]),3.2,4,2);
     light.position.copy(point(piece.x,piece.y,.85));parent.add(light);
    }
   }
@@ -242,10 +242,10 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   if(!piece||piece.type==='laser')continue;
   if(piece.type==='target'){
    const active=received.get(piece.id)===piece.color;
-   flareOnce(piece.x,piece.y,s.color,active?1.8:.62);
+   flareOnce(piece.x,piece.y,s.color,active?.90:.46);
    if(active&&lightBudget<maxOpticLights){
     lightBudget++;
-    const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),24,8,2);
+    const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),5.4,5,2);
     l.position.copy(point(piece.x,piece.y,1));parent.add(l);
    }
   }else if(piece.type==='wall'){

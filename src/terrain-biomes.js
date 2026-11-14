@@ -65,7 +65,8 @@ export function terrainTexel(kind,x,y,seed=0){
   const grit=Math.abs(Math.sin(x*.46+y*.028));
   if(grit>.96)color=blend(color,palette.accent,.11);
  }
- const shade=.84+detail*.22;
+ color=blend(palette.mid,color,.48);
+ const shade=.86+detail*.22;
  const scale=c=>Math.max(0,Math.min(255,Math.round(c*shade)));
  return [scale((color>>>16)&255),scale((color>>>8)&255),scale(color&255),255];
 }
@@ -103,8 +104,8 @@ export function createBiomeTerrain(THREE,group,theme,random){
  root.userData.scenicOnly=true;group.add(root);
  const texture=buildTerrainTexture(THREE,kind,theme.edge&65535);
  const material=new THREE.MeshStandardMaterial({
-  color:0xffffff,map:texture,metalness:kind==='scrap'?.54:kind==='moss'?.03:.17,
-  roughness:kind==='moss'?.97:kind==='ice'?.54:.77,
+  color:0xa8b6b1,map:texture,metalness:.03,
+  roughness:.91,
   side:THREE.DoubleSide
  });
  const cliffMat=new THREE.MeshStandardMaterial({
@@ -140,47 +141,24 @@ export function createBiomeTerrain(THREE,group,theme,random){
   foundation.position.set(p.x,-2.22,p.z);
   foundation.userData.scenicOnly=true;root.add(foundation);
  });
- const stoneGeo=new THREE.DodecahedronGeometry(1.03,1);
- const stoneMat=new THREE.MeshStandardMaterial({
-  color:0xffffff,metalness:kind==='scrap'?.44:.12,
-  roughness:kind==='ice'?.43:.8,flatShading:true
- });
- const stone=new THREE.InstancedMesh(stoneGeo,stoneMat,48);
- stone.name='terrain-major-stones';stone.frustumCulled=false;
- stone.userData.scenicOnly=true;root.add(stone);
- const shapeGeo=kind==='moss'?new THREE.IcosahedronGeometry(.65,1):
-  kind==='ice'?new THREE.ConeGeometry(.46,2.9,6):
-  kind==='crystal'?new THREE.OctahedronGeometry(.91,0):
-  new THREE.BoxGeometry(1.35,.6,1.25);
- const shapeMat=new THREE.MeshStandardMaterial({
-  color:0xffffff,metalness:kind==='scrap'?.65:.07,
-  roughness:kind==='moss'?.96:.54,flatShading:kind!=='moss',
-  emissive:kind==='crystal'?0x52244c:0x000000,
-  emissiveIntensity:kind==='crystal'?.18:0
- });
- const features=new THREE.InstancedMesh(shapeGeo,shapeMat,90);
- features.name='terrain-landmark-clusters';features.frustumCulled=false;
- features.userData.scenicOnly=true;root.add(features);
- const growthGeo=kind==='moss'?new THREE.ConeGeometry(.28,1.24,5):
-  kind==='ice'?new THREE.OctahedronGeometry(.28,0):
-  kind==='crystal'?new THREE.ConeGeometry(.24,1.65,5):
-  new THREE.BoxGeometry(.7,.13,.26);
- const growthMat=new THREE.MeshStandardMaterial({
-  color:0xffffff,roughness:kind==='moss'?.97:.57,
-  metalness:kind==='scrap'?.64:.08,side:THREE.DoubleSide,
-  emissive:kind==='crystal'?0x371832:0x000000,
-  emissiveIntensity:.16
- });
- const growth=new THREE.InstancedMesh(growthGeo,growthMat,135);
- growth.name='terrain-biome-vegetation-and-geology';
- growth.frustumCulled=false;growth.userData.scenicOnly=true;
- root.add(growth);
- const palette=[
-  kind==='moss'?[0x466f49,0x5d8b4f,0x9caa6a]:
-  kind==='ice'?[0x83a9c6,0xb6d6e8,0xe2f5fc]:
-  kind==='crystal'?[0x69446c,0xae6c9d,0xec9ccf]:
-  [0x526b76,0x75848b,0xb0a08a]
- ][0];
+ // One vertex-painted Blender mesh per layer, shared by every instance.
+ const plantMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.81,metalness:.04});
+ function layer(name,count){
+  const batch=new THREE.InstancedMesh(new THREE.BufferGeometry(),plantMaterial,count);
+  batch.name=name;batch.visible=false;batch.userData.scenicOnly=true;
+  root.add(batch);return batch;
+ }
+ const stone=layer('terrain-major-stones',48);
+ const features=layer('terrain-landmark-clusters',90);
+ const growth=layer('terrain-biome-vegetation-and-geology',135);
+ function setFlora(source){
+  for(const [batch,name] of [[stone,'stone'],[features,'feature'],[growth,'growth']]){
+   const model=source.getObjectByName(name);
+   if(!model?.isMesh)continue;
+   batch.geometry.dispose();batch.geometry=model.geometry;
+   batch.boundingSphere=null;batch.visible=true;
+  }
+ }
  const stoneColor=new THREE.Color(),dummy=new THREE.Object3D();
  const scatter=(mesh,count,mode)=>{
   for(let i=0;i<count;i++){
@@ -188,18 +166,11 @@ export function createBiomeTerrain(THREE,group,theme,random){
    const large=mode==='stone';
    const baseScale=large?.54+random()*.88:
     mode==='feature'?.75+random()*1.02:.66+random()*.78;
-   let y=-1.60;
-   if(mode==='stone')y=-1.55+(random()-.5)*.10;
-   if(mode==='feature')y=kind==='ice'?-.57:kind==='crystal'?-1.17:-1.47;
-   if(mode==='growth')y=kind==='moss'?-1.12:kind==='crystal'?-1.0:-1.45;
-   dummy.position.set(x,y,z);
-   dummy.rotation.set((random()-.5)*.24,random()*Math.PI*2,(random()-.5)*.20);
-   if(mode==='stone')dummy.scale.set(baseScale*1.5,baseScale*.47,baseScale*1.15);
-   else if(mode==='feature')dummy.scale.set(baseScale*(kind==='moss'?1.5:1),
-    baseScale*(kind==='ice'?1.13:kind==='moss'?.35:1),baseScale);
-   else dummy.scale.set(baseScale,baseScale*(kind==='moss'?1.28:1),baseScale);
+   dummy.position.set(x,-1.64+(random()-.5)*.09,z);
+   dummy.rotation.set((random()-.5)*.12,random()*Math.PI*2,(random()-.5)*.12);
+   dummy.scale.setScalar(baseScale);
    dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
-   mesh.setColorAt(i,stoneColor.setHex(palette[Math.floor(random()*palette.length)]));
+   mesh.setColorAt(i,stoneColor.setScalar(.68+random()*.31));
   }
   mesh.instanceMatrix.needsUpdate=true;
   mesh.instanceColor.needsUpdate=true;
@@ -217,5 +188,5 @@ export function createBiomeTerrain(THREE,group,theme,random){
    textured:true,innerClearance:TERRAIN_INNER};
  }
  setQuality();
- return {root,setQuality,getStats};
+ return {root,setQuality,setFlora,getStats};
 }

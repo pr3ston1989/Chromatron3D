@@ -11,12 +11,12 @@ The puzzles stay exactly 15×15 logical cells. Every device must be legible from
 | Asset | Front/readability | Material & reflection | States | Performance target |
 |---|---|---|---|---|
 | Laser emitter | Long barrel and unmistakable output aperture following 8 headings | PBR titanium, luminous lens, colored core | Idle/on | 1–2k tris, shared textures |
-| **Mirror** | Thin vertical silvered plate, 1.05×0.92, bright front / opaque carbon back | **Actual planar reflector** on high quality; studio PBR fallback | Unselected / selected / moving / reflecting | Modular `src/mirror-asset.js`; one reflector on Balanced, two on Cinematic |
+| **Mirror** | Arched silvered face, brass rim and dark enamel back | **Actual planar reflector** on high quality; studio PBR fallback | Unselected / selected / moving / reflecting | Blender instrument catalog; one reflector on Balanced, two on Cinematic |
 | Bender | Visually different curved optical head, not mistaken for plain mirror | Distinct warm edging and optical profile | Same | 1–3k tris |
 | Opaque obstacle | Armored solid block with visible caution band | Brushed metal, rough opaque faces | Static | 1k tris |
 | Filter | Thin, colored transmissive plate with a robust frame | Colored transparency, directional channel indicator | Blocking / transmitting | 0.5–1.5k tris |
 | Prism | Recognizable triangular optical crystal | Transmission or budget refraction | Scattering channels | 1–2k tris |
-| Splitter | Semi-reflective glass and two-output indicator | Brushed chrome, translucent splitting plane | Idle / splitting | 1–2k tris |
+| Splitter | Open fork with two amber prongs | Amber enamel, silver crystal and ivory inlay | Idle / splitting | 1–2k tris |
 | Doppler | Wavelength-shift modulation housing | Warm/cold color coding | Idle / shifted | 1–2k tris |
 | Tangler | Two intertwined optical tracks | Metallic coils / luminous channels | Not yet faithful to original physics | TBD |
 | Conduit | An obvious straight channel | Metallic guide with emissive rails | Passing / blocked | 0.6–1k tris |
@@ -31,7 +31,7 @@ All budgets are provisional and should be tested on an actual integrated GPU, no
 - **Optical rule:** mirror front faces its local **–X** normal, plate lies in **YZ** plane; world rotation `–rot*π/4` for the Eight-Direction solver.
 - **Reversed side is opaque:** no mirrored look or light reflection from the +X carbon back.
 - **True scene reflection:** `src/mirror-reflections.js` mounts a Three.js `Reflector` with an offscreen render target ahead of the PBR silver plate.
-- **Modular 3D asset:** `src/mirror-asset.js` provides chamfered rails, machinist screws outside the silvered aperture, rear spine, captive brackets and directional notch. Generated geometry is used immediately by Three.js and can later be replaced with a baked GLB without altering the solver.
+- The shipped mirror uses the mesh in `public/models/optics/mirror.glb`. Its reflector follows the escutcheon outline.
 - **Rendering tiers:** Performance uses studio PBR fallback; Balanced enables one planar mirror; Cinematic allows two and a higher-resolution reflection.
 - **No accidental edits:** selected mirrors rotate only with Q/E or explicit onscreen controls and move only by dragging.
 
@@ -53,6 +53,12 @@ MIRROR_ROOT
 ```
 
 Textures per material: `BaseColor`, `Normal`, `ORM` (occlusion, roughness, metallic), optional emissive. Author consistent texel density, no giant 4k texture per small device. Common packed trim sheet is preferable. Aim for 512–1024px per family; cinematic upgrades as needed. Use procedural lights and FX in engine, not physically baked light routes.
+
+## Shipped Blender assets
+
+Open `art/Instruments.blend` to inspect the 22 named instrument meshes together. The game loads an individual GLB for each device in the current level. The equipment tray uses transparent 128 px orthographic portraits of the same meshes. A silver escutcheon identifies the mirror. Twin amber prongs identify the splitter. The coloured lens material is retinted by the optical state.
+
+Each biome has a near-rim island with a layered canopy, flowers, pool and observatory. The five-bladed windwheel turns on its own pivot. Reduced motion fixes its position. The surrounding landscape uses instanced vertex-painted models of stone, vegetation and flowers. The deck repeats a single UV-mapped chamfered ceramic cell with instancing. `scripts/generate-premium-models.bat` rebuilds the assets with Blender.
 
 ## Device interaction standard
 
@@ -77,4 +83,4 @@ Keep the source-of-truth puzzle solver, Three.js rendering, PL/EN UI and `glb` a
 
 ## Original levels and rights
 
-The five shipped puzzles are **independently designed demonstrations**. The original Chromatron puzzle layouts are not shipped. Porting the 200 historic levels requires verifying the source data, original physics and permission/distribution terms; do not silently substitute these demos for the classics or copy levels from unrelated third-party repositories without checking rights.
+The eight shipped tutorial puzzles are **independently designed demonstrations**. The original Chromatron puzzle layouts are not shipped. Porting the 200 historic levels requires verifying the source data, original physics and permission/distribution terms; do not silently substitute these demos for the classics or copy levels from unrelated third-party repositories without checking rights.

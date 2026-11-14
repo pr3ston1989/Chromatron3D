@@ -11,7 +11,12 @@ import {Reflector} from 'three/addons/objects/Reflector.js';
  */
 export function mountRealMirror(THREE,head,resolution=160){
  const size=Math.max(64,Math.min(512,Math.round(resolution)));
- const reflector=new Reflector(new THREE.PlaneGeometry(1.045,.92),{
+ const outline=new THREE.Shape();
+ const rim=[[-.36,-.12],[-.30,-.21],[-.20,-.25],[.22,-.25],[.34,-.18],[.37,-.10],
+  [.37,.10],[.31,.18],[.12,.235],[-.12,.235],[-.28,.18],[-.36,.10]];
+ rim.forEach(([x,y],i)=>i?outline.lineTo(x,y):outline.moveTo(x,y));
+ outline.closePath();
+ const reflector=new Reflector(new THREE.ShapeGeometry(outline),{
   textureWidth:size,
   textureHeight:size,
   clipBias:.003,
@@ -22,7 +27,7 @@ export function mountRealMirror(THREE,head,resolution=160){
  // PlaneGeometry's normal is +Z. -90 degrees around Y makes it -X.
  // Its front aligns exactly with the physical silvered mirror front.
  reflector.rotation.y=-Math.PI/2;
- reflector.position.set(-.139,.065,0);
+ reflector.position.set(-.069,0,0);
  reflector.userData.isOpticalReflection=true;
  head.add(reflector);
  return reflector;

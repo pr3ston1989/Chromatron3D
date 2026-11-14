@@ -17,7 +17,7 @@ if not exist %BLENDER% (
     exit /b 1
 )
 
-echo  [1/3] Generating hero biome models...
+echo  [1/4] Generating hero biome models...
 echo.
 %BLENDER% --background --python-exit-code 1 --python scripts/blender_generate_heroes.py 2>&1
 if errorlevel 1 (
@@ -28,7 +28,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo  [2/3] Generating midground set-piece models...
+echo  [2/4] Generating midground set-piece models...
 echo.
 %BLENDER% --background --python-exit-code 1 --python scripts/blender_generate_midground.py 2>&1
 if errorlevel 1 (
@@ -39,7 +39,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo  [3/3] Generating optical device models...
+echo  [3/4] Generating optical device models...
 echo.
 %BLENDER% --background --python-exit-code 1 --python scripts/blender_optical_bench.py 2>&1
 if errorlevel 1 (
@@ -51,6 +51,10 @@ if errorlevel 1 (
 
 echo.
 echo  ================================================================
+echo  [4/4] Generating table terraces and the board cell...
+%BLENDER% --background --factory-startup --python-exit-code 1 --python scripts/blender_terraces.py
+if errorlevel 1 exit /b 1
+
 echo   All premium models generated successfully!
 echo.
 echo   Output:
@@ -58,6 +62,9 @@ echo     public/models/biomes/     (4 hero GLB files)
 echo     public/models/midground/  (8 midground GLB files)
 echo     public/models/optics/     (22 optical device GLB files)
 echo.
+echo     public/models/terraces/    (4 animated habitats)
+echo     public/portraits/         (22 equipment portraits)
+echo     art/Instruments.blend     (editable collection)
 echo   Run "npm run dev" to see them in the game.
 echo  ================================================================
 echo.

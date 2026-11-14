@@ -2,8 +2,19 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from './classic-pieces.js';
 
 // Every placement shares its geometry, metalwork and cached lens colours.
-export function createOpticModelLoader(THREE,{baseUrl,onReady,loader=new GLTFLoader()}){
+export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,onReady,loader=new GLTFLoader()}){
  const catalog=new Map(), lenses=new Map();
+ const portraits=new Map();
+ function portrait(type){
+  if(!portraits.has(type)){
+   const tex=new THREE.TextureLoader().load(portraitUrl+type+'.png');
+   tex.colorSpace=THREE.SRGBColorSpace;
+   portraits.set(type,new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+  }
+  const sprite=new THREE.Sprite(portraits.get(type));
+  sprite.userData.catalogMesh=true;sprite.scale.setScalar(1.12);
+  return sprite;
+ }
  function load(type){
   if(catalog.has(type)||!CLASSIC_TYPE_NAMES.includes(type))return;
   catalog.set(type,null);
@@ -51,5 +62,5 @@ export function createOpticModelLoader(THREE,{baseUrl,onReady,loader=new GLTFLoa
   });
   return group;
  }
- return {load,cloneOptic,tint,instanceWalls};
+ return {load,portrait,cloneOptic,tint,instanceWalls};
 }

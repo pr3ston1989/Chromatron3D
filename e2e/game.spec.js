@@ -175,7 +175,7 @@ test('different board mirrors remain distinct; dragging one does not move the ot
 test('spectrum FX and mirror light-direction guides are rendered in WebGL',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');
- const icons=page.locator('#inventory .component-icon svg');
+ const icons=page.locator('#inventory .component-icon img');
  await expect(icons).toHaveCount(3);
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.photonSystems).toBeGreaterThan(0);

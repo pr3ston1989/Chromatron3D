@@ -251,7 +251,7 @@ function makePlanet(THREE,group,theme,random){
  * Instantiates four environments exactly once. Changing a level toggles only
  * visible groups and a few colors/instance counts; no GPU buffers are leaked.
  */
-export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
+export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3,loadFlora}={}){
  const nebulaTexture=makeNebulaTexture(THREE);
  // Shared across all four cached biomes; no per-level buffer allocation.
  const trafficGeometry={
@@ -311,6 +311,10 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3}={}){
    const show=group.theme.id===theme.id;
    group.sky.visible=show;group.foliage.visible=show;
    if(show)active=group;
+  }
+  if(loadFlora&&!active.floraRequested){
+   active.floraRequested=true;
+   loadFlora(theme.id,active.terrain.setFlora);
   }
   // One biome can still have many recognizable skies, depending on the
   // level and the session. Composition is repeatable for the same seed.

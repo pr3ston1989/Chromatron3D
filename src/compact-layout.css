@@ -272,3 +272,18 @@
 
 #inventory .inventory-item > span:nth-child(2){min-width:0;overflow-wrap:anywhere;line-height:1.15}
 #inventory .inventory-item strong{flex-shrink:0}
+/* Tool portraits are offline renders of the playable GLBs. */
+#inventory {display:block;overscroll-behavior:contain}
+#inventory .component-icon {width:44px;height:42px;flex:none;overflow:hidden;border-radius:8px;border:1px solid #41606a;background:radial-gradient(ellipse at 45% 75%,#335562,#12242f 80%)}
+#inventory .component-icon img {width:100%;height:100%;object-fit:contain;pointer-events:none}
+#inventory .inventory-item {display:flex;align-items:center;width:100%;max-width:none;min-width:0;gap:8px;padding:3px 5px;line-height:1.12;letter-spacing:.045em}
+#inventory button.inventory-item {user-select:none;touch-action:pan-y;cursor:grab;border-radius:6px}
+#inventory button.inventory-item strong {color:#c1f7de;border-radius:4px;background:#163c34;padding:3px 5px;font-variant-numeric:tabular-nums;letter-spacing:0}
+#inventory .tray-fixtures {margin-top:5px;color:#a3c3cf}
+#inventory .tray-fixtures summary {cursor:pointer;padding:6px 2px;font-size:12px}
+#inventory .tray-fixtures .inventory-item {font-size:11px}
+body.carrying-optic,body.carrying-optic * {cursor:grabbing!important;user-select:none}
+@media(max-height:740px){#inventory .component-icon{height:35px;width:37px}}
+
+#inventory button .component-icon {touch-action:none}
+.carried-portrait {position:fixed;top:-24px;left:-24px;width:48px;height:48px;pointer-events:none;z-index:25;filter:drop-shadow(0 3px 4px #081727)}

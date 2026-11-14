@@ -165,3 +165,5 @@ Three.js, WebGL, 15 × 15 board, 8-direction beam tracing, additive RGB bitmasks
 ## Modernization design
 
 See [modernization plan](docs/MODERNIZATION.md) for the spectral inspector, colorblind/accessible rendering, chapter map, visual polish, replay mode, quality presets and eventual Windows build.
+
+Modele 22 przyrządów można obejrzeć i edytować w [katalogu Blendera](art/Instruments.blend). Zasobnik pokazuje miniatury tych samych modeli. Przeciągnij przyrząd na pole lub wybierz go kliknięciem i wskaż pole na planszy. Stałe elementy znajdziesz w rozwijanej sekcji zasobnika.

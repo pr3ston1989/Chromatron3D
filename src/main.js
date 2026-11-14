@@ -6,10 +6,11 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PROTOTYPE_LEVELS,validateLevels} from './levels.js';
 import {createSoundscape} from './soundscape.js';
-import {COLORS,DX,DY,trace,movable} from './optics.js';
+import {COLORS,trace,movable} from './optics.js';
 import {inspectLight,colorName,channels} from './analysis.js';
 import {applyLanguage,t,loc,normalizeLanguage} from './i18n.js';
 import {clampHints,hintFor,progressKey} from './hints.js';
@@ -24,21 +25,18 @@ import {createHeroScenery} from './hero-scenery.js';
 import {createMidgroundScenery} from './midground-scenery.js';
 import {createAmbientLife} from './ambient-life.js';
 import {stageEntryMode,stagePresentation} from './stage-presentation.js';
-import {deckSurfaceProfile,deckCellFinish,deckCellRoughness} from './deck-finishes.js';
+import {deckSurfaceProfile,deckCellFinish} from './deck-finishes.js';
 import {createLivingWorld} from './living-world.js';
-import {createGroundTerrain} from './ground-terrain.js';
 import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
-import {opticIcon} from './optic-icons.js';
+import {createTerraces} from './terraces.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
-import {createMirrorHardware} from './mirror-asset.js';
 import {applyOpticFinish} from './optic-textures.js';
-import {detailEmitter,detailResonator} from './optical-assets.js';
 import {createOpticModelLoader} from './optic-model-loader.js';
 import {createCinematicPass} from './cinematic-pass.js';
 import {createBoardEdgeGlow} from './board-edge-glow.js';
@@ -60,7 +58,7 @@ const GRID=15, HALF=7, T=1.3;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
-let yaw=-1.05,pitch=1.10,dist=44;
+let yaw=-.80,pitch=.86,dist=44;
 let zoomTarget=44,zoomLastFrame=0;
 let boardFocus=false;
 try{boardFocus=localStorage.getItem('chromatron-board-focus')==='yes'}catch{}
@@ -97,13 +95,10 @@ composer.addPass(smaaPass);
 composer.addPass(new OutputPass());
 
 $('scene').appendChild(renderer.domElement);
-const ambient=new THREE.AmbientLight(0xb0d7ef,.96);scene.add(ambient);
-const key=new THREE.DirectionalLight(0xf0faff,1.85);key.position.set(-8,16,12);scene.add(key);
+const ambient=new THREE.AmbientLight(0xc8d6e1,.70);scene.add(ambient);
+const key=new THREE.DirectionalLight(0xffebce,1.67);key.position.set(-8,16,12);scene.add(key);
 const fill=new THREE.PointLight(0x2c6bff,25,35);fill.position.set(9,9,-9);scene.add(fill);
 const world=new THREE.Group();scene.add(world);
-const metal=new THREE.MeshStandardMaterial({color:0x15233b,metalness:.78,roughness:.26});
-const dark=new THREE.MeshStandardMaterial({color:0x0a1225,metalness:.45,roughness:.4});
-const cyan=new THREE.MeshStandardMaterial({color:0x1fa9c5,emissive:0x0a83c5,emissiveIntensity:1.3,metalness:.35,roughness:.22});
 const tileGeo=new THREE.BoxGeometry(T*.97,.22,T*.97);
 function mesh(geo,mat,parent=world){const m=new THREE.Mesh(geo,mat);parent.add(m);return m;}
 const deck=mesh(new RoundedBoxGeometry(21,.75,21,4,.26),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.32}));deck.position.y=-.62;
@@ -113,6 +108,13 @@ const gridGroup=new THREE.Group();world.add(gridGroup);
 const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
 applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
+const sceneryLoader=new GLTFLoader();
+sceneryLoader.load(import.meta.env.BASE_URL+'models/board-cell.glb',({scene})=>{
+ const tile=scene.getObjectByName('board-cell');
+ if(!tile?.isMesh)return;
+ boardTiles.geometry=tile.geometry;
+ tileGeo.dispose();tile.material.dispose();
+});
 const lineGeometry=new THREE.BoxGeometry(T*.88,.012,.016);
 const boardLines=new THREE.InstancedMesh(lineGeometry,new THREE.MeshBasicMaterial({
  color:0x73abc4,transparent:true,opacity:.68,depthWrite:false
@@ -134,20 +136,23 @@ boardTiles.instanceColor.needsUpdate=true;
 boardLines.instanceMatrix.needsUpdate=true;
 gridGroup.add(boardTiles,boardLines);
 const laboratory=buildLaboratory(THREE,scene,world,T);
-const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T});
+const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T,
+ loadFlora:(id,ready)=>sceneryLoader.load(import.meta.env.BASE_URL+'models/terraces/'+id+'-flora.glb',({scene})=>ready(scene))
+});
 const heroScenery=createHeroScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/biomes/'});
 const midgroundScenery=createMidgroundScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/midground/'});
+const terraces=createTerraces(THREE,world,import.meta.env.BASE_URL+'models/terraces/');
 const ambientLife=createAmbientLife(THREE,world);
 const livingWorld=createLivingWorld(THREE,scene,world);
-const groundTerrain=createGroundTerrain(THREE,world);
 const boardEdgeGlow=createBoardEdgeGlow(THREE,world,{tileSize:T,half:HALF});
 const atmosphereParticles=createAtmosphereParticles(THREE,scene);
 let modelRefresh=0;
 const opticModels=createOpticModelLoader(THREE,{
- baseUrl:import.meta.env.BASE_URL+'models/optics/',
+ baseUrl:import.meta.env.BASE_URL+'models/optics/',portraitUrl:import.meta.env.BASE_URL+'portraits/',
  onReady(type){
+  if(previewPiece?.type===type&&placementPreview.visible)previewInstrument(previewPiece);
   if(modelRefresh||!pieces.some(p=>p.type===type&&!p.inTray))return;
-  modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;if(!selected&&!draggedPiece)rebuildPieces()});
+  modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;rebuildPieces()});
  }
 });
 const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
@@ -159,9 +164,9 @@ function applyLevelEnvironment(){
  soundscape.setBiome(theme.id);
  heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  midgroundScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
+ terraces.setLevel(theme.id,levelIndex);
  ambientLife.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  livingWorld.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
- groundTerrain.setTheme(theme);
  boardEdgeGlow.setTheme(theme);
  atmosphereParticles.setBiome(theme.id);
  atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
@@ -265,7 +270,6 @@ try{
 }catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
-const matColor=color=>new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[color||7]),emissive:new THREE.Color(COLORS[color||7]),emissiveIntensity:1.8,metalness:.3,roughness:.18});
 function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
@@ -283,14 +287,9 @@ function rebuildPieces(){
  const frameTime=performance.now();
  // Planar reflections own GPU render targets in addition to their meshes.
  disposeReflectionTargets(componentGroup);
- disposeGroupChildren(componentGroup,new Set([metal,dark,cyan]));
+ disposeGroupChildren(componentGroup);
  hitObjects.length=0;
  const reflectingIds=new Set(reflectionCandidates(pieces,selected,graphicsProfile.reflectorCount).map(p=>p.id));
- const silver=new THREE.MeshPhysicalMaterial({color:0xd3f6ff,metalness:.86,roughness:.11,clearcoat:1,clearcoatRoughness:.08,emissive:0x18415a,emissiveIntensity:.22,side:THREE.DoubleSide});
- const trim=new THREE.MeshStandardMaterial({color:0x587991,metalness:.82,roughness:.22});
- const glass=new THREE.MeshPhysicalMaterial({color:0x97eaff,metalness:.42,roughness:.12,transparent:true,opacity:.83,clearcoat:1,side:THREE.DoubleSide});
- applyOpticFinish(THREE,silver,'polished');
- applyOpticFinish(THREE,trim,'brushed');
  const walls=pieces.filter(p=>p.type==='wall'&&!p.inTray);
  for(const type of new Set(pieces.map(p=>p.type)))opticModels.load(type);
  const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24));
@@ -313,109 +312,11 @@ function rebuildPieces(){
    if(p.type==='target')g.userData.modelActive=energized;
    model.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
   }else{
-   const glow=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.3,metalness:.24,roughness:.18});
-  // ── Procedural fallback ─────────────────────────────────────────────
-  const base=mesh(new THREE.CylinderGeometry(.53,.60,.24,12),metal,g);base.position.y=.025;
-  const foot=mesh(new THREE.CylinderGeometry(.47,.49,.06,24),trim,g);foot.position.y=.17;
-  const outlineMaterial=new THREE.MeshBasicMaterial({color:0x467e96,transparent:true,opacity:.43});
-  const outline=torus(.48,.030,outlineMaterial,g);
-  outline.position.y=-.045;
-  if(p.type==='laser'){
-   // Distinct directional photon emitter: a barrel, aperture and hot optical lens.
-   const tower=mesh(new THREE.CylinderGeometry(.30,.37,.43,20),dark,g);tower.position.y=.38;
-   const poweredRing=torus(.32,.055,glow,g);poweredRing.position.y=.56;
-   const lens=mesh(new THREE.SphereGeometry(.16,16,12),glow,g);lens.position.y=.59;
-   const nozzleAxis=new THREE.Vector3(DX[p.rot],0,DY[p.rot]).normalize();
-   const orientation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),nozzleAxis);
-   const nozzle=mesh(new THREE.CylinderGeometry(.17,.205,.59,20),silver,g);
-   nozzle.quaternion.copy(orientation);
-   nozzle.position.set(nozzleAxis.x*.34,.53,nozzleAxis.z*.34);
-   const lensFace=mesh(new THREE.CylinderGeometry(.16,.16,.034,20),glow,g);
-   lensFace.quaternion.copy(orientation);
-   lensFace.position.set(nozzleAxis.x*.655,.53,nozzleAxis.z*.655);
-   const aperture=mesh(new THREE.CylinderGeometry(.22,.22,.035,20),trim,g);
-   aperture.quaternion.copy(orientation);
-   aperture.position.set(nozzleAxis.x*.63,.53,nozzleAxis.z*.63);
-   const flare=mesh(new THREE.SphereGeometry(.11,12,8),
-     new THREE.MeshBasicMaterial({color:0xe8ffff,toneMapped:false}),g);
-   flare.position.set(nozzleAxis.x*.70,.53,nozzleAxis.z*.70);
-   detailEmitter(THREE,g,p.rot,color);
-  }else if(p.type==='target'){
-   const energized=(currentResult?.received.get(p.id)||0)===p.color;
-   glow.emissiveIntensity=energized?5.2:1.7;
-   const housing=mesh(new THREE.CylinderGeometry(.35,.42,.24,24),dark,g);housing.position.y=.27;
-   const receiverRing=torus(.41,.074,energized?glow:silver,g);receiverRing.position.y=.40;
-   torus(.29,.04,glow,g).position.y=.49;
-   const crystal=mesh(new THREE.IcosahedronGeometry(energized ? .27 : .225,1),glow,g);
-   crystal.position.y=.56;crystal.userData.spin=true;
-   const frame=mesh(new THREE.CylinderGeometry(.47,.50,.05,28),trim,g);frame.position.y=.13;
-   const detail=detailResonator(THREE,g,{color,active:energized});
-   g.userData.targetVisual={glow,crystal,receiverRing,silver,detail,active:energized};
-  }else if(p.type==='wall'){
-   // A proper light-blocking bulkhead with inset armored faces and safety marks.
-   const wall=mesh(new THREE.BoxGeometry(1.05,.88,1.05),dark,g);wall.position.y=.48;
-   const top=mesh(new THREE.BoxGeometry(1.11,.095,1.11),trim,g);top.position.y=.95;
-   const panelMat=new THREE.MeshStandardMaterial({color:0x233848,metalness:.7,roughness:.42});
-   for(const side of [-1,1]){
-    const panel=mesh(new THREE.BoxGeometry(.83,.64,.035),panelMat,g);
-    panel.position.set(0,.48,side*.545);
-    const stripe=mesh(new THREE.BoxGeometry(.75,.065,.045),new THREE.MeshBasicMaterial({color:0xf9b45b}),g);
-    stripe.position.set(0,.69,side*.576);
-   }
-   for(const x of [-.4,.4])for(const z of [-.4,.4]){
-    const bolt=mesh(new THREE.CylinderGeometry(.052,.052,.025,8),trim,g);
-    bolt.position.set(x,.995,z);
-   }
-  }else{
-   const stem=mesh(new THREE.CylinderGeometry(.14,.19,.37,12),metal,g);stem.position.y=.36;
-   const head=new THREE.Group();head.position.y=.65;head.rotation.y=-p.rot*Math.PI/4;
-   head.userData.motionHead=true;g.add(head);
-   if(p.type==='mirror'||p.type==='bender'){
-    // Original rule: optic axis rot=0 runs NORTH-SOUTH, not East-West.
-    // The forward-facing reflective surface is local -X; the back is dark +X.
-    // At rot=1 an eastbound ray strikes the reflective NW face and goes NORTH.
-    const support=mesh(new THREE.BoxGeometry(.19,1.04,1.15),trim,head);support.position.y=.09;
-    const front=mesh(new THREE.BoxGeometry(.026,.93,1.06),silver,head);
-    front.position.set(-.113,.065,0);
-    // The interactive mirror's silvered front receives a real reflection of
-    // the 3D scene. The other faces retain PBR environment reflections.
-    if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
-    // Modular optical hardware: chamfered machined rails, captive screws, opaque carbon back.
-    createMirrorHardware(THREE,head,{bender:p.type==='bender'});
-    // Long, thin line on the pedestal is the actual tangent of the mirror:
-    // readable even from a near top-down camera. Cyan = reflective/front;
-    // charcoal = opaque/back. Orientation matches the ray tracer.
-    const surfaceFootprint=new THREE.Group();surfaceFootprint.rotation.y=-p.rot*Math.PI/4;
-    surfaceFootprint.userData.motionFootprint=true;
-    surfaceFootprint.position.y=.205;g.add(surfaceFootprint);
-    const frontMark=mesh(new THREE.BoxGeometry(.14,.035,1.14),
-      new THREE.MeshBasicMaterial({color:0xc6f8ff,toneMapped:false}),surfaceFootprint);
-    frontMark.position.x=-.12;
-    const backMark=mesh(new THREE.BoxGeometry(.14,.036,1.14),
-      new THREE.MeshBasicMaterial({color:0x152232}),surfaceFootprint);
-    backMark.position.x=.12;
-    const reflectionStrip=mesh(new THREE.BoxGeometry(.017,.60,.07),
-      new THREE.MeshBasicMaterial({color:0xf0ffff,transparent:true,opacity:.88,toneMapped:false}),head);
-    reflectionStrip.position.set(-.145,.13,-.25);
-    // Incoming/outgoing beam arrows live in the independent guidance layer.
-   }else if(p.type==='prism'){
-    const prism=mesh(new THREE.ConeGeometry(.49,.78,3),glass,head);prism.rotation.y=Math.PI/6;
-    const base=mesh(new THREE.CylinderGeometry(.32,.35,.08,3),glow,head);base.position.y=-.37;
-   }else if(p.type==='filter'){
-    const plate=mesh(new THREE.BoxGeometry(.9,.75,.12),glow,head);
-    plate.material.transparent=true;plate.material.opacity=.72;
-    const window=mesh(new THREE.BoxGeometry(.57,.48,.14),glass,head);window.position.z=.03;
-   }else if(p.type==='splitter'){
-    const plate=mesh(new THREE.BoxGeometry(.92,.64,.11),silver,head);
-    const ring=torus(.23,.055,glow,head);ring.position.z=.09;ring.rotation.set(0,0,0);
-   }else{
-    const ring=torus(.34,.075,glow,head);ring.rotation.x=0;
-    mesh(new THREE.IcosahedronGeometry(.2,1),silver,head);
-   }
-   const baseRingMaterial=p.type==='mirror'?new THREE.MeshBasicMaterial({color:0x417fa1,transparent:true,opacity:.78}):glow;
-   torus(.50,.03,baseRingMaterial,g).position.y=.29;
-  }
-  g.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
+   // Keep the exact silhouette visible and selectable while the mesh arrives.
+   // Slow or interrupted downloads use the matching Blender portrait.
+   const portrait=opticModels.portrait(p.type);
+   portrait.position.y=.49;g.add(portrait);
+   portrait.userData.piece=p;hitObjects.push(portrait);
   }
   // Precise four-corner reticle is shared by all optics, never rebuilt.
   // Animate the model, not its logical placement. The ray tracer resolves
@@ -447,8 +348,6 @@ function rebuildPieces(){
    }
   }
  }
- // These are shared within this rebuild, but disposed next time by the group's
- // resource collector. Avoid disposing them before every piece has been rendered.
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
 let levelTransition=null;
@@ -755,6 +654,7 @@ function load(i,{silentIntro=false}={}){
   toast(t(language,'atlasLockedHint'));
   return false;
  }
+ finishTrayGesture(null,false);
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  // ── Level transition animation: fog-in → swap → fog-out ──
@@ -843,14 +743,21 @@ function update(){
  persistDraft();
 }
 function renderInventory(){
- const el=$('inventory');el.replaceChildren();
+ const el=$('inventory'),scroll=el.scrollTop;
+ const expanded=Boolean(el.querySelector('details')?.open);
+ el.replaceChildren();
+ const fixtures=document.createElement('details');
+ fixtures.className='tray-fixtures';fixtures.open=expanded;
+ const summary=document.createElement('summary');
+ summary.textContent=language==='en'?'Fixed on the board':'Stałe na planszy';
+ fixtures.append(summary);
  const groups=new Map();
  for(const piece of pieces){
   const key=piece.type==='filter'?'filter:'+piece.color:piece.type;
   if(!groups.has(key))groups.set(key,[]);
   groups.get(key).push(piece);
  }
- for(const candidates of groups.values()){
+ for(const candidates of [...groups.values()].sort((a,b)=>Number(b.some(p=>p.inTray))-Number(a.some(p=>p.inTray)))){
   const {type,color}=candidates[0];
   const typeLabel=t(language,'type'+type[0].toUpperCase()+type.slice(1));
   const label=type==='filter'?typeLabel+' · '+colorName(color,language):typeLabel;
@@ -879,19 +786,23 @@ function renderInventory(){
     if(first)selectFromTray(first);
     else toast(t(language,'emptyTray'));
    });
-   if(tray.length){item.draggable=true;item.addEventListener('dragstart',e=>{
-    const piece=nextTrayPiece(candidates,type);
-    if(piece){selected=piece;placementMode=true;updateCoach();syncTransformTools()}
-    e.dataTransfer?.setData('application/x-chromatron-optic',String(piece.id));if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
-   })}
+   item.setAttribute('aria-pressed',String(selected?.inTray&&candidates.includes(selected)||false));
+   if(tray.length)item.addEventListener('pointerdown',e=>{
+    if(e.isPrimary&&e.button===0)trayGesture={id:e.pointerId,x:e.clientX,y:e.clientY,
+     piece:nextTrayPiece(candidates,type),active:false};
+   });
   }
   const icon=document.createElement('span');icon.className='component-icon';
-  icon.innerHTML=opticIcon(type);
+  const portrait=document.createElement('img');
+  portrait.src=import.meta.env.BASE_URL+'portraits/'+type+'.png';
+  portrait.alt='';portrait.draggable=false;icon.append(portrait);
   const name=document.createElement('span');name.textContent=label;
   const count=document.createElement('strong');
-  count.textContent=tray.length?tray.length+' / '+candidates.length:String(candidates.length).padStart(2,'0');
-  item.append(icon,name,count);el.appendChild(item);
+  count.textContent='×'+(movableType?tray.length:candidates.length);
+  item.append(icon,name,count);(movableType?el:fixtures).appendChild(item);
  }
+ if(fixtures.children.length>1)el.append(fixtures);
+ el.scrollTop=scroll;
  const details=$('optic-info');
  details.classList.toggle('hidden',!selected);
  if(selected){
@@ -1063,27 +974,13 @@ function animateRotationTo(piece,previousRotation,dir){
 }
 function syncTargetGlow(){
  for(const group of componentGroup.children){
-  const piece=group.userData.piece,visual=group.userData.targetVisual;
-  if(piece?.type!=='target')continue;
+  const piece=group.userData.piece;
+  if(piece?.type!=='target'||group.userData.modelActive===undefined)continue;
   const active=(currentResult?.received.get(piece.id)||0)===piece.color;
-  if(group.userData.modelActive!==undefined){
-   if(group.userData.modelActive!==active){
-    opticModels.tint(group,new THREE.Color(COLORS[piece.color]),active);
-    group.userData.modelActive=active;
-   }
-   continue;
+  if(group.userData.modelActive!==active){
+   opticModels.tint(group,new THREE.Color(COLORS[piece.color]),active);
+   group.userData.modelActive=active;
   }
-  if(!visual)continue;
-  if(visual.active===active)continue;
-  visual.active=active;
-  visual.glow.emissiveIntensity=active?5.2:1.7;
-  visual.crystal.scale.setScalar(active?1.2:1);
-  visual.receiverRing.material=active?visual.glow:visual.silver;
-  const halo=visual.detail.children.find(c=>c.name==='receiver-color-halo');
-  const outer=visual.detail.children.find(c=>c.name==='receiver-outer-collar');
-  if(halo)halo.material.opacity=active ? .95 : .54;
-  for(const index of visual.detail.children.filter(c=>c.name==='wavelength-index'))
-   index.material=active?(halo?.material||index.material):(outer?.material||index.material);
  }
 }
 function rotate(dir){
@@ -1094,7 +991,7 @@ function rotate(dir){
  selected.rot=(selected.rot+dir+8)%8;
  if(selected.inTray){
   // Preview the new angle immediately without rebuilding board meshes.
-  ghostHead.rotation.y=-selected.rot*Math.PI/4;
+  if(previewModel)previewModel.rotation.y=-selected.rot*Math.PI/4;
   syncTransformTools();
   persistDraft();
   beep(540,.045);
@@ -1138,7 +1035,7 @@ function syncCameraLabel(){
 }
 function toggleCameraPreset(){
  cameraTop=!cameraTop;
- const nextYaw=cameraTop?0:-1.05,nextPitch=cameraTop?1.49:1.10;
+ const nextYaw=cameraTop?0:-.80,nextPitch=cameraTop?1.49:.86;
  if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
   cameraTween=null;yaw=nextYaw;pitch=nextPitch;updateCamera();
  }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,time:performance.now()};
@@ -1227,10 +1124,10 @@ function applyGraphicsQuality(){
  graphicsProfile=profileFor(graphicsMode,autoLevel);
  spaceEnvironments.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  heroScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
+ terraces.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  midgroundScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  ambientLife.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  livingWorld.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
- groundTerrain.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  boardEdgeGlow.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  cinematic.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
@@ -1282,21 +1179,19 @@ placementPreview.visible=false;placementPreview.renderOrder=18;
 const previewEdgeMat=new THREE.LineBasicMaterial({color:0x8ce9ff,depthTest:false});
 const previewEdge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(T*.92,.04,T*.92)),previewEdgeMat);
 placementPreview.add(previewEdge);
-// A translucent, correctly oriented 3D silhouette follows the cursor while
-// placing or dragging. The player sees the OPTIC, not just a highlighted tile.
-const ghostMirror=new THREE.Group();
-placementPreview.add(ghostMirror);
-const ghostMat=new THREE.MeshBasicMaterial({
- color:0xa7f3ff,transparent:true,opacity:.43,depthWrite:false,depthTest:false,side:THREE.DoubleSide
-});
-const ghostStand=new THREE.Mesh(new THREE.CylinderGeometry(.40,.45,.15,12),ghostMat);
-ghostStand.position.y=.18;ghostMirror.add(ghostStand);
-const ghostHead=new THREE.Group();ghostHead.position.y=.64;ghostMirror.add(ghostHead);
-const ghostPlate=new THREE.Mesh(new THREE.BoxGeometry(.13,.67,.99),ghostMat);
-ghostHead.add(ghostPlate);
-const ghostFace=new THREE.Mesh(new THREE.BoxGeometry(.035,.62,.90),
- new THREE.MeshBasicMaterial({color:0xe2fdff,transparent:true,opacity:.78,depthWrite:false,depthTest:false}));
-ghostFace.position.x=-.09;ghostHead.add(ghostFace);
+let previewModel=null,previewPiece=null;
+function previewInstrument(piece){
+ if(previewPiece!==piece||!previewModel){
+  if(previewModel)placementPreview.remove(previewModel);
+  previewPiece=piece;
+  previewModel=opticModels.cloneOptic(piece.type,new THREE.Color(COLORS[piece.color||7]));
+  if(previewModel){
+   previewModel.position.y=.23;
+   placementPreview.add(previewModel);
+  }
+ }
+ if(previewModel)previewModel.rotation.y=-piece.rot*Math.PI/4;
+}
 
 function updatePlacementPreview(e){
  if(!selected||(!placementMode&&!draggedPiece)){placementPreview.visible=false;return}
@@ -1310,9 +1205,7 @@ function updatePlacementPreview(e){
  previewMat.color.setHex(occupied?0xff728c:0x72eac1);
  previewEdgeMat.color.setHex(occupied?0xff728c:0xa8f9d3);
  placementPreview.position.copy(vec(x,y,.075));
- ghostHead.rotation.y=-selected.rot*Math.PI/4;
- ghostMat.color.setHex(occupied?0xff8fa7:0xa7f3ff);
- ghostMirror.visible=selected.type==='mirror'||selected.type==='bender';
+ previewInstrument(selected);
  placementPreview.visible=true;
 }
 function hideOpticTooltip(){$('optic-tooltip').classList.add('hidden')}
@@ -1489,17 +1382,50 @@ renderer.domElement.addEventListener('pointercancel',()=>{
  down=null;draggedPiece=null;placementPreview.visible=false;
 });
 renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false;hideOpticTooltip()});
-renderer.domElement.addEventListener('dragover',e=>{
- if(e.dataTransfer?.types.includes('application/x-chromatron-optic')&&placementMode&&selected?.inTray){
-  e.preventDefault();e.dataTransfer.dropEffect='move';updatePlacementPreview(e)
- }
-});
-renderer.domElement.addEventListener('drop',e=>{
- if(!e.dataTransfer?.types.includes('application/x-chromatron-optic'))return;
- e.preventDefault();e.stopPropagation();const dest=cellAt(e.clientX,e.clientY);
- if(placementMode && selected?.inTray && dest)move(dest.x,dest.y);
+// Capture on the stable inventory container: selecting an optic redraws its button.
+let trayGesture=null;
+const carriedPortrait=document.createElement('img');
+carriedPortrait.className='carried-portrait';carriedPortrait.alt='';
+carriedPortrait.hidden=true;document.body.append(carriedPortrait);
+function finishTrayGesture(e,commit){
+ const drag=trayGesture;
+ if(!drag||e&&drag.id!==e.pointerId)return;
+ trayGesture=null;
+ if(!drag.active)return;
+ const inventory=$('inventory');
+ if(inventory.hasPointerCapture(drag.id))inventory.releasePointerCapture(drag.id);
+ carriedPortrait.hidden=true;
+ document.body.classList.remove('carrying-optic');
  placementPreview.visible=false;
+ if(commit&&document.elementFromPoint(e.clientX,e.clientY)===renderer.domElement){
+  const dest=cellAt(e.clientX,e.clientY);
+  if(dest&&move(dest.x,dest.y))return;
+ }
+ clearSelection();
+}
+window.addEventListener('pointermove',e=>{
+ const drag=trayGesture;
+ if(!drag||e.pointerId!==drag.id)return;
+ if(!drag.active){
+  if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
+  if(!drag.piece?.inTray){trayGesture=null;return}
+  drag.active=true;
+  $('inventory').setPointerCapture(e.pointerId);
+  carriedPortrait.src=import.meta.env.BASE_URL+'portraits/'+drag.piece.type+'.png';
+  hideOpticTooltip();selectFromTray(drag.piece);
+  document.body.classList.add('carrying-optic');
+ }
+ if(document.elementFromPoint(e.clientX,e.clientY)===renderer.domElement)updatePlacementPreview(e);
+ else placementPreview.visible=false;
+ carriedPortrait.hidden=placementPreview.visible&&Boolean(previewModel);
+ if(!carriedPortrait.hidden)carriedPortrait.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';
 });
+window.addEventListener('pointerup',e=>finishTrayGesture(e,true));
+window.addEventListener('pointercancel',e=>finishTrayGesture(e,false));
+$('inventory').addEventListener('lostpointercapture',e=>{
+ if(e.target===$('inventory'))finishTrayGesture(e,false);
+});
+window.addEventListener('blur',()=>finishTrayGesture(null,false));
 renderer.domElement.addEventListener('contextmenu',e=>{e.preventDefault();clearSelection()});
 renderer.domElement.addEventListener('wheel',e=>{
  e.preventDefault();
@@ -1522,7 +1448,7 @@ document.addEventListener('keydown',e=>{
   else if(e.code==='Tab')focusWithinLevelAtlas(e);
   return;
  }
- if(e.code==='Escape'){clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
+ if(e.code==='Escape'){finishTrayGesture(null,false);clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();openLevelAtlas();return}
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
@@ -1632,7 +1558,7 @@ $('hint').onclick=()=>{
 $('close-hint').onclick=()=>$('hint-overlay').classList.add('hidden');
 $('reveal-hint').onclick=()=>{
  if(hintCount>=3)return toast(t(language,'allHints'));
- if(hintCount===2&&!verifiedSolutionForCurrent()&&!levels[levelIndex].hints?.[2])
+ if(hintCount===2&&!verifiedSolutionForCurrent())
   return toast(t(language,'hintNeedVerified'));
  const purchased=buyNextHint(wallet,currentLevelKey());
  if(!purchased.unlocked)
@@ -1698,10 +1624,10 @@ function animate(time){
  requestAnimationFrame(animate);
  trackFrameRate(time);
  spaceEnvironments.update(time*.001,reducedMotion.matches);
+ terraces.update(time*.001,reducedMotion.matches);
  midgroundScenery.update(time*.001,reducedMotion.matches);
  ambientLife.update(time*.001,reducedMotion.matches);
  livingWorld.update(time*.001,reducedMotion.matches);
- groundTerrain.update(time*.001,reducedMotion.matches);
  boardEdgeGlow.update(reducedMotion.matches?0:time*.001);
  atmosphereParticles.update(reducedMotion.matches?0:time*.001);
  cinematic.update(reducedMotion.matches?0:time*.001);
@@ -1772,7 +1698,7 @@ function renderHints(){
   const authored=step<3&&level.hints?.[step-1]?
    hintFor(level,language,step):null;
   const dynamic=contextualHint(level,pieces,step,language,known);
-  const hint=authored||dynamic;
+  const hint=dynamic.verified?dynamic:(authored||dynamic);
   if(!hint)continue;
   finalFocus=hint.focus||finalFocus;
   const block=document.createElement('section');block.className='hint-step';
@@ -1793,7 +1719,7 @@ function renderHints(){
  syncWalletUI();
  const next=hintCount;
  const cost=HINT_COSTS[next]??0;
- const needsVerified=next===2&&!known&&!level.hints?.[2];
+ const needsVerified=next===2&&!known;
  const canBuy=next<3&&wallet.balance>=cost&&!needsVerified;
  const button=$('reveal-hint');
  button.textContent=t(language,hintCount===0?'hintReveal':'hintAgain');

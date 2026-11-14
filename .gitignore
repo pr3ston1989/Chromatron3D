@@ -9,3 +9,5 @@ playwright-report/
 test-results/
 /original/
 /remake/
+
+__pycache__/
