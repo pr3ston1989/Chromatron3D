@@ -654,7 +654,7 @@ function load(i,{silentIntro=false}={}){
   toast(t(language,'atlasLockedHint'));
   return false;
  }
- finishTrayGesture(null,false);
+ cancelBoardGesture();finishTrayGesture(null,false);
  cancelSolutionSearch();
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  // ── Level transition animation: fog-in → swap → fog-out ──
@@ -1148,30 +1148,31 @@ function applyGraphicsQuality(){
 }
 window.addEventListener('resize',resize);resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
-function cellAt(clientX,clientY){
+function boardPoint(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
  ray.setFromCamera(mouse,camera);
- const pt=new THREE.Vector3();
- if(!ray.ray.intersectPlane(plane,pt))return null;
- const x=Math.round(pt.x/T+HALF),y=Math.round(pt.z/T+HALF);
+ return ray.ray.intersectPlane(plane,new THREE.Vector3());
+}
+function cellAt(clientX,clientY,offset){
+ const point=boardPoint(clientX,clientY);
+ if(!point)return null;
+ if(offset)point.sub(offset);
+ const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);
  return x>=0&&x<GRID&&y>=0&&y<GRID?{x,y}:null;
 }
 function hit(clientX,clientY){
- // Prefer the logical cell occupant. Only fallback to a 3D mesh when the
- // cursor points at a tall object's silhouette above its board footprint.
  const cell=cellAt(clientX,clientY);
- if(cell){
-  const occupant=pieces.find(p=>!p.inTray && p.x===cell.x && p.y===cell.y);
-  if(occupant)return {piece:occupant};
+ // A tall head can cover a neighbouring cell from this camera angle. Resolve
+ // the foremost visible surface first, including instanced barrier panels.
+ const front=ray.intersectObjects(hitObjects,false)[0];
+ if(front){
+  const {object,instanceId}=front;
+  const piece=object.userData.instances?.[instanceId]||object.userData.piece;
+  if(piece)return {piece};
  }
- mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
- ray.setFromCamera(mouse,camera);
- const objs=ray.intersectObjects(hitObjects,false);
- if(objs.length){
-  const {object,instanceId}=objs[0];
-  return {piece:object.userData.instances?.[instanceId]||object.userData.piece};
- }
- return cell;
+ // The full tile is still an easy target in the gaps around a small optic.
+ const occupant=cell&&pieces.find(p=>!p.inTray&&p.x===cell.x&&p.y===cell.y);
+ return occupant?{piece:occupant}:cell;
 }
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
 const placementPreview=mesh(new THREE.BoxGeometry(T*.90,.025,T*.90),previewMat,world);
@@ -1195,12 +1196,9 @@ function previewInstrument(piece){
 
 function updatePlacementPreview(e){
  if(!selected||(!placementMode&&!draggedPiece)){placementPreview.visible=false;return}
- mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);
- ray.setFromCamera(mouse,camera);
- const point=new THREE.Vector3();
- if(!ray.ray.intersectPlane(plane,point)){placementPreview.visible=false;return}
- const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);
- if(x<0||x>=GRID||y<0||y>=GRID){placementPreview.visible=false;return}
+ const dest=cellAt(e.clientX,e.clientY,draggedPiece?down?.offset:null);
+ if(!dest){placementPreview.visible=false;return}
+ const {x,y}=dest;
  const occupied=pieces.some(p=>!p.inTray&&p!==selected&&p.x===x&&p.y===y);
  previewMat.color.setHex(occupied?0xff728c:0x72eac1);
  previewEdgeMat.color.setHex(occupied?0xff728c:0xa8f9d3);
@@ -1254,8 +1252,9 @@ function showOpticTooltip(e,hovered){
 let down=null;
 renderer.domElement.addEventListener('pointerdown',e=>{
  // Tapping the board closes open focus drawers without swallowing the click.
+ if(!e.isPrimary||down)return;
  if(boardFocus)closeFocusDrawers();
- hideOpticTooltip();
+ hideOpticTooltip();setHoverGlow(null);
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
  const origin=hit(e.clientX,e.clientY);
@@ -1270,70 +1269,24 @@ renderer.domElement.addEventListener('pointerdown',e=>{
   return;
  }
  const draggingCandidate=e.button===0 && origin?.piece && movable.has(origin.piece.type);
- down={x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,
+ const offset=draggingCandidate?boardPoint(e.clientX,e.clientY)?.sub(vec(origin.piece.x,origin.piece.y,0)):null;
+ down={id:e.pointerId,x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,offset,
        mode:draggingCandidate?'piece':'orbit',origin};
  if(draggingCandidate)select(origin.piece);
  renderer.domElement.setPointerCapture(e.pointerId);
 });
-// ── Hover glow system: emissive boost + ground glow sprite on movable pieces ──
-let hoveredPieceId=null;
-const hoverGlowSprite=(()=>{
- const tex=(() => {
-  const d=new Uint8Array(32*32*4);
-  for(let y=0;y<32;y++)for(let x=0;x<32;x++){
-   const r=Math.hypot((x-15.5)/15.5,(y-15.5)/15.5);
-   const i=(y*32+x)*4;
-   d[i]=255;d[i+1]=255;d[i+2]=255;
-   d[i+3]=Math.round(255*Math.max(0,Math.exp(-r*r*3.5)*.6));
-  }
-  const t=new THREE.DataTexture(d,32,32,THREE.RGBAFormat);
-  t.needsUpdate=true;return t;
- })();
- const mat=new THREE.SpriteMaterial({map:tex,color:0x4fc3f7,transparent:true,
-  opacity:.45,depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending});
- const s=new THREE.Sprite(mat);s.scale.setScalar(2.0);s.visible=false;s.renderOrder=3;
- s.name='hover-glow';world.add(s);
- return s;
-})();
+// One outline follows the candidate. Catalog materials are shared between
+// copies of an instrument, so highlighting their material would mark its peers.
+const hoverOutline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(
+ [[-.46,-.46],[.46,-.46],[.46,.46],[-.46,.46]].map(([x,z])=>new THREE.Vector3(x*T,0,z*T))),
+ new THREE.LineBasicMaterial({color:0xffdd95,toneMapped:false,depthTest:false}));
+hoverOutline.visible=false;hoverOutline.renderOrder=17;world.add(hoverOutline);
 function setHoverGlow(piece){
- if(piece&&piece.id===hoveredPieceId)return;
- // Clear previous hover
- if(hoveredPieceId!==null){
-  for(const g of componentGroup.children){
-   if(g.userData.piece?.id===hoveredPieceId){
-    g.traverse(c=>{if(c.isMesh&&c.material&&!Array.isArray(c.material)){
-     if(c.userData._hoverEmissive!==undefined){
-      c.material.emissiveIntensity=c.userData._hoverEmissive;delete c.userData._hoverEmissive;
-     }
-    }});
-    break;
-   }
-  }
-  hoveredPieceId=null;
-  hoverGlowSprite.visible=false;
- }
- if(!piece||!movable.has(piece.type))return;
- hoveredPieceId=piece.id;
- // Apply emissive boost
- for(const g of componentGroup.children){
-  if(g.userData.piece?.id===piece.id){
-   g.traverse(c=>{if(c.isMesh&&c.material&&!Array.isArray(c.material)){
-    c.userData._hoverEmissive=c.material.emissiveIntensity;
-    c.material.emissiveIntensity=Math.max(c.material.emissiveIntensity,0.3)+0.45;
-   }});
-   // Show ground glow sprite under the piece
-   const pos=g.position;
-   hoverGlowSprite.position.set(pos.x,0.03,pos.z);
-   hoverGlowSprite.material.color.setHex(
-    activeEnvironment?.id==='verdant'?0x3ddc84:
-    activeEnvironment?.id==='polar'?0x5bc0eb:
-    activeEnvironment?.id==='nebula'?0xc06dde:0x4fc3f7);
-   hoverGlowSprite.visible=true;
-   break;
-  }
- }
+ hoverOutline.visible=Boolean(piece&&!piece.inTray&&movable.has(piece.type)&&!placementMode);
+ if(hoverOutline.visible)hoverOutline.position.copy(vec(piece.x,piece.y,.045));
 }
 renderer.domElement.addEventListener('pointermove',e=>{
+ if(!e.isPrimary||down&&e.pointerId!==down.id)return;
  if(!down){
   updatePlacementPreview(e);
   const hovered=hit(e.clientX,e.clientY);
@@ -1358,12 +1311,12 @@ renderer.domElement.addEventListener('pointermove',e=>{
  }
 });
 renderer.domElement.addEventListener('pointerup',e=>{
- if(!down)return;
+ if(e.pointerId!==down?.id)return;
  const state=down;down=null;
  if(state.button===2){clearSelection();return}
  if(state.moved){
   if(state.mode==='piece'){
-   const dest=cellAt(e.clientX,e.clientY);
+   const dest=document.elementFromPoint(e.clientX,e.clientY)===renderer.domElement&&cellAt(e.clientX,e.clientY,state.offset);
    if(dest){selected=state.origin.piece;move(dest.x,dest.y,true)}
   }
   draggedPiece=null;placementPreview.visible=false;
@@ -1372,16 +1325,23 @@ renderer.domElement.addEventListener('pointerup',e=>{
  }
  // Clicking an optic only selects it. Clicking elsewhere only places a
  // tray optic, otherwise it cancels selection (never warps an existing optic).
- const target=hit(e.clientX,e.clientY);
- const intent=classifyClick(target,selected,placementMode);
+ const intent=classifyClick(state.origin,selected,placementMode);
  if(intent.action==='select')select(intent.piece);
  else if(intent.action==='place')move(intent.x,intent.y);
  else if(selected)clearSelection();
 });
-renderer.domElement.addEventListener('pointercancel',()=>{
+function cancelBoardGesture(e){
+ if(e&&e.pointerId!==down?.id)return;
  down=null;draggedPiece=null;placementPreview.visible=false;
+ setHoverGlow(null);renderer.domElement.style.cursor='default';
+}
+renderer.domElement.addEventListener('pointercancel',cancelBoardGesture);
+renderer.domElement.addEventListener('lostpointercapture',cancelBoardGesture);
+window.addEventListener('blur',()=>cancelBoardGesture());
+renderer.domElement.addEventListener('pointerleave',()=>{
+ if(!down)placementPreview.visible=false;
+ setHoverGlow(null);hideOpticTooltip();
 });
-renderer.domElement.addEventListener('pointerleave',()=>{if(!down)placementPreview.visible=false;hideOpticTooltip()});
 // Capture on the stable inventory container: selecting an optic redraws its button.
 let trayGesture=null;
 const carriedPortrait=document.createElement('img');
@@ -1448,7 +1408,7 @@ document.addEventListener('keydown',e=>{
   else if(e.code==='Tab')focusWithinLevelAtlas(e);
   return;
  }
- if(e.code==='Escape'){finishTrayGesture(null,false);clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
+ if(e.code==='Escape'){cancelBoardGesture();finishTrayGesture(null,false);clearSelection();$('help-overlay').classList.add('hidden');$('hint-overlay').classList.add('hidden');$('win').classList.add('hidden');return}
  if(!$('help-overlay').classList.contains('hidden')||!$('hint-overlay').classList.contains('hidden')||!$('win').classList.contains('hidden'))return;
  if(e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();openLevelAtlas();return}
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
@@ -1752,7 +1712,7 @@ window.chromatron={
   const cell=cellAt(clientX,clientY);
   const h=placementMode&&selected?.inTray&&cell?cell:hit(clientX,clientY);
   const c=classifyClick(h,selected,placementMode);
-  return {hit:h?.piece?{pieceId:h.piece.id,pieceType:h.piece.type}:h,intent:c.action,selectedId:selected?.id??null,placementMode}
+  return {cell,hit:h?.piece?{pieceId:h.piece.id,pieceType:h.piece.type}:h,intent:c.action,selectedId:selected?.id??null,placementMode}
  },
  loadLevels(json){const next=loadLevelBundle(json);const count=switchLevelPack(next);toast(t(language,'imported',{count}));return count},
  getPuzzleTools:()=>({packId:currentPackId,levelKey:currentLevelKey(),credits:wallet.balance,unlocked:hintCount,verifiedSolution:!!verifiedSolutionForCurrent(),solverStatus}),

@@ -85,6 +85,69 @@ def wheel(mat,axis_height):
     obj.rotation_euler.x=math.pi/2
     return obj
 
+def landmark(s,theme,land,deep,light,petal):
+    if theme=='verdant':
+        # A tapered mill with overlapping folded roof and a vertical sail wheel.
+        s.lathe([(.08,0,.05,.40,.35),(.08,0,.16,.43,.38),(.08,.01,.70,.34,.30),
+                 (.08,.01,.83,.32,.27)],linen,12,4,.08,[land,linen,land])
+        s.lathe([(.08,0,.80,.45,.38),(.08,0,.88,.46,.39),(.03,0,1.12,.35,.29),
+                 (-.04,.05,1.35,.17,.15),(-.02,.09,1.45,.045,.04)],deep,12,6,.09,[gold,deep,light,deep])
+        return wheel(linen,.82)
+    m=Sculpture()
+    if theme=='orbital':
+        # Gimballed satellite dish: concentric concave skin with feed struts.
+        for dx in [-.26,.26]:
+            s.cable([(dx*1.4,0,.06,.11),(dx,.03,.27,.093),(dx*.52,0,.65,.066)],land)
+        s.lathe([(0,0,.57,.23,.23),(0,0,.66,.19,.19)],gold,12)
+        m.lathe([(0,0,0,.095,.095),(0,0,.08,.22,.22),(0,0,.16,.40,.40),
+                 (0,0,.32,.60,.60),(0,0,.35,.57,.57),(0,0,.17,.27,.27),
+                 (0,0,.13,.055,.055)],linen,24,0,0,[land,land,light,gold,linen,linen])
+        for j in range(3):
+            a=TAU*j/3
+            m.cable([(.50*math.cos(a),.50*math.sin(a),.30,.025),
+                     (.07*math.cos(a),.07*math.sin(a),.56,.017),(0,0,.61,.029)],gold)
+        obj=m.object('tracking-dish')
+        obj.location=(0,0,.67)
+        obj.rotation_euler.x=.72
+    elif theme=='polar':
+        # Split-shell observatory with an open slit for a telescope.
+        s.lathe([(0,0,.04,.53,.49),(0,0,.12,.56,.52),(0,0,.43,.49,.46),
+                 (0,0,.48,.53,.50)],land,16,0,0,[land,linen,deep])
+        for side in [-1,1]:
+            rings=[]
+            for z,r in [(0,.51),(.09,.52),(.24,.44),(.37,.30),(.45,.12)]:
+                arc=[(side*(.045+r*math.sin(math.pi*j/12)),r*math.cos(math.pi*j/12),z)
+                     for j in range(13)]
+                rings.append(arc)
+            m.loft(rings,light,[deep,light,linen,light])
+        m.cable([(0,0,.09,.07),(0,-.19,.29,.095),(0,-.38,.46,.11),
+                 (0,-.54,.55,.083)],deep,12)
+        obj=m.object('observatory-dome')
+        obj.location=(0,0,.48)
+    else:
+        # Open orrery, suspended over a curved tripod with asymmetric moons.
+        for j in range(3):
+            a=TAU*j/3
+            s.cable([(.45*math.cos(a),.45*math.sin(a),.06,.105),
+                     (.28*math.cos(a+.36),.28*math.sin(a+.36),.34,.085),
+                     (0,0,.58,.071)],deep)
+        m.lathe([(0,0,-.17,.065,.065),(0,0,-.04,.18,.18),
+                 (0,0,.10,.17,.17),(0,0,.21,.035,.035)],petal,9)
+        for j,r in enumerate([.36,.53]):
+            path=[]
+            for i in range(33):
+                a=TAU*i/32
+                path.append((r*math.cos(a),r*math.sin(a)*.68,
+                             (.7 if j==0 else -.7)*r*math.sin(a),.022))
+            m.cable(path,gold if j else light)
+            x,y,z,_=path[3+j*13]
+            m.lathe([(x,y,z-.065,.032,.032),(x,y,z,.085,.085),
+                     (x,y,z+.08,.026,.026)],light if j else petal,7)
+        obj=m.object('orrery')
+        obj.location=(0,0,.89)
+    return obj
+
+
 for theme,colors in palettes.items():
     rng=random.Random(17)
     land,deep,light,petal=[paint(theme+' '+n,rgb,.05,.55) for n,rgb in zip(
@@ -94,11 +157,7 @@ for theme,colors in palettes.items():
     tree(s,-1.01,.05,1.34,rng,deep,light,petal,theme)
     if theme in ('polar','verdant'):
         tree(s,1.38,.42,.73,rng,deep,light,petal,theme)
-    # Small glazed observatory with tapered sides and a folded overhanging roof.
-    s.lathe([(.08,0,.05,.40,.35),(.08,0,.16,.43,.38),(.08,.01,.70,.34,.30),
-             (.08,.01,.83,.32,.27)],linen,12,4,.08,[land,linen,land])
-    s.lathe([(.08,0,.80,.45,.38),(.08,0,.88,.46,.39),(.03,0,1.12,.35,.29),
-             (-.04,.05,1.35,.17,.15),(-.02,.09,1.45,.045,.04)],deep,12,6,.09,[gold,deep,light,deep])
+    rotor=landmark(s,theme,land,deep,light,petal)
     for i in range(18):
         a=TAU*i/18
         x=math.cos(a)*rng.uniform(1.15,1.87)
@@ -145,7 +204,6 @@ for theme,colors in palettes.items():
     for obj in plants:
         bpy.data.objects.remove(obj,do_unlink=True)
     root=s.object('terrace-'+theme)
-    rotor=wheel(petal if theme=='nebula' else linen,.82)
     export(theme,[root,rotor],ROOT/'public/models/terraces')
     for obj in (root,rotor):
         bpy.data.objects.remove(obj,do_unlink=True)

@@ -3,6 +3,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 // Each habitat has a long, narrow footprint. Turn the long side parallel to
 // the rim so even the tips of the canopy stay clear of the optical grid.
 export function createTerraces(THREE,world,baseUrl){
+ const landmarks={verdant:'windwheel',orbital:'tracking-dish',polar:'observatory-dome',nebula:'orrery'};
  const loader=new GLTFLoader(),records=new Map();
  const sockets=[[0,-12.5,0],[0,12.5,Math.PI],[-12.5,0,Math.PI/2],[12.5,0,-Math.PI/2]];
  let active,level=0,count=4;
@@ -26,7 +27,7 @@ export function createTerraces(THREE,world,baseUrl){
    loader.load(baseUrl+id+'.glb',({scene})=>{
     for(let i=0;i<sockets.length;i++){
      const clone=scene.clone(true);
-     const wheel=clone.getObjectByName('windwheel');
+     const wheel=clone.getObjectByName(landmarks[id]);
      if(wheel)rotors.push({wheel,rest:wheel.quaternion.clone()});
      group.add(clone);
     }
@@ -42,7 +43,11 @@ export function createTerraces(THREE,world,baseUrl){
    rec?.rotors.forEach(({wheel,rest},i)=>{
     if(wheel.parent.visible){
      wheel.quaternion.copy(rest);
-     if(!still)wheel.rotateOnAxis(axis,time*.64+i*1.7);
+     if(!still){
+      if(active==='orbital')wheel.rotateOnWorldAxis(axis,Math.sin(time*.22+i)*.62);
+      else if(active==='polar')wheel.rotateOnAxis(axis,Math.sin(time*.15+i)*.85);
+      else wheel.rotateOnAxis(axis,time*(active==='verdant'?.64:.30)+i*1.7);
+     }
     }
    });
   }};

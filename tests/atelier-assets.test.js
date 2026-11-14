@@ -27,7 +27,8 @@ test('the playable Blender models have matching, distinct transparent equipment 
 test('near-rim models fit the board clearance and the deck uses one UV-mapped cell',()=>{
  for(const theme of ['verdant','orbital','polar','nebula']){
   const model=gltf('terraces/'+theme);
-  assert.ok(model.nodes.some(n=>n.name==='windwheel'&&n.rotation&&n.translation));
+  const landmark={verdant:'windwheel',orbital:'tracking-dish',polar:'observatory-dome',nebula:'orrery'}[theme];
+  assert.ok(model.nodes.some(n=>n.name===landmark&&n.translation));
   const flora=gltf('terraces/'+theme+'-flora');
   assert.deepEqual(flora.nodes.map(n=>n.name).sort(),['feature','growth','stone']);
   assert.ok(flora.meshes.every(m=>m.primitives.length===1&&Number.isInteger(m.primitives[0].attributes.COLOR_0)));

@@ -58,11 +58,11 @@ Textures per material: `BaseColor`, `Normal`, `ORM` (occlusion, roughness, metal
 
 Open `art/Instruments.blend` to inspect the 22 named instrument meshes together. The game loads an individual GLB for each device in the current level. The equipment tray uses transparent 128 px orthographic portraits of the same meshes. A silver escutcheon identifies the mirror. Twin amber prongs identify the splitter. The coloured lens material is retinted by the optical state.
 
-Each biome has a near-rim island with a layered canopy, flowers, pool and observatory. The five-bladed windwheel turns on its own pivot. Reduced motion fixes its position. The surrounding landscape uses instanced vertex-painted models of stone, vegetation and flowers. The deck repeats a single UV-mapped chamfered ceramic cell with instancing. `scripts/generate-premium-models.bat` rebuilds the assets with Blender.
+Each biome has a near-rim island. The verdant mill turns its sails, the orbital dish scans, the polar observatory rotates its split dome and the nebula orrery carries two orbiting moons. Reduced motion fixes its position. The surrounding landscape uses instanced vertex-painted models of stone, vegetation and flowers. The deck repeats a single UV-mapped chamfered ceramic cell with instancing. `scripts/generate-premium-models.bat` rebuilds the assets with Blender.
 
 ## Device interaction standard
 
-Click to select; tray → board click to place; drag an existing placed object to move it; Q/E or wheel to rotate, right-click/Esc to cancel. Never move an existing optic just because an empty tile was clicked. Reveal real incoming/reflected beam directions when a mirror is selected.
+Click to select; tray → board click to place; drag an existing placed object to move it; Q/E or wheel to rotate, right-click/Esc to cancel. Never move an existing optic just because an empty tile was clicked. The pointer selects the visible frontmost optic, including a raised head that projects over its neighbour. Dragging retains the initial grab offset. Reveal real incoming/reflected beam directions when a mirror is selected.
 
 Movement and rotation use short ease-out animation. All logical moves and laser solutions remain deterministic and instantly validated; reduced-motion accessibility disables cosmetic interpolation.
 

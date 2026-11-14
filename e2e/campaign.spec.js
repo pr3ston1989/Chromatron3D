@@ -72,3 +72,45 @@ test('the workshop shows Blender portraits and cancels a carried optic released 
  await expect.poll(()=>page.evaluate(()=>window.chromatron.getVisualStats().activeOpticTweens)).toBe(0);
  await page.screenshot({path:'test-results/chromatron-workshop.png'});
 });
+
+test('grabbing the raised face above an occupied neighbouring tile moves the visible mirror',async({page})=>{
+ test.setTimeout(120000);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.addInitScript(()=>{
+  localStorage.setItem('chromatron-start-campaign','demo');
+  localStorage.setItem('chromatron-graphics-quality','performance');
+  Object.defineProperty(window,'devicePixelRatio',{get:()=>.65});
+ });
+ await page.setViewportSize({width:1093,height:614});
+ await page.goto('/');
+ await page.evaluate(()=>window.chromatron.loadLevels([{title:'Adjacent instruments',pieces:[
+  ['laser',2,3,2,1],['target',10,12,0,2],['mirror',7,7,0,0],
+  ['splitter',8,6,0,0],['filter',7,6,0,2],['bender',8,7,0,0]
+ ]}]));
+ // Aim at the upper part of the metal face, where perspective puts a
+ // different occupied floor cell underneath the mouse.
+ const sample=()=>page.evaluate(()=>{
+  const game=window.chromatron,parts=game.getState().pieces;
+  const mirror=parts.find(p=>p.type==='mirror');
+  for(const height of [1.10,1.13,1.04,.99]){
+   for(const z of [0,-.1,-.2,.1,.2]){
+    const point=game.projectCell(7-.06/1.3,7+z,height);
+    const result=game.inspectPointer(point.x,point.y);
+    const other=parts.find(p=>p.x===result.cell?.x&&p.y===result.cell?.y);
+    if(result.hit?.pieceId===mirror.id&&other&&other.id!==mirror.id)
+     return {point,dest:game.projectCell(5-.06/1.3,8+z,height),id:mirror.id};
+   }
+  }
+  return null;
+ });
+ await expect.poll(sample).toBeTruthy();
+ const {point,dest,id}=await sample();
+ await page.mouse.move(point.x,point.y);await page.mouse.down();
+ expect(await page.evaluate(()=>window.chromatron.getState().selectedId)).toBe(id);
+ await page.mouse.move(dest.x,dest.y,{steps:6});await page.mouse.up();
+ const parts=await page.evaluate(()=>window.chromatron.getState().pieces);
+ expect(parts.find(p=>p.id===id)).toMatchObject({x:5,y:8});
+ expect(parts.find(p=>p.type==='splitter')).toMatchObject({x:8,y:6});
+ expect(parts.find(p=>p.type==='filter')).toMatchObject({x:7,y:6});
+ expect(parts.find(p=>p.type==='bender')).toMatchObject({x:8,y:7});
+});
