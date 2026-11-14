@@ -287,3 +287,11 @@ body.carrying-optic,body.carrying-optic * {cursor:grabbing!important;user-select
 
 #inventory button .component-icon {touch-action:none}
 .carried-portrait {position:fixed;top:-24px;left:-24px;width:48px;height:48px;pointer-events:none;z-index:25;filter:drop-shadow(0 3px 4px #081727)}
+/* Reserve the available width for the name. Long names wrap at words first. */
+#inventory button.inventory-item {
+ display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:6px;
+ font:650 13px/1.18 'Rajdhani',sans-serif;letter-spacing:.012em;
+}
+#inventory button.inventory-item > span:nth-child(2) {overflow-wrap:break-word}
+#inventory button.inventory-item strong {font-size:11px;padding:2px 4px}
+@media(max-width:1150px){#inventory button.inventory-item{font-size:12px}}
