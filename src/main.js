@@ -348,6 +348,9 @@ function rebuildPieces(){
    }
   }
  }
+ // Input may arrive between loading/rebuilding a mesh and the next draw.
+ // Raycasters must already see the new board positions in that interval.
+ componentGroup.updateWorldMatrix(true,true);
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
 let levelTransition=null;
@@ -1050,6 +1053,7 @@ function updateCamera(){
  const cameraDistance=dist*portraitScale*focusScale;
  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
  camera.lookAt(cameraTarget);
+ camera.updateMatrixWorld();
 }
 function syncBoardFocus(){
  const enabled=boardFocus&&innerWidth>680;

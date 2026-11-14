@@ -114,3 +114,17 @@ test('grabbing the raised face above an occupied neighbouring tile moves the vis
  expect(parts.find(p=>p.type==='filter')).toMatchObject({x:7,y:6});
  expect(parts.find(p=>p.type==='bender')).toMatchObject({x:8,y:7});
 });
+
+test('picking uses current world transforms immediately after switching boards, before a render',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-start-campaign','demo'));
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ const picked=await page.evaluate(()=>{
+  window.chromatron.loadLevels([{title:'Immediate selection',pieces:[
+   ['laser',2,7,2,1],['target',7,3,0,2],['mirror',7,7,0,0]
+  ]}]);
+  const point=window.chromatron.projectCell(7,7);
+  return window.chromatron.inspectPointer(point.x,point.y).hit;
+ });
+ expect(picked).toMatchObject({pieceType:'mirror'});
+});
