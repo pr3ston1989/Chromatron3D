@@ -1,7 +1,7 @@
 # Światy kampanii
 
 Wybrano osiem odsłon czterech rodzin zaakceptowanych przez właściciela.
-Wdrożenie zaczyna się od Obserwatorium na ósmej planszy pokazowej. Przydział
+Wdrożenie zaczyna się od Stoczni orbitalnej na ósmej planszy pokazowej. Przydział
 kampanii będzie wykonywany podczas kolejnego etapu fazy 3.
 
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
@@ -22,9 +22,10 @@ a układ drugiego planu jest wyprowadzany z identyfikatora kampanii i numeru
 planszy. Dwie albo trzy duże formy budują scenę. Wszystkie elementy
 scenograficzne pozostają poza przestrzenią sterowania i torami gry.
 
-## Próba Obserwatorium
+## Próba Stoczni orbitalnej
 
 Wybór planszy 8 pozwala sprawdzić przy istniejącym układzie demonstracyjnym
 nowy rozdzielacz, dwa stany rezonatora oraz widoczność niebieskiej wiązki
 w rodzimym interfejsie gry. W trybie developerskim `?debug=1&pilot=0`
-pokazuje wcześniejszą scenografię na tej samej planszy.
+pokazuje starszą scenografię mgławicy na tej samej planszy.
+Wizualnym punktem odniesienia jest [koncepcja Stoczni](concepts/04-stocznia-orbitalna.png).

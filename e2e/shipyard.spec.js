@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 
-test('observatory pilot frames the mobile grid and keeps the same playable splitter puzzle',async({page})=>{
+test('shipyard pilot frames the mobile grid and keeps the same playable splitter puzzle',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>Boolean(window.__debug));
@@ -11,7 +11,8 @@ test('observatory pilot frames the mobile grid and keeps the same playable split
   window.__debug.loadLevel(8);
   window.__debug.freezeAnimations(true);
  });
- await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().observatory)).toBe('ready');
+ await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ await expect(page.evaluate(()=>window.__debug.getLevelState().theme)).resolves.toBe('shipyard');
  const framed=await page.evaluate(()=>{
   const corners=[[0,0],[14,0],[14,14],[0,14]];
   return corners.every(([x,y])=>{
@@ -31,7 +32,7 @@ test('observatory pilot frames the mobile grid and keeps the same playable split
  await page.evaluate(()=>window.__debug.undo());
  await expect(page.evaluate(()=>window.__debug.isSolved())).resolves.toBe(false);
  await page.evaluate(()=>window.__debug.loadLevel(7));
- await expect(page.evaluate(()=>window.__debug.getLevelState().observatory)).resolves.toBeNull();
+ await expect(page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).resolves.toBeNull();
  await page.evaluate(()=>window.__debug.loadLevel(8));
- await expect(page.evaluate(()=>window.__debug.getLevelState().observatory)).resolves.toBe('ready');
+ await expect(page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).resolves.toBe('ready');
 });

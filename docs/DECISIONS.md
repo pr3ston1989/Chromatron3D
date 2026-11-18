@@ -26,3 +26,8 @@
 - Optyka pozostaje pod ścieżkami produkcyjnymi `public/models/optics`. Rodziny architektury i rekwizytów mają osobne GLB w `assets/models/scenery`. Moduły zastępują zespoły starszych brył podczas kompozycji kolejnych światów.
 - Do pilota wybrano demonstracyjną planszę 8 z rozdzielaczem. To bezpieczny punkt porównania, który można sfotografować z normalnym interfejsem. W tle modelowany łuk i soczewka tworzą dwie główne formy, a cicha animacja zależy od trybu ograniczonego ruchu.
 - Docelowy podział 8 × 25 to założenie scenografii opisane w [WORLDS.md](WORLDS.md). Dotychczasowa kolejność plansz w kampanii jest punktem odniesienia.
+
+## 18 listopada 2026 · korekta pilota po referencji
+
+- Właściciel wskazał koncepcję Stoczni orbitalnej jako wzorzec dla pilota. Na tej samej planszy demo ustawiono niższą kamerę, otwartą kratownicę, chłodne światło i obręb planetarny. Obserwatorium pozostaje osobnym światem w planie kampanii.
+- Na ilustracji wiązka jest cyjanowa, a na planszy demonstracyjnej steruje się niebieskim emiterem. Kolor efektów wynika z maski emitera. Zrzuty sceny wykonano po rozwiązaniu istniejącej zagadki w Chromium.

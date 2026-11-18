@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.blender.style import MODELS, Sculpture, export_model, make_material
-from tools.blender.style import plate, render, reset_scene
+from tools.blender.style import plate, render, reset_scene, rotation_from_profile
 
 OUT = MODELS / "scenery"
 
@@ -163,6 +163,57 @@ def observatory_landing(s,m):
              (.72,-1.88,1.11,.028),(2.27,-1.84,1.11,.023)],m["cyan"],4)
 
 
+def shipyard_rib(s,m):
+    # Two splayed structural arms and a heavy upper chord leave open bays.
+    outlines = [
+        [(-8,0),(-5.4,0),(5.1,12.6),(4.7,14.2),(2.9,14.2),(-8,1.25)],
+        [(-1.8,0),(.7,0),(12.1,13.0),(11.5,14.2),(9.8,14.2),(-1.8,1.1)],
+        [(-10.5,6.0),(-10.5,7.3),(13,14.7),(13,13.2),(8.8,11.1),(-9.1,5.75)],
+    ]
+    for outline in outlines:
+        cx=sum(x for x,_ in outline)/len(outline)
+        cz=sum(z for _,z in outline)/len(outline)
+        inset=[(cx+(x-cx)*.966,cz+(z-cz)*.968) for x,z in outline]
+        s.loft([[(x,y,z) for x,z in ring]
+                for ring,y in zip((outline,outline,inset),(.83,-.82,-1.04))],
+               m["dark"],[m["body"],m["edge"]])
+    for x,z,k in ((-6.5,6.22,1),(-2.7,7.37,1),(2.77,3.98,2)):
+        h=.42 if k==1 else 1.85
+        lamp=[(x,z),(x+1.26,z+h),(x+1.20,z+h+.11),(x-.06,z+.11)]
+        rotation_from_profile(s,lamp,[-1.035,-1.07],0,m["amber"])
+    for x,z in ((-5.8,2.30),(.78,2.65),(-2.7,6.42)):
+        plate_edge=[(x,z),(x+.31,z),(x+2.7,z+3.33),(x+2.49,z+3.35)]
+        rotation_from_profile(s,plate_edge,[-.824,-.865],0,m["dark"])
+
+
+def shipyard_platform(s,m):
+    # Long narrow berth and an asymmetrical crane/relay tower.
+    plate(s,[(1.20,1.01,.23,0),(1.48,1.14,.29,.35),
+             (.87,.73,.24,7.6),(.69,.62,.16,8.45)],m["dark"],
+          [m["body"],m["body"],m["edge"]],(4.1,0))
+    plate(s,[(7.06,1.26,.38,7.72),(7.38,1.44,.39,8.0),
+             (7.72,1.52,.38,8.34),(7.64,1.41,.32,8.59)],
+          m["dark"],[m["body"],m["body"],m["edge"]])
+    plate(s,[(1.31,.98,.20,8.45),(1.23,.91,.20,8.83),(.91,.76,.15,10.77),
+             (.62,.50,.16,12.19),(.44,.38,.10,12.43)],
+          m["dark"],[m["body"],m["edge"],m["body"],m["edge"]],(4.15,.09))
+    s.cable([(4.15,.10,12.33,.10),(4.15,.10,13.22,.072),(4.16,.10,14.03,.036)],m["trim"],5)
+    for x,h in ((-5.62,.55),(-3.48,.69),(.62,.4),(6.44,.71)):
+        plate(s,[(.82,.82,.24,8.57),(.79,.80,.20,8.73),(.68,.65,.21,8.62+h)],
+              m["dark"],[m["body"],m["edge"]],(x,.18))
+    for x in (1.07,4.48):
+        s.cable([(x,-.52,5.45,.17),(x-1.78,-.52,6.48,.15),(x-2.56,-.62,7.93,.22)],
+                m["dark"],5)
+    for y in (-1.04,1.04):
+        s.cable([(-6.95,y,8.72,.041),(-1.22,y,8.80,.041),(6.95,y,8.73,.041)],
+                m["panel"],4)
+    for x in (-5.84,-2.70,.52,3.72,6.51):
+        rotation_from_profile(s,[(x-.55,8.29),(x+.55,8.29),(x+.55,8.39),(x-.55,8.39)],
+                              [-1.47,-1.54],0,m["amber"])
+    rotation_from_profile(s,[(3.91,4.01),(4.03,4.12),(4.02,7.12),(3.88,7.16)],
+                          [-.78,-.87],0,m["amber"])
+
+
 def service_support(s,m,corner):
     wh,d,h = (.305,.305,1.18) if corner else (.18,.25,.78)
     plate(s,[(wh*.89,d,.075,0),(wh,d,.085,.084),
@@ -276,6 +327,8 @@ SPECS = {
     "dock-gantry": (arc,"dock","graphite","titanium",2000),
     "dock-relay": (relay,None,"graphite","steel",1500),
     "dock-landing": (dock,None,"graphite","steel",600),
+    "shipyard-rib": (shipyard_rib,None,"graphite","steel",1500),
+    "shipyard-platform": (shipyard_platform,None,"navy","steel",1500),
     "perimeter-corner": (service_support,True,"navy","titanium",180),
     "perimeter-brace": (service_support,False,"navy","titanium",180),
     "ring-reactor": (reactor,None,"plum","amethyst",2000),

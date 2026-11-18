@@ -3,6 +3,7 @@ import {resolve, join} from 'node:path';
 import {parseArgs} from 'node:util';
 import {createServer} from 'vite';
 import {launchChromium} from './capture-browser.mjs';
+import {DEMO_SOLUTIONS} from '../src/levels.js';
 
 const {values: options} = parseArgs({options:{
   campaign:{type:'string',default:'demo'},
@@ -12,6 +13,7 @@ const {values: options} = parseArgs({options:{
   quality:{type:'string',default:'performance'},
   themes:{type:'string'},
   'pilot-off':{type:'boolean',default:false},
+  'solved-demo':{type:'boolean',default:false},
   'sample-ms':{type:'string',default:'4000'},
   'warmup-ms':{type:'string',default:'0'},
   out:{type:'string'},
@@ -27,6 +29,7 @@ const millis=Number(options['sample-ms']);
 const warmup=Number(options['warmup-ms']);
 if(!/^(demo|classic[1-4])$/.test(options.campaign)||
    !['swiftshader','native'].includes(options.backend)||
+   options['solved-demo']&&(options.campaign!=='demo'||levels.some(n=>!DEMO_SOLUTIONS[n-1]))||
    !['auto','performance','balanced','cinematic'].includes(options.quality)||
    levels.some(n=>!Number.isInteger(n)||n<1)||
    viewports.some(v=>Object.values(v).some(n=>!Number.isInteger(n)||n<240||n>5000))||
@@ -82,10 +85,20 @@ try{
       await page.waitForLoadState('networkidle',{timeout:30000});
       await page.waitForFunction(()=>{
         const state=window.__debug.getLevelState();
-        return state.theme!=='observatory'||['ready','error'].includes(state.observatory);
+        return state.pilotStatus===null||['ready','error'].includes(state.pilotStatus);
       },{},{timeout:30000});
-      if(await page.evaluate(()=>window.__debug.getLevelState().observatory==='error'))
-        throw Error('Could not load the Observatory models');
+      if(await page.evaluate(()=>window.__debug.getLevelState().pilotStatus==='error'))
+        throw Error('Could not load the pilot models');
+      if(options['solved-demo']){
+        const solved=await page.evaluate(moves=>{
+          const api=window.__debug;
+          for(const move of moves)api.applyMove(move);
+          return api.isSolved();
+        },DEMO_SOLUTIONS[level-1]);
+        if(!solved)throw Error('The demo solution did not complete the level');
+        await page.locator('#win').waitFor({state:'visible'});
+        await page.keyboard.press('Escape');
+      }
       if(warmup)await page.waitForTimeout(warmup);
       const measurement=await page.evaluate(ms=>new Promise(done=>{
         let first,previous;
@@ -120,7 +133,7 @@ try{
   await browser?.close();
   await server.close();
   await writeFile(join(output,'capture.json'),JSON.stringify({backend:options.backend,
-    headed:options.headed,pilotDisabled:options['pilot-off'],
+    headed:options.headed,pilotDisabled:options['pilot-off'],solvedDemo:options['solved-demo'],
     requestedQuality:options.quality,warmupMs:warmup,entries,browserMessages},null,2)+'\n');
 }
 if(entries.some(entry=>entry.messages.some(msg=>msg.type==='error'||msg.type==='pageerror')))

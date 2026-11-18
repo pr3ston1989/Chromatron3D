@@ -14,6 +14,7 @@
 
 const BIOME_TINTS = {
   observatory: {r: 1.0, g: 0.995, b: 1.015},
+  shipyard: {r: 0.975, g: 1.0, b: 1.04},
   orbital:  {r: 0.92, g: 0.95, b: 1.08},   // cool steel-blue
   verdant:  {r: 0.90, g: 1.06, b: 0.92},   // warm green
   polar:    {r: 0.88, g: 0.96, b: 1.12},   // ice-blue
@@ -22,6 +23,7 @@ const BIOME_TINTS = {
 
 const BIOME_VIGNETTE = {
   observatory: 0.28,
+  shipyard: 0.32,
   orbital:  0.38,
   verdant:  0.32,
   polar:    0.42,
@@ -30,6 +32,7 @@ const BIOME_VIGNETTE = {
 
 const BIOME_SATURATION = {
   observatory: 1.02,
+  shipyard: 1.04,
   orbital:  1.08,
   verdant:  1.12,
   polar:    1.06,
@@ -105,7 +108,10 @@ export function createCinematicPass(THREE, ShaderPass) {
   const pass = new ShaderPass(shader);
   pass.renderToScreen = false;
 
-  let currentBiome = 'orbital';
+  let currentBiome = 'orbital', currentQuality = 'balanced';
+  const syncGrain=()=>{
+    pass.uniforms.uGrainAmount.value = currentQuality==='performance'||currentBiome==='shipyard' ? 0 : 0.035;
+  };
 
   function setBiome(biomeId) {
     const id = biomeId || 'orbital';
@@ -114,6 +120,7 @@ export function createCinematicPass(THREE, ShaderPass) {
     pass.uniforms.uTint.value.set(tint.r, tint.g, tint.b);
     pass.uniforms.uVignette.value = BIOME_VIGNETTE[id] || 0.38;
     pass.uniforms.uSaturation.value = BIOME_SATURATION[id] || 1.08;
+    syncGrain();
   }
 
   function update(seconds) {
@@ -122,7 +129,8 @@ export function createCinematicPass(THREE, ShaderPass) {
 
   function setQuality(quality) {
     // Disable grain on performance mode to save shader instructions
-    pass.uniforms.uGrainAmount.value = quality === 'performance' ? 0 : 0.035;
+    currentQuality=quality;
+    syncGrain();
   }
 
   return {pass, setBiome, update, setQuality, getBiome: () => currentBiome};

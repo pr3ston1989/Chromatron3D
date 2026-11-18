@@ -62,8 +62,9 @@ konsoli. `--backend native` prosi Chromium o akcelerację sprzętową. `--headed
 uruchamia widoczne okno. `--out` nadpisuje katalog zrzutów. Przy
 `--campaign classic1`–`classic4` wyniki zawierają prywatne plansze użytkownika.
 Katalog `screenshots` jest ignorowany w Git.
-`--levels 8` pokazuje pilot Obserwatorium. Flaga `--pilot-off` przełącza
-tę samą demonstracyjną planszę na wcześniejsze otoczenie.
+`--levels 8` pokazuje pilot Stoczni orbitalnej. Flaga `--pilot-off` przełącza
+tę samą demonstracyjną planszę na wcześniejsze otoczenie. Opcja `--solved-demo`
+wykonuje zweryfikowane ruchy na planszy pokazowej i zamyka okno zwycięstwa przed zrzutem.
 
 ### Sterowanie w trybie debug
 

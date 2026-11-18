@@ -1,5 +1,5 @@
-"""A 15×15 ceramic inlay over a deep modular machine plinth."""
-from math import cos, pi, sin
+"""A 15×15 inlaid deck with architectural support matched to each world."""
+from math import cos, hypot, pi, sin
 from pathlib import Path
 import sys
 
@@ -14,7 +14,7 @@ FINISHES = {
     "observatory": ("ceramic", "navy", "obsidian", "copper", "cyan"),
     "grotto": ("lilac", "plum", "obsidian", "amethyst", "cyan"),
     "garden": ("limestone", "bronze", "jade", "bronze", "amber"),
-    "shipyard": ("titanium", "steel", "graphite", "titanium", "amber"),
+    "shipyard": ("titanium", "graphite", "obsidian", "steel", "amber"),
 }
 
 
@@ -31,6 +31,10 @@ def build(finish="observatory"):
     steel = make_material("Undercarriage strut", body, .42, .46, shade=1)
 
     asset = Sculpture()
+    if finish == "shipyard":
+        build_shipyard(asset, seam, bright, shell, low, recess, trim, glow, steel)
+        inlay(asset, tile, bright, .613)
+        return asset.object(NAME)
     plate(asset, [(7.0,7.0,1.48,.25), (7.65,7.65,1.35,.51),
                   (7.94,7.94,1.24,.63), (8.85,8.85,1.13,1.04),
                   (9.73,9.73,.78,2.54), (10.23,10.23,.86,2.72),
@@ -74,9 +78,60 @@ def build(finish="observatory"):
         depth = -9.37
         asset.cable([(x*c-depth*s, x*s+depth*c, z, .071) for x,z in pipe], trim, 5)
 
-    # Top-facing ceramic inlays sit above one continuous recessed support,
+    inlay(asset, tile, bright, .606)
+    return asset.object(NAME)
+
+
+def girder(asset, a, b, width, depths, angle, main, chamfer):
+    dx,dz = b[0]-a[0], b[1]-a[1]
+    offset = (-dz*width*.5/hypot(dx,dz), dx*width*.5/hypot(dx,dz))
+    x,z = offset
+    outline = [(a[0]-x,a[1]-z),(b[0]-x,b[1]-z),(b[0]+x,b[1]+z),(a[0]+x,a[1]+z)]
+    inset = [(a[0]-x*.70,a[1]-z*.70),(b[0]-x*.70,b[1]-z*.70),
+             (b[0]+x*.70,b[1]+z*.70),(a[0]+x*.70,a[1]+z*.70)]
+    c,s = cos(angle),sin(angle)
+    sections = (outline,outline,inset) if len(depths)==3 else (outline,inset)
+    rings = [[(px*c-y*s,px*s+y*c,pz) for px,pz in profile]
+             for y,profile in zip(depths,sections)]
+    asset.loft(rings,main,[main,chamfer][-len(depths)+1:])
+
+
+def build_shipyard(asset, seam, bright, shell, low, recess, trim, glow, steel):
+    # Open perimeter truss with a narrower spine visible through the bays.
+    plate(asset,[(3.35,3.35,.73,.06),(3.59,3.59,.77,.36),
+                 (3.93,3.93,.63,2.9),(3.61,3.61,.55,3.02)],low,[shell,low,steel])
+    plate(asset,[(9.22,9.22,.76,2.52),(9.82,9.82,.68,2.69),
+                 (10.43,10.43,.69,2.79),(10.50,10.50,.62,3.49),
+                 (10.50,10.50,.58,3.60),(10.41,10.41,.71,3.72)],
+          low,[low,steel,shell,bright,seam])
+    for x in (-9.50,9.50):
+        for y in (-9.50,9.50):
+            bottom=[(x-.36,y-.37,0),(x+.36,y-.37,0),(x+.36,y+.37,0),(x-.36,y+.37,0)]
+            top=[(x+(u-x)*.86,y+(v-y)*.86,2.81) for u,v,_ in bottom]
+            asset.loft([bottom,top],low,[steel])
+    for side in range(4):
+        angle = side*pi/2
+        cs,sn = cos(angle),sin(angle)
+        girder(asset,(-9.5,.22),(9.5,.22),.44,[-9.67,-10.10,-10.18],angle,low,steel)
+        for x in (-9.24,-3.13,3.13,9.24):
+            girder(asset,(x,.25),(x,2.76),.52,[-9.38,-10.00],angle,low,steel)
+        for start,end in ((-9.15,-3.13),(-3.02,3.02),(3.13,9.15)):
+            girder(asset,(start,.39),(end,2.61),.47,[-9.49,-9.89,-10.02],angle,low,steel)
+            c=(start+end)*.5
+            panel=[(c-2.65,2.98),(c+2.65,2.98),(c+2.65,3.35),(c-2.65,3.35)]
+            first=len(asset.vertices)
+            asset.vertices.extend((x*cs+10.515*sn,x*sn-10.515*cs,z) for x,z in panel)
+            asset.face(tuple(range(first,first+4)),recess)
+            lamp=[(c-.76,2.51),(c+.76,2.51),(c+.65,2.67),(c-.65,2.67)]
+            rotation_from_profile(asset,lamp,[-10.31,-10.43],angle,glow)
+        for x in (-9.4,9.4):
+            cap=[(x-.26,2.64),(x+.24,2.64),(x+.29,2.91),(x-.27,2.91)]
+            rotation_from_profile(asset,cap,[-10.47,-10.53],angle,trim)
+
+
+def inlay(asset, tile, bright, half):
+    # Top-facing inlays sit above one continuous recessed support,
     # so the 225 cells cost 450 triangles without checkerboard colouring.
-    half = .606
     for y in range(-7,8):
         for x in range(-7,8):
             cx, cy = x*1.30, y*1.30
@@ -94,7 +149,6 @@ def build(finish="observatory"):
         for i in range(8):
             j = (i+1)%8
             asset.face((a+j,a+i,b+i,b+j),material)
-    return asset.object(NAME)
 
 
 if __name__ == "__main__":

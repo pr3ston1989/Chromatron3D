@@ -31,7 +31,7 @@ import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {createTerraces} from './terraces.js';
-import {createObservatory, isObservatoryStage, OBSERVATORY} from './observatory.js';
+import {createShipyard, isShipyardStage, SHIPYARD} from './shipyard.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
@@ -123,15 +123,12 @@ const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,
 applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const sceneryLoader=new GLTFLoader();
-const observatory=createObservatory(THREE,scene,world,{
+const shipyard=createShipyard(THREE,scene,world,{
  loader:sceneryLoader,
  assets:{
-  platform:new URL('../assets/models/overhaul-platform-deck.glb',import.meta.url).href,
-  arc:new URL('../assets/models/scenery/observatory-arc.glb',import.meta.url).href,
-  lens:new URL('../assets/models/scenery/observatory-lens.glb',import.meta.url).href,
-  landing:new URL('../assets/models/scenery/observatory-landing.glb',import.meta.url).href,
-  iris:new URL('../assets/models/scenery/observatory-iris.glb',import.meta.url).href,
-  ridge:new URL('../assets/models/scenery/skyline-ridge.glb',import.meta.url).href,
+  platform:new URL('../assets/models/overhaul-platform-shipyard.glb',import.meta.url).href,
+  rib:new URL('../assets/models/scenery/shipyard-rib.glb',import.meta.url).href,
+  berth:new URL('../assets/models/scenery/shipyard-platform.glb',import.meta.url).href,
   craft:new URL('../assets/models/overhaul-service-skiff.glb',import.meta.url).href
  },
  onReady:syncBoardPresentation
@@ -175,7 +172,7 @@ const modeledScenery={
 };
 const chassisModels={standard:null,orbital:null};
 function syncBoardChassis(){
- const preview=observatory.isVisible();
+ const preview=shipyard.isVisible();
  const showOrbital=baseEnvironment?.id==='orbital'&&Boolean(chassisModels.orbital);
  if(chassisModels.standard)chassisModels.standard.visible=!preview&&!showOrbital;
  if(chassisModels.orbital)chassisModels.orbital.visible=!preview&&showOrbital;
@@ -227,17 +224,19 @@ const opticModels=createOpticModelLoader(THREE,{
 const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7fffffff);
 const soundscape=createSoundscape();
 let activeEnvironment=null,baseEnvironment=null;
-function usesObservatory(index){
- return !baselineScenery&&debugTheme===null&&isObservatoryStage(currentCampaign(),index);
+function usesShipyard(index){
+ return !baselineScenery&&debugTheme===null&&isShipyardStage(currentCampaign(),index);
 }
 function syncBoardPresentation(){
- const preview=observatory.isVisible();
+ const preview=shipyard.isVisible();
  legacyScenery.visible=legacyAtmosphere.visible=!preview;
  gridGroup.visible=!preview;
  laboratory.userData.setSceneryVisible(!preview);
  syncBoardChassis();
+ key.color.setHex(preview?0xdbebff:0xffebce);
+ ambient.intensity=preview?.48:.70;
  if(preview){
-  scene.fog.color.setHex(OBSERVATORY.fog);
+  scene.fog.color.setHex(SHIPYARD.fog);
   scene.fog.density=.007;
   if(levelTransition)levelTransition.fogTo=scene.fog.density;
  }
@@ -246,9 +245,9 @@ function syncBoardPresentation(){
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:debugTheme});
  baseEnvironment=theme;
- const preview=usesObservatory(levelIndex);
- activeEnvironment=preview?OBSERVATORY:theme;
- observatory.setLevel(preview,currentPackId,levelIndex);
+ const preview=usesShipyard(levelIndex);
+ activeEnvironment=preview?SHIPYARD:theme;
+ shipyard.setLevel(preview);
  if(theme.id==='orbital')loadOrbitalChassis();
  syncBoardPresentation();
  soundscape.setBiome(theme.id);
@@ -496,7 +495,8 @@ function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
- laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,graphicsProfile,currentResult.boundaryHits);
+ const lighting=activeEnvironment?.id==='shipyard'?{...graphicsProfile,surfaceGlow:.31}:graphicsProfile;
+ laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,lighting,currentResult.boundaryHits);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
  if(!currentResult.won&&won){won=false;$('win').classList.add('hidden');if(victoryFX){victoryFX.dispose();victoryFX=null}}
@@ -554,7 +554,7 @@ function renderLevelAtlas(){
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
-  const biome=stagePresentation(usesObservatory(entry.index)?OBSERVATORY:environmentForLevel(
+  const biome=stagePresentation(usesShipyard(entry.index)?SHIPYARD:environmentForLevel(
    currentPackId,entry.index,environmentSessionSeed),language);
   button.dataset.biome=biome.biome;
   button.style.setProperty('--level-accent',biome.accent);
@@ -1138,17 +1138,19 @@ function toggleCameraPreset(){
 }
 function updateCamera(){
  const viewportWidth=innerWidth;
- const pilot=observatory.isVisible();
+ const pilot=shipyard.isVisible();
  const mobile=viewportWidth<680;
  // Portrait mode: fit a 15×15 board into the usable central viewport.
  const pilotMargin=pilot?2.13*(390/viewportWidth)*(innerHeight/844):1;
  const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):1;
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&viewportWidth>680?(innerHeight<650 ? .93 : .86):1;
- const cameraDistance=dist*portraitScale*focusScale;
- const viewPitch=pilot?Math.max(.35,pitch-.13*Math.max(0,1-(pitch-.86)/.63)):pitch;
- cameraTarget.y=pilot&&mobile?1.25:0;
- camera.position.set(Math.sin(yaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(yaw)*Math.cos(viewPitch)*cameraDistance);
+ const cameraDistance=dist*portraitScale*focusScale*(pilot&&!mobile?.94:1);
+ const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
+ const viewPitch=Math.max(.27,pitch-(mobile?.22:.32)*framing);
+ const viewYaw=yaw+.23*framing;
+ cameraTarget.y=pilot?(mobile?1.15:-.65):0;
+ camera.position.set(Math.sin(viewYaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(viewYaw)*Math.cos(viewPitch)*cameraDistance);
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
 }
@@ -1689,8 +1691,8 @@ function animate(time){
  trackFrameRate(time);
  const still=debugFrozen||reducedMotion.matches;
  const animationTime=debugFrozen?0:time;
- if(observatory.isVisible()){
-  observatory.update(animationTime*.001,still);
+ if(shipyard.isVisible()){
+  shipyard.update(animationTime*.001,still,camera.position);
  }else{
   spaceEnvironments.update(animationTime*.001,still);
   terraces.update(animationTime*.001,still);
@@ -1845,7 +1847,7 @@ if(debugEnabled){
   },
   getLevelCount:()=>levels.length,
   getLevelState:()=>({...window.chromatron.getState(),number:levelIndex+1,campaign:currentCampaign(),
-   theme:activeEnvironment.id,observatory:activeEnvironment.id==='observatory'?observatory.getStatus():null,
+   theme:activeEnvironment.id,pilotStatus:activeEnvironment.id==='shipyard'?shipyard.getStatus():null,
    completed:solved.includes(levelIndex)}),
   setTheme(name){
    if(name!==null&&!SPACE_BIOMES.some(theme=>theme.id===name))return false;

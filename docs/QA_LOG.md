@@ -170,3 +170,34 @@ sprawdza stan gry po cofnięciu i przechodzi.
 [Desktop po](../assets/previews/overhaul/observatory/after-desktop.png) ·
 [Telefon przed](../assets/previews/overhaul/observatory/before-mobile.png) ·
 [Telefon po](../assets/previews/overhaul/observatory/after-mobile.png).
+
+## 18 listopada 2026 · korekta pilota Stoczni orbitalnej
+
+Referencją właściciela jest [wizualizacja Stoczni](concepts/04-stocznia-orbitalna.png).
+Próbę przeprowadzono na pokazowej planszy 8. Chromium rozwiązał ją z
+istniejącymi ruchami, osiągnął stan 2/2, a okno zwycięstwa zamknięto
+klawiszem Escape przed zrzutem.
+
+Obniżono kąt kamery, dodano odsłoniętą kratownicę pod tytanowym pokładem,
+duże ukośne żebro, dalszy dok z pylonem oraz łuk planety rysowany w shaderze.
+W kolejnych dwóch przeglądach uspokojono jasność planety, usunięto
+ziarno postprocessingu dla tej sceny i dopracowano geometrię doku.
+Wiązka ma świetlny rdzeń i niebieską poświatę na pokładzie.
+
+| Rozdzielczość | FPS | 95. percentyl klatki | Wywołania rysowania | Trójkąty |
+| --- | ---: | ---: | ---: | ---: |
+| 1920 × 1080 | 60,01 | 17 ms | 90 | 6204 |
+| 390 × 844 | 59,81 | 17 ms | 90 | 6204 |
+
+Chromium i Radeon, profil Zrównoważona, DPR 1. Pomiar przez 5 sekund po
+9 sekundach rozgrzewki. Zero ostrzeżeń i błędów konsoli w tych dwóch
+ujęciach. Przeszły 223 testy i build oraz dwa testy Chromium,
+w tym test narożników, wyboru rozdzielacza, rozwiązania i cofnięcia ruchu.
+
+Czytelność siatki i zgodność kompozycji z kierunkiem Stoczni oceniono
+na 4/5 na desktopie. W pionie siatka i optyka pozostają dostępne, ale
+panel zagadki przykrywa większość dalekiego doku. To obniża ocenę
+kompozycji pionowej do 3/5.
+
+[Zrzut gry 1920 × 1080](../assets/previews/overhaul/shipyard/desktop.png) ·
+[Zrzut gry 390 × 844](../assets/previews/overhaul/shipyard/mobile.png).

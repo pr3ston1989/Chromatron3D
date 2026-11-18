@@ -117,13 +117,15 @@ Moduły poniżej są wyeksportowane do `assets/models/scenery`. Oznaczenie pilot
 | `perimeter-corner` | Narożnik pochłaniacza | 0,61 × 1,18 × 0,61 | 108 |
 | `reclaimed-metal` | Mała grupa złomu poza siatką | 0,81 × 0,25 × 0,51 | 132 |
 | `ring-reactor` | Duży rezonator i zamiennik reaktora | 6,00 × 5,15 × 4,40 | 640 |
+| `shipyard-platform` | Odległy dok z masztami w pilocie Stoczni | 15,44 × 14,03 × 3,06 | 562 |
+| `shipyard-rib` | Żebro z otwartymi przęsłami w pilocie Stoczni | 23,50 × 14,70 × 1,90 | 168 |
 | `skyline-ridge` | Trzy warstwy horyzontu w pilocie | 28,00 × 4,20 × 6,55 | 92 |
 | `survey-mast` | Przekaźnik przy brzegu | 0,45 × 0,73 × 0,43 | 178 |
 | `tracking-dish` | Czasza obserwacyjna i odpowiednik teleskopu | 4,34 × 3,35 × 2,96 | 288 |
 | `wind-turbine` | Maszyna tarasu w Ogrodzie | 4,34 × 2,92 × 2,96 | 334 |
 
-Dodatkowe platformy `overhaul-platform-grotto`, `overhaul-platform-garden` i `overhaul-platform-shipyard` mają po 1498 trójkątów. Dotychczasowy kafel, chwytacz wiązki, stare kompozycje biomów i obudowy pozostają dostępne dla plansz poza pilotem.
+Platformy `overhaul-platform-grotto` i `overhaul-platform-garden` mają po 1498 trójkątów. `overhaul-platform-shipyard` ma 1474 trójkąty i otwartą kratownicę. Dotychczasowy kafel, chwytacz wiązki, stare kompozycje biomów i obudowy pozostają dostępne dla plansz poza pilotem.
 
 [Arkusz 22 przyrządów](../assets/previews/overhaul/catalog-optics.png) ·
 [Przyrządy w skali gry](../assets/previews/overhaul/catalog-camera-1920x1080.png) ·
-[Arkusz 28 modułów otoczenia](../assets/previews/overhaul/catalog-scenery.png).
+[Arkusz 30 modułów otoczenia](../assets/previews/overhaul/catalog-scenery.png).

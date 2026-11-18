@@ -93,6 +93,7 @@ test('overhaul samples load as untextured, Y-up models within the design budgets
  const loader=new GLTFLoader();
  const budgets={
   'overhaul-platform-deck':1500,
+  'overhaul-platform-shipyard':1500,
   'overhaul-beam-splitter':600,
   'overhaul-service-skiff':600
  };
@@ -109,17 +110,23 @@ test('overhaul samples load as untextured, Y-up models within the design budgets
   const bounds=parts.map(p=>doc.accessors[p.attributes.POSITION]);
   const minimum=[0,1,2].map(axis=>Math.min(...bounds.map(b=>b.min[axis])));
   const maximum=[0,1,2].map(axis=>Math.max(...bounds.map(b=>b.max[axis])));
-  assert.equal(minimum[1],0,name+' has a Y-up base');
+  assert.ok(Math.abs(minimum[1])<1e-6,name+' has a Y-up base');
   const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
   const {scene}=await loader.parseAsync(bytes,'');
   assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-6,name+' loads without rotation');
-  if(name.endsWith('platform-deck')){
+  if(name.startsWith('overhaul-platform-')){
    const aspect=maximum[1]/(maximum[0]-minimum[0]);
    assert.ok(aspect>=.15&&aspect<=.20,'depth-to-width ratio');
    const tileMaterial=doc.materials.findIndex(m=>m.name==='Uniform playing surface');
    const tileFaces=parts.filter(p=>p.material===tileMaterial)
     .reduce((sum,p)=>sum+doc.accessors[p.indices].count/3,0);
    assert.equal(tileFaces,15*15*2+16,'225 inlays and a continuous frame');
+   if(name.endsWith('shipyard')){
+    const struts=doc.materials.findIndex(m=>m.name==='Undercarriage strut');
+    assert.ok(struts>=0);
+    assert.ok(parts.some(p=>p.material===struts&&doc.accessors[p.attributes.POSITION].min[1]<.1),
+     'exposed struts reach the lower deck');
+   }
   }
   if(name.endsWith('beam-splitter')){
    const cornerRadius=Math.hypot(Math.max(-minimum[0],maximum[0]),Math.max(-minimum[2],maximum[2]));
