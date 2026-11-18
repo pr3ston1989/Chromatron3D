@@ -112,10 +112,41 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
   trim.color.setHex(theme.edge);
   trim.emissive.setHex(theme.edge);
  }
+ // Each authored PBR material is one instanced draw for the entire rim.
+ // Preserve the independently placed collector and its exact contact surface.
+ function setArmor(model){
+  const matrix=new THREE.Matrix4();
+  const count=panels.count;
+  const batches=[];
+  model.updateMatrixWorld(true);
+  model.traverse(node=>{
+   if(!node.isMesh)return;
+   const batch=new THREE.InstancedMesh(node.geometry,node.material,count);
+   batch.name='modeled-absorber-armor';
+   batch.userData.scenicOnly=true;
+   for(let i=0;i<count;i++){
+    panels.getMatrixAt(i,matrix);
+    const side=Math.floor(i/ABSORBER_PANELS_PER_SIDE);
+    dummy.position.setFromMatrixPosition(matrix);
+    dummy.position.y-=ABSORBER_HEIGHT/2;
+    dummy.rotation.set(0,(side>=2?Math.PI/2:0)+(side%2?Math.PI:0),0);
+    dummy.scale.set(tileSize/1.3,1,1);
+    dummy.updateMatrix();
+    batch.setMatrixAt(i,matrix.multiplyMatrices(dummy.matrix,node.matrixWorld));
+   }
+   batches.push(batch);
+  });
+  if(!batches.length)return false;
+  group.add(...batches);
+  group.remove(panels);
+  panels.geometry.dispose();
+  panels.dispose();
+  return true;
+ }
  function getStats(){
   return {segments:panels.count,collectors:collectors.count,
    guideLights:guide.count,structuralRibs:brace.count,corners:corners.length,
    boundary:half,beamHeight:.78};
  }
- return {group,setTheme,getStats};
+ return {group,setTheme,setArmor,getStats};
 }

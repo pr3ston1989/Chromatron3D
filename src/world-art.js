@@ -50,6 +50,7 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
   const m=new THREE.Mesh(geometry,material);
   m.name=name;m.position.set(x,y,z);container.add(m);return m;
  };
+ const legacyChassisStart=group.children.length;
  // Recessed rounded armor plates give the grid a graded rather than a
  // clipped edge. The top logical 15x15 board remains untouched.
  add(new RoundedBoxGeometry(21.9,.28,21.9,4,.22),
@@ -73,6 +74,8 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
   add(new RoundedBoxGeometry(.06,.042,21.9,2,.015),
    markerMat,side*11.7,-1.38,0,'lower-safety-seam');
  }
+ const legacyChassis=group.children.slice(legacyChassisStart);
+ group.userData.hideLegacyChassis=()=>legacyChassis.forEach(part=>{part.visible=false});
  // Corner vents / flush hardware replace the old tall luminous pillars.
  for(const sx of [-1,1])for(const sz of [-1,1]){
   const plate=add(new RoundedBoxGeometry(.67,.08,.67,3,.04),

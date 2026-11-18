@@ -143,6 +143,43 @@ const heroScenery=createHeroScenery(THREE,world,{baseUrl:import.meta.env.BASE_UR
 const midgroundScenery=createMidgroundScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/midground/'});
 const terraces=createTerraces(THREE,world,import.meta.env.BASE_URL+'models/terraces/');
 const ambientLife=createAmbientLife(THREE,world);
+const modeledScenery={
+ chassis:false,absorber:false,shuttle:false
+};
+const chassisModels={standard:null,orbital:null};
+function syncBoardChassis(){
+ const showOrbital=activeEnvironment?.id==='orbital'&&Boolean(chassisModels.orbital);
+ if(chassisModels.standard)chassisModels.standard.visible=!showOrbital;
+ if(chassisModels.orbital)chassisModels.orbital.visible=showOrbital;
+ if(modeledScenery.chassis){
+  deck.visible=false;
+  laboratory.userData.hideLegacyChassis();
+ }
+}
+sceneryLoader.load(new URL('../assets/models/board-chassis.glb',import.meta.url).href,({scene:chassis})=>{
+ chassis.position.y=-3.995;
+ chassisModels.standard=chassis;
+ world.add(chassis);
+ modeledScenery.chassis=true;
+ syncBoardChassis();
+});
+function loadOrbitalChassis(){
+ if(chassisModels.orbital!==null)return;
+ chassisModels.orbital=undefined;
+ sceneryLoader.load(new URL('../assets/models/board-chassis-undercarriage.glb',import.meta.url).href,({scene:chassis})=>{
+  chassis.position.y=-3.995;
+  chassisModels.orbital=chassis;
+  world.add(chassis);
+  syncBoardChassis();
+ },undefined,()=>{chassisModels.orbital=null});
+}
+sceneryLoader.load(new URL('../assets/models/absorber-armor.glb',import.meta.url).href,({scene:armor})=>{
+ modeledScenery.absorber=laboratory.userData.beamPerimeter.setArmor(armor);
+});
+sceneryLoader.load(new URL('../assets/models/service-shuttle.glb',import.meta.url).href,({scene:shuttle})=>{
+ ambientLife.setOrbitalShuttle(shuttle);
+ modeledScenery.shuttle=true;
+});
 const livingWorld=createLivingWorld(THREE,scene,world);
 const boardEdgeGlow=createBoardEdgeGlow(THREE,world,{tileSize:T,half:HALF});
 const atmosphereParticles=createAtmosphereParticles(THREE,scene);
@@ -161,6 +198,8 @@ let activeEnvironment=null;
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
  activeEnvironment=theme;
+ if(theme.id==='orbital')loadOrbitalChassis();
+ syncBoardChassis();
  soundscape.setBiome(theme.id);
  heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  midgroundScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
@@ -172,12 +211,14 @@ function applyLevelEnvironment(){
  atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  cinematic.setBiome(theme.id);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
- deck.material.color.setHex(theme.tileB);
  const finish=deckSurfaceProfile(theme.decor);
  tileMaterial.metalness=finish.tileMetalness;
  tileMaterial.roughness=finish.tileRoughness;
- deck.material.metalness=finish.deckMetalness;
- deck.material.roughness=finish.deckRoughness;
+ if(!modeledScenery.chassis){
+  deck.material.color.setHex(theme.tileB);
+  deck.material.metalness=finish.deckMetalness;
+  deck.material.roughness=finish.deckRoughness;
+ }
  // Subtle per-biome emissive tint on the board surface material
  const biomeEmissive={moss:0x1a3a22,ice:0x1a3044,crystal:0x2a1830,scrap:0x1a2530};
  const biomeEmissiveStrength={moss:.04,ice:.06,crystal:.08,scrap:.03};
@@ -1710,7 +1751,7 @@ requestAnimationFrame(animate);
 window.chromatron={
  getLayoutState:()=>({boardFocus:$('app').classList.contains('board-focus'),missionOpen:$('app').querySelector('.mission').classList.contains('drawer-open'),toolOpen:$('app').querySelector('.tool-panel').classList.contains('drawer-open')}),
  getState:()=>({level:levelIndex,pieces:pieces.map(p=>({...p})),selectedId:selected?.id??null,placementMode,result:{...currentResult,received:[...currentResult.received]}}),
- getVisualStats:()=>({activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,absorberHits:currentResult?.boundaryHits?.length||0,absorberStructure:laboratory.userData.beamPerimeter.getStats(),beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),heroScenery:heroScenery.getStats(),midgroundScenery:midgroundScenery.getStats(),ambientLife:ambientLife.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
+ getVisualStats:()=>({modeledScenery:{...modeledScenery},boardChassis:chassisModels.orbital?.visible?'orbital':chassisModels.standard?.visible?'standard':'loading',activeOpticTweens:opticTweens.length,componentRebuilds,selectionVisible:selectionReticle.root.visible,selectionPieceId:selectionReticle.root.userData.pieceId??null,selectedVisualAngle:componentGroup.children.find(g=>g.userData.piece?.id===selected?.id)?.children.find(c=>c.userData.motionHead)?.rotation.y??null,qualityMode:graphicsMode,effectiveQuality:graphicsMode==='auto'?autoLevel:graphicsMode,antialiasing:graphicsProfile.antialias,planarReflections:componentGroup.children.flatMap(c=>{const out=[];c.traverse(obj=>{if(obj.isReflector)out.push(obj)});return out}).length,pixelRatio:renderer.getPixelRatio(),beamSegments:currentResult?.segments?.length||0,absorberHits:currentResult?.boundaryHits?.length||0,absorberStructure:laboratory.userData.beamPerimeter.getStats(),beamGeometryDrawCalls:laserVisuals?.geometryStats?.drawCalls??0,beamDynamicLights:laserVisuals?.dynamicLightCount??0,photonSystems:beamGroup.children.filter(c=>c.isPoints).length,guideObjects:guideGroup.children.length,instancedBoardLayers:gridGroup.children.filter(c=>c.isInstancedMesh).length,contactShadowInstances:opticShadows.mesh.count,environment:spaceEnvironments.getStats(),heroScenery:heroScenery.getStats(),midgroundScenery:midgroundScenery.getStats(),ambientLife:ambientLife.getStats(),blossomActive:Boolean(victoryFX),selectedType:selected?.type||null}),
  projectCell(x,y,height=0){const v=vec(x,y,height).project(camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2}},
  inspectPointer(clientX,clientY){
   const cell=cellAt(clientX,clientY);

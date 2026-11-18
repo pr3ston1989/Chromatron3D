@@ -42,3 +42,29 @@ test('near-rim models fit the board clearance and the deck uses one UV-mapped ce
  assert.equal(tile.length,1);
  assert.ok(Number.isInteger(tile[0].attributes.TEXCOORD_0));
 });
+
+test('the pilot GLBs preserve palette emission, base origin and category budgets',()=>{
+ const budgets={'board-chassis':1500,'board-chassis-undercarriage':1500,
+  'absorber-armor':180,'service-shuttle':600};
+ for(const [name,budget] of Object.entries(budgets)){
+  const file=readFileSync(new URL('../assets/models/'+name+'.glb',import.meta.url));
+  const doc=JSON.parse(file.toString('utf8',20,20+file.readUInt32LE(12)));
+  const parts=doc.meshes.flatMap(mesh=>mesh.primitives);
+  const triangles=parts.reduce((sum,part)=>sum+doc.accessors[part.indices].count/3,0);
+  const bounds=parts.map(part=>doc.accessors[part.attributes.POSITION]);
+  assert.ok(triangles<=budget,name);
+  assert.equal(Math.min(...bounds.map(b=>b.min[1])),0,name+' has a Y-up base');
+  assert.equal(doc.images,undefined,name+' uses palette materials');
+  assert.ok(doc.materials.some(material=>material.emissiveFactor?.some(c=>c>0)),name);
+  if(name.startsWith('board-chassis')){
+   const height=Math.max(...bounds.map(b=>b.max[1]));
+   const width=Math.max(...bounds.map(b=>b.max[0]))-Math.min(...bounds.map(b=>b.min[0]));
+   assert.equal(height,3.75,name+' must preserve the supported play surface');
+   assert.ok(height/width>=.15&&height/width<=.20);
+  }
+  for(const suffix of ['','-game']){
+   const preview=readFileSync(new URL('../assets/previews/'+name+suffix+'.png',import.meta.url));
+   assert.deepEqual([preview.readUInt32BE(16),preview.readUInt32BE(20)],[512,512],name);
+  }
+ }
+});

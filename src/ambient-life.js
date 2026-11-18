@@ -268,6 +268,22 @@ export function createAmbientLife(THREE,world){
   }
   record.motes.instanceMatrix.needsUpdate=true;
  }
+ let orbitalShuttle=null;
+ function setOrbitalShuttle(model){
+  orbitalShuttle=model;
+  const formerGeometry=new Set();
+  for(const craft of sceneRecords.get('orbital').vehicles){
+   for(const node of craft.children){
+    if(node.isMesh&&node.geometry!==shared.beacon)formerGeometry.add(node.geometry);
+   }
+   const shuttle=model.clone(true);
+   // The original lane position is the centre of the flying craft.
+   shuttle.position.y=-.30;
+   craft.clear();
+   craft.add(shuttle);
+  }
+  formerGeometry.forEach(geometry=>geometry.dispose());
+ }
  function getStats(){
   const rec=sceneRecords.get(active);
   const limits=AMBIENT_COUNTS[quality];
@@ -284,8 +300,11 @@ export function createAmbientLife(THREE,world){
    record.root.traverse(node=>{if(node.isMesh||node.isInstancedMesh)geometries.add(node.geometry)});
    world.remove(record.root);
   }
+  orbitalShuttle?.traverse(node=>{
+   if(node.isMesh)materials.add(node.material);
+  });
   geometries.forEach(geo=>geo.dispose());
   materials.forEach(mat=>mat.dispose());
  }
- return {setLevel,setQuality,update,getStats,dispose};
+ return {setLevel,setQuality,setOrbitalShuttle,update,getStats,dispose};
 }
