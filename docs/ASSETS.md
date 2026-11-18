@@ -13,28 +13,28 @@ Wymiary plików GLB wynikają z ich obwiedni przed skalowaniem instancji.
 | Skala na bokach siatki | `world-art.js`; pozycja kafli | 0,30 × 0,013 × 0,025 | 180 | Generowana; ocenić przy pilotażu |
 | Kaseta pochłaniacza, listwa świetlna i powierzchnia chwytająca | `beam-perimeter.js`; obrzeże rozgrywki, 60 kaset | GLB 1,31 × 0,96 × 0,28; powierzchnia 1,313 × 0,38 × 0,13 | 180 | GLB kasety; funkcjonalna powierzchnia instancjonowana |
 | Narożnik i żebro pochłaniacza | `beam-perimeter.js`; łączniki | 0,59 × 1,18 × 0,59; 0,36 × 0,78 × 0,50 | 180 | Generowane |
-| Ściana | `public/models/optics/wall.glb`; zapora | 1,04 × 0,47 × 1,02 | 180 | Do przeglądu |
-| Emiter | `laser.glb`; źródło wiązki | 0,77 × 0,88 × 1,09 | 600 | Do przeglądu |
-| Lustro | `mirror.glb`; odbicie | 0,77 × 0,95 × 1,09 | 600 | Model porównawczy do próbki |
-| Zaginacz | `bender.glb`; skręt toru | 0,87 × 0,95 × 1,09 | 600 | Do przeglądu |
-| Filtr | `filter.glb`; wydziela kolor | 0,77 × 0,92 × 1,09 | 600 | Do przeglądu |
-| Pryzmat | `prism.glb`; rozszczepia kolory | 1,04 × 0,89 × 1,09 | 600 | Do przeglądu |
-| Doppler | `doppler.glb`; przesuwa kolor | 1,04 × 0,91 × 1,09 | 600 | Do przeglądu |
+| Ściana | `public/models/optics/wall.glb`; zapora | 1,04 × 0,47 × 1,02 | 180 | Nowy GLB w grze, 138 trójkątów |
+| Emiter | `laser.glb`; źródło wiązki | 0,77 × 0,88 × 1,09 | 600 | Nowy GLB w grze, 342 trójkątów |
+| Lustro | `mirror.glb`; odbicie | 0,77 × 0,95 × 1,09 | 600 | Nowy GLB w grze, 200 trójkątów |
+| Zaginacz | `bender.glb`; skręt toru | 0,87 × 0,95 × 1,09 | 600 | Nowy GLB w grze, 226 trójkątów |
+| Filtr | `filter.glb`; wydziela kolor | 0,77 × 0,92 × 1,09 | 600 | Nowy GLB w grze, 284 trójkątów |
+| Pryzmat | `prism.glb`; rozszczepia kolory | 1,04 × 0,89 × 1,09 | 600 | Nowy GLB w grze, 174 trójkątów |
+| Doppler | `doppler.glb`; przesuwa kolor | 1,04 × 0,91 × 1,09 | 600 | Nowy GLB w grze, 392 trójkątów |
 | Rozdzielacz | `splitter.glb`; rozwidla tor wiązki | 1,04 × 0,87 × 1,09 | 600 | Próbka gotowa, 532 trójkąty |
-| Splątywacz | `tangler.glb`; wiąże parę torów | 1,04 × 0,84 × 1,09 | 600 | Do przeglądu |
-| Rezonator | `target.glb`; cel zagadki | 1,04 × 0,61 × 1,09 | 600 | Do przeglądu |
-| Przewód | `conduit.glb`; przejście po osi | 0,77 × 0,78 × 1,09 | 600 | Do przeglądu |
-| Teleporter | `teleporter.glb`; przeniesienie | 1,04 × 0,98 × 1,09 | 600 | Do przeglądu |
-| Wielofiltr | `multiFilter.glb`; filtr wielokanałowy | 1,04 × 0,65 × 1,09 | 600 | Do przeglądu |
-| Skrętnik | `twister.glb`; kierunek zależny od wejścia | 1,04 × 0,63 × 1,09 | 600 | Do przeglądu |
-| Komplementor | `complementor.glb`; uzupełnia kanały | 1,04 × 0,89 × 1,09 | 600 | Do przeglądu |
-| Bramka logiczna | `logicGate.glb`; przetwarza wejścia | 1,04 × 0,77 × 1,09 | 600 | Do przeglądu |
-| Gwiazda | `starburst.glb`; wiele wyjść | 1,04 × 0,63 × 1,09 | 600 | Do przeglądu |
-| Ruchomy teleporter | `mobileTeleporter.glb`; połówka pary | 1,04 × 0,98 × 1,09 | 600 | Do przeglądu |
-| Podwójny reflektor | `dualReflector.glb`; dwustronny odbłyśnik | 0,77 × 0,95 × 1,09 | 600 | Do przeglądu |
-| Czterokrotny zaginacz | `quadBender.glb`; zwrotnica | 1,04 × 0,63 × 1,09 | 600 | Do przeglądu |
-| Pole zajęte | `occupiedSquare.glb`; blokada montażu | 1,04 × 0,30 × 1,09 | 180 | Do przeglądu |
-| Bramka barw podstawowych | `primaryLogicGate.glb`; filtruje wejścia | 1,04 × 0,77 × 1,09 | 600 | Do przeglądu |
+| Splątywacz | `tangler.glb`; wiąże parę torów | 1,04 × 0,84 × 1,09 | 600 | Nowy GLB w grze, 344 trójkątów |
+| Rezonator | `target.glb`; cel zagadki | 1,04 × 0,61 × 1,09 | 600 | Nowy GLB w grze, 260 trójkątów |
+| Przewód | `conduit.glb`; przejście po osi | 0,77 × 0,78 × 1,09 | 600 | Nowy GLB w grze, 300 trójkątów |
+| Teleporter | `teleporter.glb`; przeniesienie | 1,04 × 0,98 × 1,09 | 600 | Nowy GLB w grze, 248 trójkątów |
+| Wielofiltr | `multiFilter.glb`; filtr wielokanałowy | 1,04 × 0,65 × 1,09 | 600 | Nowy GLB w grze, 240 trójkątów |
+| Skrętnik | `twister.glb`; kierunek zależny od wejścia | 1,04 × 0,63 × 1,09 | 600 | Nowy GLB w grze, 250 trójkątów |
+| Komplementor | `complementor.glb`; uzupełnia kanały | 1,04 × 0,89 × 1,09 | 600 | Nowy GLB w grze, 164 trójkątów |
+| Bramka logiczna | `logicGate.glb`; przetwarza wejścia | 1,04 × 0,77 × 1,09 | 600 | Nowy GLB w grze, 284 trójkątów |
+| Gwiazda | `starburst.glb`; wiele wyjść | 1,04 × 0,63 × 1,09 | 600 | Nowy GLB w grze, 328 trójkątów |
+| Ruchomy teleporter | `mobileTeleporter.glb`; połówka pary | 1,04 × 0,98 × 1,09 | 600 | Nowy GLB w grze, 300 trójkątów |
+| Podwójny reflektor | `dualReflector.glb`; dwustronny odbłyśnik | 0,77 × 0,95 × 1,09 | 600 | Nowy GLB w grze, 324 trójkątów |
+| Czterokrotny zaginacz | `quadBender.glb`; zwrotnica | 1,04 × 0,63 × 1,09 | 600 | Nowy GLB w grze, 224 trójkątów |
+| Pole zajęte | `occupiedSquare.glb`; blokada montażu | 1,04 × 0,30 × 1,09 | 180 | Nowy GLB w grze, 138 trójkątów |
+| Bramka barw podstawowych | `primaryLogicGate.glb`; filtruje wejścia | 1,04 × 0,77 × 1,09 | 600 | Nowy GLB w grze, 288 trójkątów |
 
 ## Otoczenie generowane i modele zastępcze
 
@@ -86,3 +86,44 @@ Lasery i ich smugi, cienie kontaktowe, obrysy, retikule, podgląd ruchu, wskazó
 [Cztery wykończenia](../assets/previews/overhaul/deck-finishes.png) ·
 [Kamera gry w 1080p](../assets/previews/overhaul/game-camera-1920x1080.png) ·
 [Kamera gry w 390 × 844](../assets/previews/overhaul/game-camera-390x844.png).
+
+## Biblioteka modułów otoczenia
+
+Moduły poniżej są wyeksportowane do `assets/models/scenery`. Oznaczenie pilota dotyczy wdrożonego poziomu demonstracyjnego. Pozostałe moduły są gotowe do kompozycji w fazie 3. Zastępują zestawy wcześniejszych brył, więc jeden model może mieć kilka zastosowań.
+
+| GLB | Rola | Rozmiar | Trójkąty |
+| --- | --- | --- | ---: |
+| `amethyst-shard` | Instancja kryształu przy krawędzi | 0,71 × 0,70 × 0,44 | 132 |
+| `basalt-remnant` | Odłamki skalne do planu dalekiego | 2,27 × 1,54 × 1,42 | 132 |
+| `dock-gantry` | Główne żebro stoczni | 12,36 × 6,72 × 2,16 | 608 |
+| `dock-landing` | Platforma i gniazda serwisowe stoczni | 6,10 × 2,27 × 3,54 | 172 |
+| `dock-relay` | Pylon na horyzoncie | 7,24 × 6,54 × 2,40 | 244 |
+| `frost-spires` | Główna sylwetka lodowa | 9,73 × 6,10 × 5,50 | 308 |
+| `garden-arcade` | Kamienna forma ramująca Ogród | 9,81 × 4,67 × 2,16 | 872 |
+| `garden-fern` | Roślinność tarasów | 1,32 × 0,95 × 0,70 | 188 |
+| `garden-heliostat` | Dominanta optyczna Ogrodu | 5,72 × 4,36 × 3,76 | 800 |
+| `garden-terrace` | Moduł krajobrazu ogrodowego | 28,00 × 4,20 × 6,55 | 92 |
+| `greenhouse-habitat` | Biosfera i zamiennik starej szklarni | 9,20 × 3,76 × 5,86 | 828 |
+| `grotto-buttress` | Kryształowa dominanta Groty | 9,73 × 6,10 × 5,50 | 220 |
+| `grotto-ridge` | Dalsza warstwa skalna | 28,00 × 4,20 × 6,55 | 92 |
+| `ice-shard` | Mały lód, instancja na obrzeżu | 0,53 × 0,75 × 0,33 | 132 |
+| `maintenance-crane` | Główna maszyna dokująca | 4,81 × 2,96 × 2,96 | 280 |
+| `moss-cover` | Kępy mchu | 0,93 × 0,39 × 0,58 | 132 |
+| `observatory-arc` | Łuk kalibracyjny w pilocie | 11,99 × 6,11 × 2,16 | 784 |
+| `observatory-iris` | Ruchomy wkład soczewki w pilocie | 3,93 × 3,95 × 0,77 | 536 |
+| `observatory-landing` | Podstawa łuku i soczewki w pilocie | 13,54 × 1,45 × 4,39 | 270 |
+| `observatory-lens` | Gniazdo soczewki w pilocie | 5,72 × 2,69 × 3,76 | 236 |
+| `perimeter-brace` | Instancjonowane żebro pochłaniacza | 0,36 × 0,78 × 0,50 | 108 |
+| `perimeter-corner` | Narożnik pochłaniacza | 0,61 × 1,18 × 0,61 | 108 |
+| `reclaimed-metal` | Mała grupa złomu poza siatką | 0,81 × 0,25 × 0,51 | 132 |
+| `ring-reactor` | Duży rezonator i zamiennik reaktora | 6,00 × 5,15 × 4,40 | 640 |
+| `skyline-ridge` | Trzy warstwy horyzontu w pilocie | 28,00 × 4,20 × 6,55 | 92 |
+| `survey-mast` | Przekaźnik przy brzegu | 0,45 × 0,73 × 0,43 | 178 |
+| `tracking-dish` | Czasza obserwacyjna i odpowiednik teleskopu | 4,34 × 3,35 × 2,96 | 288 |
+| `wind-turbine` | Maszyna tarasu w Ogrodzie | 4,34 × 2,92 × 2,96 | 334 |
+
+Dodatkowe platformy `overhaul-platform-grotto`, `overhaul-platform-garden` i `overhaul-platform-shipyard` mają po 1498 trójkątów. Dotychczasowy kafel, chwytacz wiązki, stare kompozycje biomów i obudowy pozostają dostępne dla plansz poza pilotem.
+
+[Arkusz 22 przyrządów](../assets/previews/overhaul/catalog-optics.png) ·
+[Przyrządy w skali gry](../assets/previews/overhaul/catalog-camera-1920x1080.png) ·
+[Arkusz 28 modułów otoczenia](../assets/previews/overhaul/catalog-scenery.png).

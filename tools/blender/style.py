@@ -50,7 +50,7 @@ def rotation_from_profile(sculpture, points, depths, angle, material, bands=None
                    material, bands)
 
 
-def export_model(model, budget):
+def export_model(model, budget, folder=MODELS):
     bpy.context.view_layer.update()
     if model.location.length > 1e-6 or abs(min(v.co.z for v in model.data.vertices)) > 1e-6:
         raise ValueError(f"{model.name}: base and origin must be at Z=0")
@@ -62,7 +62,7 @@ def export_model(model, budget):
     triangles = len(model.data.loop_triangles)
     if triangles > budget:
         raise ValueError(f"{model.name}: {triangles} triangles exceeds {budget}")
-    export(model.name, [model], MODELS)
+    export(model.name, [model], folder)
     print(f"ASSET {model.name} · {triangles}/{budget} triangles · {tuple(round(v, 3) for v in model.dimensions)} m (Blender XYZ)")
 
 
@@ -81,7 +81,8 @@ def add_light(name, kind, position, target, energy, color):
     return light
 
 
-def render(name, direction=GAME_CAMERA, *, model=None, resolution=(512, 512)):
+def render(name, direction=GAME_CAMERA, *, model=None, resolution=(512, 512),
+           transparent=False, folder=PREVIEWS):
     """An isolated 3/4 portrait, or a complete scene at the exact game camera."""
     scene = bpy.context.scene
     target = Vector((0, 0, 0))
@@ -140,14 +141,17 @@ def render(name, direction=GAME_CAMERA, *, model=None, resolution=(512, 512)):
     backdrop.inputs["Background"].default_value = (.012, .018, .031, 1)
     tree.links.new(layers.outputs["Image"], backdrop.inputs["Foreground"])
     output = tree.nodes.new("NodeGroupOutput")
-    tree.links.new(backdrop.outputs[0], output.inputs["Image"])
+    result = layers.outputs["Image"] if transparent else backdrop.outputs[0]
+    tree.links.new(result, output.inputs["Image"])
     scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "RGBA" if transparent else "RGB"
     scene.render.resolution_x, scene.render.resolution_y = resolution
     scene.render.resolution_percentage = 100
     scene.render.threads_mode = "FIXED"
     scene.render.threads = 4
-    PREVIEWS.mkdir(parents=True, exist_ok=True)
-    scene.render.filepath = str(PREVIEWS / f"{name}.png")
+    path = folder / f"{name}.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    scene.render.filepath = str(path)
     bpy.ops.render.render(write_still=True)
     for obj in (camera, key, fill):
         bpy.data.objects.remove(obj, do_unlink=True)

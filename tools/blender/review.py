@@ -51,9 +51,25 @@ def render_current_scale():
     render("game-camera-390x844", resolution=(390,844))
 
 
+def render_catalog_scale():
+    from tools.blender.optical_catalog import KINDS
+
+    reset_scene()
+    place_glb(MODELS / "overhaul-platform-deck.glb", (0,0,-deck["TOP"]))
+    for i,kind in enumerate(KINDS):
+        x = (i%5-2)*3.25
+        y = (i//5-2)*3.25
+        place_glb(old_optics / f"{kind}.glb", (x,y,.035))
+    render("catalog-camera-1920x1080",resolution=(1920,1080))
+    render("catalog-camera-390x844",resolution=(390,844))
+
+
 if __name__ == "__main__":
-    render_current_scale()
-    for name in deck["FINISHES"]:
-        reset_scene()
-        platform = deck["build"](name)
-        render(f"deck-{name}", (1.55,-1.7,.84), model=platform)
+    if "--" in sys.argv and sys.argv[-1]=="catalog":
+        render_catalog_scale()
+    else:
+        render_current_scale()
+        for name in deck["FINISHES"]:
+            reset_scene()
+            platform = deck["build"](name)
+            render(f"deck-{name}", (1.55,-1.7,.84), model=platform)

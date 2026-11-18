@@ -54,6 +54,12 @@ def make_material(name, color, metallic=0.0, roughness=0.45, emission=0.0, *, sh
 def reset_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
+    # Remove the unused batches in the correct order so the next asset's
+    # material names remain stable (the game looks up "glow" exactly).
+    for collection in (bpy.data.meshes, bpy.data.cameras, bpy.data.lights, bpy.data.materials):
+        for data in list(collection):
+            if not data.users:
+                collection.remove(data)
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0

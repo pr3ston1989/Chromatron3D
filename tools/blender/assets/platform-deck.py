@@ -76,7 +76,7 @@ def build(finish="observatory"):
 
     # Top-facing ceramic inlays sit above one continuous recessed support,
     # so the 225 cells cost 450 triangles without checkerboard colouring.
-    half = .621
+    half = .606
     for y in range(-7,8):
         for x in range(-7,8):
             cx, cy = x*1.30, y*1.30
@@ -99,6 +99,10 @@ def build(finish="observatory"):
 
 if __name__ == "__main__":
     reset_scene()
-    model = build()
+    finish = sys.argv[-1] if "--" in sys.argv else "observatory"
+    model = build(finish)
+    if finish != "observatory":
+        model.name = model.data.name = f"overhaul-platform-{finish}"
     save_asset(model, 1500, (1.55,-1.7,.84))
-    render(f"{NAME}-underside", (1.1,-1.6,-.62), model=model)
+    if finish == "observatory":
+        render(f"{NAME}-underside", (1.1,-1.6,-.62), model=model)

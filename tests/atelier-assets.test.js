@@ -22,8 +22,26 @@ test('the playable Blender models have matching, distinct transparent equipment 
  assert.equal(portraits.size,22);
  const mirror=gltf('optics/mirror'),splitter=gltf('optics/splitter');
  assert.ok(mirror.materials.some(m=>m.name==='silvered glass'));
- assert.ok(splitter.materials.some(m=>m.name==='amber enamel'));
+ assert.ok(splitter.materials.some(m=>m.name==='Copper fork chamfers'));
  assert.notDeepEqual(mirror.meshes,splitter.meshes);
+});
+
+test('all 22 new instruments meet the geometry contract and dynamic lenses remain tintable',()=>{
+ const tintable=new Set(['laser','filter','target','teleporter','mobileTeleporter','conduit','doppler','tangler']);
+ for(const kind of CLASSIC_TYPE_NAMES.slice(1)){
+  const doc=gltf('optics/'+kind);
+  const parts=doc.meshes.flatMap(mesh=>mesh.primitives);
+  const triangles=parts.reduce((sum,p)=>sum+doc.accessors[p.indices].count/3,0);
+  const budget=kind==='wall'||kind==='occupiedSquare'?180:600;
+  assert.ok(triangles>0&&triangles<=budget,kind);
+  assert.equal(doc.images,undefined,kind+' uses solid materials');
+  const bounds=parts.map(p=>doc.accessors[p.attributes.POSITION]);
+  assert.equal(Math.min(...bounds.map(b=>b.min[1])),0,kind+' has a Y-up base');
+  for(const b of bounds)for(const axis of [0,2]){
+   assert.ok(b.min[axis]>-.65&&b.max[axis]<.65,kind+' fits its cell');
+  }
+  if(tintable.has(kind))assert.ok(doc.materials.some(m=>m.name==='glow'),kind);
+ }
 });
 
 test('near-rim models fit the board clearance and the deck uses one UV-mapped cell',()=>{
