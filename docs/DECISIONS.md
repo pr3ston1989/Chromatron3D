@@ -19,3 +19,10 @@
 - Rozdzielacz otrzymał rozwidlone ramiona wokół optycznego bisektora. W podglądzie obok niego jest obecne lustro, żeby sprawdzić odróżnialność sylwetki bez identyfikatora i przy tej samej skali.
 - Główny GLB planszy używa ceramiki Obserwatorium. Cztery podglądy wykończeń korzystają ze wspólnych proporcji. Dalsze różnice w geometrii otoczenia i podstaw są tematem pilotażu światów.
 - Próbki używają niewymagających dodatkowego dekodera GLB. Graphify wskazał `createOpticModelLoader()` i `cloneOptic()` jako miejsca integracji przyrządów. Weryfikacja korzysta z tej samej klasy `GLTFLoader` co przeglądarka.
+
+## 18 listopada 2026 · Faza 2 po akceptacji i faza 3 A
+
+- Właściciel zatwierdził trzy próbki. Geometrię przyrządów uporządkowano w rodziny ze wspólną podstawą. Symbol funkcji pozostaje w sylwetce głowicy. Zachowane są osie portów, nazwa `glow` i portrety zasobnika.
+- Optyka pozostaje pod ścieżkami produkcyjnymi `public/models/optics`. Rodziny architektury i rekwizytów mają osobne GLB w `assets/models/scenery`. Moduły zastępują zespoły starszych brył podczas kompozycji kolejnych światów.
+- Do pilota wybrano demonstracyjną planszę 8 z rozdzielaczem. To bezpieczny punkt porównania, który można sfotografować z normalnym interfejsem. W tle modelowany łuk i soczewka tworzą dwie główne formy, a cicha animacja zależy od trybu ograniczonego ruchu.
+- Docelowy podział 8 × 25 to założenie scenografii opisane w [WORLDS.md](WORLDS.md). Dotychczasowa kolejność plansz w kampanii jest punktem odniesienia.

@@ -18,8 +18,9 @@
 
 - Faza 0 zakończona: przegląd stanu, tryb `?debug=1`, narzędzia do zrzutów oraz [pomiary i audyt](QA_LOG.md).
 - Faza 1 zamknięta. Właściciel wybrał wszystkie cztery [kierunki artystyczne](concepts/README.md). Obecne modele są punktem odniesienia.
-- Faza 2 dotarła do bramki stylu. [Inwentarz](ASSETS.md), potok Blendera oraz trzy próbne GLB są gotowe. Ocena obejmuje płytę planszy, rozdzielacz i orbitalny pojazd serwisowy. Widoki gry pokazują modele w scenie kontrolnej, bez interfejsu produkcyjnego.
-- Po zatwierdzeniu próbek dokończyć przegląd i wymianę pozostałych modeli, z arkuszem i budżetami, a potem pilotaż jednego świata w fazie 3. W kadrze 390 × 844 sprawdzić dopasowanie całej siatki i rozpoznawalność przyrządów przy rzeczywistym interfejsie.
+- Faza 2 zakończona po zatwierdzeniu próbek. Gra wczytuje 22 nowe GLB optyki i ich portrety. Biblioteka obejmuje także cztery odmiany platformy i 28 modułów otoczenia. [Inwentarz, wymiary i rendery](ASSETS.md).
+- Faza 3 A czeka na akceptację pilota. Ósma plansza pokazowa używa Obserwatorium pryzmatycznego. Reszta plansz korzysta z wcześniejszych kompozycji i nowych przyrządów. [Plan ośmiu światów](WORLDS.md) oraz [zrzuty przed i po](QA_LOG.md#18-listopada-2026--faza-3-a).
+- Następny krok po akceptacji to wdrożenie siedmiu pozostałych światów z przygotowanymi modułami, przypisanie do kampanii oraz porównawczy audyt kilku rozmiarów ekranów. Rozpoznawalność podobnych przyrządów na telefonie i pełna paleta wiązek wymagają prób na gęstszych planszach.
 - Późniejsze fazy pozostają do wykonania w kolejności z [MASTER_PROMPT.md](MASTER_PROMPT.md). Obecne 200 zweryfikowanych w silniku konfiguracji i obecne podpowiedzi są materiałem wejściowym dla faz 4 i 5.
 
 ## Punkty odniesienia

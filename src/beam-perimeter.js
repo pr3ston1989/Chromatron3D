@@ -105,6 +105,25 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
   dummy.scale.setScalar(1);dummy.updateMatrix();brace.setMatrixAt(rib++,dummy.matrix);
  }
  brace.instanceMatrix.needsUpdate=true;group.add(brace);
+ function addModelBatches(model,count,name,positionAt){
+  const matrix=new THREE.Matrix4();
+  const batches=[];
+  model.updateMatrixWorld(true);
+  model.traverse(node=>{
+   if(!node.isMesh)return;
+   const batch=new THREE.InstancedMesh(node.geometry,node.material,count);
+   batch.name=name;
+   batch.userData.scenicOnly=true;
+   for(let i=0;i<count;i++){
+    positionAt(i,matrix);
+    batch.setMatrixAt(i,matrix.multiply(node.matrixWorld));
+   }
+   batch.computeBoundingSphere();
+   batches.push(batch);
+  });
+  group.add(...batches);
+  return batches.length>0;
+ }
  function setTheme(theme){
   if(!theme)return;
   outer.color.setHex(theme.tileA);outer.needsUpdate=true;
@@ -115,16 +134,7 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
  // Each authored PBR material is one instanced draw for the entire rim.
  // Preserve the independently placed collector and its exact contact surface.
  function setArmor(model){
-  const matrix=new THREE.Matrix4();
-  const count=panels.count;
-  const batches=[];
-  model.updateMatrixWorld(true);
-  model.traverse(node=>{
-   if(!node.isMesh)return;
-   const batch=new THREE.InstancedMesh(node.geometry,node.material,count);
-   batch.name='modeled-absorber-armor';
-   batch.userData.scenicOnly=true;
-   for(let i=0;i<count;i++){
+  const ready=addModelBatches(model,panels.count,'modeled-absorber-armor',(i,matrix)=>{
     panels.getMatrixAt(i,matrix);
     const side=Math.floor(i/ABSORBER_PANELS_PER_SIDE);
     dummy.position.setFromMatrixPosition(matrix);
@@ -132,15 +142,34 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
     dummy.rotation.set(0,(side>=2?Math.PI/2:0)+(side%2?Math.PI:0),0);
     dummy.scale.set(tileSize/1.3,1,1);
     dummy.updateMatrix();
-    batch.setMatrixAt(i,matrix.multiplyMatrices(dummy.matrix,node.matrixWorld));
-   }
-   batches.push(batch);
+    matrix.copy(dummy.matrix);
   });
-  if(!batches.length)return false;
-  group.add(...batches);
+  if(!ready)return false;
   group.remove(panels);
   panels.geometry.dispose();
   panels.dispose();
+  return true;
+ }
+ function setCornerModel(model){
+  if(!addModelBatches(model,corners.length,'modeled-absorber-corner',(i,matrix)=>{
+   const {x,y,z}=corners[i].position;
+   dummy.position.set(x,y-.59,z);
+   dummy.rotation.set(0,Math.atan2(x,z),0);
+   dummy.scale.setScalar(1);dummy.updateMatrix();
+   matrix.copy(dummy.matrix);
+  }))return false;
+  group.remove(...corners);
+  cornerGeo.dispose();
+  return true;
+ }
+ function setBraceModel(model){
+  if(!addModelBatches(model,brace.count,'modeled-absorber-brace',(i,matrix)=>{
+   brace.getMatrixAt(i,matrix);
+   matrix.elements[13]-=.39;
+  }))return false;
+  group.remove(brace);
+  brace.geometry.dispose();
+  brace.dispose();
   return true;
  }
  function getStats(){
@@ -148,5 +177,5 @@ export function createBeamPerimeter(THREE,parent,tileSize=1.3){
    guideLights:guide.count,structuralRibs:brace.count,corners:corners.length,
    boundary:half,beamHeight:.78};
  }
- return {group,setTheme,setArmor,getStats};
+ return {group,setTheme,setArmor,setCornerModel,setBraceModel,getStats};
 }

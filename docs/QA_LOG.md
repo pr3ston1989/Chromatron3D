@@ -108,3 +108,65 @@ siatki z rzeczywistym HUD-em i torami o innych kolorach. Wykończenia czterech
 `npm run check`: 222 testy i build. Test kontraktu GLB weryfikuje
 budżety, materiały, liczbę kafli oraz wczytanie do Three.js. Chromium:
 2/2, w tym tryb debug oraz układy 1366 × 768, 1280 × 720 i 1093 × 614.
+
+## 18 listopada 2026 · Faza 2 po akceptacji
+
+Przejrzano rendery 22 przyrządów i 28 modułów scenografii. W porównaniu
+przyrządów poprawiono otwarcie przewodu, odstęp podwójnego reflektora,
+profil bramki barw podstawowych i płaską koronę gwiazdy. Testy potwierdzają
+czyste nazwy materiału `glow`, ustawienie podstawy na Y=0 i budżety
+180/600 trójkątów. Doppler ma 392 trójkąty, a wcześniej miał 3620.
+
+Rendery porównawcze dają 4/5 za wspólny styl i zróżnicowanie typów.
+W zbiorczym widoku 390 px podobne elementy z trzech rodzin (bramki,
+portale i moduły radialne) bywają trudne do rozpoznania samą sylwetką.
+Ocena typów w pełnej gęstości na telefonie wynosi 3/5. W grze dostępne są
+także podpisy i panel wybranego przyrządu. Poprawiono połączenie żebra
+dokującego i uzupełniono oś wirnika w scenografii.
+
+[Arkusz optyki](../assets/previews/overhaul/catalog-optics.png) ·
+[Kamera gry 1920 × 1080](../assets/previews/overhaul/catalog-camera-1920x1080.png) ·
+[Kamera gry 390 × 844](../assets/previews/overhaul/catalog-camera-390x844.png) ·
+[Arkusz scenografii](../assets/previews/overhaul/catalog-scenery.png).
+
+## 18 listopada 2026 · Faza 3 A
+
+Porównanie demonstracyjnej planszy 8 w Chromium na Radeon, tryb Płynność,
+DPR 1. Przed zmianą wykorzystano próbę fazy 0 z biomem mgławicy. Po zmianie
+pomiar wykonano przez 6 sekund po 12 sekundach rozgrzewki.
+
+| Rozdzielczość | FPS przed → po | 95. percentyl klatki przed → po | Wywołania rysowania przed → po | Trójkąty przed → po |
+| --- | ---: | ---: | ---: | ---: |
+| 1920 × 1080 | 54,78 → 60,01 | 33 → 17 ms | 335 → 92 | 156 385 → 7497 |
+| 390 × 844 | 60,01 → 60,00 | 17 → 17 ms | 287 → 92 | 147 453 → 7497 |
+
+W tej próbie zero błędów konsoli. Na desktopie wystąpiło wcześniejsze
+ostrzeżenie kompilatora FXAA dla Direct3D11.
+
+| Ocena redakcyjna | Przed | Po |
+| --- | ---: | ---: |
+| Czytelność układu | 3 | 4 |
+| Kontrast i hierarchia | 2 | 4 |
+| Spójność palety | 2 | 4 |
+| Głębia i atrakcyjność | 2 | 4 (desktop), 3 (telefon) |
+| Odrębność od poprzednich biomów | 3 | 4 |
+| Widoczne artefakty | 3 | 4 |
+
+W pierwszym ujęciu pokład był prześwietlony i oba obiekty stały po jednej
+stronie kadru. W kolejnych dwóch iteracjach zmieniono azymuty, przygaszono
+ceramikę, podparto konstrukcje i poszerzono rowki. Kamera telefonu objęła
+wszystkie cztery skrajne pola między panelami. Górny panel nadal zasłania
+fragment łuku z tła, a pojazd jest częściowo ucięty po prawej. Zakres
+mobilnej próby optycznej obejmuje niebieską wiązkę i jeden rozdzielacz.
+
+Przeszło 223 testów i build oraz siedem przypadków Chromium w dwóch
+uruchomieniach. Sprawdzono m.in. wybór fizycznego przyrządu z planszy,
+rozwiązanie i cofnięcie ruchu, powrót do pilota, import lokalnej kampanii,
+pochłaniacze, atlas oraz trzy małe widoki laptopowe. W nowym teście pierwsza
+wersja błędnie oczekiwała wartości zwrotnej z `undo()`. Po korekcie test
+sprawdza stan gry po cofnięciu i przechodzi.
+
+[Desktop przed](../assets/previews/overhaul/observatory/before-desktop.png) ·
+[Desktop po](../assets/previews/overhaul/observatory/after-desktop.png) ·
+[Telefon przed](../assets/previews/overhaul/observatory/before-mobile.png) ·
+[Telefon po](../assets/previews/overhaul/observatory/after-mobile.png).

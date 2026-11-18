@@ -39,6 +39,13 @@ $blender = 'C:\Tools\blender-5.3.0-windows-x64\blender.exe'
 
 GLB powstają w `assets/models`, a podglądy w `assets/previews/overhaul`. `review.py` importuje te GLB do sceny kontrolnej z aktualnym lustrem, emiterem i rezonatorami. Używa ustawień kamery gry dla 1920 × 1080 i 390 × 844. Osobno pokazuje cztery wykończenia platformy.
 
+Cały katalog optyki buduje `tools/blender/optical_catalog.py`, a modele otoczenia
+buduje `tools/blender/scenery_catalog.py`. Argumenty po `--` ograniczają eksport
+do wybranych modeli. Działają też osobne skrypty w `tools/blender/assets`,
+np. `optic-mirror.py` i `observatory-arc.py`. Katalog optyki odświeża bieżące
+`public/models/optics` i portrety RGBA w `public/portraits`.
+`review.py -- catalog` renderuje pełną rodzinę optyki w perspektywie gry.
+
 ## Zrzuty i pomiar WebGL
 
 ```powershell
@@ -55,6 +62,8 @@ konsoli. `--backend native` prosi Chromium o akcelerację sprzętową. `--headed
 uruchamia widoczne okno. `--out` nadpisuje katalog zrzutów. Przy
 `--campaign classic1`–`classic4` wyniki zawierają prywatne plansze użytkownika.
 Katalog `screenshots` jest ignorowany w Git.
+`--levels 8` pokazuje pilot Obserwatorium. Flaga `--pilot-off` przełącza
+tę samą demonstracyjną planszę na wcześniejsze otoczenie.
 
 ### Sterowanie w trybie debug
 

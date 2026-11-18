@@ -31,6 +31,7 @@ import {buildLevelAtlas} from './level-atlas.js';
 import {draftKey,encodePuzzleDraft,restorePuzzleDraft} from './puzzle-drafts.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {createTerraces} from './terraces.js';
+import {createObservatory, isObservatoryStage, OBSERVATORY} from './observatory.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
@@ -55,7 +56,9 @@ import './level-atlas.css';
 import './stage-arrival.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
-const debugEnabled=new URLSearchParams(location.search).get('debug')==='1';
+const searchParams=new URLSearchParams(location.search);
+const debugEnabled=searchParams.get('debug')==='1';
+const baselineScenery=debugEnabled&&searchParams.get('pilot')==='0';
 const debugData=debugEnabled?new Map():null;
 const transientStorage=debugData&&{
  getItem:key=>debugData.get(key)??null,
@@ -108,6 +111,8 @@ const ambient=new THREE.AmbientLight(0xc8d6e1,.70);scene.add(ambient);
 const key=new THREE.DirectionalLight(0xffebce,1.67);key.position.set(-8,16,12);scene.add(key);
 const fill=new THREE.PointLight(0x2c6bff,25,35);fill.position.set(9,9,-9);scene.add(fill);
 const world=new THREE.Group();scene.add(world);
+const legacyScenery=new THREE.Group();world.add(legacyScenery);
+const legacyAtmosphere=new THREE.Group();scene.add(legacyAtmosphere);
 const tileGeo=new THREE.BoxGeometry(T*.97,.22,T*.97);
 function mesh(geo,mat,parent=world){const m=new THREE.Mesh(geo,mat);parent.add(m);return m;}
 const deck=mesh(new RoundedBoxGeometry(21,.75,21,4,.26),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.32}));deck.position.y=-.62;
@@ -118,6 +123,19 @@ const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,
 applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const sceneryLoader=new GLTFLoader();
+const observatory=createObservatory(THREE,scene,world,{
+ loader:sceneryLoader,
+ assets:{
+  platform:new URL('../assets/models/overhaul-platform-deck.glb',import.meta.url).href,
+  arc:new URL('../assets/models/scenery/observatory-arc.glb',import.meta.url).href,
+  lens:new URL('../assets/models/scenery/observatory-lens.glb',import.meta.url).href,
+  landing:new URL('../assets/models/scenery/observatory-landing.glb',import.meta.url).href,
+  iris:new URL('../assets/models/scenery/observatory-iris.glb',import.meta.url).href,
+  ridge:new URL('../assets/models/scenery/skyline-ridge.glb',import.meta.url).href,
+  craft:new URL('../assets/models/overhaul-service-skiff.glb',import.meta.url).href
+ },
+ onReady:syncBoardPresentation
+});
 sceneryLoader.load(import.meta.env.BASE_URL+'models/board-cell.glb',({scene})=>{
  const tile=scene.getObjectByName('board-cell');
  if(!tile?.isMesh)return;
@@ -145,25 +163,24 @@ boardTiles.instanceColor.needsUpdate=true;
 boardLines.instanceMatrix.needsUpdate=true;
 gridGroup.add(boardTiles,boardLines);
 const laboratory=buildLaboratory(THREE,scene,world,T);
-const spaceEnvironments=createSpaceEnvironments(THREE,scene,world,{tileSize:T,
+const spaceEnvironments=createSpaceEnvironments(THREE,scene,legacyScenery,{tileSize:T,backdrop:legacyAtmosphere,
  loadFlora:(id,ready)=>sceneryLoader.load(import.meta.env.BASE_URL+'models/terraces/'+id+'-flora.glb',({scene})=>ready(scene))
 });
-const heroScenery=createHeroScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/biomes/'});
-const midgroundScenery=createMidgroundScenery(THREE,world,{baseUrl:import.meta.env.BASE_URL+'models/midground/'});
-const terraces=createTerraces(THREE,world,import.meta.env.BASE_URL+'models/terraces/');
-const ambientLife=createAmbientLife(THREE,world);
+const heroScenery=createHeroScenery(THREE,legacyScenery,{baseUrl:import.meta.env.BASE_URL+'models/biomes/'});
+const midgroundScenery=createMidgroundScenery(THREE,legacyScenery,{baseUrl:import.meta.env.BASE_URL+'models/midground/'});
+const terraces=createTerraces(THREE,legacyScenery,import.meta.env.BASE_URL+'models/terraces/');
+const ambientLife=createAmbientLife(THREE,legacyScenery);
 const modeledScenery={
  chassis:false,absorber:false,shuttle:false
 };
 const chassisModels={standard:null,orbital:null};
 function syncBoardChassis(){
- const showOrbital=activeEnvironment?.id==='orbital'&&Boolean(chassisModels.orbital);
- if(chassisModels.standard)chassisModels.standard.visible=!showOrbital;
- if(chassisModels.orbital)chassisModels.orbital.visible=showOrbital;
- if(modeledScenery.chassis){
-  deck.visible=false;
-  laboratory.userData.hideLegacyChassis();
- }
+ const preview=observatory.isVisible();
+ const showOrbital=baseEnvironment?.id==='orbital'&&Boolean(chassisModels.orbital);
+ if(chassisModels.standard)chassisModels.standard.visible=!preview&&!showOrbital;
+ if(chassisModels.orbital)chassisModels.orbital.visible=!preview&&showOrbital;
+ deck.visible=!preview&&!modeledScenery.chassis;
+ laboratory.userData.setChassisVisible(deck.visible);
 }
 sceneryLoader.load(new URL('../assets/models/board-chassis.glb',import.meta.url).href,({scene:chassis})=>{
  chassis.position.y=-3.995;
@@ -185,13 +202,19 @@ function loadOrbitalChassis(){
 sceneryLoader.load(new URL('../assets/models/absorber-armor.glb',import.meta.url).href,({scene:armor})=>{
  modeledScenery.absorber=laboratory.userData.beamPerimeter.setArmor(armor);
 });
+sceneryLoader.load(new URL('../assets/models/scenery/perimeter-corner.glb',import.meta.url).href,({scene:corner})=>{
+ laboratory.userData.beamPerimeter.setCornerModel(corner);
+});
+sceneryLoader.load(new URL('../assets/models/scenery/perimeter-brace.glb',import.meta.url).href,({scene:brace})=>{
+ laboratory.userData.beamPerimeter.setBraceModel(brace);
+});
 sceneryLoader.load(new URL('../assets/models/service-shuttle.glb',import.meta.url).href,({scene:shuttle})=>{
  ambientLife.setOrbitalShuttle(shuttle);
  modeledScenery.shuttle=true;
 });
-const livingWorld=createLivingWorld(THREE,scene,world);
-const boardEdgeGlow=createBoardEdgeGlow(THREE,world,{tileSize:T,half:HALF});
-const atmosphereParticles=createAtmosphereParticles(THREE,scene);
+const livingWorld=createLivingWorld(THREE,legacyAtmosphere,legacyScenery);
+const boardEdgeGlow=createBoardEdgeGlow(THREE,legacyScenery,{tileSize:T,half:HALF});
+const atmosphereParticles=createAtmosphereParticles(THREE,legacyAtmosphere);
 let modelRefresh=0;
 const opticModels=createOpticModelLoader(THREE,{
  baseUrl:import.meta.env.BASE_URL+'models/optics/',portraitUrl:import.meta.env.BASE_URL+'portraits/',
@@ -203,12 +226,31 @@ const opticModels=createOpticModelLoader(THREE,{
 });
 const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7fffffff);
 const soundscape=createSoundscape();
-let activeEnvironment=null;
+let activeEnvironment=null,baseEnvironment=null;
+function usesObservatory(index){
+ return !baselineScenery&&debugTheme===null&&isObservatoryStage(currentCampaign(),index);
+}
+function syncBoardPresentation(){
+ const preview=observatory.isVisible();
+ legacyScenery.visible=legacyAtmosphere.visible=!preview;
+ gridGroup.visible=!preview;
+ laboratory.userData.setSceneryVisible(!preview);
+ syncBoardChassis();
+ if(preview){
+  scene.fog.color.setHex(OBSERVATORY.fog);
+  scene.fog.density=.007;
+  if(levelTransition)levelTransition.fogTo=scene.fog.density;
+ }
+ updateCamera();
+}
 function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:debugTheme});
- activeEnvironment=theme;
+ baseEnvironment=theme;
+ const preview=usesObservatory(levelIndex);
+ activeEnvironment=preview?OBSERVATORY:theme;
+ observatory.setLevel(preview,currentPackId,levelIndex);
  if(theme.id==='orbital')loadOrbitalChassis();
- syncBoardChassis();
+ syncBoardPresentation();
  soundscape.setBiome(theme.id);
  heroScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
  midgroundScenery.setLevel(theme.id,currentPackId,levelIndex,environmentSessionSeed);
@@ -218,7 +260,7 @@ function applyLevelEnvironment(){
  boardEdgeGlow.setTheme(theme);
  atmosphereParticles.setBiome(theme.id);
  atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
- cinematic.setBiome(theme.id);
+ cinematic.setBiome(activeEnvironment.id);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  const finish=deckSurfaceProfile(theme.decor);
  tileMaterial.metalness=finish.tileMetalness;
@@ -512,7 +554,7 @@ function renderLevelAtlas(){
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
-  const biome=stagePresentation(environmentForLevel(
+  const biome=stagePresentation(usesObservatory(entry.index)?OBSERVATORY:environmentForLevel(
    currentPackId,entry.index,environmentSessionSeed),language);
   button.dataset.biome=biome.biome;
   button.style.setProperty('--level-accent',biome.accent);
@@ -1096,12 +1138,17 @@ function toggleCameraPreset(){
 }
 function updateCamera(){
  const viewportWidth=innerWidth;
+ const pilot=observatory.isVisible();
+ const mobile=viewportWidth<680;
  // Portrait mode: fit a 15×15 board into the usable central viewport.
- const portraitScale=viewportWidth<680?Math.max(1.55,720/Math.max(380,viewportWidth)):1;
+ const pilotMargin=pilot?2.13*(390/viewportWidth)*(innerHeight/844):1;
+ const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):1;
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&viewportWidth>680?(innerHeight<650 ? .93 : .86):1;
  const cameraDistance=dist*portraitScale*focusScale;
- camera.position.set(Math.sin(yaw)*Math.cos(pitch)*cameraDistance,Math.sin(pitch)*cameraDistance,Math.cos(yaw)*Math.cos(pitch)*cameraDistance);
+ const viewPitch=pilot?Math.max(.35,pitch-.13*Math.max(0,1-(pitch-.86)/.63)):pitch;
+ cameraTarget.y=pilot&&mobile?1.25:0;
+ camera.position.set(Math.sin(yaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(yaw)*Math.cos(viewPitch)*cameraDistance);
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
 }
@@ -1200,7 +1247,7 @@ function applyGraphicsQuality(){
  }
  $('graphics-quality').value=graphicsMode;
 }
-window.addEventListener('resize',resize);resize();updateCamera();
+window.addEventListener('resize',()=>{resize();updateCamera()});resize();updateCamera();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function boardPoint(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
@@ -1642,13 +1689,17 @@ function animate(time){
  trackFrameRate(time);
  const still=debugFrozen||reducedMotion.matches;
  const animationTime=debugFrozen?0:time;
- spaceEnvironments.update(animationTime*.001,still);
- terraces.update(animationTime*.001,still);
- midgroundScenery.update(animationTime*.001,still);
- ambientLife.update(animationTime*.001,still);
- livingWorld.update(animationTime*.001,still);
- boardEdgeGlow.update(still?0:time*.001);
- atmosphereParticles.update(still?0:time*.001);
+ if(observatory.isVisible()){
+  observatory.update(animationTime*.001,still);
+ }else{
+  spaceEnvironments.update(animationTime*.001,still);
+  terraces.update(animationTime*.001,still);
+  midgroundScenery.update(animationTime*.001,still);
+  ambientLife.update(animationTime*.001,still);
+  livingWorld.update(animationTime*.001,still);
+  boardEdgeGlow.update(still?0:time*.001);
+  atmosphereParticles.update(still?0:time*.001);
+ }
  cinematic.update(still?0:time*.001);
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
@@ -1794,7 +1845,8 @@ if(debugEnabled){
   },
   getLevelCount:()=>levels.length,
   getLevelState:()=>({...window.chromatron.getState(),number:levelIndex+1,campaign:currentCampaign(),
-   theme:activeEnvironment.id,completed:solved.includes(levelIndex)}),
+   theme:activeEnvironment.id,observatory:activeEnvironment.id==='observatory'?observatory.getStatus():null,
+   completed:solved.includes(levelIndex)}),
   setTheme(name){
    if(name!==null&&!SPACE_BIOMES.some(theme=>theme.id===name))return false;
    debugTheme=name;

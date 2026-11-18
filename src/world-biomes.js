@@ -251,7 +251,7 @@ function makePlanet(THREE,group,theme,random){
  * Instantiates four environments exactly once. Changing a level toggles only
  * visible groups and a few colors/instance counts; no GPU buffers are leaked.
  */
-export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3,loadFlora}={}){
+export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3,loadFlora,backdrop=scene}={}){
  const nebulaTexture=makeNebulaTexture(THREE);
  // Shared across all four cached biomes; no per-level buffer allocation.
  const trafficGeometry={
@@ -260,7 +260,7 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3,loadFlor
   wings:new THREE.BoxGeometry(2.5,.08,.34)
  };
  const scenes=SPACE_BIOMES.map((theme,index)=>{
-  const sky=new THREE.Group();sky.name='space-biome-'+theme.id;scene.add(sky);
+  const sky=new THREE.Group();sky.name='space-biome-'+theme.id;backdrop.add(sky);
   const foliage=new THREE.Group();foliage.name='board-decor-'+theme.id;world.add(foliage);
   const random=rngFrom(hashText(theme.id+':geometry'));
   const stars=makeStarfield(THREE,sky,theme,random);

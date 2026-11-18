@@ -11,6 +11,7 @@ const {values: options} = parseArgs({options:{
   backend:{type:'string',default:'swiftshader'},
   quality:{type:'string',default:'performance'},
   themes:{type:'string'},
+  'pilot-off':{type:'boolean',default:false},
   'sample-ms':{type:'string',default:'4000'},
   'warmup-ms':{type:'string',default:'0'},
   out:{type:'string'},
@@ -59,7 +60,8 @@ try{
     page.on('requestfailed',request=>messages.push({type:'requestfailed',url:request.url(),
       message:request.failure()?.errorText}));
     const startup=performance.now();
-    await page.goto(`http://127.0.0.1:${address.port}/?debug=1`,{waitUntil:'domcontentloaded'});
+    const query=options['pilot-off']?'debug=1&pilot=0':'debug=1';
+    await page.goto(`http://127.0.0.1:${address.port}/?${query}`,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>Boolean(window.__debug),{},{timeout:30000});
     const startupMs=Math.round(performance.now()-startup);
     await page.evaluate(({campaign,quality})=>{
@@ -78,6 +80,12 @@ try{
         if(!api.setTheme(theme??null)||!api.loadLevel(level))throw Error('Invalid level or theme');
       },{level,theme:themes?.[i]});
       await page.waitForLoadState('networkidle',{timeout:30000});
+      await page.waitForFunction(()=>{
+        const state=window.__debug.getLevelState();
+        return state.theme!=='observatory'||['ready','error'].includes(state.observatory);
+      },{},{timeout:30000});
+      if(await page.evaluate(()=>window.__debug.getLevelState().observatory==='error'))
+        throw Error('Could not load the Observatory models');
       if(warmup)await page.waitForTimeout(warmup);
       const measurement=await page.evaluate(ms=>new Promise(done=>{
         let first,previous;
@@ -112,7 +120,8 @@ try{
   await browser?.close();
   await server.close();
   await writeFile(join(output,'capture.json'),JSON.stringify({backend:options.backend,
-    headed:options.headed,requestedQuality:options.quality,warmupMs:warmup,entries,browserMessages},null,2)+'\n');
+    headed:options.headed,pilotDisabled:options['pilot-off'],
+    requestedQuality:options.quality,warmupMs:warmup,entries,browserMessages},null,2)+'\n');
 }
 if(entries.some(entry=>entry.messages.some(msg=>msg.type==='error'||msg.type==='pageerror')))
   process.exitCode=1;

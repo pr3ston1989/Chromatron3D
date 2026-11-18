@@ -75,7 +75,8 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
    markerMat,side*11.7,-1.38,0,'lower-safety-seam');
  }
  const legacyChassis=group.children.slice(legacyChassisStart);
- group.userData.hideLegacyChassis=()=>legacyChassis.forEach(part=>{part.visible=false});
+ group.userData.setChassisVisible=visible=>legacyChassis.forEach(part=>{part.visible=visible});
+ const rimStart=group.children.length;
  // Corner vents / flush hardware replace the old tall luminous pillars.
  for(const sx of [-1,1])for(const sz of [-1,1]){
   const plate=add(new RoundedBoxGeometry(.67,.08,.67,3,.04),
@@ -94,6 +95,7 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
   add(new THREE.BoxGeometry(.025,.013,.30),i%5===0?markerMat:accent,
    -10.22,-.198,u,'scale-engraving');
  }
+ const rim=group.children.slice(rimStart);
  // Low outer docking arcs suggest a larger inhabited orbital structure
  // without surrounding the player with an unfinished 4-post cage.
  const architecture=new THREE.Group();
@@ -135,6 +137,11 @@ export function buildLaboratory(THREE,scene,world,tileSize=1.3){
  workLightB.position.set(11,3,10);scene.add(workLightB);
  const bounce=new THREE.PointLight(0x2f84ad,7,20,2);
  bounce.position.set(0,-1.72,0);scene.add(bounce);
+ group.userData.setSceneryVisible=visible=>{
+  architecture.visible=beamPerimeter.group.visible=visible;
+  rim.forEach(piece=>{piece.visible=visible});
+  workLightA.visible=workLightB.visible=bounce.visible=visible;
+ };
  // Changing a level never creates meshes: only the composition and palette
  // of the distant scaffolding change. It is deliberately non-interactive.
  group.userData.setTheme=(theme,level={})=>{
