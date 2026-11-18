@@ -11,6 +11,8 @@
 
 ## Paleta przed wyborem
 
+Do wyboru są cztery [kierunki artystyczne](concepts/README.md).
+
 Obecna paleta próbna ma 16 kolorów. Dwa jaśniejsze i dwa ciemniejsze tony powstają ze zdefiniowanych kroków w [tools/style.py](../tools/style.py). Akcenty emisyjne w próbce to cyjan i bursztyn. Ostateczną paletę, podpalety motywów i kryteria wybranego stylu zapiszemy po bramce fazy 1.
 
 | Zestaw | Obecne kolory bazowe |

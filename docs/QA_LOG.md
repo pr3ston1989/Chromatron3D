@@ -69,3 +69,20 @@ start, wielokrotną zmianę plansz i najwyższy profil.
    dekorację do większych, rzadszych sylwetek.
 3. Porównać biomy ze stanem wyjściowym na obu ekranach przed powieleniem
    rozwiązania. Wydajność mierzyć na ciepłym i zimnym stanie.
+
+## 18 listopada 2026 · Faza 1
+
+Obejrzano cztery ilustracje 1672 × 941 w pełnym rozmiarze i na wspólnym
+arkuszu porównawczym. Oceny 1–5 dotyczą ilustracji w ujęciu 3/4.
+Właściwe wymiary i kadrowanie z interfejsem będą oceniane na pilotażu w grze.
+
+| Kierunek | Czytelność | Atrakcyjność | Do sprawdzenia w grze |
+| --- | ---: | ---: | --- |
+| Obserwatorium pryzmatyczne | 4 | 4 | Ograniczyć świecące kreski poza siatką. Odróżnić wszystkie przyrządy po sylwetce przy zmniejszeniu. |
+| Kryształowa grota | 4 | 3 | Ostudzić dominujący fiolet i rozdzielić korpusy optyki od podłoża. Sprawdzić magentę wiązki i wskaźników. |
+| Ogród heliostatów | 3 | 4 | Przyciemnić horyzont i skrajne łuki. Sprawdzić żółty promień na wapieniu. |
+| Stocznia orbitalna | 4 | 4 | Sprawdzić czytelność niebieskiej wiązki na chłodnym pokładzie. Uspokoić bursztynowe światła na dużym wsporniku. |
+
+Na ilustracjach wiązka jest czytelna i siatka odsłonięta. Liczba kafli,
+ułożenie przyrządów i przebieg promienia są poglądowe. Następny krok
+to wybór właściciela.

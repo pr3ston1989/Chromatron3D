@@ -17,10 +17,12 @@
 ## Praca fazowa
 
 - Faza 0 zakończona: przegląd stanu, tryb `?debug=1`, narzędzia do zrzutów oraz [pomiary i audyt](QA_LOG.md).
-- Faza 1 kończy się wyborem kierunku artystycznego przez właściciela. Istniejące modele są punktem odniesienia przy porównaniu.
+- Faza 1 czeka na wybór kierunku artystycznego przez właściciela. Cztery [koncepcje](concepts/README.md) są gotowe. Preferowany kierunek to Obserwatorium pryzmatyczne. Istniejące modele są punktem odniesienia.
+- Po wyborze uzupełnić `DESIGN_BIBLE.md` i rozpocząć fazę 2 od potoku Blendera oraz trzech próbnych modeli.
 - Późniejsze fazy pozostają do wykonania w kolejności z [MASTER_PROMPT.md](MASTER_PROMPT.md). Obecne 200 zweryfikowanych w silniku konfiguracji i obecne podpowiedzi są materiałem wejściowym dla faz 4 i 5.
 
 ## Punkty odniesienia
 
 - [Format poziomu](LEVEL_FORMAT.md), [kompatybilność](CLASSIC_COMPATIBILITY.md), [inwentaryzacja geometrii](../tools/primitive-inventory.md).
 - [Zasady stylu](DESIGN_BIBLE.md), [decyzje](DECISIONS.md), [wyniki testów i audyt](QA_LOG.md).
+- Lokalny graf Graphify odświeżono po fazie 0. Miejsca istotne dla przełożenia koncepcji na grę to kamera w `src/main.js`, modele optyki w `src/optical-assets.js` oraz ogranicznik i poświata obwodu w `src/beam-perimeter.js` i `src/board-edge-glow.js`.
