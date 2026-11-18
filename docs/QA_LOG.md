@@ -201,3 +201,73 @@ kompozycji pionowej do 3/5.
 
 [Zrzut gry 1920 × 1080](../assets/previews/overhaul/shipyard/desktop.png) ·
 [Zrzut gry 390 × 844](../assets/previews/overhaul/shipyard/mobile.png).
+
+## 18 listopada 2026 · faza 3 B
+
+Przejrzano 16 zrzutów z gry w 1920 × 1080 i 390 × 844. W drugim przejściu
+przygaszono dalszy plan, usunięto ziarno poza rozgrywką, wyrównano
+położenie wspólnych podstaw i sprawdzono kamery. Poniższa ocena
+dotyczy reprezentatywnych plansz demonstracyjnych, w skali 1–5.
+
+| Świat | Czytelność siatki | Kontrast wiązki | Spójność | Głębia desktop / telefon | Odrębność | Artefakty |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Obserwatorium | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+| Ogród heliostatów | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+| Kryształowa grota | 4 | 4 | 4 | 4 / 4 | 4 | 4 |
+| Laboratorium polarne | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+| Kuźnia widmowa | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+| Optyka głębinowa | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+| Sanktuarium soczewek | 4 | 4 | 4 | 4 / 4 | 4 | 4 |
+| Stocznia orbitalna | 4 | 4 | 4 | 4 / 3 | 4 | 4 |
+
+Na telefonie widoczność instrumentów jest ważniejsza od wysokości głównej
+dekoracji. W kilku światach górny panel zasłania fragment tła.
+[Arkusz desktopowy](../assets/previews/overhaul/worlds/desktop.png) ·
+[Arkusz mobilny](../assets/previews/overhaul/worlds/mobile.png).
+
+## 18 listopada 2026 · faza 4
+
+- Załadowano 200 plansz z czterech lokalnych, prywatnych kampanii. Każde
+  rozwiązanie sprawdził silnik optyczny. Chromium wykonał ruchy na każdej
+  planszy, uzyskał wynik rozgrywki i zapisał ukończenie 200/200.
+- Drugie przejście znalazło 200/200 oznaczeń ukończenia. W 104 planszach
+  powstało drugie zweryfikowane rozwiązanie przez zmianę jednego położenia
+  lub kąta. To ograniczona próba sąsiedztwa, więc liczba jednoznacznych
+  zagadek pozostaje nieustalona.
+- Podczas drugiego przejścia użyta sterta JavaScript po czyszczeniu
+  wyniosła 28,5–30,4 MB, z 39 obiektami tekstur i 995–999 geometriami
+  Three.js. Próbki są co 25 plansz. Nie zaobserwowano stałego wzrostu
+  rejestru geometrii i tekstur. Liczniki obiektów nie są pomiarem VRAM.
+- Czas od otwarcia Chromium do gotowości API wyniósł 7,8 s w przebiegu
+  z lokalnymi kampaniami i równolegle wykonywanymi testami. W przebiegu
+  200 plansz wystąpiło zero błędów konsoli i jedno ostrzeżenie FXAA.
+- Przeszło 225 testów node i build. 30 testów Chromium obejmuje m.in.
+  układ planszy, kliknięcia, ruchy, skróty, ustawienia jakości, język,
+  atlas, widmo i cofanie. Dodatkowy test Web Audio sprawdza włączenie
+  motywu kliknięciem, wytwarzanie nut i zatrzymanie po wyciszeniu.
+- Odtworzono zasłonięcie planszy lewym panelem przy 768 × 1024. Panele
+  tabletu w pionie przeniesiono nad i pod planszę. Test regresji
+  potwierdza dostęp do narożników w 768 × 1024, 390 × 844 i 844 × 390
+  oraz małe widoki laptopowe 1366 × 768, 1280 × 720 i 1093 × 614.
+- Oddzielny pomiar sprzętowy na Radeon w profilu Zrównoważona dał
+  59,99–60,02 FPS dla wszystkich ośmiu demonstracji w 1920 × 1080
+  i 390 × 844. Stocznia w Płynności miała około 60 FPS w sześciu
+  dodatkowych rozdzielczościach, łącznie z 2560 × 1440 i 768 × 1024.
+  Równoległy przebieg testów z renderowaniem programowym chwilowo obniżał
+  wyniki pomiaru sprzętowego. Dane są pomiarem tego komputera.
+- Programowy SwiftShader na tej samej Stoczni w Płynności osiągnął
+  4,91 FPS w 1093 × 614 i 7,50 FPS w 390 × 844. Wymuszone renderowanie
+  na CPU pozostaje wąskim gardłem. Brak pomiaru na osobnym słabszym GPU.
+
+Powtórzenie z prywatnymi danymi korzysta z `node tools/full-regression.mjs`.
+Wyniki i rozwiązania w formacie używanym do pisania podpowiedzi są przechowywane lokalnie.
+
+## 18 listopada 2026 · bramka fazy 5
+
+Przygotowano dziesięć polskich zestawów do oceny, po trzy odsłony.
+Próbki obejmują lustro, zakrzywiacz, spięte tory splątywacza, rozdzielanie
+wiązki, filtrowanie i zmianę barwy, komplementor, pryzmat oraz bramki.
+Każdy dokładny ruch należy do rozwiązania zweryfikowanego w silniku.
+Arkusz z dokładnymi ruchami pozostaje w lokalnym
+`test-results/full-regression/hint-review.md`. Bramka wymaga decyzji
+o tonie i szczegółowości przed pisaniem pozostałych zestawów.

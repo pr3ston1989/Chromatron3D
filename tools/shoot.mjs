@@ -41,7 +41,7 @@ if(!/^(demo|classic[1-4])$/.test(options.campaign)||
 const day=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Warsaw'}).format(new Date());
 const output=resolve(options.out||join('screenshots',day));
 await mkdir(output,{recursive:true});
-const server=await createServer({server:{host:'127.0.0.1',port:0,strictPort:true},logLevel:'error'});
+const server=await createServer({server:{host:'127.0.0.1',port:4412},logLevel:'error'});
 let browser;
 const entries=[],browserMessages=[];
 try{

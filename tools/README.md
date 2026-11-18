@@ -62,9 +62,21 @@ konsoli. `--backend native` prosi Chromium o akcelerację sprzętową. `--headed
 uruchamia widoczne okno. `--out` nadpisuje katalog zrzutów. Przy
 `--campaign classic1`–`classic4` wyniki zawierają prywatne plansze użytkownika.
 Katalog `screenshots` jest ignorowany w Git.
-`--levels 8` pokazuje pilot Stoczni orbitalnej. Flaga `--pilot-off` przełącza
-tę samą demonstracyjną planszę na wcześniejsze otoczenie. Opcja `--solved-demo`
+`--levels 1,2,3,4,5,6,7,8` obejmuje wszystkie nowe światy. Flaga
+`--pilot-off` przełącza plansze na zestaw odniesienia. Opcja `--solved-demo`
 wykonuje zweryfikowane ruchy na planszy pokazowej i zamyka okno zwycięstwa przed zrzutem.
+
+### Pełna regresja
+
+```powershell
+node tools/full-regression.mjs
+```
+
+Skrypt weryfikuje rozwiązania z prywatnych plików `original`, wykonuje ruchy
+w Chromium, ponownie odwiedza wszystkie plansze i mierzy pamięć po każdych
+25. Wyniki zapisuje do `test-results/full-regression`, a prywatne ruchy do
+ignorowanego `data/solutions.json`. `--skip-screenshots` uruchamia tylko część
+regresyjną, a `--backend swiftshader` wybiera renderowanie programowe.
 
 ### Sterowanie w trybie debug
 
@@ -76,7 +88,7 @@ karty lub odświeżenia strony.
 | --- | --- |
 | `switchCampaign('demo' / 'classic1' … 'classic4')` | Zmiana kampanii dostępnej lokalnie. |
 | `loadLevel(n)`, `getLevelCount()`, `getLevelState()` | Wczytanie wskazanej planszy i odczyt kopii stanu. |
-| `setTheme(name)` | Wybór `orbital`, `verdant`, `polar`, `nebula` lub `null` dla domyślnego motywu. |
+| `setTheme(name)` | ID z `src/campaign-worlds.js`, wcześniejsze `orbital`, `verdant`, `polar`, `nebula` lub `null` dla motywu kampanii. |
 | `freezeAnimations(bool)` | Unieruchomienie warstwy dekoracyjnej do zrzutu przy działającym renderowaniu. |
 | `applyMove({index,x,y,rot})` | Ustawienie ruchomego elementu na wolnym polu albo obrót. `index`, `x`, `y` i `rot` są liczone od 0. |
 | `applyMove({index,inTray:true})` | Odkłada ustawiony ruchomy element do zasobnika. |

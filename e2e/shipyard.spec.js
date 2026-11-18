@@ -13,14 +13,17 @@ test('shipyard pilot frames the mobile grid and keeps the same playable splitter
  });
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
  await expect(page.evaluate(()=>window.__debug.getLevelState().theme)).resolves.toBe('shipyard');
- const framed=await page.evaluate(()=>{
+ const framed=()=>page.evaluate(()=>{
   const corners=[[0,0],[14,0],[14,14],[0,14]];
   return corners.every(([x,y])=>{
    const p=window.chromatron.projectCell(x,y,0);
    return p.x>8&&p.x<innerWidth-8&&document.elementFromPoint(p.x,p.y)?.closest('#scene');
   });
  });
- expect(framed).toBe(true);
+ for(const [width,height] of [[390,844],[768,1024],[844,390],[390,844]]){
+  await page.setViewportSize({width,height});
+  await expect.poll(framed).toBe(true);
+ }
  const clicked=await page.evaluate(()=>{
   const splitter=window.__debug.getLevelState().pieces.find(piece=>piece.type==='splitter');
   return {...window.chromatron.projectCell(splitter.x,splitter.y,.57),id:splitter.id};
@@ -32,7 +35,7 @@ test('shipyard pilot frames the mobile grid and keeps the same playable splitter
  await page.evaluate(()=>window.__debug.undo());
  await expect(page.evaluate(()=>window.__debug.isSolved())).resolves.toBe(false);
  await page.evaluate(()=>window.__debug.loadLevel(7));
- await expect(page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).resolves.toBeNull();
+ await expect(page.evaluate(()=>window.__debug.getLevelState().theme)).resolves.toBe('sanctuary');
  await page.evaluate(()=>window.__debug.loadLevel(8));
  await expect(page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).resolves.toBe('ready');
 });

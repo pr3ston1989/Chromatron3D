@@ -12,3 +12,5 @@ test-results/
 
 __pycache__/
 /screenshots/
+/data/solutions.json
+/data/hints.pl.json

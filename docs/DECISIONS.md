@@ -31,3 +31,10 @@
 
 - Właściciel wskazał koncepcję Stoczni orbitalnej jako wzorzec dla pilota. Na tej samej planszy demo ustawiono niższą kamerę, otwartą kratownicę, chłodne światło i obręb planetarny. Obserwatorium pozostaje osobnym światem w planie kampanii.
 - Na ilustracji wiązka jest cyjanowa, a na planszy demonstracyjnej steruje się niebieskim emiterem. Kolor efektów wynika z maski emitera. Zrzuty sceny wykonano po rozwiązaniu istniejącej zagadki w Chromium.
+
+## 18 listopada 2026 · faza 3 B i regresja
+
+- Właściciel polecił kontynuować po poprawionej Stoczni. Wszystkie osiem światów ma osobną kompozycję, zestaw oświetlenia i motyw dźwiękowy wyprowadzony ze wspólnego tematu. Atlas i ekran wejścia korzystają z tego samego przypisania.
+- Przy powrocie scena używa tych samych siatek GLB i pamięci instancji. Ładowanie scenerii działa niezależnie od planszy logicznej, więc grę można rozpocząć w trakcie pobierania modeli. Kolejność i mechanika zagadek nie zależą od stanu renderera.
+- Rozwiązania prywatnych plansz oraz przykładowe podpowiedzi z dokładnym położeniem zapisujemy tylko lokalnie. Do pomiarów, publikowalnych zrzutów i arkuszy używamy plansz demonstracyjnych.
+- Powtórne obejście zapisuje oznaczenia ukończenia. Ukończona plansza może otworzyć się od układu początkowego, więc test sprawdza status ukończenia niezależnie od położenia przyrządów.
