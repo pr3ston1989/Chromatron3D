@@ -17,8 +17,8 @@
 ## Praca fazowa
 
 - Faza 0 zakończona: przegląd stanu, tryb `?debug=1`, narzędzia do zrzutów oraz [pomiary i audyt](QA_LOG.md).
-- Faza 1 czeka na wybór kierunku artystycznego przez właściciela. Cztery [koncepcje](concepts/README.md) są gotowe. Preferowany kierunek to Obserwatorium pryzmatyczne. Istniejące modele są punktem odniesienia.
-- Po wyborze uzupełnić `DESIGN_BIBLE.md` i rozpocząć fazę 2 od potoku Blendera oraz trzech próbnych modeli.
+- Faza 1 zamknięta. Właściciel wybrał wszystkie cztery [kierunki artystyczne](concepts/README.md). Obecne modele są punktem odniesienia.
+- Faza 2 obejmuje potok Blendera oraz trzy próbki przed bramką stylu. Pilotaż wykorzystuje płytę planszy, rozdzielacz i orbitalny pojazd serwisowy.
 - Późniejsze fazy pozostają do wykonania w kolejności z [MASTER_PROMPT.md](MASTER_PROMPT.md). Obecne 200 zweryfikowanych w silniku konfiguracji i obecne podpowiedzi są materiałem wejściowym dla faz 4 i 5.
 
 ## Punkty odniesienia
