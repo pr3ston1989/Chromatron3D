@@ -304,9 +304,9 @@ export function createSpaceEnvironments(THREE,scene,world,{tileSize=1.3,loadFlor
    group.terrain.setQuality(quality);
   }
  }
- function setLevel(packId,index,{seed=0}={}){
+ function setLevel(packId,index,{seed=0,themeId=null}={}){
   sessionSeed=seed;
-  const theme=environmentForLevel(packId,index,sessionSeed);
+  const theme=SPACE_BIOMES.find(candidate=>candidate.id===themeId)||environmentForLevel(packId,index,sessionSeed);
   for(const group of scenes){
    const show=group.theme.id===theme.id;
    group.sky.visible=show;group.foliage.visible=show;

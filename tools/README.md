@@ -24,3 +24,37 @@ oznaczają ruchome złącza i elementy obsługi. Emisja jest ograniczona do cyja
 akcenty biomów.
 
 Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami, kratownicą i czterema napędami. Kontrolowany test w Chrome pokazuje modele w widoku 1366 × 768.
+
+## Zrzuty i pomiar WebGL
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path (Get-Location) 'test-results/playwright-browsers'
+npx.cmd playwright install chromium
+node tools/shoot.mjs --levels 1,3,6,8 --themes orbital,verdant,polar,nebula
+node tools/contact-sheet.mjs screenshots/YYYY-MM-DD
+```
+
+Domyślnie skrypt obejmuje plansze pokazowe, po 1920 × 1080 i 390 × 844, w profilu
+`performance`. Zapisuje PNG i `capture.json` z rozdzielczością, backendem WebGL,
+FPS i czasami klatek, liczbą wywołań, trójkątów, tekstur, geometrii i komunikatami
+konsoli. `--backend native` prosi Chromium o akcelerację sprzętową. `--headed`
+uruchamia widoczne okno. `--out` nadpisuje katalog zrzutów. Przy
+`--campaign classic1`–`classic4` wyniki zawierają prywatne plansze użytkownika.
+Katalog `screenshots` jest ignorowany w Git.
+
+### Sterowanie w trybie debug
+
+Otwórz grę z parametrem `?debug=1`. Wywołania operują na aktywnej kampanii,
+a numer planszy zaczyna się od 1. Zmiany stanu i ustawień trwają do opuszczenia
+karty lub odświeżenia strony.
+
+| Metoda `window.__debug` | Zachowanie |
+| --- | --- |
+| `switchCampaign('demo' / 'classic1' … 'classic4')` | Zmiana kampanii dostępnej lokalnie. |
+| `loadLevel(n)`, `getLevelCount()`, `getLevelState()` | Wczytanie wskazanej planszy i odczyt kopii stanu. |
+| `setTheme(name)` | Wybór `orbital`, `verdant`, `polar`, `nebula` lub `null` dla domyślnego motywu. |
+| `freezeAnimations(bool)` | Unieruchomienie warstwy dekoracyjnej do zrzutu przy działającym renderowaniu. |
+| `applyMove({index,x,y,rot})` | Ustawienie ruchomego elementu na wolnym polu albo obrót. `index`, `x`, `y` i `rot` są liczone od 0. |
+| `applyMove({index,inTray:true})` | Odkłada ustawiony ruchomy element do zasobnika. |
+| `isSolved()`, `resetLevel()`, `undo()`, `redo()` | Odczyt wyniku i sterowanie przez zwykłą historię ruchów. |
+| `getStats()` | Ostatnie FPS, liczba klatek, wywołań, trójkątów, tekstur i geometrii z Three.js oraz backend WebGL. Liczniki tekstur są proxy dla pamięci GPU. |

@@ -20,7 +20,7 @@ import {contextualHint} from './hint-assistant.js';
 import {loadLevelBundle} from './classic-import.js';
 import {disposeGroupChildren} from './dispose.js';
 import {buildLaboratory} from './world-art.js';
-import {createSpaceEnvironments,environmentForLevel} from './world-biomes.js';
+import {createSpaceEnvironments,environmentForLevel,SPACE_BIOMES} from './world-biomes.js';
 import {createHeroScenery} from './hero-scenery.js';
 import {createMidgroundScenery} from './midground-scenery.js';
 import {createAmbientLife} from './ambient-life.js';
@@ -55,15 +55,24 @@ import './level-atlas.css';
 import './stage-arrival.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
+const debugEnabled=new URLSearchParams(location.search).get('debug')==='1';
+const debugData=debugEnabled?new Map():null;
+const transientStorage=debugData&&{
+ getItem:key=>debugData.get(key)??null,
+ setItem:(key,value)=>debugData.set(key,String(value)),
+ removeItem:key=>debugData.delete(key)
+};
+const gameStorage=()=>transientStorage||window.localStorage;
+let debugFrozen=false,debugTheme=null;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 let yaw=-.80,pitch=.86,dist=44;
 let zoomTarget=44,zoomLastFrame=0;
 let boardFocus=false;
-try{boardFocus=localStorage.getItem('chromatron-board-focus')==='yes'}catch{}
+try{boardFocus=gameStorage().getItem('chromatron-board-focus')==='yes'}catch{}
 let graphicsMode='auto',autoLevel='balanced';
-try{graphicsMode=normalizeQuality(localStorage.getItem('chromatron-graphics-quality'))}catch{}
+try{graphicsMode=normalizeQuality(gameStorage().getItem('chromatron-graphics-quality'))}catch{}
 let graphicsProfile=profileFor(graphicsMode,autoLevel);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -192,11 +201,11 @@ const opticModels=createOpticModelLoader(THREE,{
   modelRefresh=requestAnimationFrame(()=>{modelRefresh=0;rebuildPieces()});
  }
 });
-const environmentSessionSeed=Math.floor(Math.random()*0x7fffffff);
+const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7fffffff);
 const soundscape=createSoundscape();
 let activeEnvironment=null;
 function applyLevelEnvironment(){
- const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed});
+ const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:debugTheme});
  activeEnvironment=theme;
  if(theme.id==='orbital')loadOrbitalChassis();
  syncBoardChassis();
@@ -261,7 +270,7 @@ const demoPackId=currentPackId;
 const classicLibrary=new Map();
 for(let game=1;game<=4;game++){
  try{
-  const json=localStorage.getItem('chromatron-classic-'+game);
+  const json=gameStorage().getItem('chromatron-classic-'+game);
   if(json){
    const pack=validateLevels(JSON.parse(json));
    if(pack.length===50&&pack.every(l=>l.sourceGame===game))classicLibrary.set(game,pack);
@@ -278,19 +287,19 @@ let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,draggedPiece=null;
 let saved=0;
 try{
- saved=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)??
-  localStorage.getItem('chromatron-reborn-level')??0);
- language=normalizeLanguage(localStorage.getItem('chromatron-reborn-language')||'pl');
- analysisActive=localStorage.getItem('chromatron-reborn-analysis')==='on';
- const preference=localStorage.getItem('chromatron-start-campaign');
- const previous=preference||localStorage.getItem('chromatron-reborn-campaign');
+ saved=Number(gameStorage().getItem('chromatron-reborn-level-'+currentPackId)??
+  gameStorage().getItem('chromatron-reborn-level')??0);
+ language=normalizeLanguage(gameStorage().getItem('chromatron-reborn-language')||'pl');
+ analysisActive=gameStorage().getItem('chromatron-reborn-analysis')==='on';
+ const preference=gameStorage().getItem('chromatron-start-campaign');
+ const previous=preference||gameStorage().getItem('chromatron-reborn-campaign');
  if(previous==='demo'&&preference)campaignPreference='demo';
  else if(/^classic[1-4]$/.test(previous)&&classicLibrary.has(Number(previous.slice(7))))campaignPreference=previous;
- coachDismissed=localStorage.getItem('chromatron-coach-dismissed')==='yes';
- solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved')||'[]');
- skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped')||'[]');
- spectrumActive=localStorage.getItem('chromatron-reborn-spectrum')==='true';
- wallet=normalizeWallet(localStorage.getItem('chromatron-reborn-credit-wallet'));
+ coachDismissed=gameStorage().getItem('chromatron-coach-dismissed')==='yes';
+ solved=JSON.parse(gameStorage().getItem('chromatron-reborn-solved')||'[]');
+ skipped=JSON.parse(gameStorage().getItem('chromatron-reborn-skipped')||'[]');
+ spectrumActive=gameStorage().getItem('chromatron-reborn-spectrum')==='true';
+ wallet=normalizeWallet(gameStorage().getItem('chromatron-reborn-credit-wallet'));
  if(!Array.isArray(solved))solved=[];
  if(!Array.isArray(skipped))skipped=[];
 }catch{}
@@ -298,13 +307,13 @@ for(const level of solved){
  if(Number.isInteger(level)&&level>=0&&level<levels.length)
   wallet=rewardOnce(wallet,stageKey(currentPackId,level)).wallet;
 }
-try{localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify(wallet))}catch{}
+try{gameStorage().setItem('chromatron-reborn-credit-wallet',JSON.stringify(wallet))}catch{}
 // The old prototype allowed direct navigation to any level. Preserve the
 // last previously visited level once, even if the new atlas locks later ones.
 let accessFloor=0;
 try{
  const key='chromatron-reborn-access-'+currentPackId;
- const previous=localStorage.getItem(key);
+ const previous=gameStorage().getItem(key);
  const value=previous===null?saved:Number(previous);
  accessFloor=Number.isFinite(value)?Math.min(levels.length-1,Math.max(0,Math.trunc(value))):0;
  if(previous===null)store(key,String(accessFloor));
@@ -468,7 +477,7 @@ function rebuildBeams(){
   setTimeout(()=>{if(levelIndex===completedIndex&&won){$('win').classList.remove('hidden');beep(880,.15)}},650)
  }
 }
-function store(key,value){try{localStorage.setItem(key,value)}catch{}}
+function store(key,value){try{gameStorage().setItem(key,value)}catch{}}
 function updateStatus(){
  const el=$('level-status');
  el.textContent=solved.includes(levelIndex)?t(language,'statusSolved'):skipped.includes(levelIndex)?t(language,'statusSkipped'):'';
@@ -509,7 +518,7 @@ function renderLevelAtlas(){
   button.style.setProperty('--level-accent',biome.accent);
   let hasDraft=false;
   if(entry.unlocked&&entry.status!=='solved'){
-   try{hasDraft=Boolean(localStorage.getItem(draftKey(currentPackId,entry.index)))}catch{}
+   try{hasDraft=Boolean(gameStorage().getItem(draftKey(currentPackId,entry.index)))}catch{}
   }
   if(hasDraft)button.dataset.draft='true';
   button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status+
@@ -595,7 +604,7 @@ function showLevelIntro(){
 function syncDraftIndicator(){
  const el=$('draft-status');
  let hasDraft=false;
- try{hasDraft=Boolean(localStorage.getItem(draftKey(currentPackId,levelIndex)))}catch{}
+ try{hasDraft=Boolean(gameStorage().getItem(draftKey(currentPackId,levelIndex)))}catch{}
  el.textContent=hasDraft&&!won?t(language,'draftSaved'):'';
 }
 function persistDraft(){
@@ -603,8 +612,8 @@ function persistDraft(){
  const value=won?null:encodePuzzleDraft(levels[levelIndex],pieces,movable);
  try{
   const key=draftKey(currentPackId,levelIndex);
-  if(value)localStorage.setItem(key,value);
-  else localStorage.removeItem(key);
+  if(value)gameStorage().setItem(key,value);
+  else gameStorage().removeItem(key);
  }catch{}
  syncDraftIndicator();
  if(!$('level-menu').classList.contains('hidden'))renderLevelAtlas();
@@ -677,24 +686,24 @@ function switchLevelPack(nextLevels){
  levelIndex=0;
  verifiedSolutions.clear();
  try{
-  solved=JSON.parse(localStorage.getItem('chromatron-reborn-solved-'+currentPackId)||'[]');
-  skipped=JSON.parse(localStorage.getItem('chromatron-reborn-skipped-'+currentPackId)||'[]');
+  solved=JSON.parse(gameStorage().getItem('chromatron-reborn-solved-'+currentPackId)||'[]');
+  skipped=JSON.parse(gameStorage().getItem('chromatron-reborn-skipped-'+currentPackId)||'[]');
   if(!Array.isArray(solved))solved=[];
   if(!Array.isArray(skipped))skipped=[];
  }catch{solved=[];skipped=[]}
  try{
-  const remembered=Number(localStorage.getItem('chromatron-reborn-access-'+currentPackId));
+  const remembered=Number(gameStorage().getItem('chromatron-reborn-access-'+currentPackId));
   accessFloor=Number.isFinite(remembered)?Math.max(0,Math.min(levels.length-1,Math.trunc(remembered))):0;
  }catch{accessFloor=0}
  let resume=0;
- try{resume=Number(localStorage.getItem('chromatron-reborn-level-'+currentPackId)||0)}catch{}
+ try{resume=Number(gameStorage().getItem('chromatron-reborn-level-'+currentPackId)||0)}catch{}
  load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
  return levels.length;
 }
-function load(i,{silentIntro=false}={}){
+function load(i,{silentIntro=false,allowLocked=false}={}){
  if(!Number.isInteger(i))return false;
  const requested=(i%levels.length+levels.length)%levels.length;
- if(!getLevelAtlas().entries[requested].unlocked){
+ if(!allowLocked&&!getLevelAtlas().entries[requested].unlocked){
   toast(t(language,'atlasLockedHint'));
   return false;
  }
@@ -721,18 +730,18 @@ function load(i,{silentIntro=false}={}){
  // cannot modify the board and are discarded without losing the puzzle.
  try{
   const key=draftKey(currentPackId,levelIndex);
-  const raw=localStorage.getItem(key);
+  const raw=gameStorage().getItem(key);
   if(raw){
    const restored=restorePuzzleDraft(l,pieces,raw,movable);
    if(restored){pieces=restored;restoredDraft=true}
-   else localStorage.removeItem(key);
+   else gameStorage().removeItem(key);
   }
  }catch{}
  selected=null;wheelRotation.reset();placementMode=false;draggedPiece=null;history=[];redoHistory=[];won=false;tutorialPlaced=false;$('win').classList.add('hidden');
  $('hint-overlay').classList.add('hidden');
  let legacyHints=0;
  if(currentPackId===demoPackId){
-  try{legacyHints=clampHints(localStorage.getItem(progressKey(levelIndex)))}catch{}
+  try{legacyHints=clampHints(gameStorage().getItem(progressKey(levelIndex)))}catch{}
  }
  wallet=ensurePreviousHints(wallet,currentLevelKey(),legacyHints);
  hintCount=wallet.unlocked[currentLevelKey()]||0;
@@ -1052,14 +1061,14 @@ function rotate(dir){
  persistDraft();
  beep(540,.05);
 }
-function move(x,y,fromDrag=false){
+function move(x,y,fromDrag=false,rotation=selected?.rot){
  if(!selected)return false;
  wheelRotation.reset();
  // An existing optic can move ONLY when the player physically drags it.
  if(!selected.inTray&&!fromDrag)return false;
  if(!isFreeCell(pieces,selected,x,y)){toast(t(language,'cellOccupied'));return false}
  if(!selected.inTray&&selected.x===x&&selected.y===y)return false;
- saveHistory();selected.x=x;selected.y=y;selected.inTray=false;
+ saveHistory();selected.x=x;selected.y=y;selected.rot=rotation;selected.inTray=false;
  placementMode=false;draggedPiece=null;tutorialPlaced=true;update();beep(620,.06);
  return true;
 }
@@ -1478,10 +1487,11 @@ $('level-menu').addEventListener('click',event=>{
  if(event.target===$('level-menu'))closeLevelAtlas();
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
-$('reset').onclick=()=>{
- try{localStorage.removeItem(draftKey(currentPackId,levelIndex))}catch{}
- load(levelIndex,{silentIntro:true});
-};
+function resetLevel(allowLocked=false){
+ try{gameStorage().removeItem(draftKey(currentPackId,levelIndex))}catch{}
+ return load(levelIndex,{silentIntro:true,allowLocked});
+}
+$('reset').onclick=()=>resetLevel();
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
 $('turn-left').onclick=()=>rotate(-1);
@@ -1602,13 +1612,15 @@ $('graphics-quality').addEventListener('change',e=>{
  store('chromatron-graphics-quality',graphicsMode);
  applyGraphicsQuality();
 });
-let start=performance.now(),fpsMark=0,fpsFrames=0,slowWindows=0,fastWindows=0;
+const start=performance.now();
+let fpsMark=0,fpsFrames=0,slowWindows=0,fastWindows=0,measuredFps=null,debugFrames=0;
 function trackFrameRate(time){
- fpsFrames++;
  if(!fpsMark){fpsMark=time;return}
+ fpsFrames++;
  const windowMs=time-fpsMark;
  if(windowMs<1500)return;
  const fps=Math.round(fpsFrames*1000/windowMs);
+ measuredFps=fps;
  $('graphics-fps').textContent=fps+' FPS';
  $('graphics-fps').classList.toggle('low',fps<42);
  if(graphicsMode==='auto'&&!document.hidden){
@@ -1628,19 +1640,21 @@ function trackFrameRate(time){
 function animate(time){
  requestAnimationFrame(animate);
  trackFrameRate(time);
- spaceEnvironments.update(time*.001,reducedMotion.matches);
- terraces.update(time*.001,reducedMotion.matches);
- midgroundScenery.update(time*.001,reducedMotion.matches);
- ambientLife.update(time*.001,reducedMotion.matches);
- livingWorld.update(time*.001,reducedMotion.matches);
- boardEdgeGlow.update(reducedMotion.matches?0:time*.001);
- atmosphereParticles.update(reducedMotion.matches?0:time*.001);
- cinematic.update(reducedMotion.matches?0:time*.001);
+ const still=debugFrozen||reducedMotion.matches;
+ const animationTime=debugFrozen?0:time;
+ spaceEnvironments.update(animationTime*.001,still);
+ terraces.update(animationTime*.001,still);
+ midgroundScenery.update(animationTime*.001,still);
+ ambientLife.update(animationTime*.001,still);
+ livingWorld.update(animationTime*.001,still);
+ boardEdgeGlow.update(still?0:time*.001);
+ atmosphereParticles.update(still?0:time*.001);
+ cinematic.update(still?0:time*.001);
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
  zoomLastFrame=time;
  if(Math.abs(zoomTarget-dist)>.015){
-  const amount=reducedMotion.matches?1:1-Math.exp(-zoomDt/115);
+  const amount=still?1:1-Math.exp(-zoomDt/115);
   dist+=(zoomTarget-dist)*amount;
   updateCamera();
  }else if(zoomTarget!==dist){dist=zoomTarget;updateCamera()}
@@ -1648,27 +1662,27 @@ function animate(time){
   const a=opticTweens[i];
   const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
   const e=easeOutCubic(fraction);
-  applyOpticTween(a,e);
-  if(fraction===1)opticTweens.splice(i,1);
+  applyOpticTween(a,debugFrozen?1:e);
+  if(debugFrozen||fraction===1)opticTweens.splice(i,1);
  }
  if(cameraTween){
-  const f=Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
+  const f=debugFrozen?1:Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
   yaw=cameraTween.yaw0+(cameraTween.yaw1-cameraTween.yaw0)*ease;
   pitch=cameraTween.pitch0+(cameraTween.pitch1-cameraTween.pitch0)*ease;
   if(f===1)cameraTween=null;
   updateCamera();
  }
- for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=(time-start)*.001;
- for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(time*.005));
- selectionReticle.update(time,reducedMotion.matches);
- if(laserVisuals)laserVisuals.update(time*.001);
- if(victoryFX && !victoryFX.update((time-victorySince)*.001)){
+ for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=debugFrozen?0:(time-start)*.001;
+ for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(animationTime*.005));
+ selectionReticle.update(animationTime,still);
+ if(laserVisuals)laserVisuals.update(animationTime*.001);
+ if(victoryFX && (debugFrozen||!victoryFX.update((time-victorySince)*.001))){
   victoryFX.dispose();victoryFX=null;
  }
  // ── Level transition fog+exposure animation ──
  if(levelTransition){
   const lt=levelTransition;
-  const elapsed=time-lt.start;
+  const elapsed=debugFrozen?lt.duration:time-lt.start;
   const half=lt.duration/2;
   if(elapsed<half){
    // Phase 1: fog in, exposure down
@@ -1688,7 +1702,9 @@ function animate(time){
    levelTransition=null;
   }
  }
+ if(debugEnabled)renderer.info.reset();
  composer.render();
+ if(debugEnabled)debugFrames++;
 }
 function renderHints(){
  const root=$('hint-steps');
@@ -1766,3 +1782,50 @@ window.chromatron={
  getCampaignInfo:()=>({campaign:currentCampaign(),total:levels.length,chapters:[]}),
  setLanguage,getLanguage:()=>language,getHints:()=>hintCount
 };
+
+if(debugEnabled){
+ renderer.info.autoReset=false;
+ const gl=renderer.getContext();
+ const gpuInfo=gl.getExtension('WEBGL_debug_renderer_info');
+ const backend=gl.getParameter(gpuInfo?.UNMASKED_RENDERER_WEBGL??gl.RENDERER);
+ window.__debug=Object.freeze({
+  loadLevel(n){
+   return Number.isInteger(n)&&n>=1&&n<=levels.length&&load(n-1,{silentIntro:true,allowLocked:true});
+  },
+  getLevelCount:()=>levels.length,
+  getLevelState:()=>({...window.chromatron.getState(),number:levelIndex+1,campaign:currentCampaign(),
+   theme:activeEnvironment.id,completed:solved.includes(levelIndex)}),
+  setTheme(name){
+   if(name!==null&&!SPACE_BIOMES.some(theme=>theme.id===name))return false;
+   debugTheme=name;
+   levelTransition=null;
+   cinematic.pass.uniforms.uExposure.value=1;
+   applyLevelEnvironment();
+   return true;
+  },
+  freezeAnimations(freeze){debugFrozen=Boolean(freeze);if(debugFrozen)hideLevelIntro();},
+  applyMove({index,x,y,rot,inTray=false}={}){
+   const part=pieces[index];
+   if(!Number.isInteger(index)||!part||!movable.has(part.type))return false;
+   if(inTray){
+    if(part.inTray)return false;
+    select(part);
+    returnToTray();
+    return true;
+   }
+   if(!Number.isInteger(rot)||rot<0||rot>7||!isFreeCell(pieces,part,x,y))return false;
+   select(part);
+   if(part.inTray||part.x!==x||part.y!==y)return move(x,y,true,rot);
+   if(part.rot===rot)return false;
+   rotate(rot-part.rot);
+   return true;
+  },
+  isSolved:()=>Boolean(currentResult?.won),
+  getStats:()=>({fps:measuredFps,frames:debugFrames,drawCalls:renderer.info.render.calls,
+   triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,
+   geometries:renderer.info.memory.geometries,pixelRatio:renderer.getPixelRatio(),backend,
+   quality:graphicsMode==='auto'?autoLevel:graphicsMode}),
+  resetLevel:()=>resetLevel(true),undo,redo,
+  switchCampaign
+ });
+}
