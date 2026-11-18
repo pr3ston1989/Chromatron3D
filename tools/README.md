@@ -25,6 +25,20 @@ akcenty biomów.
 
 Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami, kratownicą i czterema napędami. Kontrolowany test w Chrome pokazuje modele w widoku 1366 × 768.
 
+## Próbki przebudowy wizualnej
+
+Wspólny moduł `tools/blender/style.py` używa zatwierdzonej [palety czterech światów](../docs/DESIGN_BIBLE.md) i eksportuje płasko cieniowane GLB Y-up. Renderujemy skrypt z czystej sceny. Z katalogu projektu uruchom:
+
+```powershell
+$blender = 'C:\Tools\blender-5.3.0-windows-x64\blender.exe'
+& $blender -b -t 4 --python-exit-code 2 -P tools/blender/assets/platform-deck.py
+& $blender -b -t 4 --python-exit-code 2 -P tools/blender/assets/beam-splitter.py
+& $blender -b -t 4 --python-exit-code 2 -P tools/blender/assets/service-skiff.py
+& $blender -b -t 4 --python-exit-code 2 -P tools/blender/review.py
+```
+
+GLB powstają w `assets/models`, a podglądy w `assets/previews/overhaul`. `review.py` importuje te GLB do sceny kontrolnej z aktualnym lustrem, emiterem i rezonatorami. Używa ustawień kamery gry dla 1920 × 1080 i 390 × 844. Osobno pokazuje cztery wykończenia platformy.
+
 ## Zrzuty i pomiar WebGL
 
 ```powershell

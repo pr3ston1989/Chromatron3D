@@ -13,3 +13,9 @@
 - Obserwatorium pryzmatyczne jest rekomendacją do pilotażu. Ceramika, granat i miedź tworzą czytelne warstwy, a pierścień kalibracyjny wyraża temat optyki dużą sylwetką. Wybór lub połączenie wariantów należy do właściciela.
 - Ilustracje używają wspólnego kąta 3/4, cyjanowej wiązki i pustej siatki, aby można było ocenić różnice w materiałach, świetle i głębi. Modele do gry będą podlegać ocenie z rzeczywistą geometrią siatki i całą paletą mechaniczną RGB.
 - Właściciel wybrał wszystkie cztery kierunki dla zróżnicowania plansz. Projekt zachowuje wspólne proporcje i język form dla optyki. Światy rozróżnia przez materiały i konstrukcję pod platformą, dominanty otoczenia oraz ruch i światło.
+
+## 18 listopada 2026 · Faza 2, bramka próbek
+
+- Rozdzielacz otrzymał rozwidlone ramiona wokół optycznego bisektora. W podglądzie obok niego jest obecne lustro, żeby sprawdzić odróżnialność sylwetki bez identyfikatora i przy tej samej skali.
+- Główny GLB planszy używa ceramiki Obserwatorium. Cztery podglądy wykończeń korzystają ze wspólnych proporcji. Dalsze różnice w geometrii otoczenia i podstaw są tematem pilotażu światów.
+- Próbki używają niewymagających dodatkowego dekodera GLB. Graphify wskazał `createOpticModelLoader()` i `cloneOptic()` jako miejsca integracji przyrządów. Weryfikacja korzysta z tej samej klasy `GLTFLoader` co przeglądarka.

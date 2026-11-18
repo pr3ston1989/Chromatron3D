@@ -86,3 +86,25 @@ Właściwe wymiary i kadrowanie z interfejsem będą oceniane na pilotażu w grz
 Na ilustracjach wiązka jest czytelna i siatka odsłonięta. Liczba kafli,
 ułożenie przyrządów i przebieg promienia są poglądowe. Następny krok
 to wybór właściciela.
+
+## 18 listopada 2026 · Faza 2, bramka próbek
+
+Blender 5.3.0 wyeksportował trzy próbki. Każda ma geometryczne wykończenie,
+przynajmniej trzy wartości jasności, materiał emisyjny i podstawę na Y=0
+po konwersji do glTF. Po imporcie zweryfikowano rendery detali oraz wspólną
+scenę z parametrami kamery gry. Oceny dotyczą próbek w scenie kontrolnej.
+
+| Próbka | Trójkąty / limit | Ocena | Obserwacja |
+| --- | ---: | ---: | --- |
+| Platforma | 1498 / 1500 | 4/5 | 225 równych pól, grubość 17,9% boku. Poprawka dodała widoczny pierścień lewitacji od spodu. W ujęciu kamery gry widać głównie wierzch. |
+| Rozdzielacz | 532 / 600 | 4/5 | Poszerzenie ramion otworzyło prześwit. Sylwetka odróżnia się od lustra w kadrze desktop; przy 390 px różnica jest subtelna. |
+| Pojazd serwisowy | 576 / 600 | 4/5 | Widełki i para napędów są widoczne nawet w mniejszym ujęciu. Lampy zlewają się ze skrzydłem od przodu; najlepiej czytelna jest sylwetka. |
+
+Przy 390 × 844 kadr przycina boczne narożniki pokładu. Ocena czytelności
+całego kadru mobilnego wynosi 3/5. Faza 3 powinna sprawdzić dopasowanie
+siatki z rzeczywistym HUD-em i torami o innych kolorach. Wykończenia czterech
+światów obejrzano na tej samej geometrii.
+
+`npm run check`: 222 testy i build. Test kontraktu GLB weryfikuje
+budżety, materiały, liczbę kafli oraz wczytanie do Three.js. Chromium:
+2/2, w tym tryb debug oraz układy 1366 × 768, 1280 × 720 i 1093 × 614.

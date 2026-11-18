@@ -34,9 +34,9 @@ PALETTE_STEPS = {name: {step: shade_hex(value, step) for step in range(-2, 3)}
 GAME_CAMERA = (sin(-.80) * cos(.86), -cos(-.80) * cos(.86), sin(.86))
 
 
-def make_material(name, color, metallic=0.0, roughness=0.45, emission=0.0, *, shade=0):
+def make_material(name, color, metallic=0.0, roughness=0.45, emission=0.0, *, shade=0, tones=PALETTE_STEPS):
     """Make a flat-colour PBR finish; palette HEX values are sRGB."""
-    hex_color = PALETTE_STEPS[color][shade].lstrip("#")
+    hex_color = tones[color][shade].lstrip("#")
     channels = [int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4)]
     linear = tuple(c / 12.92 if c <= 0.04045 else ((c + .055) / 1.055) ** 2.4 for c in channels)
     material = bpy.data.materials.new(name)

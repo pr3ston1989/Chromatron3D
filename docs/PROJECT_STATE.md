@@ -18,7 +18,8 @@
 
 - Faza 0 zakończona: przegląd stanu, tryb `?debug=1`, narzędzia do zrzutów oraz [pomiary i audyt](QA_LOG.md).
 - Faza 1 zamknięta. Właściciel wybrał wszystkie cztery [kierunki artystyczne](concepts/README.md). Obecne modele są punktem odniesienia.
-- Faza 2 obejmuje potok Blendera oraz trzy próbki przed bramką stylu. Pilotaż wykorzystuje płytę planszy, rozdzielacz i orbitalny pojazd serwisowy.
+- Faza 2 dotarła do bramki stylu. [Inwentarz](ASSETS.md), potok Blendera oraz trzy próbne GLB są gotowe. Ocena obejmuje płytę planszy, rozdzielacz i orbitalny pojazd serwisowy. Widoki gry pokazują modele w scenie kontrolnej, bez interfejsu produkcyjnego.
+- Po zatwierdzeniu próbek dokończyć przegląd i wymianę pozostałych modeli, z arkuszem i budżetami, a potem pilotaż jednego świata w fazie 3. W kadrze 390 × 844 sprawdzić dopasowanie całej siatki i rozpoznawalność przyrządów przy rzeczywistym interfejsie.
 - Późniejsze fazy pozostają do wykonania w kolejności z [MASTER_PROMPT.md](MASTER_PROMPT.md). Obecne 200 zweryfikowanych w silniku konfiguracji i obecne podpowiedzi są materiałem wejściowym dla faz 4 i 5.
 
 ## Punkty odniesienia

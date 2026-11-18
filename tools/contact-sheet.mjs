@@ -38,6 +38,6 @@ try{
       await img.decode();
     }));
   },cards);
-  await page.screenshot({path:output,fullPage:true});
+  await page.locator('main').screenshot({path:output});
   console.log(output);
 } finally { await browser.close(); }

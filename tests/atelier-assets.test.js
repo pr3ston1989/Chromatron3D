@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {Box3} from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
 
 function gltf(path){
@@ -65,6 +67,46 @@ test('the pilot GLBs preserve palette emission, base origin and category budgets
   for(const suffix of ['','-game']){
    const preview=readFileSync(new URL('../assets/previews/'+name+suffix+'.png',import.meta.url));
    assert.deepEqual([preview.readUInt32BE(16),preview.readUInt32BE(20)],[512,512],name);
+  }
+ }
+});
+
+test('overhaul samples load as untextured, Y-up models within the design budgets',async()=>{
+ const loader=new GLTFLoader();
+ const budgets={
+  'overhaul-platform-deck':1500,
+  'overhaul-beam-splitter':600,
+  'overhaul-service-skiff':600
+ };
+ for(const [name,budget] of Object.entries(budgets)){
+  const file=readFileSync(new URL('../assets/models/'+name+'.glb',import.meta.url));
+  assert.equal(file.toString('ascii',0,4),'glTF');
+  assert.equal(file.readUInt32LE(4),2);
+  const doc=JSON.parse(file.toString('utf8',20,20+file.readUInt32LE(12)));
+  assert.equal(doc.images,undefined);
+  assert.ok(doc.materials.some(material=>material.emissiveFactor?.some(c=>c>0)),name);
+  const parts=doc.meshes.flatMap(mesh=>mesh.primitives);
+  const triangles=parts.reduce((sum,p)=>sum+doc.accessors[p.indices].count/3,0);
+  assert.ok(triangles>0&&triangles<=budget,name);
+  const bounds=parts.map(p=>doc.accessors[p.attributes.POSITION]);
+  const minimum=[0,1,2].map(axis=>Math.min(...bounds.map(b=>b.min[axis])));
+  const maximum=[0,1,2].map(axis=>Math.max(...bounds.map(b=>b.max[axis])));
+  assert.equal(minimum[1],0,name+' has a Y-up base');
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-6,name+' loads without rotation');
+  if(name.endsWith('platform-deck')){
+   const aspect=maximum[1]/(maximum[0]-minimum[0]);
+   assert.ok(aspect>=.15&&aspect<=.20,'depth-to-width ratio');
+   const tileMaterial=doc.materials.findIndex(m=>m.name==='Uniform playing surface');
+   const tileFaces=parts.filter(p=>p.material===tileMaterial)
+    .reduce((sum,p)=>sum+doc.accessors[p.indices].count/3,0);
+   assert.equal(tileFaces,15*15*2+16,'225 inlays and a continuous frame');
+  }
+  if(name.endsWith('beam-splitter')){
+   const cornerRadius=Math.hypot(Math.max(-minimum[0],maximum[0]),Math.max(-minimum[2],maximum[2]));
+   assert.ok(cornerRadius<.72,'rotation stays clear of the next instrument');
+   assert.ok(maximum[1]<1,'fits the visual instrument envelope');
   }
  }
 });
