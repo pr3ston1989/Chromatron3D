@@ -72,12 +72,12 @@ A fair, completely offline hint wallet has been added:
 - Start with **3 credits**, win **5 credits once** per genuinely solved level
   (no earning points by repeatedly resetting/replaying).
 - **First hint free**, second costs **2**, third costs **3** credits.
-- Initial hints inspect real receiver colors and optics. The third hint only
-  gives coordinates and rotation from a **verified solution**; if the engine
-  cannot solve an advanced original puzzle, it does not invent an answer.
-- Advanced analysis runs in a Web Worker so the 3D game stays interactive.
-  Current bounded search is intended for simple puzzles with 0–2 movable
-  optics, not a guarantee to solve all 200.
+- The four supported 50-puzzle campaigns have an authored strategy for each board
+  in Polish and English. The strategy describes how to approach the puzzle.
+- The second clue highlights an actionable tile and describes the expected
+  optical result. The third gives the position and rotation for a verified move.
+- Custom puzzles without a known solution use live diagnostics and bounded
+  search in a Web Worker.
 
 Textures and edges are improved with deterministic offline **PBR micro-maps**
 for brushed and polished metal. The composer now includes **FXAA** in

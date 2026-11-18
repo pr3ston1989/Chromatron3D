@@ -3,6 +3,7 @@ import {colorName,inspectLight} from './analysis.js';
 import {verifyPuzzleSolution} from './puzzle-solver.js';
 import {t} from './i18n.js';
 import {opticDescription} from './optic-help.js';
+import {classicStrategy} from './classic-strategies.js';
 
 const cell=(x,y)=>x+','+y;
 const samePart=(one,two)=>one.type===two.type&&(one.type!=='filter'||one.color===two.color);
@@ -31,7 +32,14 @@ function nextAction(pieces,solution,actual,solved){
   const part=pieces[move.index];
   if(here&&!samePart(here,part))return {kind:'remove',part:here,x:move.x,y:move.y};
   if(here?.rot===move.rot)return null;
-  return {kind:here?'turn':'place',part:here||part,...move};
+  if(here)return {kind:'turn',part:here,...move};
+  const available=pieces.find(p=>p.inTray&&samePart(p,part));
+  const misplaced=available||pieces.find(p=>{
+   if(!samePart(p,part))return false;
+   const expected=plan.get(cell(p.x,p.y));
+   return !expected||!samePart(p,pieces[expected.index]);
+  });
+  return {kind:available?'place':'move',part:misplaced||part,...move};
  }
  const segmentKey=r=>[r.x,r.y,r.nx,r.ny,r.color].join(',');
  const actualEdges=new Set(actual.segments.map(segmentKey));
@@ -55,6 +63,8 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
  if(actual.won)return reply(en?'Every receiver is lit.':'Wszystkie rezonatory są zasilane.',true);
  const check=Array.isArray(solution)&&verifyPuzzleSolution(level,solution);
  if(check?.valid){
+  const authored=step===1&&classicStrategy(level,lang);
+  if(authored)return reply(authored,true);
   const {action,ray}=nextAction(pieces,solution,actual,check.result);
   if(action){
    const {part,x,y,rot,kind}=action,focus={x,y},name=label(part,lang);
@@ -67,9 +77,18 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
     return reply(lead+body,true,step>1?focus:null);
    }
    if(step===3){
-    const body=en?(kind==='turn'?'Rotate '+name+' at ':'Place '+name+' at ')+pos+' and set it to '+rot*45+'°.':
-     (kind==='turn'?'Obróć element '+name+' na polu ':'Ustaw element '+name+' na polu ')+pos+' pod kątem '+rot*45+'°.';
-    return reply(body,true,focus);
+    const from='('+part.x+', '+part.y+')';
+    const angle=rot*45+'°';
+    const verbs=en?{
+     turn:'Rotate '+name+' at '+pos,
+     move:'Move '+name+' from '+from+' to '+pos,
+     place:'Take '+name+' from the tray and put it at '+pos
+    }:{
+     turn:'Obróć '+name+' na polu '+pos,
+     move:'Przenieś '+name+' z pola '+from+' na '+pos,
+     place:'Weź '+name+' z zasobnika i ustaw na polu '+pos
+    };
+    return reply(verbs[kind]+(en?' and set it to ':' pod kątem ')+angle+'.',true,focus);
    }
    const exits=check.result.segments.filter(r=>r.x===x&&r.y===y);
    const outputs=[...new Set(exits.map(r=>colorName(r.color,lang)+' '+heading(r,lang)))];
@@ -78,7 +97,25 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
    if(step===1)return reply(lead+motion+' '+(outputs.length?
     (en?'Look for this outgoing light: ':'Szukaj takiego wyjścia wiązki: ')+outputs.join(' · ')+'.':
     opticDescription(part.type,lang)),true);
-   return reply(lead+(en?'Use ':'Wybierz ')+name+'. '+opticDescription(part.type,lang),true,focus);
+   const instruction=kind==='turn'?
+    (en?'Turn the '+name+' on the highlighted tile. ':'Obróć '+name+' na zaznaczonym polu. '):
+    (en?'Use '+name+' on the highlighted tile. ':'Użyj elementu '+name+' na zaznaczonym polu. ');
+   const projected=trace(pieces.map(p=>p===part?{...p,x,y,rot,inTray:false}:p));
+   const liveOutputs=projected.segments.filter(r=>r.x===x&&r.y===y);
+   const result=outputs.length&&liveOutputs.some(r=>outputs.includes(colorName(r.color,lang)+' '+heading(r,lang)));
+   if(result){
+    const signal=[...new Set(liveOutputs.map(r=>colorName(r.color,lang)+' '+heading(r,lang)))];
+    return reply(lead+instruction+(en?'Check for ':'Sprawdź wyjście wiązki — ')+signal.join(' · ')+'.',true,focus);
+   }
+   // A portal exit or multi-input optic may need a later connection.
+   const required=check.result.segments.filter(r=>r.nx===x&&r.ny===y);
+   const unseen=required.find(r=>!actual.segments.some(live=>
+    live.x===r.x&&live.y===r.y&&live.nx===x&&live.ny===y&&live.color===r.color));
+   const expectation=unseen?(en?'This point also needs '+colorName(unseen.color,lang).toLowerCase()+
+    ' travelling '+heading(unseen,lang)+'.':
+    'Do tego punktu trzeba doprowadzić też wiązkę o barwie „'+colorName(unseen.color,lang)+'”, biegnącą '+heading(unseen,lang)+'.'):
+    opticDescription(part.type,lang);
+   return reply(lead+instruction+expectation,true,focus);
   }
  }
  if(step===3)return reply(en?'No verified solution is available. Run solution analysis first.':

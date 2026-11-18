@@ -101,3 +101,15 @@ test('an extra tool interrupting the verified route is removed before a downstre
  assert.match(clue.body,/Return FILTER.*Blue.*tray/);
  assert.deepEqual(clue.focus,{x:4,y:7});
 });
+
+test('a verified clue can move a tool already used off the winning path',()=>{
+ const [level]=validateLevels(PROTOTYPE_LEVELS);
+ const pieces=createPuzzlePieces(level);
+ const mirror=pieces.find(p=>p.type==='mirror');
+ Object.assign(mirror,{x:5,y:10,inTray:false});
+ const hint=contextualHint(level,pieces,3,'en',level.solution);
+ assert.match(hint.body,/from \(5, 10\) to \(7, 7\)/);
+ assert.deepEqual(hint.focus,{x:7,y:7});
+ const experiment=contextualHint(level,pieces,2,'en',level.solution);
+ assert.match(experiment.body,/Check for Blue up/);
+});

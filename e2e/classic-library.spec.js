@@ -14,6 +14,12 @@ test('fresh local game opens the first of four retail campaigns and restores the
  page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1093,height:614});
  await page.goto('/');
+ await page.locator('#hint').click();
+ await page.locator('#reveal-hint').click();
+ await expect(page.locator('#hint-steps .hint-step p')).toContainText('Jedno lustro na przecięciu wystarczy.');
+ await page.locator('#reveal-hint').click();
+ await expect(page.locator('#hint-steps .hint-step p').last()).toContainText('Sprawdź wyjście wiązki');
+ await page.locator('#close-hint').click();
  await page.locator('#levels-button').click();
  await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');
  await expect(page.locator('#level-pack-label')).toHaveText('ORYGINAŁ');
