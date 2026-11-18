@@ -8,6 +8,8 @@ test('fresh local game opens the first of four retail campaigns and restores the
  test.setTimeout(180000);
  await page.addInitScript(()=>{
   localStorage.setItem('chromatron-graphics-quality','performance');
+  if(!localStorage.getItem('chromatron-reborn-credit-wallet'))
+   localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify({balance:8}));
   Object.defineProperty(window,'devicePixelRatio',{get:()=>.5});
  });
  const errors=[];
@@ -18,7 +20,12 @@ test('fresh local game opens the first of four retail campaigns and restores the
  await page.locator('#reveal-hint').click();
  await expect(page.locator('#hint-steps .hint-step p')).toContainText('Jedno lustro na przecięciu wystarczy.');
  await page.locator('#reveal-hint').click();
- await expect(page.locator('#hint-steps .hint-step p').last()).toContainText('Sprawdź wyjście wiązki');
+ const clue=page.locator('#hint-steps .hint-step p').last();
+ await expect(clue).toContainText('Przedłuż w myślach kolumnę rezonatora');
+ await expect(clue).not.toContainText(/\(\d+, \d+\)|\d+°/);
+ await page.locator('#reveal-hint').click();
+ await expect(clue).toContainText(/\(\d+, \d+\).*\d+°/);
+ await expect(clue).toContainText('Czerwień ma wyjść z lustra');
  await page.locator('#close-hint').click();
  await page.locator('#levels-button').click();
  await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');

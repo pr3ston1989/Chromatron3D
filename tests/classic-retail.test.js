@@ -7,6 +7,7 @@ import {createPuzzlePieces,verifyPuzzleSolution} from '../src/puzzle-solver.js';
 import {trace} from '../src/optics.js';
 import {contextualHint} from '../src/hint-assistant.js';
 import {classicStrategy} from '../src/classic-strategies.js';
+import {classicTechnique} from '../src/classic-techniques.js';
 
 for(const game of [1,2,3,4]){
  const file=new URL('../original/chromatron'+(game===1?'':game)+'.exe',import.meta.url);
@@ -20,7 +21,7 @@ for(const game of [1,2,3,4]){
   assert.equal(pack.length,50);
   assert.equal(new Set(pack.map(p=>p.sourceIndex)).size,50);
   const gateSlots=[],primarySlots=[];
-  const seenClues={pl:new Set(),en:new Set()};
+  const seenClues={pl:new Set(),en:new Set(),technique:new Set(),confirmation:new Set()};
   for(const [slot,level] of pack.entries()){
    assert.equal(trace(createPuzzlePieces(level)).won,false,'starts unsolved '+slot);
    const verdict=verifyPuzzleSolution(level,level.solution);
@@ -35,15 +36,24 @@ for(const game of [1,2,3,4]){
     seenClues[language].add(editorial);
    }
    const {focus,verified,body}=contextualHint(level,pieces,2,'pl',level.solution);
-   assert.ok(verified&&focus&&body.includes('zaznaczonym'), 'missing second clue '+slot);
+   const editorial=classicTechnique(level,level.solution);
+   assert.ok(editorial,'Missing technique '+game+':'+(slot+1));
+   assert.equal(body,editorial.technique,'Techniques must guide the live opening');
+   assert.ok(verified&&!focus&&!/\(\d+, \d+\)|\d+°/.test(body),'Second clue disclosed an exact move');
+   for(const key of ['technique','confirmation']){
+    assert.ok(!seenClues[key].has(editorial[key]),'Repeated '+key+' '+slot);
+    seenClues[key].add(editorial[key]);
+   }
    // Follow exact clues with interchangeable inventory pieces, as a player can.
    const at=(p,x,y)=>!p.inTray&&p.x===x&&p.y===y;
    for(let count=0;count<=level.solution.length&&!trace(pieces).won;count++){
-    const exact=contextualHint(level,pieces,3,'en',level.solution);
+    const exact=contextualHint(level,pieces,3,'pl',level.solution);
     assert.ok(exact.verified&&exact.focus,'Missing exact clue '+game+':'+(slot+1));
     const {x,y}=exact.focus;
     const move=level.solution.find(m=>m.x===x&&m.y===y);
     assert.ok(move&&exact.body.includes(move.rot*45+'°'),'Invalid exact angle '+slot);
+    if(count===0)assert.ok(exact.body.endsWith(editorial.confirmation),'Missing editorial check '+slot);
+    else assert.ok(!exact.body.endsWith(editorial.confirmation),'Opening persists after the first move '+slot);
     const want=pieces[move.index];
     const part=pieces.find(p=>at(p,x,y))||pieces.find(p=>p.inTray&&p.type===want.type&&
      (p.type!=='filter'||p.color===want.color));

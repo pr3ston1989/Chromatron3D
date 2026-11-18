@@ -1,11 +1,12 @@
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {parseArgs} from 'node:util';
 import {spawn} from 'node:child_process';
 import {createServer} from 'vite';
 import {launchChromium} from './capture-browser.mjs';
 import {readLocalCampaigns} from '../scripts/local-campaigns.mjs';
-import {solvePuzzle,verifyPuzzleSolution} from '../src/puzzle-solver.js';
+import {createPuzzlePieces,solvePuzzle,verifyPuzzleSolution} from '../src/puzzle-solver.js';
+import {contextualHint} from '../src/hint-assistant.js';
 
 const {values}=parseArgs({options:{
  backend:{type:'string',default:'native'},
@@ -18,16 +19,32 @@ await mkdir(out,{recursive:true});
 const packs=readLocalCampaigns(resolve('original'));
 const findings=packs.map(({game,levels})=>({campaign:'classic'+game,
  levels:levels.map((level,index)=>{
+  const start=performance.now();
   const answer=solvePuzzle(level);
   const moves=answer.solution;
   const verified=verifyPuzzleSolution(level,moves).valid;
   return {level:index+1,status:verified?'verified':answer.status,
+   validationMs:Number((performance.now()-start).toFixed(2)),
    method:answer.method??null,moves,moveCount:moves?.length??0,
    required:verified?moves.map(({index})=>level.pieces[index][0]):[],
    alternative:verified&&findAlternative(level,moves)};
  })}));
 await mkdir('data',{recursive:true});
 await writeFile('data/solutions.json',JSON.stringify({packs:findings},null,2)+'\n');
+
+const hintPacks=packs.map(({game,levels})=>({campaign:'classic'+game,levels:levels.map((level,index)=>{
+ const pieces=createPuzzlePieces(level);
+ const clues=[1,2,3].map(step=>contextualHint(level,pieces,step,'pl',level.solution));
+ const focus=clues[2].focus;
+ const move=focus&&level.solution?.find(({x,y})=>x===focus.x&&y===focus.y);
+ return {level:index+1,clues:clues.map(clue=>clue.body),move:move??null,
+  verified:Boolean(clues.every(clue=>clue.verified)&&!clues[1].focus&&move)};
+})}));
+const previousHints=JSON.parse(await readFile('data/hints.pl.json','utf8').catch(error=>{
+ if(error.code!=='ENOENT')throw error;
+ return '{}';
+}));
+await writeFile('data/hints.pl.json',JSON.stringify({language:'pl',samples:previousHints.samples,packs:hintPacks},null,2)+'\n');
 
 function findAlternative(level,moves){
  for(const [i,move] of moves.entries()){
@@ -47,7 +64,11 @@ function findAlternative(level,moves){
 
 const report={expected:200,available:findings.reduce((n,pack)=>n+pack.levels.length,0),
  engineVerified:0,browserVerified:0,alternateFound:0,browserFailures:[],browserErrors:[],warnings:[],
- solverStatuses:{},memory:[]};
+ hintsVerified:hintPacks.flatMap(pack=>pack.levels).filter(level=>level.verified).length,
+ solverStatuses:{},memory:[],levels:[]};
+for(const pack of findings)for(const level of pack.levels)report.levels.push({campaign:pack.campaign,
+ level:level.level,validationMs:level.validationMs,solution:level.status,
+ hint:hintPacks.find(row=>row.campaign===pack.campaign).levels[level.level-1].verified?'verified':'unverified'});
 for(const pack of findings)for(const level of pack.levels){
  if(level.status==='verified')report.engineVerified++;
  report.solverStatuses[level.status]=(report.solverStatuses[level.status]??0)+1;
@@ -79,7 +100,7 @@ try{
  await page.evaluate(()=>{
   const quality=document.querySelector('#graphics-quality');
   quality.value='performance';quality.dispatchEvent(new Event('change'));
-  window.__debug.freezeAnimations(true);
+  window.__debug.freezeAnimations(false);
  });
  const checkpoint=async(pass,campaign,level)=>{
   await page.waitForFunction(()=>{
@@ -101,6 +122,7 @@ try{
    for(const candidate of levels){
     const {level,status,moves}=candidate;
     if(status!=='verified')continue;
+    const begun=performance.now();
     const step=await page.evaluate(({level,moves,pass})=>{
      const api=window.__debug;
      if(!api.loadLevel(level))return 'load';
@@ -110,7 +132,22 @@ try{
      return api.getLevelState().completed?'ok':'not marked';
     },{level,moves,pass});
     if(step==='ok'){
-     if(pass==='solve')report.browserVerified++;
+     if(pass==='solve'){
+      report.browserVerified++;
+      const measured=report.levels.find(row=>row.campaign===campaign&&row.level===level);
+      measured.browserReplayMs=Math.round(performance.now()-begun);
+     const sample=await page.evaluate(()=>new Promise(resolve=>{
+      requestAnimationFrame(start=>{
+       let frames=0;
+       function tick(end){
+        if(++frames<8)requestAnimationFrame(tick);
+        else resolve({theme:window.__debug.getLevelState().theme,fps:Number((8000/(end-start)).toFixed(1))});
+       }
+       requestAnimationFrame(tick);
+      });
+     }));
+     Object.assign(measured,sample);
+     }
     }else report.browserFailures.push({pass,campaign,level,step});
     if(level%25===0)await checkpoint(pass,campaign,level);
    }
@@ -133,7 +170,7 @@ if(!values['skip-screenshots']){
   '--warmup-ms','2000','--out',resolve(out,'viewport-demo')]);
 }
 if(report.engineVerified!==report.expected||report.browserVerified!==report.expected||
- report.browserFailures.length||report.browserErrors.length)process.exitCode=1;
+ report.hintsVerified!==report.expected||report.browserFailures.length||report.browserErrors.length)process.exitCode=1;
 
 function command(script,args){
  return new Promise((resolve,reject)=>{

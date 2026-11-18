@@ -1,9 +1,10 @@
 import {trace,movable,DX,DY} from './optics.js';
 import {colorName,inspectLight} from './analysis.js';
-import {verifyPuzzleSolution} from './puzzle-solver.js';
+import {createPuzzlePieces,verifyPuzzleSolution} from './puzzle-solver.js';
 import {t} from './i18n.js';
 import {opticDescription} from './optic-help.js';
 import {classicStrategy} from './classic-strategies.js';
+import {classicTechnique} from './classic-techniques.js';
 
 const cell=(x,y)=>x+','+y;
 const samePart=(one,two)=>one.type===two.type&&(one.type!=='filter'||one.color===two.color);
@@ -68,6 +69,18 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
   const {action,ray}=nextAction(pieces,solution,actual,check.result);
   if(action){
    const {part,x,y,rot,kind}=action,focus={x,y},name=label(part,lang);
+   let editorial=null;
+   if(!en&&step>1&&kind==='place'&&ray){
+    const technique=classicTechnique(level,solution);
+    if(technique){
+     const start=createPuzzlePieces(level);
+     const first=nextAction(start,solution,trace(start),check.result).action;
+     if(first?.x===x&&first.y===y&&first.rot===rot)editorial=technique;
+    }
+   }
+   // Editorial technique is tied to the verified opening and leaves the tile
+   // for the player to discover. As the board changes, use the live beam path.
+   if(step===2&&editorial)return reply(editorial.technique,true);
    const pos='('+x+', '+y+')';
    const lead=ray?(en?'Follow the '+colorName(ray.color,lang).toLowerCase()+' beam travelling '+heading(ray,lang)+'. ':
     'Śledź promień o barwie „'+colorName(ray.color,lang)+'”, biegnący '+heading(ray,lang)+'. '):'';
@@ -88,7 +101,8 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
      move:'Przenieś '+name+' z pola '+from+' na '+pos,
      place:'Weź '+name+' z zasobnika i ustaw na polu '+pos
     };
-    return reply(verbs[kind]+(en?' and set it to ':' pod kątem ')+angle+'.',true,focus);
+    const instruction=verbs[kind]+(en?' and set it to ':' pod kątem ')+angle+'.';
+    return reply(editorial?instruction+' '+editorial.confirmation:instruction,true,focus);
    }
    const exits=check.result.segments.filter(r=>r.x===x&&r.y===y);
    const outputs=[...new Set(exits.map(r=>colorName(r.color,lang)+' '+heading(r,lang)))];
