@@ -1,8 +1,8 @@
 # Światy kampanii
 
 Wybrano osiem odsłon czterech rodzin zaakceptowanych przez właściciela.
-Wdrożenie zaczyna się od Stoczni orbitalnej na ósmej planszy pokazowej. Przydział
-kampanii będzie wykonywany podczas kolejnego etapu fazy 3.
+Każdy świat jest dostępny na jednej z ośmiu plansz demonstracyjnych i
+na przypisanej części lokalnej kampanii.
 
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
 | --- | --- | --- | --- |
@@ -15,12 +15,21 @@ kampanii będzie wykonywany podczas kolejnego etapu fazy 3.
 | 7 | Optyka głębinowa | Jadeit i morski granat, kierunkowy niebieskozłoty snop. | Maszty obserwacyjne i niskie podwodne tarasy; powolne prądy drobin za planszą. |
 | 8 | Sanktuarium soczewek | Jasny liliowy pokład, chłodna mgła i pojedyncze ciepłe krawędzie. | Dwa łuki nad zagłębionym polem i przeciwległa komora soczewki; powolny ruch przysłony. |
 
-Roboczo po dwa światy na prywatną kampanię po 50 plansz, po 25 plansz na
-świat. Numeracja, układy, mechanika, odblokowania i zapisy kampanii
-zostają niezależne od scenografii. Materiały i moduły mają być współdzielone,
-a układ drugiego planu jest wyprowadzany z identyfikatora kampanii i numeru
-planszy. Dwie albo trzy duże formy budują scenę. Wszystkie elementy
-scenograficzne pozostają poza przestrzenią sterowania i torami gry.
+Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,
+układy i zapisy kampanii są niezależne od scenografii.
+
+| Kampania | Plansze 1–25 | Plansze 26–50 |
+| --- | --- | --- |
+| Chromatron I | Obserwatorium pryzmatyczne | Ogród heliostatów |
+| Chromatron II | Kryształowa grota | Stocznia orbitalna |
+| Chromatron III | Laboratorium polarne | Kuźnia widmowa |
+| Chromatron IV | Optyka głębinowa | Sanktuarium soczewek |
+
+Scenografia współdzieli siatki i materiały. Dwie główne formy budują
+kadr, a siatka przyrządów jest osobną warstwą. Rozmieszczenie
+drobnych rekwizytów i pyłu jest deterministyczne dla gry i numeru planszy.
+Tryb ograniczonego ruchu zatrzymuje ozdobne animacje. Własne paczki importowane
+zachowują ogólną scenografię.
 
 ## Próba Stoczni orbitalnej
 
@@ -29,3 +38,6 @@ nowy rozdzielacz, dwa stany rezonatora oraz widoczność niebieskiej wiązki
 w rodzimym interfejsie gry. W trybie developerskim `?debug=1&pilot=0`
 pokazuje starszą scenografię mgławicy na tej samej planszy.
 Wizualnym punktem odniesienia jest [koncepcja Stoczni](concepts/04-stocznia-orbitalna.png).
+
+[Arkusz ośmiu światów w 1920 × 1080](../assets/previews/overhaul/worlds/desktop.png) ·
+[Arkusz ośmiu światów w 390 × 844](../assets/previews/overhaul/worlds/mobile.png).

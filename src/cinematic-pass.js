@@ -110,7 +110,8 @@ export function createCinematicPass(THREE, ShaderPass) {
 
   let currentBiome = 'orbital', currentQuality = 'balanced';
   const syncGrain=()=>{
-    pass.uniforms.uGrainAmount.value = currentQuality==='performance'||currentBiome==='shipyard' ? 0 : 0.035;
+    pass.uniforms.uGrainAmount.value = currentQuality==='performance'||
+      !['orbital','verdant','polar','nebula'].includes(currentBiome) ? 0 : 0.035;
   };
 
   function setBiome(biomeId) {

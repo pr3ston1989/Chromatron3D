@@ -103,7 +103,7 @@ body{background:#102238;color:var(--ui-ink)}
 @media(max-width:760px) and (min-width:681px){
  .coach{top:auto;bottom:25px;left:50%;width:340px}
 }
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .header{padding:11px 12px;min-height:57px;align-items:center}
  .header .brand{gap:7px}
  .header .brand strong{font-size:17px;letter-spacing:0}
@@ -175,7 +175,7 @@ body{background:#102238;color:var(--ui-ink)}
 #inventory button.inventory-item:disabled{opacity:.5;cursor:not-allowed}
 #inventory button.inventory-item:disabled:hover{box-shadow:none;background:transparent}
 #scene canvas{touch-action:none}
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .transform-tools{display:inline-block;margin:3px 5px 1px 0;padding:7px;vertical-align:top;max-width:180px}
  .transform-tools.hidden{display:none}
  .transform-caption{font-size:8px;margin-bottom:5px}
@@ -195,7 +195,7 @@ body{background:#102238;color:var(--ui-ink)}
 .component-icon{display:flex;align-items:center;justify-content:center;overflow:hidden}
 .component-icon svg{width:38px;height:38px;max-width:100%;max-height:100%;filter:drop-shadow(0 0 5px rgba(95,220,250,.17))}
 .inventory-item.selected .component-icon svg,.inventory-item:hover .component-icon svg{filter:drop-shadow(0 0 8px rgba(123,231,255,.45))}
-@media(max-width:680px){.component-icon svg{width:29px;height:29px}.beam-guide-legend{font-size:7px;gap:3px}}
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){.component-icon svg{width:29px;height:29px}.beam-guide-legend{font-size:7px;gap:3px}}
 
 /* Contextual pointer hints: readable where the eye already is, never block clicks. */
 .optic-tooltip{
@@ -207,7 +207,7 @@ body{background:#102238;color:var(--ui-ink)}
 }
 .optic-tooltip.hidden{display:none}
 .optic-tooltip.blocked{color:#ffd0d0;border-color:#fb8b93;background:rgba(54,21,34,.94)}
-@media(max-width:680px){.optic-tooltip{display:none!important}}
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){.optic-tooltip{display:none!important}}
 
 /* Live graphics profiles, kept beside the camera control rather than another menu. */
 .quality-widget{display:inline-flex;align-items:center;gap:8px;margin-left:12px;vertical-align:middle}
@@ -226,7 +226,7 @@ body{background:#102238;color:var(--ui-ink)}
 .graphics-fps{min-width:40px;font:600 10px 'Rajdhani',sans-serif;color:#9acae0;white-space:nowrap}
 .graphics-fps.low{color:#ffa7a5}
 @media(max-width:1150px){.quality-widget{margin-left:4px;gap:4px}.quality-widget label{display:none}}
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .quality-widget{margin-left:4px;gap:4px}
  .quality-widget select{font-size:9px;padding:5px 22px 5px 7px;min-height:27px;max-width:104px;background-position:calc(100% - 13px) 11px,calc(100% - 8px) 11px,0 0}
  .graphics-fps{font-size:9px;min-width:31px}
@@ -242,7 +242,7 @@ body{background:#102238;color:var(--ui-ink)}
  border-radius:6px;font:700 13px 'Rajdhani',sans-serif;font-variant-numeric:tabular-nums;
  letter-spacing:.8px}
 #inventory button.inventory-item.selected:not(:disabled){border-left:3px solid #70cbb4}
-@media(max-width:680px){.rotation-angle{min-width:38px;font-size:11px;padding:3px}.transform-heading{gap:4px;margin-bottom:4px}}
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){.rotation-angle{min-width:38px;font-size:11px;padding:3px}.transform-heading{gap:4px;margin-bottom:4px}}
 
 /* ── Drag-and-drop import overlay ─────────────────────────────────── */
 .drop-zone{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;

@@ -105,7 +105,7 @@
 }
 /* Tall, narrow and touch layouts retain horizontal tray, but never clip the
  * hint/transform buttons if a small phone is used in landscape. */
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .mission{max-height:min(34dvh,244px);overflow-y:auto}
  .tool-panel{overflow-y:auto;overscroll-behavior:contain}
  .tool-panel:has(.transform-tools:not(.hidden)){max-height:min(215px,34dvh)}
@@ -177,7 +177,7 @@
  #app.board-focus .analysis-panel{right:48px}
 }
 /* On phones use the existing horizontal tray layout, not sliding drawers. */
-@media(max-width:680px){.focus-btn,.drawer-handle{display:none!important}}
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){.focus-btn,.drawer-handle{display:none!important}}
 @media(prefers-reduced-motion:reduce){
  #app.board-focus .mission,#app.board-focus .tool-panel{transition:none!important}
 }
@@ -235,7 +235,7 @@
  .hint-modal .hint-step p{font-size:12px;margin:5px 0 0;line-height:1.35}
  .hint-modal .ui-button{margin-top:6px}
 }
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .mission .hint-wallet{display:none}
  .hint-modal .modal-wallet{display:flex}
  .hint-modal{max-height:90dvh;overflow-y:auto}
@@ -264,7 +264,7 @@
 @media(min-width:681px) and (max-height:860px){
  .optic-info{font-size:10px;line-height:1.36;padding:6px 8px;max-height:64px}
 }
-@media(max-width:680px){
+@media(max-width:680px), (max-width:960px) and (orientation:portrait){
  .optic-info{font-size:11px;max-height:60px}
  .optic-tooltip{display:none!important}
 }

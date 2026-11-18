@@ -1,11 +1,4 @@
-export const SHIPYARD=Object.freeze({
- id:'shipyard',pl:'Stocznia orbitalna',en:'Orbital Shipyard',
- sky:0x0d2039,fog:0x233c57,edge:0x65c6ce,accent:0xe1a95f
-});
-
-export function isShipyardStage(campaign,index){
- return campaign==='demo'&&index===7;
-}
+import {scenerySeed} from './campaign-worlds.js';
 
 function createSky(THREE){
  const sky=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.ShaderMaterial({
@@ -60,7 +53,7 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
  world.add(root);
  const sky=createSky(THREE);
  scene.add(sky);
- let wanted=false,status='idle',nodes;
+ let wanted=false,status='idle',nodes,drift=0;
  function sync(){
   root.visible=sky.visible=wanted&&status==='ready';
  }
@@ -94,8 +87,9 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
    onReady();
   });
  }
- function setLevel(enabled){
+ function setLevel(enabled,campaign,index){
   wanted=enabled;
+  if(wanted)drift=campaign==='demo'?0:scenerySeed(campaign,index)/4294967296-.5;
   if(wanted&&status==='idle')startLoading();
   sync();
  }
@@ -106,7 +100,8 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
   // Keep the framing structures from crossing the puzzle when orbiting the board.
   rib.visible=rib.position.x*cameraPosition.x+rib.position.z*cameraPosition.z<0;
   berth.visible=berth.position.x*cameraPosition.x+berth.position.z*cameraPosition.z<0;
-  craft.position.set(23+Math.sin(t*.13)*3,-3.1+Math.sin(t*.24)*.23,-20+Math.cos(t*.13)*1.7);
+  berth.position.x=37+drift*3.2;
+  craft.position.set(23+drift*2.4+Math.sin(t*.13)*3,-3.1+Math.sin(t*.24)*.23,-20+Math.cos(t*.13)*1.7);
  }
  return {setLevel,update,isVisible:()=>root.visible,getStatus:()=>status};
 }

@@ -20,7 +20,9 @@ export function createSoundscape(){
  }
  function music(){
   if(document.hidden||ctx?.state!=='running')return;
-  const root=roots[Math.floor(beat/8)%4]+({verdant:5,polar:2,nebula:-3}[biome]||0);
+  const transpose={observatory:2,heliostat:5,grotto:-3,frost:7,forge:-5,abyss:-7,sanctuary:3,
+   verdant:5,polar:2,nebula:-3};
+  const root=roots[Math.floor(beat/8)%4]+(transpose[biome]||0);
   if(beat%4===0){
    voice(hz(root),hz(root),2.9,.075);
    voice(hz(root+7),hz(root+7),2.3,.026,.12);
