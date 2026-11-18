@@ -56,6 +56,7 @@ import './redesign.css';
 import './compact-layout.css';
 import './level-atlas.css';
 import './stage-arrival.css';
+import './game-interface.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const searchParams=new URLSearchParams(location.search);
@@ -250,6 +251,7 @@ function syncBoardPresentation(){
 }
 function applyLevelEnvironment(){
  const art=artForLevel(levelIndex);
+ $('app').style.setProperty('--deck-accent',art?'#'+art.accent.toString(16).padStart(6,'0'):'');
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:art?.legacyId??debugTheme});
  baseEnvironment=theme;
  activeEnvironment=art??theme;
@@ -846,8 +848,14 @@ function update(){
 }
 function renderInventory(){
  const el=$('inventory'),scroll=el.scrollTop;
+ const scrollAcross=el.querySelector('.equipment-slots')?.scrollLeft??0;
  const expanded=Boolean(el.querySelector('details')?.open);
+ const active=document.activeElement;
+ const focused=active?.matches(':focus-visible')&&el.contains(active)?active.dataset.slot:null;
  el.replaceChildren();
+ const slots=document.createElement('div');
+ slots.className='equipment-slots';
+ el.append(slots);
  const fixtures=document.createElement('details');
  fixtures.className='tray-fixtures';fixtures.open=expanded;
  const summary=document.createElement('summary');
@@ -870,6 +878,7 @@ function renderInventory(){
   if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
   item.type=movableType?'button':undefined;
   item.dataset.opticType=type;
+  item.dataset.slot=type==='filter'?'filter:'+color:type;
   item.title=label+' — '+opticDescription(type,language);
   item.setAttribute('aria-description',opticDescription(type,language));
   if(!movableType)item.tabIndex=0;
@@ -901,10 +910,12 @@ function renderInventory(){
   const name=document.createElement('span');name.textContent=label;
   const count=document.createElement('strong');
   count.textContent='×'+(movableType?tray.length:candidates.length);
-  item.append(icon,name,count);(movableType?el:fixtures).appendChild(item);
+  item.append(icon,name,count);(movableType?slots:fixtures).appendChild(item);
  }
  if(fixtures.children.length>1)el.append(fixtures);
+ slots.scrollLeft=scrollAcross;
  el.scrollTop=scroll;
+ if(focused)el.querySelector(`[data-slot="${focused}"]`)?.focus({preventScroll:true});
  const details=$('optic-info');
  details.classList.toggle('hidden',!selected);
  if(selected){

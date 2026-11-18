@@ -1,0 +1,297 @@
+/* The HUD shares the deck's enamel, machined edges and illuminated controls. */
+#app {
+  --deck-accent: #9edbe4;
+  --hud-accent: color-mix(in srgb, var(--deck-accent) 68%, #f0fcff);
+  --hud-gold: #fac585;
+  --hud-ink: #f4f4ed;
+  --hud-muted: #b1c2d2;
+  --hud-metal: #3c5063;
+  --hud-edge: #6c859a;
+  --hud-coat: linear-gradient(158deg, #203347f7, #101d2bf7 57%);
+  --hud-shadow: 0 1px #849eb050 inset, 0 -3px #07121d inset, 0 8px 24px #0309128c;
+  --hud-type: 'Rajdhani', 'Segoe UI', sans-serif;
+}
+
+.header { background: linear-gradient(#06101beb, #06101b52 76%, transparent); }
+.header .brand { gap: 11px; }
+.header .brand strong { margin: 0; color: var(--hud-ink); letter-spacing: .065em; }
+.brand-edition { display: block; color: var(--hud-accent); font-size: .48em; letter-spacing: .44em; margin-top: 4px; }
+.header .brand-mark, .victory-emblem {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 47px;
+  aspect-ratio: 1;
+  flex: none;
+  border: 1px solid var(--hud-edge);
+  border-radius: 12px 4px;
+  background: linear-gradient(148deg, #314b60, #102132 65%);
+  box-shadow: var(--hud-shadow);
+}
+.brand-mark i, .victory-emblem i {
+  width: 42%;
+  aspect-ratio: 1;
+  transform: rotate(45deg);
+  border: 2px solid var(--hud-accent);
+  background: linear-gradient(135deg, #d8f8ff, var(--hud-accent) 38%, #32516a 40%, #183044 70%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--deck-accent) 45%, transparent);
+}
+.header .brand-mark::after, .victory-emblem::after {
+  content: '';
+  position: absolute;
+  inset: auto 10% 15% auto;
+  width: 20%;
+  height: 2px;
+  background: var(--hud-gold);
+}
+.header-right .icon-btn, .level-atlas-close, .transform-controls button,
+.ui-button, .camera-preset {
+  border: 1px solid var(--hud-metal);
+  border-top-color: #6b8295;
+  border-radius: 7px 3px;
+  background: linear-gradient(165deg, #30465a, #172636 80%);
+  box-shadow: 0 -2px #090f1c87 inset;
+  color: var(--hud-ink);
+}
+.header-right .icon-btn { font-size: 16px; }
+.header-right .lang-btn { font: 700 13px var(--hud-type); }
+.header-right .icon-btn:is(:hover,.enabled,[aria-pressed="true"]),
+.ui-button:hover:not(:disabled), .camera-preset:hover, .level-atlas-close:hover,
+.transform-controls button:hover {
+  border-color: var(--hud-accent);
+  background: linear-gradient(160deg, #456275, #203747);
+  color: #fff;
+}
+.header-right .icon-btn[aria-pressed="true"], .header-right .icon-btn.enabled {
+  box-shadow: 0 -2px var(--hud-accent) inset;
+}
+.ui-button.accent, .ui-button.accent:hover:not(:disabled) {
+  border-color: #ffe0b3;
+  background: linear-gradient(#ffd498, #dba156);
+  color: #252018;
+  box-shadow: 0 -3px #75472255 inset;
+}
+.ui-button.accent:hover:not(:disabled) { background: linear-gradient(#ffe4b7, #f2b76b); }
+button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-tab:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
+
+.mission, .tool-panel, .analysis-panel {
+  border: 1px solid var(--hud-metal);
+  border-top-color: var(--hud-edge);
+  border-radius: 13px 5px 13px 5px;
+  background: var(--hud-coat);
+  box-shadow: var(--hud-shadow);
+  backdrop-filter: none;
+}
+.mission-id { display: flex; gap: 10px; align-items: center; }
+.mission-number {
+  flex: none;
+  color: var(--hud-ink);
+  border-left: 2px solid var(--hud-accent);
+  padding: 2px 0 2px 7px;
+  font: 700 clamp(21px, 2vw, 32px)/.88 var(--hud-type);
+  font-variant-numeric: tabular-nums;
+}
+.mission-total { margin-left: 2px; color: var(--hud-muted); font-size: .5em; }
+.mission-origin { min-width: 0; font: 700 11px/1.18 var(--hud-type); letter-spacing: .065em; }
+#level-pack-label { color: var(--hud-accent); }
+#chapter { color: var(--hud-muted); overflow-wrap: anywhere; }
+.mission h1 { color: var(--hud-ink); text-wrap: balance; overflow-wrap: anywhere; }
+.mission p { color: var(--hud-muted); }
+.mission-progress { font: 700 11px/1.2 var(--hud-type); color: #dbe9f6; letter-spacing: .07em; }
+.mission-progress strong { color: var(--hud-accent); }
+.progress-track {
+  height: 6px;
+  border-radius: 2px;
+  background: #0a1522;
+  box-shadow: 0 1px 3px #050a15 inset, 0 1px #485a70;
+}
+.progress-track #progress { background: var(--hud-accent); box-shadow: 0 0 10px var(--hud-accent); }
+.mission-actions { padding: 0 0 8px; border-bottom: 1px solid #65798f49; }
+.mission-actions .ui-button:not(.small) { padding-inline: 4px; white-space: nowrap; }
+.mission-nav { display: grid; gap: 6px; margin-top: 8px; }
+.mission-nav .ui-button { margin: 0; min-width: 0; width: 100%; min-height: 34px; }
+.mission-nav .hint-button { justify-content: space-between; background: #232738; border-color: #8b6b4d; color: #ffe1b9; }
+.mission-nav .hint-button:hover { background: #4c382a !important; border-color: var(--hud-gold) !important; }
+#hint-badge { border-radius: 3px; background: #0e1421; color: var(--hud-gold); }
+.mission .hint-wallet { margin: 8px 0 0; color: var(--hud-muted); }
+.level-status:empty { display: none; }
+
+.tool-panel > .eyebrow, .analysis-heading > .eyebrow {
+  color: var(--hud-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 14px/1.1 var(--hud-type);
+  letter-spacing: .10em;
+}
+.tool-panel > .eyebrow:not(.small-note)::before, .analysis-heading > .eyebrow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  transform: rotate(45deg);
+  background: var(--hud-accent);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--deck-accent) 45%, transparent);
+}
+.tool-panel > .small-note { display: none; }
+#inventory { display: block; margin: 9px 0; }
+.equipment-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.equipment-slots:empty { display: none; }
+#inventory .equipment-slots button.inventory-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: start;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 78px;
+  max-width: none;
+  padding: 3px 5px 6px;
+  text-align: center;
+  font: 700 12px/1.1 var(--hud-type);
+  letter-spacing: .015em;
+  color: var(--hud-ink);
+  border: 1px solid #53697c;
+  border-radius: 8px 3px;
+  background: radial-gradient(ellipse at 50% 42%, #30495c, #131f2f 73%);
+  box-shadow: 0 1px #71899542 inset, 0 -3px #0b1320 inset;
+}
+#inventory .equipment-slots button.inventory-item .component-icon {
+  width: min(100%, 64px);
+  height: clamp(38px, 5.8dvh, 60px);
+  justify-self: center;
+  background: transparent;
+  border: 0;
+}
+#inventory .equipment-slots img { filter: drop-shadow(0 2px 2px #070d14); }
+#inventory .equipment-slots button.inventory-item strong {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 3px 4px;
+  border: 1px solid #607d91;
+  border-radius: 4px 2px;
+  background: #0a1624;
+  color: var(--hud-ink);
+  line-height: 1;
+}
+#inventory .equipment-slots button.inventory-item:hover,
+#inventory .equipment-slots button.inventory-item.selected {
+  background: radial-gradient(ellipse at 50% 42%, #426579, #1d3748 75%);
+  border-color: var(--hud-accent);
+  box-shadow: 0 -3px var(--hud-accent) inset;
+}
+#inventory .equipment-slots button.inventory-item.coach-focus { border-color: var(--hud-gold); animation: none; }
+#inventory .tray-fixtures summary { padding: 7px 2px; color: var(--hud-muted); }
+.transform-tools, .optic-info, .spectrum-row, .analysis-target, .analysis-stats > div {
+  border-color: var(--hud-metal);
+  border-radius: 5px 2px;
+  background: #101c29;
+  box-shadow: none;
+}
+.rotation-angle { border-color: var(--hud-metal); color: var(--hud-accent); background: #202f3f; }
+.hud-bottom { pointer-events: none; }
+.hud-bottom .camera-label { pointer-events: auto; }
+.camera-preset { margin-left: 0; }
+.quality-widget label, .graphics-fps { color: #d3e2ed; }
+.coach { pointer-events: none; border-color: #a88059; background: linear-gradient(135deg, #322c29, #1b1e2bef); }
+.coach-dismiss { pointer-events: auto; }
+.coach-number, .coach-copy strong { color: var(--hud-gold); }
+.optic-tooltip { border-color: var(--hud-edge); background: #142331f7; }
+
+.overlay, #level-menu { background: #060d19bc; backdrop-filter: blur(5px); }
+.modal, .level-atlas-modal, .drop-zone-inner {
+  border-color: var(--hud-metal);
+  border-top-color: var(--hud-accent);
+  border-radius: 19px 7px;
+  background: var(--hud-coat);
+  box-shadow: var(--hud-shadow), 0 0 35px #070d1a85;
+}
+.modal h2 { color: var(--hud-ink); }
+.modal .eyebrow { color: var(--hud-accent); letter-spacing: .13em; }
+.modal p, .hint-step p { color: #d1dce6; }
+.victory-emblem { width: 76px; margin: 0 auto 22px; }
+.hint-step { border: 1px solid var(--hud-metal); border-left: 3px solid var(--hud-accent); background: #102030; }
+.hint-step:last-child { border-left-color: var(--hud-gold); }
+.hint-wallet.modal-wallet { border-color: var(--hud-metal); background: #101d29; }
+.campaign-tab { border-radius: 7px 3px; color: var(--hud-muted); background: #111e2d; }
+.campaign-tab[aria-selected="true"] { border-color: var(--hud-accent); background: #2b4253; box-shadow: 0 -2px var(--hud-accent) inset; }
+.level-atlas-card {
+  border-color: var(--hud-metal);
+  border-radius: 9px 3px;
+  background: linear-gradient(150deg, #263e51, #142232);
+  box-shadow: 0 -3px #081422 inset;
+}
+.level-atlas-card-number { color: var(--hud-accent); font-size: 22px; line-height: .9; }
+.level-atlas-card[aria-current="step"] { border-color: var(--hud-gold); box-shadow: 0 -3px var(--hud-gold) inset; }
+.level-atlas-card[data-status="locked"] { opacity: 1; }
+.level-atlas-card[data-status="locked"] .level-atlas-card-number { color: #8a9cab; }
+.drop-zone-inner { border-style: dashed; }
+
+@media (min-width: 961px), (min-width: 681px) and (orientation: landscape) {
+  #app:not(.board-focus) .mission {
+    background: linear-gradient(100deg, #07111ded, #0917258f 63%, transparent);
+    border: 0;
+    border-left: 1px solid #6c859a98;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .mission h1 { text-shadow: 0 2px 15px #060c15; }
+  .mission .level-atlas-open { text-align: left; }
+  .mission-nav .hint-button { justify-content: start; }
+  #hint-badge { margin-left: auto; }
+}
+
+@media (max-height: 860px) {
+  .header .brand-mark { width: 36px; }
+  .tool-panel, .mission { backdrop-filter: none; }
+  .mission-origin { font-size: 10px; }
+  .mission h1 { text-wrap: wrap; }
+  .mission-progress { font-size: 10px; }
+  .mission-nav .ui-button { min-height: 29px; }
+}
+
+@media (max-width: 680px), (max-width: 960px) and (orientation: portrait) {
+  .header { min-height: 52px; padding: 7px 10px; }
+  .header .brand { gap: 6px; }
+  .header .brand-mark { width: 31px; }
+  .header .brand strong { letter-spacing: .035em; }
+  .header-right .icon-btn { min-width: 32px; min-height: 34px; }
+  .mission { top: 56px; padding: 8px 10px; }
+  .mission-id { gap: 7px; }
+  .mission-origin { display: flex; flex-wrap: wrap; column-gap: 7px; }
+  .mission h1 { margin: 4px 0; }
+  .mission p { margin-bottom: 6px; }
+  .mission-actions { padding: 0; border: 0; }
+  .mission-actions .ui-button { min-height: 34px; }
+  .mission-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 5px; }
+  .mission-nav .ui-button { min-height: 34px; }
+  #inventory { overflow: visible; max-height: none; margin: 6px 0; }
+  .equipment-slots { display: flex; overflow-x: auto; padding: 2px 2px 4px; scroll-padding-inline: 2px; scrollbar-width: thin; }
+  #inventory .equipment-slots button.inventory-item { flex: 0 0 clamp(86px, 27vw, 104px); min-height: 69px; touch-action: pan-x; }
+  #inventory .equipment-slots button.inventory-item .component-icon { height: 40px; }
+  .tool-panel > .eyebrow { min-height: 33px; padding-right: 155px; }
+  .tool-panel .spectrum-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    margin: 0;
+  }
+  .spectral-inspector { padding-top: 3px; }
+  .tool-panel:not(:has(.transform-tools:not(.hidden))) ~ .coach { bottom: calc(min(160px, 29dvh) + 43px); }
+  .tool-panel:not(:has(.transform-tools:not(.hidden))) { max-height: min(156px, 26dvh); }
+  .tool-panel .return-tray:disabled { display: none; }
+  .tool-panel .spectrum-toggle, .tool-panel .return-tray { min-height: 33px; }
+  .level-atlas-card { min-height: 94px; }
+}
+
+@media (max-width: 360px) {
+  .header-right .icon-btn { min-width: 28px; }
+  .header .brand-mark { width: 26px; }
+  .mission-nav .hint-button { gap: 4px; }
+}

@@ -72,10 +72,12 @@ A fair, completely offline hint wallet has been added:
 - Start with **3 credits**, win **5 credits once** per genuinely solved level
   (no earning points by repeatedly resetting/replaying).
 - **First hint free**, second costs **2**, third costs **3** credits.
-- The four supported 50-puzzle campaigns have an authored strategy for each board
-  in Polish and English. The strategy describes how to approach the puzzle.
-- The second clue highlights an actionable tile and describes the expected
-  optical result. The third gives the position and rotation for a verified move.
+- The four supported 50-puzzle campaigns include a hand-written opening
+  observation in Polish and English. In Polish, each original opening also
+  has a technique to try and a way to recognize the expected light path.
+- The Polish technique leaves the tile for the player to find. The last
+  clue gives a verified tile and rotation. After the opening move or a
+  different player layout, the live analyzer selects the next useful step.
 - Custom puzzles without a known solution use live diagnostics and bounded
   search in a Web Worker.
 
@@ -83,6 +85,17 @@ Textures and edges are improved with deterministic offline **PBR micro-maps**
 for brushed and polished metal. The composer now includes **FXAA** in
 Performance mode and **SMAA** in Balanced/Cinematic mode, ahead of tone mapping.
 No texture downloads or user-paid purchases are required.
+
+The equipment shelf uses rendered portraits of the actual Blender instruments.
+Use it to distinguish optics, select with a click or keyboard, and inspect a
+selected part. At narrow widths, swipe the shelf to see additional instruments.
+Drag a portrait to place its instrument directly on the board. The level map,
+assistance and win screens use each world's accent on the same metal surfaces.
+
+With the four Windows executables in `original/`, run
+`node tools/full-regression.mjs` to replay all 200 boards in Chromium and
+export the Polish clues to `data/hints.pl.json` locally. The report and demo
+screenshots go to `test-results/full-regression/`. These outputs stay local.
 
 ## Better rendering without sacrificing laptop FPS
 

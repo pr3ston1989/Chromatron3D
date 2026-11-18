@@ -56,3 +56,9 @@ Mechanika wiązek używa masek R=1, G=2, B=4. Kolory z gry w kolejności maski 1
 | Duża sylwetka horyzontu | 2000 |
 
 Jeden metr na jednostkę, origin w środku podstawy na Z=0 w Blenderze, glTF Y-up dla Three.js (`X,Y,Z` → `X,Z,−Y`). Przyrządy utrzymują środek pola jako punkt obrotu w poziomie. Nazwy techniczne ASCII z małymi literami, rzeczowniki łączone myślnikiem. Podglądy mają kadr detaliczny 3/4 oraz widok w skali gry.
+
+## Interfejs gry
+
+Panel zadania zaczyna się od numeru i celu planszy. Licznik rezonatorów daje szybki odczyt postępu. Elementy wyposażenia mają metalowe gniazda z numerem dostępnych sztuk i oddzielną etykietą. Portret pokazuje ten sam model co plansza. Na małych ekranach przeciąganie optyki zaczyna się od jej portretu, a przesuwanie półki od etykiety.
+
+Bazę tworzy ciemna stal (`#101D2B`, `#203347`) z jasnymi krawędziami (`#6C859A`). Emisję kontrolek wyznacza kolor świata; bursztynowy (`#FAC585`) prowadzi do podpowiedzi i głównych akcji. Mapa, pomoc oraz zwycięstwo używają tej samej typografii i fazowanych narożników. Podświetlenie aktywnego przyrządu ma obrys i wskaźnik, dzięki czemu nie wymaga rozpoznawania barwy.

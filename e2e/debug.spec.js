@@ -40,6 +40,6 @@ test('debug can inspect locked levels and exercise moves without changing player
   rejectedMove:false,placed:true,solved:true,completed:true,undone:true,redone:true,reset:true,
   save:'keep-player-data',quality:'performance'});
  await page.goto('/?debug=0');
- await expect.poll(()=>page.evaluate(()=>Boolean(window.chromatron))).toBe(true);
+ await page.waitForFunction(()=>Boolean(window.chromatron));
  expect(await page.evaluate(()=>Object.hasOwn(window,'__debug'))).toBe(false);
 });

@@ -38,3 +38,9 @@
 - Przy powrocie scena używa tych samych siatek GLB i pamięci instancji. Ładowanie scenerii działa niezależnie od planszy logicznej, więc grę można rozpocząć w trakcie pobierania modeli. Kolejność i mechanika zagadek nie zależą od stanu renderera.
 - Rozwiązania prywatnych plansz oraz przykładowe podpowiedzi z dokładnym położeniem zapisujemy tylko lokalnie. Do pomiarów, publikowalnych zrzutów i arkuszy używamy plansz demonstracyjnych.
 - Powtórne obejście zapisuje oznaczenia ukończenia. Ukończona plansza może otworzyć się od układu początkowego, więc test sprawdza status ukończenia niezależnie od położenia przyrządów.
+
+## 18 listopada 2026 · interfejs gry i podpowiedzi
+
+- Interfejs korzysta z palety świata przypisanego do planszy. Akcent złoty oznacza akcję podpowiedzi oraz bieżącą planszę na mapie. Po prawej gracz widzi gniazda przyrządów z portretami renderowanymi z właściwych GLB, a na telefonie ma przewijaną półkę przy dolnej krawędzi.
+- Obserwacja wprowadza w zagadkę. Technika opisana po polsku zostawia graczowi wybór pola. Opis trzeciej wskazówki łączy ruch odczytany ze zweryfikowanego prywatnego rozwiązania z oczekiwanym efektem wiązki.
+- Tekst redakcyjny jest powiązany z odciskiem układu i planu. Na zmodyfikowanej trasie gra dobiera działanie na podstawie bieżących wiązek. Zestaw lokalny zawiera dokładne ruchy, a plik w repozytorium zawiera wskazówki opisowe.

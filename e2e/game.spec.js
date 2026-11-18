@@ -449,6 +449,29 @@ test('short viewport uses scrollable side panels instead of clipping interactive
  await page.screenshot({path:'test-results/chromatron-short-window.png'});
 });
 
+test('mobile equipment shelf keeps spectrum and keyboard selection within reach',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/');
+ const shelf=page.locator('.tool-panel');
+ const spectrum=page.locator('#spectral-toggle');
+ const mirror=page.locator('.equipment-slots button[data-optic-type="mirror"]');
+ await expect(spectrum).toBeInViewport({ratio:1});
+ await expect(mirror).toBeInViewport({ratio:1});
+ await spectrum.click();
+ await expect(spectrum).toHaveAttribute('aria-expanded','true');
+ await spectrum.click();
+ await page.locator('#levels-open').focus();
+ for(let step=0;step<3&&!(await mirror.evaluate(el=>el===document.activeElement));step++)
+  await page.keyboard.press('Tab');
+ await expect(mirror).toBeFocused();
+ await page.keyboard.press('Enter');
+ await expect(mirror).toBeFocused();
+ await expect(mirror).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#transform-tools')).toBeVisible();
+ await expect(shelf).toBeInViewport({ratio:1});
+ await expect(page.locator('#drop-zone')).toBeHidden();
+});
+
 
 test('fullscreen button and F shortcut adapt the game without hiding controls',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -560,7 +583,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await expect(page.locator('#level-menu')).toBeHidden();
  await page.locator('#language').click();
  await page.keyboard.press('m');
- await expect(page.locator('#level-menu-title')).toContainText('SELECT A LEVEL');
+ await expect(page.locator('#level-menu-title')).toHaveText('LEVEL MAP');
  await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','locked');
  await page.locator('#levels-close').click();
  await page.setViewportSize({width:390,height:844});

@@ -271,3 +271,28 @@ Każdy dokładny ruch należy do rozwiązania zweryfikowanego w silniku.
 Arkusz z dokładnymi ruchami pozostaje w lokalnym
 `test-results/full-regression/hint-review.md`. Bramka wymaga decyzji
 o tonie i szczegółowości przed pisaniem pozostałych zestawów.
+
+## 18 listopada 2026 · fazy 5 i 6 oraz interfejs gry
+
+- Zweryfikowano po trzy polskie wskazówki na każdej z 200 plansz. Test porównuje dokładne pole i obrót z rozwiązaniem, a następnie przechodzi zagadkę kolejnymi wskazówkami. Sprawdza też, czy wskazówka otwarcia ustępuje następnej po wykonaniu ruchu i czy drugi etap nie zdradza współrzędnych.
+- Napisano od nowa techniki, które wcześniej sprowadzały się do odczytu koloru. Przy pokrewnych układach szukano różnych punktów zaczepienia. Przykłady obejmują wygaszenie trzech wejść w Chromatronie II, układ dwóch osi ruchomego portalu w Chromatronie IV oraz różnicę między przyrządem blokującym i przyrządem zachowującym kierunek. Jeżeli potwierdzenie efektu wymaga drugiej wiązki lub partnera portalu, wskazówka podaje ten warunek. Automatyczny test sprawdza ruch, a sens tekstu podlegał redakcji z użyciem przebiegu wiązek.
+- Wszystkie 200 plansz ukończono i ponownie otwarto w Chromium. 104 plansze mają co najmniej drugi układ zweryfikowany w silniku. Licznik błędów przeglądarki wyniósł zero. Radeon zgłosił ostrzeżenie kompilatora shadera FXAA. Po wypełnieniu pamięci podręcznej liczniki obiektów Three.js utrzymywały 50 tekstur i 969–973 geometrie przy ponownych otwarciach.
+- Regresja zapisała `data/hints.pl.json`, `data/solutions.json` i `test-results/final-overhaul/report.json`. `level-results.csv` zawiera pomiar dla 200 plansz. Walidacja silnika na tym komputerze zajęła 0,05–0,63 ms na planszę, a odtworzenie ruchów przez API Chromium 21–416 ms. Obie wartości mierzą czas pracy programu.
+- Krótkie próbki na Radeon w trybie Płynność, 1093 × 614, dały średnio 59,1 FPS dla 200 plansz. Zakres 29,9–60,1 FPS obejmuje klatki tuż po zmianie planszy. Dłuższe pomiary w trybie Zrównoważona dla ośmiu publicznych demonstracji dały 60,00–60,01 FPS w 1920 × 1080 i 390 × 844. Jeden pomiar Stoczni w 2560 × 1440 podczas równoległych testów dał 46,31 FPS. Brak dodatkowego sprzętu do porównania.
+- Na telefonie przeniesiono przycisk widma do nagłówka półki. Na laptopie zweryfikowano układy 1366 × 768, 1280 × 720, 1093 × 614 i 1024 × 640 oraz zachowanie szuflad trybu skupienia. Wybór wyposażenia klawiaturą zachowuje fokus po odświeżeniu portretu. Przeciągnięcie portretu umieszcza przyrząd na planszy.
+- Przeszło 225 testów Node, build Vite i 32 testy Playwright na sprzętowym Chromium. Testy biblioteki klasycznej i trybu debug powtórzono również w SwiftShader. Ostatni opublikowany przebieg CI na `main` (`5dd8864`) był zielony.
+
+Ocena wizualna publicznych demonstracji w arkuszu `test-results/final-overhaul/contact-sheet.png`.
+
+| Świat | Ocena / 5 | Obserwacja |
+| --- | ---: | --- |
+| Obserwatorium pryzmatyczne | 4 | Łuk i soczewka tworzą czytelną ramę, ceramika dobrze oddziela planszę od tła. |
+| Ogród heliostatów | 4 | Ciepły pokład dobrze odcina się od zielonego horyzontu. Tarasy są kanciaste. |
+| Kryształowa grota | 4 | Kryształy wyznaczają boki kadru. Widok mobilny pokazuje mniej głębi. |
+| Laboratorium polarne | 4 | Chłodne iglice nadają scenie charakter. Jasna niebieska wiązka jest dobrze widoczna. |
+| Kuźnia widmowa | 4 | Reaktor i suwnica różnicują sylwetki. Na małym ekranie widać głównie reaktor. |
+| Optyka głębinowa | 4 | Zieleń pokładu i morski horyzont tworzą wyraźną odmianę. Sylwetki tarasów przypominają Ogród. |
+| Sanktuarium soczewek | 4 | Złote łuki prowadzą wzrok do centrum. Tło używa części motywów Obserwatorium. |
+| Stocznia orbitalna | 4 | Otwarta kratownica i planetarny horyzont są najbliżej wzorca użytkownika. Przy dużym przybliżeniu przydałyby się drobniejsze detale połaci. |
+
+Oceny dotyczą reprezentatywnych demonstracji. Ciasne skupiska podobnych przyrządów w większych zagadkach nadal korzystają z opisu przy wskazaniu i widoku z góry. Podpowiedzi polskie mają pełną redakcję, a w angielskiej wersji autorski jest pierwszy etap. Dalsze angielskie wskazówki korzystają z aktualnego układu. Pełna zgodność dowolnych ścieżek światła z oryginalnymi programami pozostaje do sprawdzenia.
