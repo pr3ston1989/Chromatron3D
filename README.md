@@ -29,6 +29,7 @@ Open the local URL printed by Vite. For a production bundle: `npm run build`. No
 - **Click a tray optic**, then click an empty tile to place it. After placement it remains selected for rotation, but no longer follows empty-board clicks.
 - **Q / E** or the visible **↶ / ↷ buttons** rotate the selected optic 45° in opposite directions.
 - **Drag a placed optic** to move it; drag empty board space to orbit. **Mouse wheel** rotates the selected optic; **Shift + wheel** zooms (or just wheel when none selected). **Right-click / Escape** cancels selection.
+- On a touch screen, spread or pinch two fingers over the board to zoom. For tap placement, the optic is committed when you lift your finger.
 - **V** toggles the advanced beam analyzer: exact required/received colors, absorbed rays and RGB channel labels.
 - **C** switches between isometric and top-down camera presets with a smooth transition (respecting reduced-motion preferences).
 - The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.

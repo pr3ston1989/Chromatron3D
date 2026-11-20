@@ -1370,31 +1370,55 @@ function showOpticTooltip(e,hovered){
   positionOpticTooltip(e.clientX,e.clientY);
  }
 }
-let down=null;
+let down=null,touchPinch=null;
+const boardTouches=new Map();
+function touchSpan(){
+ const [a,b]=boardTouches.values();
+ return Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));
+}
+function beginTouchPinch(){
+ resetBoardPointer();
+ touchPinch={span:touchSpan(),zoom:zoomTarget};
+}
+function endBoardTouch(e){
+ if(!boardTouches.delete(e.pointerId)||!touchPinch)return false;
+ // After a pinch, suppress the remaining finger until it also lifts.
+ if(boardTouches.size===0)touchPinch=null;
+ else if(boardTouches.size>=2)beginTouchPinch();
+ return true;
+}
+function setBoardZoom(value){
+ zoomTarget=Math.max(22,Math.min(60,value));
+ if(reducedMotion.matches){dist=zoomTarget;updateCamera()}
+}
 renderer.domElement.addEventListener('pointerdown',e=>{
+ const touch=e.pointerType==='touch';
+ if(touch){
+  boardTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  renderer.domElement.setPointerCapture(e.pointerId);
+  if(boardTouches.size>=2){beginTouchPinch();return}
+ }
  // Tapping the board closes open focus drawers without swallowing the click.
  if(!e.isPrimary||down)return;
  if(boardFocus)closeFocusDrawers();
  hideOpticTooltip();setHoverGlow(null);
  if(e.button!==0&&e.button!==2)return;
  cameraTween=null;
- const origin=hit(e.clientX,e.clientY);
  // Placement always uses the board's world-space cell, not a raycast mesh:
  // raised optics and glass can otherwise steal a click on an empty tile.
- const trayCell=cellAt(e.clientX,e.clientY);
- if(e.button===0 && placementMode && selected?.inTray && trayCell){
-  if(isFreeCell(pieces,selected,trayCell.x,trayCell.y)){
-   move(trayCell.x,trayCell.y);
-  }else toast(t(language,'cellOccupied'));
-  down=null;
-  return;
+ const placing=e.button===0&&placementMode&&selected?.inTray;
+ if(placing&&!touch){
+  const trayCell=cellAt(e.clientX,e.clientY);
+  if(trayCell){move(trayCell.x,trayCell.y);return}
  }
- const draggingCandidate=e.button===0 && origin?.piece && movable.has(origin.piece.type);
+ const origin=placing&&touch?null:hit(e.clientX,e.clientY);
+ const draggingCandidate=e.button===0&&origin?.piece&&movable.has(origin.piece.type);
  const offset=draggingCandidate?boardPoint(e.clientX,e.clientY)?.sub(vec(origin.piece.x,origin.piece.y,0)):null;
  down={id:e.pointerId,x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,offset,
-       mode:draggingCandidate?'piece':'orbit',origin};
- if(draggingCandidate)select(origin.piece);
- renderer.domElement.setPointerCapture(e.pointerId);
+       mode:placing&&touch?'touch-place':draggingCandidate?'piece':'orbit',origin};
+ if(draggingCandidate&&!touch)select(origin.piece);
+ if(touch&&placing)updatePlacementPreview(e);
+ if(!touch)renderer.domElement.setPointerCapture(e.pointerId);
 });
 // One outline follows the candidate. Catalog materials are shared between
 // copies of an instrument, so highlighting their material would mark its peers.
@@ -1407,6 +1431,13 @@ function setHoverGlow(piece){
  if(hoverOutline.visible)hoverOutline.position.copy(vec(piece.x,piece.y,.045));
 }
 renderer.domElement.addEventListener('pointermove',e=>{
+ if(boardTouches.has(e.pointerId)){
+  boardTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(touchPinch){
+   if(boardTouches.size>=2)setBoardZoom(touchPinch.zoom*touchPinch.span/touchSpan());
+   return;
+  }
+ }
  if(!e.isPrimary||down&&e.pointerId!==down.id)return;
  if(!down){
   updatePlacementPreview(e);
@@ -1417,9 +1448,13 @@ renderer.domElement.addEventListener('pointermove',e=>{
   return;
  }
  const dx=e.clientX-down.x,dy=e.clientY-down.y;
- if(Math.abs(dx)+Math.abs(dy)>7)down.moved=true;
- if(!down.moved)return;
+ if(Math.abs(dx)+Math.abs(dy)>(e.pointerType==='touch'?12:7))down.moved=true;
+ if(!down.moved){
+  if(down.mode==='touch-place')updatePlacementPreview(e);
+  return;
+ }
  if(down.mode==='piece'){
+  if(e.pointerType==='touch'&&!draggedPiece)select(down.origin.piece);
   draggedPiece=down.origin.piece;
   renderer.domElement.style.cursor='grabbing';
   updatePlacementPreview(e);
@@ -1427,11 +1462,13 @@ renderer.domElement.addEventListener('pointermove',e=>{
  }
  // Orbiting requires a drag on the empty board, not on an optic.
  if(down.button===0){
+  placementPreview.visible=false;
   yaw=down.yaw-dx*.0045;pitch=Math.max(.35,Math.min(1.49,down.pitch+dy*.004));
   updateCamera();
  }
 });
 renderer.domElement.addEventListener('pointerup',e=>{
+ if(endBoardTouch(e))return;
  if(e.pointerId!==down?.id)return;
  const state=down;down=null;
  if(state.button===2){clearSelection();return}
@@ -1444,6 +1481,12 @@ renderer.domElement.addEventListener('pointerup',e=>{
   renderer.domElement.style.cursor='default';
   return;
  }
+ if(state.mode==='touch-place'){
+  const dest=document.elementFromPoint(e.clientX,e.clientY)===renderer.domElement&&cellAt(e.clientX,e.clientY);
+  placementPreview.visible=false;
+  if(dest)move(dest.x,dest.y);
+  return;
+ }
  // Clicking an optic only selects it. Clicking elsewhere only places a
  // tray optic, otherwise it cancels selection (never warps an existing optic).
  const intent=classifyClick(state.origin,selected,placementMode);
@@ -1451,10 +1494,15 @@ renderer.domElement.addEventListener('pointerup',e=>{
  else if(intent.action==='place')move(intent.x,intent.y);
  else if(selected)clearSelection();
 });
-function cancelBoardGesture(e){
- if(e&&e.pointerId!==down?.id)return;
+function resetBoardPointer(){
  down=null;draggedPiece=null;placementPreview.visible=false;
  setHoverGlow(null);renderer.domElement.style.cursor='default';
+}
+function cancelBoardGesture(e){
+ if(e){
+  if(endBoardTouch(e)||e.pointerId!==down?.id)return;
+ }else{boardTouches.clear();touchPinch=null}
+ resetBoardPointer();
 }
 renderer.domElement.addEventListener('pointercancel',cancelBoardGesture);
 renderer.domElement.addEventListener('lostpointercapture',cancelBoardGesture);
@@ -1518,8 +1566,7 @@ renderer.domElement.addEventListener('wheel',e=>{
  }else{
   wheelRotation.reset();
   const delta=toWheelPixels(e.deltaY,e.deltaMode,innerHeight);
-  zoomTarget=Math.max(22,Math.min(60,zoomTarget+delta*.021));
-  if(reducedMotion.matches){dist=zoomTarget;updateCamera()}
+  setBoardZoom(zoomTarget+delta*.021);
  }
 },{passive:false});
 document.addEventListener('keydown',e=>{

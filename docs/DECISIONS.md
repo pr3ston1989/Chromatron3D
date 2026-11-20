@@ -44,3 +44,7 @@
 - Interfejs korzysta z palety świata przypisanego do planszy. Akcent złoty oznacza akcję podpowiedzi oraz bieżącą planszę na mapie. Po prawej gracz widzi gniazda przyrządów z portretami renderowanymi z właściwych GLB, a na telefonie ma przewijaną półkę przy dolnej krawędzi.
 - Obserwacja wprowadza w zagadkę. Technika opisana po polsku zostawia graczowi wybór pola. Opis trzeciej wskazówki łączy ruch odczytany ze zweryfikowanego prywatnego rozwiązania z oczekiwanym efektem wiązki.
 - Tekst redakcyjny jest powiązany z odciskiem układu i planu. Na zmodyfikowanej trasie gra dobiera działanie na podstawie bieżących wiązek. Zestaw lokalny zawiera dokładne ruchy, a plik w repozytorium zawiera wskazówki opisowe.
+
+## 20 listopada 2026 · precyzja na ekranie dotykowym
+
+- Drugi palec przełącza gest na zmianę przybliżenia. Krótkie dotknięcie zajmuje pole po podniesieniu palca. Anulowanie przeciągania pozostawia przyrząd w jego położeniu początkowym. Oba rodzaje przybliżania korzystają z limitów kamery i respektują ograniczony ruch.

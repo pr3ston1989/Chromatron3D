@@ -296,3 +296,8 @@ Ocena wizualna publicznych demonstracji w arkuszu `test-results/final-overhaul/c
 | Stocznia orbitalna | 4 | Otwarta kratownica i planetarny horyzont są najbliżej wzorca użytkownika. Przy dużym przybliżeniu przydałyby się drobniejsze detale połaci. |
 
 Oceny dotyczą reprezentatywnych demonstracji. Ciasne skupiska podobnych przyrządów w większych zagadkach nadal korzystają z opisu przy wskazaniu i widoku z góry. Podpowiedzi polskie mają pełną redakcję, a w angielskiej wersji autorski jest pierwszy etap. Dalsze angielskie wskazówki korzystają z aktualnego układu. Pełna zgodność dowolnych ścieżek światła z oryginalnymi programami pozostaje do sprawdzenia.
+
+## 20 listopada 2026 · gesty dotykowe
+
+- Test w emulacji 390 × 844 potwierdza zmianę przybliżenia przy wybranym lustrze, zwolnienie palców po geście, ustawienie lustra na wybranym polu i przeciągnięcie go na sąsiednie pole. Osobne anulowanie przeciągania zachowuje współrzędne. Próbę wykonano w Chromium na Radeon i w SwiftShader.
+- Przeszło 225 testów Node, build Vite i 33 testy Playwright na sprzętowym Chromium. Gesty sprawdzono w emulacji dotyku.

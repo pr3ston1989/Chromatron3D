@@ -7,7 +7,7 @@
 | Uruchomienie | Vite, moduły JavaScript, Three.js i WebGL2. `index.html` tworzy interfejs HTML, a `src/main.js` łączy rozgrywkę, scenę i interfejs. |
 | Plansze | Siatka 15 × 15, zapis elementu `[type,x,y,rot,color]`, indeksy 0–14, osiem kierunków, kolor jako maska RGB. Osiem plansz pokazowych jest w `src/levels.js`. Cztery prywatne kampanie po 50 plansz wczytują się lokalnie z plików użytkownika albo przez import. |
 | Mechanika | `src/optics.js` śledzi promienie po siatce, składa kanały RGB przy rezonatorach i rozlicza zakończenie. 22 rodzaje elementów, z czego 14 ruchomych. Są m.in. lustra, rozdzielacze, pryzmaty, filtry, portale, Doppler, splątywacze i bramki. |
-| Kamera | Perspektywa 40°, domyślny widok 3/4 z obrotem, zoomem i widokiem z góry. Kamera odsuwa się przy wąskim ekranie. Kliknięcia na elementy używają najbliższej widocznej powierzchni i obsługują też logiczne pole. |
+| Kamera | Perspektywa 40°, widok 3/4 z obrotem i przełącznikiem widoku z góry. Przybliżenie obsługuje rolkę oraz gest dwóch palców. Kamera odsuwa się przy wąskim ekranie. Wybór elementu używa najbliższej widocznej powierzchni i obsługuje też logiczne pole. |
 | Światło i scena | Osiem światów kampanii z autorskimi modelami GLB, osobną paletą, światłem kierunkowym, mgłą i dekoracjami. EffectComposer łączy scenę, bloom w wyższych profilach i antyaliasing. Wybrane lustra mają odbicia planarne. |
 | Sterowanie i UI | Interfejs wykorzystuje kolory świata, metalowe elementy z oprawy planszy i zasobnik z dużymi portretami GLB. Na telefonie gniazda przewijają się w poziomie. Dostępne są mapa kampanii, przeciąganie, obrót, undo/redo, reset, analiza widma, zmiana jakości, tryb skupienia na planszy i pełny ekran. `src/i18n.js` i opisy plansz obsługują PL/EN. |
 | Zapisy | `localStorage` przechowuje kampanię, postęp, podpowiedzi i ustawienia. Szkice plansz mają identyfikator pakietu i są walidowane przez `src/puzzle-drafts.js`. |
@@ -23,6 +23,7 @@
 - Faza 4 potwierdziła 200/200 rozwiązań i oznaczeń ukończenia po ponownym wejściu w Chromium. Dodano pełną regresję i poprawiono układ pionowy tabletu. Dalsze ograniczenia dotyczą czytelności podobnych przyrządów na małym ekranie i porównania wydajności na innych GPU.
 - Faza 5 obejmuje 200 polskich zestawów. Drugie odsłonięcie prowadzi do techniki, trzecie podaje pole i obrót oraz wskazuje spodziewany efekt. W razie zmiany drogi wiązki kolejne wskazówki korzystają z aktualnego układu. Pierwotne próbki i eksport do `data/hints.pl.json` pozostają lokalne.
 - Faza 6 obejmuje pełną regresję po zmianie interfejsu, pomiary oraz arkusz z ośmiu publicznych demonstracji. Stan pomiarów i ograniczenia są w [QA_LOG.md](QA_LOG.md).
+- Po fazie 6 dodano przybliżanie dwoma palcami. Dotknięcie zatwierdza wybrane pole dopiero po podniesieniu palca, więc początek gestu daje czas na zmianę przybliżenia przed postawieniem optyki.
 
 ## Punkty odniesienia
 

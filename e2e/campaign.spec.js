@@ -1,5 +1,52 @@
 import {test,expect} from '@playwright/test';
 
+test.describe('touch gestures',()=>{
+ test.use({hasTouch:true,viewport:{width:390,height:844},reducedMotion:'reduce'});
+
+ test('pinching with an armed tray optic zooms without committing a move',async({page})=>{
+  await page.addInitScript(()=>{
+   localStorage.setItem('chromatron-start-campaign','demo');
+   localStorage.setItem('chromatron-coach-dismissed','yes');
+   localStorage.setItem('chromatron-graphics-quality','performance');
+  });
+  await page.goto('/');
+  await page.locator('#inventory button[data-optic-type=mirror]').tap();
+  const state=()=>page.evaluate(()=>window.chromatron.getState());
+  const mirror=(snapshot)=>snapshot.pieces.find(p=>p.type==='mirror');
+  const project=(x,y)=>page.evaluate(([x,y])=>window.chromatron.projectCell(x,y),[x,y]);
+  const span=()=>page.evaluate(()=>{
+   const a=window.chromatron.projectCell(5,7),b=window.chromatron.projectCell(9,7);
+   return Math.hypot(a.x-b.x,a.y-b.y);
+  });
+  const center=await project(7,7),before=await span();
+  const touch=await page.context().newCDPSession(page);
+  const point=(id,dx)=>({id,x:center.x+dx,y:center.y});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(1,-34)]});
+  expect(mirror(await state()).inTray).toBe(true);
+  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point(1,-34),point(2,34)]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[point(1,-58),point(2,58)]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[point(1,-58)]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  await expect.poll(span).toBeGreaterThan(before*1.25);
+  const after=await state();
+  expect(mirror(after).inTray).toBe(true);
+  expect(after.placementMode).toBe(true);
+  const cell=await project(7,8);
+  await page.touchscreen.tap(cell.x,cell.y);
+  expect(mirror(await state())).toMatchObject({inTray:false,x:7,y:8});
+  const dest=await project(8,8);
+  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,...cell}]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,...dest}]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+  expect(mirror(await state())).toMatchObject({inTray:false,x:7,y:8});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,...cell}]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,...dest}]});
+  await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  expect(mirror(await state())).toMatchObject({inTray:false,x:8,y:8});
+  await expect(page.locator('#drop-zone')).toBeHidden();
+ });
+});
+
 test('dragging a tray mirror to the board never opens file import',async({page})=>{
  test.setTimeout(120000);
  await page.addInitScript(()=>{
