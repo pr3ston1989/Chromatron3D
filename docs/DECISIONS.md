@@ -48,3 +48,9 @@
 ## 20 listopada 2026 · precyzja na ekranie dotykowym
 
 - Drugi palec przełącza gest na zmianę przybliżenia. Krótkie dotknięcie zajmuje pole po podniesieniu palca. Anulowanie przeciągania pozostawia przyrząd w jego położeniu początkowym. Oba rodzaje przybliżania korzystają z limitów kamery i respektują ograniczony ruch.
+
+## 20 listopada 2026 · przebudowa układu gry
+
+- Po uwadze o podobieństwie do aplikacji przeniesiono cel i postęp nad scenę, a sterowanie do jednej dolnej belki. Jej szerokość reaguje na liczbę przyrządów. Obrót, zwrot do zasobnika i opis pojawiają się nad belką dla wybranego przyrządu.
+- Atlas pokazuje podgląd świata z publicznej demonstracji. Samouczek ma osiem kart z ujęciami, a kampania klasyczna pokazuje dwie siatki po 25 poziomów. Podgląd zmienia się po wskazaniu dostępnej karty lub przejściu do niej klawiaturą.
+- Na szerokich widokach przesunięto kadr planszy w górę. W niskim poziomym oknie przesunięcie jest większe, żeby ostatni rząd pól pozostał nad belką.

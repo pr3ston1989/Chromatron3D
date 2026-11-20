@@ -414,9 +414,16 @@ test('small laptop layouts keep essential controls on screen without horizontal 
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width+1);
   const mission=await page.locator('.mission').boundingBox();
   const tray=await page.locator('.tool-panel').boundingBox();
-  expect(mission.x+mission.width).toBeLessThan(tray.x);
+  expect(mission.y+mission.height).toBeLessThan(tray.y);
+  expect(tray.x).toBeLessThan(size.width/2);
+  expect(tray.x+tray.width).toBeGreaterThan(size.width/2);
   const footer=await page.locator('.hud-bottom').boundingBox();
   expect(footer.y+footer.height).toBeLessThanOrEqual(size.height+1);
+  const boardClear=await page.evaluate(()=>[[0,0],[14,0],[14,14],[0,14]].every(([x,y])=>{
+   const p=window.chromatron.projectCell(x,y);
+   return Boolean(document.elementFromPoint(p.x,p.y)?.closest('#scene'));
+  }));
+  expect(boardClear).toBe(true);
  }
  // Verify controls are still reachable in the tightest configuration.
  const mirror=page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/});
@@ -429,20 +436,20 @@ test('small laptop layouts keep essential controls on screen without horizontal 
  expect(errors).toEqual([]);
 });
 
-test('short viewport uses scrollable side panels instead of clipping interactive optics',async({page})=>{
+test('short viewport keeps the horizontal equipment rail and level controls reachable',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.setViewportSize({width:1093,height:550});
  await page.goto('/');
- const panel=page.locator('.tool-panel');
+ const panel=page.locator('.game-dock');
  const info=await panel.evaluate(el=>({
   top:el.getBoundingClientRect().top,
   bottom:el.getBoundingClientRect().bottom,
-  height:el.clientHeight,
-  overflowY:getComputedStyle(el).overflowY
+  height:el.clientHeight
  }));
  expect(info.top).toBeGreaterThan(0);
  expect(info.bottom).toBeLessThanOrEqual(550);
- expect(info.overflowY).toBe('auto');
+ expect(info.height).toBeLessThan(98);
+ await expect(page.locator('.equipment-slots')).toHaveCSS('overflow-x','auto');
  await expect(page.locator('#next')).toBeVisible();
  await page.locator('#next').click();
  await expect(page.locator('#level-index')).toHaveText('002');
@@ -460,9 +467,8 @@ test('mobile equipment shelf keeps spectrum and keyboard selection within reach'
  await spectrum.click();
  await expect(spectrum).toHaveAttribute('aria-expanded','true');
  await spectrum.click();
- await page.locator('#levels-open').focus();
- for(let step=0;step<3&&!(await mirror.evaluate(el=>el===document.activeElement));step++)
-  await page.keyboard.press('Tab');
+ await spectrum.focus();
+ await page.keyboard.press('Tab');
  await expect(mirror).toBeFocused();
  await page.keyboard.press('Enter');
  await expect(mirror).toBeFocused();
@@ -587,7 +593,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','locked');
  await page.locator('#levels-close').click();
  await page.setViewportSize({width:390,height:844});
- await page.locator('#levels-open').click();
+ await page.locator('#levels-button').click();
  await expect(page.locator('#level-menu')).toBeVisible();
  const bounds=await page.locator('.level-atlas-modal').boundingBox();
  expect(bounds.x).toBeGreaterThanOrEqual(0);

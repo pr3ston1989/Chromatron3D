@@ -87,11 +87,11 @@ for brushed and polished metal. The composer now includes **FXAA** in
 Performance mode and **SMAA** in Balanced/Cinematic mode, ahead of tone mapping.
 No texture downloads or user-paid purchases are required.
 
-The equipment shelf uses rendered portraits of the actual Blender instruments.
-Use it to distinguish optics, select with a click or keyboard, and inspect a
-selected part. At narrow widths, swipe the shelf to see additional instruments.
-Drag a portrait to place its instrument directly on the board. The level map,
-assistance and win screens use each world's accent on the same metal surfaces.
+The bottom console brings equipment, move history, hints and camera controls into
+one strip. Equipment portraits come from the Blender instruments on the board.
+Swipe the equipment strip to see more instruments, or drag a portrait to place it.
+The **Campaign** button opens an illustrated level map. Each classic campaign
+shows its two worlds as separate routes through 25 puzzles.
 
 With the four Windows executables in `original/`, run
 `node tools/full-regression.mjs` to replay all 200 boards in Chromium and

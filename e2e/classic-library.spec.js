@@ -36,6 +36,8 @@ test('fresh local game opens the first of four retail campaigns and restores the
   await tab('classic'+i).click();
   await expect(page.locator('#level-title')).toContainText('CHROMATRON '+i);
   await expect(page.locator('#level-grid .level-atlas-card')).toHaveCount(50);
+  await expect(page.locator('.atlas-sector')).toHaveCount(2);
+  await expect(page.locator('.atlas-sector').first().locator('.level-atlas-card')).toHaveCount(25);
   expect(await page.evaluate(()=>window.chromatron.getPuzzleTools().verifiedSolution)).toBe(true);
  }
  await page.reload();

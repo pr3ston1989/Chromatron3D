@@ -6,43 +6,80 @@
 <link rel="icon" type="image/png" href="%BASE_URL%portraits/prism.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body><div id="app">
  <div id="scene"></div><div class="grain"></div>
  <header class="header">
-  <div class="brand"><div class="brand-mark" aria-hidden="true"><i></i></div><strong>CHROMATRON <span class="brand-edition">REBORN</span></strong></div>
+  <div class="brand"><img src="%BASE_URL%portraits/prism.png" alt=""><strong>CHROMATRON <span class="brand-edition">REBORN</span></strong></div>
+  <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
   <div class="header-right">
-    <button id="levels-button" class="icon-btn level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog" title="Mapa poziomów (M)">▦</button>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
     <button id="audio" aria-pressed="false" data-i18n-aria="soundAria" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
-    <button id="analysis-toggle" class="icon-btn analyzer-btn" type="button" aria-pressed="false" data-i18n-title="analysisToggle" data-i18n-aria="analysisToggle" title="Analiza światła (V)">∿</button>
     <button id="board-focus" class="icon-btn focus-btn" type="button" data-i18n-title="focusEnter" aria-pressed="false" aria-label="Tryb skupienia na planszy">▣</button>
     <button id="fullscreen" class="icon-btn fullscreen-btn" type="button" data-i18n-title="fullscreenEnter" aria-label="Pełny ekran" aria-pressed="false">⛶</button>
     <button id="help" class="icon-btn" type="button" data-i18n-title="helpAria" aria-label="Pomoc">?</button>
   </div>
  </header>
  <aside class="mission"><button id="mission-drawer" class="drawer-handle mission-handle" type="button" aria-expanded="false" aria-label="Rozwiń panel zagadki">☰ <span>INFO</span></button>
-  <div class="mission-id"><span class="mission-number"><span id="level-index">001</span><span class="mission-total">/<span id="total-levels">008</span></span></span><div class="mission-origin"><div id="level-pack-label" data-i18n="prototype">PROTOTYP</div><div id="chapter" data-i18n="chapter">ROZDZIAŁ 01 // PODSTAWY</div></div></div>
-  <h1 id="level-title">FIRST LIGHT</h1><p id="level-desc"></p>
-  <div class="mission-progress"><span data-i18n="resonators">AKTYWNE REZONATORY</span><strong id="counter">0 / 1</strong></div>
-  <div class="progress-track"><div id="progress"></div></div>
-  <div class="mission-actions">
-    <button id="prev" class="ui-button small" type="button" aria-label="Poprzednia zagadka">‹</button>
-    <button id="undo" class="ui-button small" type="button" data-i18n-title="undoTitle" title="Cofnij" aria-label="Undo" disabled>↶</button>
-    <button id="reset" class="ui-button" type="button" data-i18n="reset">↺ OD NOWA</button>
-    <button id="redo" class="ui-button small" type="button" data-i18n-title="redoTitle" title="Ponów" aria-label="Redo" disabled>↷</button>
-    <button id="next" class="ui-button small" type="button" aria-label="Następna zagadka">›</button>
+  <div class="mission-copy">
+   <div class="mission-location"><span id="mission-world"></span><span id="level-pack-label" data-i18n="prototype">PROTOTYP</span></div>
+   <h1 id="level-title">PIERWSZE ŚWIATŁO</h1><p id="level-desc"></p>
   </div>
-  <div class="mission-nav">
-   <button id="levels-open" class="ui-button level-atlas-open" type="button" data-i18n="atlasOpen">▦ MAPA POZIOMÓW</button>
-   <button id="hint" class="ui-button hint-button" type="button" data-i18n-aria="hintAria"><span aria-hidden="true">✦</span><span data-i18n="hintButton">PODPOWIEDŹ</span><span id="hint-badge">0/3</span></button>
+  <div class="mission-objective">
+   <div class="stage-navigation">
+    <button id="prev" class="stage-arrow" type="button" aria-label="Poprzednia zagadka">‹</button>
+    <span class="mission-number"><span id="level-index">001</span><span class="mission-total">/<span id="total-levels">008</span></span></span>
+    <button id="next" class="stage-arrow" type="button" aria-label="Następna zagadka">›</button>
+   </div>
+   <div class="mission-progress"><span data-i18n="resonators">AKTYWNE REZONATORY</span><strong id="counter">0 / 1</strong></div>
+   <div class="progress-track"><div id="progress"></div></div>
+   <div id="level-status" class="level-status" aria-live="polite"></div>
+   <div id="draft-status" class="draft-status" role="status" aria-live="polite"></div>
   </div>
-  <div class="hint-wallet" aria-live="polite"><span class="hint-wallet-icon" aria-hidden="true">◆</span> <strong id="hint-credits">3</strong> <span data-i18n="creditsLabel">KREDYTY PODPOWIEDZI</span></div>
-  <div id="level-status" class="level-status" aria-live="polite"></div>
-  <div id="draft-status" class="draft-status" role="status" aria-live="polite"></div>
  </aside>
- <aside class="tool-panel"><button id="tool-drawer" class="drawer-handle tool-handle" type="button" aria-expanded="false" aria-label="Rozwiń narzędzia">◈ <span>OPTYKA</span></button><span class="eyebrow" data-i18n="optics">ELEMENTY OPTYCZNE</span><div id="inventory"></div><div id="optic-info" class="optic-info hidden" role="note" aria-live="polite"></div><div id="transform-tools" class="transform-tools hidden" role="group" aria-label="Rotate selected optic"><div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" aria-label="Kąt obrotu">000°</span></div><div id="beam-guide-legend" class="beam-guide-legend hidden"><span class="legend-dot input"></span><span id="guide-incoming">DO LUSTRA</span><span class="legend-dot output"></span><span id="guide-outgoing">ODBICIE</span></div><div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" aria-label="Rotate left">↶ <span>Q</span></button><button type="button" id="turn-right" data-i18n-title="rotateRight" aria-label="Rotate right">↷ <span>E</span></button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" aria-label="Cancel selection">× <span>Esc</span></button></div></div><button id="return-tray" class="ui-button return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button id="spectral-toggle" class="ui-button spectrum-toggle" type="button" data-i18n="spectral" aria-expanded="false">◈ ANALIZATOR WIDMA</button><div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div><span class="eyebrow small-note" data-i18n="selectHelp">WYBIERZ ELEMENT · Q/E: OBRÓT</span></aside>
+ <div class="game-dock">
+  <div class="dock-actions">
+   <button id="hint" class="hint-button" type="button" data-i18n-aria="hintAria"><span aria-hidden="true">✦</span><span data-i18n="hintButton">PODPOWIEDŹ</span><span id="hint-badge">0/3</span></button>
+   <div class="dock-history">
+    <button id="undo" class="action-key" type="button" data-i18n-title="undoTitle" data-i18n-aria="undoTitle" disabled>↶</button>
+    <button id="reset" class="action-key" type="button" data-i18n-title="reset" data-i18n-aria="reset">⟲</button>
+    <button id="redo" class="action-key" type="button" data-i18n-title="redoTitle" data-i18n-aria="redoTitle" disabled>↷</button>
+    <div class="dock-credits" aria-live="polite" data-i18n-title="creditsLabel" data-i18n-aria="creditsLabel"><span aria-hidden="true">◆</span><strong id="hint-credits">3</strong></div>
+   </div>
+  </div>
+  <aside class="tool-panel">
+   <button id="tool-drawer" class="drawer-handle" type="button" aria-expanded="false" aria-label="Rozwiń narzędzia"><span data-i18n="optics">ZASOBNIK</span></button>
+   <div class="equipment-bay">
+    <div class="equipment-heading"><h2 data-i18n="optics">ZASOBNIK</h2><button id="spectral-toggle" class="spectrum-toggle" type="button" data-i18n="spectralShort" aria-expanded="false">WIDMO</button></div>
+    <div id="inventory"></div>
+   </div>
+   <div class="optic-workbench">
+    <div id="transform-tools" class="transform-tools hidden" role="group" data-i18n-aria="transformAria" aria-label="Wybrany przyrząd">
+     <div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" data-i18n-aria="angleAria" aria-label="Kąt obrotu">000°</span></div>
+     <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
+     <div id="beam-guide-legend" class="beam-guide-legend hidden"><span class="legend-dot input"></span><span id="guide-incoming">DO LUSTRA</span><span class="legend-dot output"></span><span id="guide-outgoing">ODBICIE</span></div>
+    </div>
+    <div id="optic-info" class="optic-info hidden" role="note" aria-live="polite"></div>
+   </div>
+   <div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div>
+  </aside>
+  <div class="hud-bottom">
+   <div class="dock-view">
+    <button id="analysis-toggle" class="action-key analyzer-btn" type="button" aria-pressed="false" data-i18n-title="analysisToggle" data-i18n-aria="analysisToggle">∿</button>
+    <button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button>
+   </div>
+   <div class="quality-widget">
+    <label for="graphics-quality" data-i18n="graphicsQuality">GRAFIKA</label>
+    <select id="graphics-quality" data-i18n-aria="graphicsQualityAria" aria-label="Jakość grafiki">
+     <option value="auto" data-i18n="graphicsAuto">AUTO</option>
+     <option value="performance" data-i18n="graphicsPerformance">PŁYNNOŚĆ</option>
+     <option value="balanced" data-i18n="graphicsBalanced">ZRÓWNOWAŻONA</option>
+     <option value="cinematic" data-i18n="graphicsCinematic">FILMOWA</option>
+    </select><span id="graphics-fps" class="graphics-fps" aria-label="FPS">— FPS</span>
+   </div>
+  </div>
+ </div>
  <aside id="analysis-panel" class="analysis-panel hidden" role="region" aria-label="Analiza światła">
   <div class="analysis-heading"><span class="eyebrow" data-i18n="analysisHeading">ANALIZATOR SPEKTRUM</span><button id="analysis-close" class="analysis-close" type="button" data-i18n-aria="analysisClose" aria-label="Zamknij analizę">×</button></div>
   <p data-i18n="analysisIntro">Obserwuj wiązki i zgodność barw bez ujawniania rozwiązania.</p>
@@ -51,16 +88,6 @@
   <h3 data-i18n="analysisAbsorption">POCHŁONIĘTE PROMIENIE</h3><div id="analysis-collisions" class="analysis-collisions"></div>
   <p id="analysis-warning" class="analysis-warning hidden"></p>
  </aside>
- <div class="hud-bottom"><div class="camera-label"><button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" title="Zmień widok kamery (C)" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button>
-   <span class="quality-widget">
-    <label for="graphics-quality" data-i18n="graphicsQuality">GRAFIKA</label>
-    <select id="graphics-quality" data-i18n-aria="graphicsQualityAria" aria-label="Jakość grafiki">
-     <option value="auto" data-i18n="graphicsAuto">AUTO</option>
-     <option value="performance" data-i18n="graphicsPerformance">PŁYNNOŚĆ</option>
-     <option value="balanced" data-i18n="graphicsBalanced">ZRÓWNOWAŻONA</option>
-     <option value="cinematic" data-i18n="graphicsCinematic">FILMOWA</option>
-    </select><span id="graphics-fps" class="graphics-fps" aria-label="FPS">— FPS</span>
-   </span></div><div class="controls" data-i18n="controls">KLIKNIJ: WYBIERZ / PRZESUŃ · PRZECIĄGNIJ: OBRÓĆ · ROLKA: ZOOM</div></div>
  <section id="coach" class="coach hidden" role="status" aria-live="polite" aria-label="Samouczek">
   <div class="coach-number" id="coach-number">01 <span>/ 03</span></div>
   <div class="coach-copy"><strong id="coach-title"></strong><p id="coach-detail"></p></div>
@@ -96,8 +123,7 @@
  <div id="level-menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="level-menu-title">
   <div class="modal level-atlas-modal">
    <div class="level-atlas-heading">
-    <div><span class="eyebrow" data-i18n="atlasEyebrow">CHROMATRON / MAPA MISJI</span>
-     <h2 id="level-menu-title" data-i18n="atlasTitle">WYBÓR POZIOMU</h2></div>
+    <h2 id="level-menu-title" data-i18n="atlasTitle">MAPA POZIOMÓW</h2>
     <button id="levels-close" class="level-atlas-close" type="button" data-i18n-aria="atlasClose" aria-label="Zamknij mapę">×</button>
    </div>
    <div class="campaign-switch" role="tablist" data-i18n-aria="campaignTabsAria" aria-label="Kampanie">
@@ -108,15 +134,15 @@
     <button class="campaign-tab" type="button" role="tab" data-campaign="classic4" hidden>Chromatron 4 · 50</button>
     <button id="atlas-import" type="button" class="ui-button" data-i18n="importOriginal">Wczytaj oryginały</button>
    </div>
-   <p id="level-atlas-summary" class="level-atlas-summary" aria-live="polite"></p>
-   <div class="level-atlas-legend">
-    <span data-i18n="atlasSolved">UKOŃCZONY</span>
-    <span data-i18n="atlasAvailable">DOSTĘPNY</span>
-    <span data-i18n="atlasSkipped">POMINIĘTY</span>
-    <span data-i18n="atlasLocked">ZABLOKOWANY</span>
+   <div class="atlas-content">
+    <div class="atlas-feature" id="atlas-feature">
+     <div class="atlas-feature-caption"><p id="atlas-world-name"></p><h3 id="atlas-world-title"></h3><p id="level-atlas-summary" class="level-atlas-summary" aria-live="polite"></p></div>
+    </div>
+    <div id="level-grid" class="level-atlas-grid" data-i18n-aria="atlasTitle" aria-label="Poziomy"></div>
    </div>
-   <div id="level-grid" class="level-atlas-grid" aria-label="Poziomy"></div>
-   <p class="level-atlas-note" data-i18n="atlasHelp">Ukończ poziom lub użyj pominięcia, aby odblokować następny.</p>
+   <div class="atlas-footer"><div class="level-atlas-legend">
+    <span data-i18n="atlasSolved">UKOŃCZONE</span><span data-i18n="atlasAvailable">DOSTĘPNE</span><span data-i18n="atlasSkipped">POMINIĘTE</span><span data-i18n="atlasLocked">ZABLOKOWANE</span>
+   </div><p class="level-atlas-note" data-i18n="atlasHelp">Ukończ poziom lub użyj pominięcia, aby odblokować następny.</p></div>
   </div>
  </div>
  <div id="win" class="overlay hidden" role="dialog" aria-modal="true">

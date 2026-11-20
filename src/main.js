@@ -542,6 +542,19 @@ function syncLevelControls(){
  $('prev').disabled=levelIndex===0;
  $('next').disabled=levelIndex>=levels.length-1||!atlas.entries[levelIndex+1]?.unlocked;
 }
+function atlasStage(index){
+ return stagePresentation(artForLevel(index)??environmentForLevel(currentPackId,index,environmentSessionSeed),language);
+}
+function atlasImage(biome){
+ return getCampaignWorld(biome)?`url('${import.meta.env.BASE_URL}art/sectors/${biome}.jpg')`:'none';
+}
+function showAtlasStage(biome,title){
+ const feature=$('atlas-feature');
+ feature.style.setProperty('--atlas-art',atlasImage(biome.biome));
+ feature.style.setProperty('--level-accent',biome.accent);
+ $('atlas-world-name').textContent=biome.biomeLabel;
+ $('atlas-world-title').textContent=title;
+}
 let levelAtlasOpener=null;
 function renderLevelAtlas(){
  if($('level-menu').classList.contains('hidden'))return;
@@ -551,7 +564,12 @@ function renderLevelAtlas(){
   done:atlas.solvedCount,total:atlas.total,unlocked:atlas.unlockedCount
  });
  grid.replaceChildren();
+ const campaign=currentCampaign(),sectors=/^classic[1-4]$/.test(campaign);
+ grid.classList.toggle('sector-grid',sectors);
+ grid.classList.toggle('demo-grid',campaign==='demo');
+ showAtlasStage(atlasStage(levelIndex),loc(levels[levelIndex].title,language));
  const fragment=document.createDocumentFragment();
+ let sectorTiles=fragment;
  for(const entry of atlas.entries){
   const name=loc(levels[entry.index].title,language);
   const button=document.createElement('button');
@@ -563,10 +581,17 @@ function renderLevelAtlas(){
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
-  const biome=stagePresentation(artForLevel(entry.index)??environmentForLevel(
-   currentPackId,entry.index,environmentSessionSeed),language);
+  const biome=atlasStage(entry.index);
+  if(sectors&&entry.index%25===0){
+   const sector=document.createElement('section');sector.className='atlas-sector';
+   sector.style.setProperty('--atlas-art',atlasImage(biome.biome));
+   const heading=document.createElement('h3');heading.textContent=biome.biomeLabel;
+   sectorTiles=document.createElement('div');sectorTiles.className='atlas-sector-tiles';
+   sector.append(heading,sectorTiles);fragment.append(sector);
+  }
   button.dataset.biome=biome.biome;
   button.style.setProperty('--level-accent',biome.accent);
+  if(campaign==='demo')button.style.setProperty('--atlas-art',atlasImage(biome.biome));
   let hasDraft=false;
   if(entry.unlocked&&entry.status!=='solved'){
    try{hasDraft=Boolean(gameStorage().getItem(draftKey(currentPackId,entry.index)))}catch{}
@@ -577,22 +602,26 @@ function renderLevelAtlas(){
   button.title=entry.unlocked?name:t(language,'atlasLockedHint');
   const n=document.createElement('span');n.className='level-atlas-card-number';n.textContent=number;
   const title=document.createElement('strong');title.className='level-atlas-card-title';
-  title.textContent=entry.unlocked?name:'···';
+  title.textContent=name;
   const caption=document.createElement('span');caption.className='level-atlas-card-status';
   caption.textContent=(entry.index===levelIndex?t(language,'atlasNow')+' · ':'')+
    (hasDraft?t(language,'atlasInProgress')+' · ':'')+status;
-  button.append(n,title);
+  button.append(n);
   if(entry.unlocked){
+   button.append(title);
    const biomeLabel=document.createElement('span');
    biomeLabel.className='level-atlas-card-biome';
    biomeLabel.textContent=biome.biomeLabel;
    button.appendChild(biomeLabel);
   }
   button.appendChild(caption);
-  if(entry.unlocked)button.addEventListener('click',()=>{
-   if(load(entry.index))closeLevelAtlas();
-  });
-  fragment.appendChild(button);
+  if(entry.unlocked){
+   const preview=()=>showAtlasStage(biome,name);
+   button.addEventListener('pointerenter',preview);
+   button.addEventListener('focus',preview);
+   button.addEventListener('click',()=>{if(load(entry.index))closeLevelAtlas()});
+  }
+  sectorTiles.appendChild(button);
  }
  grid.append(fragment);
 }
@@ -703,16 +732,7 @@ function updateLocalizedLevel(){
  const packLabel=$('level-pack-label');
  packLabel.removeAttribute('data-i18n');
  packLabel.textContent=t(language,packLabelKey());
- const chapter=$('chapter');
- if(l.chapter){
-  chapter.removeAttribute('data-i18n');
-  chapter.textContent=loc(l.chapter,language);
- }else if(l.sourceGame){
-  chapter.removeAttribute('data-i18n');chapter.textContent='CHROMATRON '+l.sourceGame;
- }else{
-  chapter.setAttribute('data-i18n','chapter');
-  chapter.textContent=t(language,'chapter');
- }
+ $('mission-world').textContent=atlasStage(levelIndex).biomeLabel;
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
@@ -859,8 +879,9 @@ function renderInventory(){
  const fixtures=document.createElement('details');
  fixtures.className='tray-fixtures';fixtures.open=expanded;
  const summary=document.createElement('summary');
- summary.textContent=language==='en'?'Fixed on the board':'Stałe na planszy';
- fixtures.append(summary);
+ summary.textContent=t(language,'fixedOptics');
+ const fixtureItems=document.createElement('div');fixtureItems.className='fixture-items';
+ fixtures.append(summary,fixtureItems);
  const groups=new Map();
  for(const piece of pieces){
   const key=piece.type==='filter'?'filter:'+piece.color:piece.type;
@@ -910,9 +931,10 @@ function renderInventory(){
   const name=document.createElement('span');name.textContent=label;
   const count=document.createElement('strong');
   count.textContent='×'+(movableType?tray.length:candidates.length);
-  item.append(icon,name,count);(movableType?slots:fixtures).appendChild(item);
+  item.append(icon,name,count);(movableType?slots:fixtureItems).appendChild(item);
  }
- if(fixtures.children.length>1)el.append(fixtures);
+ if(fixtureItems.children.length)el.append(fixtures);
+ el.closest('.game-dock').style.setProperty('--stock-types',slots.childElementCount);
  slots.scrollLeft=scrollAcross;
  el.scrollTop=scroll;
  if(focused)el.querySelector(`[data-slot="${focused}"]`)?.focus({preventScroll:true});
@@ -1235,7 +1257,9 @@ document.addEventListener('fullscreenchange',()=>{
 });
 function resize(){
  const w=innerWidth,h=innerHeight;
- camera.aspect=w/h;camera.updateProjectionMatrix();
+ camera.aspect=w/h;
+ if(compactBoard.matches)camera.clearViewOffset();
+ else camera.setViewOffset(w,h,0,h<470?42:30,w,h);
  renderer.setSize(w,h);composer.setSize(w,h);
  const pixelRatio=renderer.getPixelRatio();
  fxaaPass.uniforms.resolution.value.set(1/Math.max(1,w*pixelRatio),1/Math.max(1,h*pixelRatio));
@@ -1591,7 +1615,6 @@ document.addEventListener('keydown',e=>{
  else if(e.code==='KeyZ'&&e.ctrlKey){e.preventDefault();undo()}
 });
 $('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
-$('levels-open').onclick=()=>openLevelAtlas($('levels-open'));
 $('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
 $('levels-close').onclick=closeLevelAtlas;
 for(const tab of document.querySelectorAll('.campaign-tab')){

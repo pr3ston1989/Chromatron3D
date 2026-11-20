@@ -301,3 +301,9 @@ Oceny dotyczą reprezentatywnych demonstracji. Ciasne skupiska podobnych przyrz�
 
 - Test w emulacji 390 × 844 potwierdza zmianę przybliżenia przy wybranym lustrze, zwolnienie palców po geście, ustawienie lustra na wybranym polu i przeciągnięcie go na sąsiednie pole. Osobne anulowanie przeciągania zachowuje współrzędne. Próbę wykonano w Chromium na Radeon i w SwiftShader.
 - Przeszło 225 testów Node, build Vite i 33 testy Playwright na sprzętowym Chromium. Gesty sprawdzono w emulacji dotyku.
+
+## 20 listopada 2026 · nowy układ gry
+
+- Przegląd w Chromium wykazał zasłonięcie przedniego narożnika przez belkę w 844 × 390. Po zmianie kadrowania test potwierdził dostęp do narożników w 844 × 390, 390 × 844 i 768 × 1024. Test laptopowy sprawdza tę samą własność w 1366 × 768, 1280 × 720, 1093 × 614 i 1024 × 640.
+- Przeszły 225 testów Node, build Vite i 33 testy Playwright na Radeon. Test biblioteki potwierdza dwa sektory po 25 plansz w każdej kampanii. Odtworzenie 200 plansz potwierdziło wszystkie rozwiązania i wskazówki. Lokalny raport znajduje się w `test-results/new-interface-campaigns/report.json`.
+- Zrzuty publicznych demonstracji w 1366 × 768, 390 × 844 i 844 × 390 są w `test-results/new-interface/`. Osobno zapisano mapę na laptopie i telefonie. Próbki z dwóch demonstracji dały na tym Radeon około 60 FPS w każdej z tych rozdzielczości.
