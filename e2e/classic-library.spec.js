@@ -15,7 +15,7 @@ test('fresh local game opens the first of four retail campaigns and restores the
  const errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1093,height:614});
- await page.goto('/');
+ await page.goto('/?play=1');
  await page.locator('#hint').click();
  await page.locator('#reveal-hint').click();
  await expect(page.locator('#hint-steps .hint-step p')).toContainText('Jedno lustro na przecięciu wystarczy.');

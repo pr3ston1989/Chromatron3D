@@ -22,7 +22,7 @@ test.beforeEach(async({page},testInfo)=>{
 
 test('3D gameplay loads, switches languages and exposes optical diagnostics',async({page})=>{
  const exceptions=[];page.on('pageerror',error=>exceptions.push(error.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect(page.locator('#scene canvas')).toHaveCount(1);
  await expect(page.locator('#level-title')).not.toBeEmpty();
  await expect(page.locator('#total-levels')).toHaveText('008');
@@ -45,7 +45,7 @@ test('3D gameplay loads, switches languages and exposes optical diagnostics',asy
 test('hints are progressive and non-destructive; narrow layout stays interactive',async({page})=>{
  const exceptions=[];page.on('pageerror',error=>exceptions.push(error.message));
  await page.setViewportSize({width:390,height:844});
- await page.goto('/');
+ await page.goto('/?play=1');
  await page.locator('#hint').click();
  await expect(page.locator('#hint-overlay')).toBeVisible();
  await page.locator('#reveal-hint').click();
@@ -63,7 +63,7 @@ test('hints are progressive and non-destructive; narrow layout stays interactive
 
 test('first puzzle teaches the three interactions and can be solved using the UI',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect(page.locator('#coach')).toBeVisible();
  await expect(page.locator('#coach-title')).toContainText('Wybierz lustro');
  const mirror=page.locator('#inventory button').filter({hasText:'LUSTRO'});
@@ -104,7 +104,7 @@ test('first puzzle teaches the three interactions and can be solved using the UI
 
 test('select, place, rotate both ways and never teleport a placed mirror',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
  const state=()=>page.evaluate(()=>window.chromatron.getState());
  const mirror=page.locator('#inventory button').filter({hasText:'LUSTRO'});
@@ -142,7 +142,7 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  // The mirror regression needs level 2, unlocked by prior level 1 completion.
  await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
- await page.goto('/');
+ await page.goto('/?play=1');
  await page.locator('#graphics-quality').selectOption('balanced');
  await page.locator('#next').click();
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
@@ -174,7 +174,7 @@ test('different board mirrors remain distinct; dragging one does not move the ot
 
 test('spectrum FX and mirror light-direction guides are rendered in WebGL',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  const icons=page.locator('#inventory .component-icon img');
  await expect(icons).toHaveCount(3);
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
@@ -203,7 +203,7 @@ test('spectrum FX and mirror light-direction guides are rendered in WebGL',async
 
 test('tooltip differentiates free and occupied cells, board remains GPU-instanced',async({page})=>{
  const errors=[];page.on('pageerror',err=>errors.push(err.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  const stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.instancedBoardLayers).toBe(2);
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
@@ -223,7 +223,7 @@ test('tooltip differentiates free and occupied cells, board remains GPU-instance
 
 
 test('physical laser absorber walls stop rays at their visible edge',async({page})=>{
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  const result=await page.evaluate(()=>window.chromatron.getState().result);
  const stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.absorberStructure.segments).toBe(60);
@@ -241,7 +241,7 @@ test('physical laser absorber walls stop rays at their visible edge',async({page
 test('scenery uses cached, genuine GLB hero models without touching optics',async({page})=>{
  test.setTimeout(process.env.CI?120000:75000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  const first=await page.evaluate(()=>window.chromatron.getVisualStats());
  const biome=first.environment.biome;
  await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().heroScenery.status),
@@ -299,7 +299,7 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
  test.setTimeout(120000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:1024,height:720});
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#graphics-quality')).toHaveValue('auto');
  // Auto legitimately lowers GPU cost after sustained low FPS. A SwiftShader
  // runner would otherwise switch away from real mirrors during this test.
@@ -325,7 +325,7 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
 
 test('rotation eases visually without delaying the optical logic',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(point.x,point.y);
@@ -342,7 +342,7 @@ test('rotation eases visually without delaying the optical logic',async({page})=
 
 test('wheel and trackpad rotate continuously without recreating mirror geometry',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('/');
+ await page.goto('/?play=1');
  // Pin a fixed profile so automatic GPU downgrades cannot invalidate counts.
  await page.locator('#graphics-quality').selectOption('balanced');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
@@ -392,7 +392,7 @@ test('small laptop layouts keep essential controls on screen without horizontal 
  test.setTimeout(120000); // Multiple 3D viewport resizes on software-rendered CI GPUs.
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1366,height:768});
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#scene canvas')).toBeVisible();
  for(const size of [
   {width:1366,height:768},
@@ -439,7 +439,7 @@ test('small laptop layouts keep essential controls on screen without horizontal 
 test('short viewport keeps the horizontal equipment rail and level controls reachable',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
  await page.setViewportSize({width:1093,height:550});
- await page.goto('/');
+ await page.goto('/?play=1');
  const panel=page.locator('.game-dock');
  const info=await panel.evaluate(el=>({
   top:el.getBoundingClientRect().top,
@@ -458,7 +458,7 @@ test('short viewport keeps the horizontal equipment rail and level controls reac
 
 test('mobile equipment shelf keeps spectrum and keyboard selection within reach',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- await page.goto('/');
+ await page.goto('/?play=1');
  const shelf=page.locator('.tool-panel');
  const spectrum=page.locator('#spectral-toggle');
  const mirror=page.locator('.equipment-slots button[data-optic-type="mirror"]');
@@ -482,7 +482,7 @@ test('mobile equipment shelf keeps spectrum and keyboard selection within reach'
 test('fullscreen button and F shortcut adapt the game without hiding controls',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1280,height:720});
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect(page.locator('#fullscreen')).toBeVisible();
  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
  await page.locator('#fullscreen').click();
@@ -500,7 +500,7 @@ test('fullscreen button and F shortcut adapt the game without hiding controls',a
 test('board focus mode expands usable puzzle space without losing equipment access',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1093,height:614});
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect(page.locator('#board-focus')).toBeVisible();
  await page.locator('#board-focus').click();
  await expect(page.locator('#app')).toHaveClass(/board-focus/);
@@ -532,7 +532,7 @@ test('board focus mode expands usable puzzle space without losing equipment acce
 test('credits are spent once per hint stage and solved-level rewards cannot be farmed',async({page})=>{
  test.setTimeout(120000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  const tools=()=>page.evaluate(()=>window.chromatron.getPuzzleTools());
  expect((await tools()).credits).toBe(3);
  await page.locator('#hint').click();
@@ -555,7 +555,7 @@ test('credits are spent once per hint stage and solved-level rewards cannot be f
  await expect(page.locator('#win-reward')).toContainText('+5');
  // Returning to the solved arrangement cannot grant credits again.
  await page.locator('#win').waitFor({state:'visible'});
- await page.evaluate(()=>document.getElementById('win').classList.add('hidden'));
+ await page.keyboard.press('Escape');
  await page.locator('#reset').click();
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(loc.x,loc.y);
@@ -569,7 +569,7 @@ test('credits are spent once per hint stage and solved-level rewards cannot be f
 test('level atlas is accessible on laptop and mobile, localized, and never blocks the board',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:1093,height:614});
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect(page.locator('#level-intro-title')).toContainText('PIERWSZE ŚWIATŁO');
  await expect(page.locator('#level-intro-mode')).toHaveText('NOWY POZIOM');
  await expect(page.locator('#level-intro')).toHaveClass(/show/);
@@ -610,7 +610,12 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
 test('original numeric level JSON imports privately with full 50 level index order',async({page})=>{
  test.setTimeout(90000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
+ await page.locator('#levels-button').click();
+ const chooser=page.waitForEvent('filechooser');
+ await page.locator('#atlas-import').click();
+ await (await chooser).setFiles([]);
+ await page.locator('#levels-close').click();
  const sample={
   levels:Array.from({length:50},(_,i)=>({
    text:'Synthetic sample '+i,
@@ -627,6 +632,7 @@ test('original numeric level JSON imports privately with full 50 level index ord
  });
  await expect(page.locator('#total-levels')).toHaveText('050');
  await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');
+ await expect(page.locator('#play-surface')).not.toHaveAttribute('inert','');
  expect((await page.evaluate(()=>window.chromatron.getState())).pieces).toHaveLength(2);
  await expect(page.locator('#next')).toBeDisabled();
  await page.locator('#levels-button').click();

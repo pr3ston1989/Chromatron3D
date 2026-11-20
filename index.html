@@ -9,9 +9,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body><div id="app">
+ <main id="main-menu" class="main-menu" aria-labelledby="game-title">
+  <div class="menu-art" aria-hidden="true"></div>
+  <div class="menu-content">
+   <h1 id="game-title">CHROMATRON <span>REBORN</span></h1>
+   <nav class="menu-actions" aria-label="Menu gry" data-i18n-aria="mainMenu">
+    <button id="menu-play" class="menu-play" type="button" disabled><strong id="menu-play-label" data-i18n="menuPlay">GRAJ</strong><span id="menu-destination"></span><span class="menu-arrow" aria-hidden="true">→</span></button>
+    <button id="menu-campaign" type="button" disabled><span class="menu-symbol" aria-hidden="true">◈</span><span data-i18n="menuCampaign">KAMPANIE</span><span class="menu-arrow" aria-hidden="true">›</span></button>
+    <button id="menu-settings" type="button" disabled><span class="menu-symbol" aria-hidden="true">⚙</span><span data-i18n="menuSettings">USTAWIENIA</span><span class="menu-arrow" aria-hidden="true">›</span></button>
+    <button id="menu-guide" type="button" disabled><span class="menu-symbol" aria-hidden="true">?</span><span data-i18n="menuGuide">JAK GRAĆ</span><span class="menu-arrow" aria-hidden="true">›</span></button>
+   </nav>
+   <p id="startup-status" class="startup-status" aria-live="polite"></p>
+  </div>
+ </main>
+ <div id="play-surface" inert>
  <div id="scene"></div><div class="grain"></div>
  <header class="header">
-  <div class="brand"><img src="%BASE_URL%portraits/prism.png" alt=""><strong>CHROMATRON <span class="brand-edition">REBORN</span></strong></div>
+  <button id="main-menu-toggle" class="brand" type="button" data-i18n-aria="mainMenu" data-i18n-title="mainMenu"><img src="%BASE_URL%portraits/prism.png" alt=""><strong data-i18n="mainMenu">MENU GRY</strong><kbd aria-hidden="true">Esc</kbd></button>
   <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
   <div class="header-right">
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
@@ -57,7 +71,7 @@
    <div class="optic-workbench">
     <div id="transform-tools" class="transform-tools hidden" role="group" data-i18n-aria="transformAria" aria-label="Wybrany przyrząd">
      <div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" data-i18n-aria="angleAria" aria-label="Kąt obrotu">000°</span></div>
-     <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
+     <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="relocate" type="button" aria-pressed="false" data-i18n="relocate">PRZENIEŚ</button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
      <div id="beam-guide-legend" class="beam-guide-legend hidden"><span class="legend-dot input"></span><span id="guide-incoming">DO LUSTRA</span><span class="legend-dot output"></span><span id="guide-outgoing">ODBICIE</span></div>
     </div>
     <div id="optic-info" class="optic-info hidden" role="note" aria-live="polite"></div>
@@ -94,7 +108,9 @@
   <button id="coach-dismiss" class="coach-dismiss" type="button" data-i18n-title="coachDismiss" aria-label="Ukryj wskazówki">×</button>
  </section>
  <div id="optic-tooltip" class="optic-tooltip hidden" role="status" aria-live="off"></div>
+ </div>
  <div id="toast" role="status" aria-live="polite"></div>
+ <input id="classic-files" type="file" accept=".json,.exe,application/json,application/octet-stream" multiple hidden>
  <div id="drop-zone" class="drop-zone hidden" aria-hidden="true">
   <div class="drop-zone-inner">
    <div class="drop-zone-icon">⬡</div>
@@ -145,24 +161,33 @@
    </div><p class="level-atlas-note" data-i18n="atlasHelp">Ukończ poziom lub użyj pominięcia, aby odblokować następny.</p></div>
   </div>
  </div>
- <div id="win" class="overlay hidden" role="dialog" aria-modal="true">
-  <div class="modal"><div class="victory-emblem" aria-hidden="true"><i></i></div><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
+ <div id="win" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="win-title">
+  <div class="modal"><div class="victory-emblem" aria-hidden="true"><i></i></div><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 id="win-title" data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
    <p data-i18n="completeDesc">Wszystkie rezonatory otrzymały właściwe kolory światła.</p>
    <p id="win-reward" class="win-reward" aria-live="polite"></p>
    <button id="continue" class="ui-button accent" type="button" data-i18n="next">NASTĘPNA ZAGADKA →</button>
    <button id="levels-from-win" class="ui-button win-atlas-button" type="button" data-i18n="atlasOpen">▦ MAPA POZIOMÓW</button>
+   <button id="menu-from-win" class="ui-button win-menu-button" type="button" data-i18n="mainMenu">MENU GRY</button>
   </div>
  </div>
- <div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true">
-  <div class="modal help-modal"><div class="eyebrow">FIELD MANUAL / 001</div><h2 data-i18n="manualTitle">STERUJ ŚWIATŁEM.</h2>
+ <div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+  <div class="modal help-modal"><h2 id="guide-title" data-i18n="menuGuide">JAK GRAĆ</h2>
    <p data-i18n="manualIntro"></p><p data-i18n="manualExtra"></p><p data-i18n="prototypeNote"></p>
    <div class="classic-import">
     <p data-i18n="classicImportIntro">Odtwarzanie klasycznych plansz: wybierz lokalny JSON wyeksportowany z własnej kopii gry. Pliki pozostają na Twoim komputerze.</p>
     <button id="import-classic" class="ui-button" type="button" data-i18n="classicImportButton">IMPORTUJ DANE POZIOMÓW (.JSON)</button>
-    <input id="classic-files" type="file" accept=".json,.exe,application/json,application/octet-stream" multiple hidden>
     <p id="classic-import-status" role="status" aria-live="polite"></p>
    </div>
    <button id="close-help" class="ui-button accent" type="button" data-i18n="understood">ROZUMIEM</button>
+  </div>
+ </div>
+ <div id="settings-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal settings-modal">
+   <div class="settings-heading"><h2 id="settings-title" data-i18n="menuSettings">USTAWIENIA</h2><button id="close-settings" class="level-atlas-close" type="button" data-i18n-aria="menuBack">×</button></div>
+   <div class="settings-row"><label for="menu-language" data-i18n="menuLanguage">Język</label><select id="menu-language"><option value="pl">Polski</option><option value="en">English</option></select></div>
+   <div class="settings-row"><label for="menu-quality" data-i18n="graphicsQuality">Grafika</label><select id="menu-quality"></select></div>
+   <div class="settings-row"><span id="menu-sound-label" data-i18n="soundAria">Dźwięk</span><button id="menu-audio" class="ui-button" type="button" aria-pressed="false" aria-labelledby="menu-sound-label"></button></div>
+   <button id="settings-fullscreen" class="ui-button" type="button" aria-pressed="false"></button>
   </div>
  </div>
  <div id="hint-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="hint-title">

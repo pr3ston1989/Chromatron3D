@@ -307,3 +307,15 @@ Oceny dotyczą reprezentatywnych demonstracji. Ciasne skupiska podobnych przyrz�
 - Przegląd w Chromium wykazał zasłonięcie przedniego narożnika przez belkę w 844 × 390. Po zmianie kadrowania test potwierdził dostęp do narożników w 844 × 390, 390 × 844 i 768 × 1024. Test laptopowy sprawdza tę samą własność w 1366 × 768, 1280 × 720, 1093 × 614 i 1024 × 640.
 - Przeszły 225 testów Node, build Vite i 33 testy Playwright na Radeon. Test biblioteki potwierdza dwa sektory po 25 plansz w każdej kampanii. Odtworzenie 200 plansz potwierdziło wszystkie rozwiązania i wskazówki. Lokalny raport znajduje się w `test-results/new-interface-campaigns/report.json`.
 - Zrzuty publicznych demonstracji w 1366 × 768, 390 × 844 i 844 × 390 są w `test-results/new-interface/`. Osobno zapisano mapę na laptopie i telefonie. Próbki z dwóch demonstracji dały na tym Radeon około 60 FPS w każdej z tych rozdzielczości.
+
+## 20 listopada 2026 · audyt menu i sterowania
+
+| Obszar | Ustalenie | Priorytet dalszej pracy |
+| --- | --- | --- |
+| Start i powrót | Menu wznawia ostatni układ. Po finale akcja główna otwiera mapę, a menu pozostaje dostępne po zakończeniu. | Zmierzyć na słabszym urządzeniu czas od „Graj” do pierwszej interaktywnej klatki. |
+| Klawiatura | Tab obsługuje menu, zasobnik i okna. Skróty obracają przyrząd. Wybór pola planszy nadal wymaga wskaźnika. | Wysoki. Dodać kursor pola, strzałki, zatwierdzanie i komunikat o zawartości pola. |
+| Mysz i kliknięcia | Widoczna powierzchnia modelu wygrywa w teście trafienia. Całe pole pomaga wybrać mały model. Celowanie przy nakładających się głowicach nadal zależy od perspektywy. | Średni. Porównać spokojny obrys aktywnego pola i skrót widoku z góry na gęstych planszach. |
+| Dotyk | Dwa dotknięcia mogą przenieść przyrząd. Gest dwóch palców przybliża planszę. Najważniejsze czynności w belce mają powiększone obszary dotyku. | Wysoki. Sprawdzić na fizycznym iPhonie i Androidzie, szczególnie poziomy ekran z paskami systemowymi, przeciąganie z zasobnika i reakcję na przerwanie gestu. |
+| Historia | Cofanie obejmuje normalny ruch i obrót. Reset przeładowuje planszę i czyści historię. | Średni. Umożliwić odzyskanie poprzedniego układu bezpośrednio po przypadkowym resecie. |
+
+Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył problem z fokusem po imporcie z instrukcji. Po poprawce przeszły ponowne próby importu, ustawień, wznowienia zapisu, ostatniej planszy, podpowiedzi i ruchu dotykiem. Trzy nowe scenariusze menu przeszły także w SwiftShader. Odtworzono oraz ponownie otwarto 200 lokalnych plansz z zerem błędów przeglądarki. Raport jest w `test-results/menu-campaigns/report.json`.

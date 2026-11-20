@@ -54,3 +54,9 @@
 - Po uwadze o podobieństwie do aplikacji przeniesiono cel i postęp nad scenę, a sterowanie do jednej dolnej belki. Jej szerokość reaguje na liczbę przyrządów. Obrót, zwrot do zasobnika i opis pojawiają się nad belką dla wybranego przyrządu.
 - Atlas pokazuje podgląd świata z publicznej demonstracji. Samouczek ma osiem kart z ujęciami, a kampania klasyczna pokazuje dwie siatki po 25 poziomów. Podgląd zmienia się po wskazaniu dostępnej karty lub przejściu do niej klawiaturą.
 - Na szerokich widokach przesunięto kadr planszy w górę. W niskim poziomym oknie przesunięcie jest większe, żeby ostatni rząd pól pozostał nad belką.
+
+## 20 listopada 2026 · ekran tytułowy i obsługa rozgrywki
+
+- Ścieżka domyślna zaczyna się w menu. Gracz wraca do bieżącej planszy z tego samego zapisu, z którego korzysta rozgrywka. Bezpośredni link `?play=1` wznawia planszę od razu.
+- Górne okno przejmuje klawiaturę oraz blokuje kontrolki znajdujące się pod nim. Zamknięcie przywraca fokus do przycisku otwierającego. Po ukończeniu ostatniej planszy główna akcja otwiera mapę kampanii.
+- „Przenieś” uzbraja przeniesienie dla pojedynczego wybranego przyrządu. Pole docelowe zatwierdza się po zwolnieniu wskaźnika. Zajęte pole pokazuje komunikat i pozostawia akcję aktywną. Udany ruch trafia do historii cofania.

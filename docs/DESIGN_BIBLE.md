@@ -62,3 +62,5 @@ Jeden metr na jednostkę, origin w środku podstawy na Z=0 w Blenderze, glTF Y-u
 Tytuł i miejsce są nad sceną po lewej, a cyfra planszy i postęp rezonatorów po prawej. Jedna fazowana belka reaguje na liczbę przyrządów. Zawiera podpowiedzi, historię ruchów, zasobnik i kamerę. Panel obrotu otwiera się nad belką po wybraniu elementu. Na wąskich ekranach portret służy do odkładania przyrządu na planszę, a przesunięcie etykiety przewija poziomy zasobnik.
 
 Tytuły i nawigacja używają Barlow Condensed, a opisy Space Grotesk. Ciemny granat (`#101522`) i ciepła biel (`#F8F3EB`) tworzą bazę. Bursztynowy (`#FFCC75`) prowadzi do kampanii i podpowiedzi, a kolor świata wskazuje postęp i wybrany przyrząd. Mapa wykorzystuje zrzuty ośmiu publicznych scen bez interfejsu. Każda klasyczna kampania ma dwa oddzielne sektory po 25 pól.
+
+Ekran tytułowy używa ujęcia ukończonej demonstracji Stoczni orbitalnej. Ilustracja przechodzi pod tytułem i akcją „Graj” albo „Kontynuuj”. Pod akcją widać świat i numer planszy. Na telefonie tytuł jest nad ilustracją, a menu jest przy dolnej krawędzi w zasięgu kciuka. Podczas pobytu w menu obraz sceny 3D pozostaje zatrzymany.

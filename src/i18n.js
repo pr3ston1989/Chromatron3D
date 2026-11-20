@@ -1,7 +1,9 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
-    focusEnter:'Powiększ przestrzeń planszy (B)',focusExit:'Przywróć panele boczne (B)',missionDrawer:'Pokaż / ukryj panel zagadki',toolDrawer:'Pokaż / ukryj narzędzia',
+    mainMenu:'MENU GRY',menuPlay:'GRAJ',menuContinue:'KONTYNUUJ',menuDestination:'{world} · plansza {level}',menuCampaign:'KAMPANIE',menuSettings:'USTAWIENIA',menuGuide:'JAK GRAĆ',menuBack:'Wróć',menuLanguage:'Język',soundOn:'WŁĄCZONY',soundOff:'WYŁĄCZONY',viewCampaign:'ZOBACZ KAMPANIĘ →',webglUnavailable:'Nie udało się uruchomić grafiki 3D. Włącz akcelerację sprzętową w ustawieniach przeglądarki i odśwież stronę.',
+    relocate:'PRZENIEŚ',relocateCaption:'WSKAŻ NOWE POLE',tipRelocate:'Wybierz wolne pole, aby przesunąć',
+    focusEnter:'Powiększ przestrzeń planszy (B)',focusExit:'Przywróć pełny interfejs (B)',missionDrawer:'Pokaż / ukryj panel zagadki',toolDrawer:'Pokaż / ukryj narzędzia',
     fullscreenEnter:'Przełącz pełny ekran (F)',fullscreenExit:'Opuść pełny ekran (F)',fullscreenUnavailable:'Przeglądarka nie zezwoliła na przełączenie pełnego ekranu.',
     graphicsQuality:'GRAFIKA',graphicsQualityAria:'Jakość grafiki i odbić',graphicsAuto:'AUTO',graphicsPerformance:'PŁYNNOŚĆ',graphicsBalanced:'ZRÓWNOWAŻONA',graphicsCinematic:'FILMOWA',
 
@@ -30,7 +32,7 @@ const strings = {
     online:'SYSTEM OPTYCZNY AKTYWNY',experiment:'EKSPERYMENT',prototype:'PROTOTYP',classicPack:'IMPORTOWANE',importOriginal:'Wczytaj oryginały',originalPack:'ORYGINAŁ',campaignTabsAria:'Kampanie',campaignDemo:'SAMOUCZKI · 8',chapter:'ROZDZIAŁ 01 // PODSTAWY',resonators:'AKTYWNE REZONATORY',
     reset:'↺ OD NOWA',returnTray:'↤ DO ZASOBNIKA',spectral:'◈ ANALIZATOR WIDMA',spectralSource:'LASER',spectralTarget:'REZONATOR',spectralNeed:'WYMAGANE',spectralReceived:'OTRZYMANE',spectralEmits:'EMITUJE',undoTitle:'Cofnij ruch (Ctrl+Z)',redoTitle:'Ponów ruch (Ctrl+Y)',optics:'ZASOBNIK',selectHelp:'WYBIERZ · PRZECIĄGNIJ · Q/E: OBRÓT',camera:'◉ WIDOK IZOMETRYCZNY',opticalArray:'— TABLICA OPTYCZNA 3D',
     controls:'KLIKNIJ: WYBIERZ / POSTAW · PRZECIĄGNIJ ELEMENT: PRZESUŃ · Q/E: OBRÓĆ',
-    manualTitle:'STERUJ ŚWIATŁEM.',manualIntro:'Skieruj laser na rezonator o odpowiednim kolorze. Wybierz element z zasobnika i kliknij wolne pole, aby go ustawić. Element na planszy przesuwaj przeciągnięciem. Q / E obraca w obie strony. Przeciągaj puste miejsce, by obracać kamerę.',
+    manualTitle:'STERUJ ŚWIATŁEM.',manualIntro:'Skieruj laser na rezonator o odpowiednim kolorze. Wybierz element z zasobnika i kliknij wolne pole, aby go ustawić. Element na planszy przeciągnij lub wybierz Przenieś i wskaż wolne pole. Q / E obraca w obie strony. Przeciągaj puste miejsce, by obracać kamerę.',
     manualExtra:'Ctrl+Z cofa ruch. Rolka obraca wybrany element. Zmień przybliżenie gestem dwóch palców lub Shift+rolką. M otwiera mapę poziomów, a Esc ją zamyka.',
     prototypeNote:'Atlas obejmuje oryginalne kampanie dostępne na tym komputerze oraz osiem samouczków.',
     understood:'ROZUMIEM',complete:'EKSPERYMENT UKOŃCZONY',aligned:'ŚWIATŁO USTAWIONE.',completeDesc:'Wszystkie rezonatory otrzymały właściwe kolory światła.',next:'NASTĘPNA ZAGADKA →',
@@ -51,7 +53,9 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
-    focusEnter:'Focus on the puzzle board (B)',focusExit:'Restore side panels (B)',missionDrawer:'Show / hide puzzle panel',toolDrawer:'Show / hide equipment tray',
+    mainMenu:'GAME MENU',menuPlay:'PLAY',menuContinue:'CONTINUE',menuDestination:'{world} · puzzle {level}',menuCampaign:'CAMPAIGNS',menuSettings:'SETTINGS',menuGuide:'HOW TO PLAY',menuBack:'Back',menuLanguage:'Language',soundOn:'ON',soundOff:'OFF',viewCampaign:'VIEW CAMPAIGN →',webglUnavailable:'3D graphics could not start. Enable hardware acceleration in your browser settings and reload.',
+    relocate:'MOVE',relocateCaption:'CHOOSE A NEW TILE',tipRelocate:'Choose an empty tile to move here',
+    focusEnter:'Focus on the puzzle board (B)',focusExit:'Restore the full interface (B)',missionDrawer:'Show / hide puzzle panel',toolDrawer:'Show / hide equipment tray',
     fullscreenEnter:'Toggle fullscreen (F)',fullscreenExit:'Leave fullscreen (F)',fullscreenUnavailable:'This browser blocked the fullscreen request.',
     graphicsQuality:'GRAPHICS',graphicsQualityAria:'Graphics and reflections quality',graphicsAuto:'AUTO',graphicsPerformance:'PERFORMANCE',graphicsBalanced:'BALANCED',graphicsCinematic:'CINEMATIC',
 
@@ -80,7 +84,7 @@ const strings = {
     online:'OPTICAL SYSTEM ONLINE',experiment:'EXPERIMENT',prototype:'PROTOTYPE',classicPack:'IMPORTED',importOriginal:'Import originals',originalPack:'ORIGINAL',campaignTabsAria:'Campaigns',campaignDemo:'TUTORIALS · 8',chapter:'CHAPTER 01 // FUNDAMENTALS',resonators:'RESONATORS ONLINE',
     reset:'↺ RESET',returnTray:'↤ RETURN TO TRAY',spectral:'◈ SPECTRAL INSPECTOR',spectralSource:'EMITTER',spectralTarget:'RESONATOR',spectralNeed:'REQUIRED',spectralReceived:'RECEIVED',spectralEmits:'EMITS',undoTitle:'Undo move (Ctrl+Z)',redoTitle:'Redo move (Ctrl+Y)',optics:'EQUIPMENT',selectHelp:'SELECT · DRAG · Q/E: ROTATE',camera:'◉ ISOMETRIC VIEW',opticalArray:'— 3D OPTICAL ARRAY',
     controls:'CLICK: SELECT / PLACE · DRAG AN OPTIC: MOVE · Q/E: ROTATE',
-    manualTitle:'CONTROL THE LIGHT.',manualIntro:'Redirect each laser into the matching resonator. Select a tray optic and click a free tile to place it. Drag an already placed optic to move it. Q and E rotate in opposite directions. Drag empty space to orbit.',
+    manualTitle:'CONTROL THE LIGHT.',manualIntro:'Redirect each laser into the matching resonator. Select a tray optic and click a free tile to place it. Drag a placed optic or choose Move and select an empty tile. Q and E rotate in opposite directions. Drag empty space to orbit.',
     manualExtra:'Ctrl+Z undoes a move. The wheel rotates a selected optic. Pinch with two fingers or use Shift+wheel to zoom. M opens the level map and Esc closes it.',
     prototypeNote:'The atlas contains original campaigns available on this computer and eight tutorials.',
     understood:'UNDERSTOOD',complete:'EXPERIMENT COMPLETE',aligned:'LIGHT ALIGNED.',completeDesc:'All resonators have received their correct colors.',next:'NEXT EXPERIMENT →',

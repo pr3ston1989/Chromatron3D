@@ -19,7 +19,7 @@ test('partial mirror layout and inventory rotation survive reload; reset clears 
  // Three full Three.js reloads cost much more under software WebGL on CI.
  test.setTimeout(process.env.CI?150000:75000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.keyboard.press('e');
  let mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
@@ -58,7 +58,7 @@ test('partial mirror layout and inventory rotation survive reload; reset clears 
 });
 
 test('undo removes a pending draft, redo restores it, and solving clears it',async({page})=>{
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  const cell=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.mouse.click(cell.x,cell.y);
@@ -85,7 +85,7 @@ test('reimported private puzzle resumes only its own saved optic state',async({p
   pieces:[['laser',2,7,2,4],['target',7,3,0,4],['mirror',7,9,0,0]],
   startMovablesInTray:true
  }];
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await page.goto('/?play=1',{waitUntil:'domcontentloaded'});
  await page.evaluate(levels=>window.chromatron.loadLevels(levels),custom);
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  const point=await page.evaluate(()=>window.chromatron.projectCell(6,7));

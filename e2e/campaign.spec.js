@@ -9,7 +9,7 @@ test.describe('touch gestures',()=>{
    localStorage.setItem('chromatron-coach-dismissed','yes');
    localStorage.setItem('chromatron-graphics-quality','performance');
   });
-  await page.goto('/');
+  await page.goto('/?play=1');
   await page.locator('#inventory button[data-optic-type=mirror]').tap();
   const state=()=>page.evaluate(()=>window.chromatron.getState());
   const mirror=(snapshot)=>snapshot.pieces.find(p=>p.type==='mirror');
@@ -57,7 +57,7 @@ test('dragging a tray mirror to the board never opens file import',async({page})
  const dialogs=[];
  page.on('filechooser',()=>dialogs.push('filechooser'));
  await page.setViewportSize({width:1280,height:720});
- await page.goto('/');
+ await page.goto('/?play=1');
  const tray=page.locator('#inventory button[data-optic-type=mirror]');
  await expect(tray).toBeVisible();
  await page.evaluate(()=>{
@@ -88,7 +88,7 @@ test('the workshop shows Blender portraits and cancels a carried optic released 
   localStorage.setItem('chromatron-coach-dismissed','yes');
  });
  await page.setViewportSize({width:1366,height:768});
- await page.goto('/');
+ await page.goto('/?play=1');
  await page.evaluate(()=>window.chromatron.loadLevels(JSON.stringify([{title:'Pracownia optyczna',
   startMovablesInTray:true,pieces:[['laser',1,8,2,1],['target',12,4,0,1],['mirror',6,8,1,0],['splitter',9,8,3,0]]}])));
  const tray=page.locator('#inventory');
@@ -129,7 +129,7 @@ test('grabbing the raised face above an occupied neighbouring tile moves the vis
   Object.defineProperty(window,'devicePixelRatio',{get:()=>.65});
  });
  await page.setViewportSize({width:1093,height:614});
- await page.goto('/');
+ await page.goto('/?play=1');
  await page.evaluate(()=>window.chromatron.loadLevels([{title:'Adjacent instruments',pieces:[
   ['laser',2,3,2,1],['target',10,12,0,2],['mirror',7,7,0,0],
   ['splitter',8,6,0,0],['filter',7,6,0,2],['bender',8,7,0,0]
@@ -165,7 +165,7 @@ test('grabbing the raised face above an occupied neighbouring tile moves the vis
 test('picking uses current world transforms immediately after switching boards, before a render',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('chromatron-start-campaign','demo'));
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.goto('/');
+ await page.goto('/?play=1');
  const picked=await page.evaluate(()=>{
   window.chromatron.loadLevels([{title:'Immediate selection',pieces:[
    ['laser',2,7,2,1],['target',7,3,0,2],['mirror',7,7,0,0]
@@ -184,7 +184,7 @@ test('pilot scenery loads all three GLBs on a laptop layout',async({page})=>{
   Object.defineProperty(window,'devicePixelRatio',{get:()=>.70});
  });
  await page.setViewportSize({width:1366,height:768});
- await page.goto('/');
+ await page.goto('/?play=1');
  await expect.poll(()=>page.evaluate(()=>window.chromatron?.getVisualStats().modeledScenery))
   .toEqual({chassis:true,absorber:true,shuttle:true});
  const biome=await page.evaluate(()=>{

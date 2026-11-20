@@ -9,7 +9,7 @@
 | Mechanika | `src/optics.js` śledzi promienie po siatce, składa kanały RGB przy rezonatorach i rozlicza zakończenie. 22 rodzaje elementów, z czego 14 ruchomych. Są m.in. lustra, rozdzielacze, pryzmaty, filtry, portale, Doppler, splątywacze i bramki. |
 | Kamera | Perspektywa 40°, widok 3/4 z obrotem i przełącznikiem widoku z góry. Przybliżenie obsługuje rolkę oraz gest dwóch palców. Kamera odsuwa się przy wąskim ekranie. Wybór elementu używa najbliższej widocznej powierzchni i obsługuje też logiczne pole. |
 | Światło i scena | Osiem światów kampanii z autorskimi modelami GLB, osobną paletą, światłem kierunkowym, mgłą i dekoracjami. EffectComposer łączy scenę, bloom w wyższych profilach i antyaliasing. Wybrane lustra mają odbicia planarne. |
-| Sterowanie i UI | Nad planszą są cel oraz postęp. Zasobnik, historia, podpowiedzi i kamera dzielą jedną dolną belkę. Plansze kampanii są w ilustrowanym atlasie. Na telefonie zasobnik przewija się w poziomie. Dostępne są przeciąganie, obrót, analiza widma, profile grafiki, tryb skupienia i pełny ekran. Interfejs i opisy plansz obsługują PL/EN. |
+| Sterowanie i UI | Menu główne wznawia zapis i otwiera kampanie, ustawienia oraz instrukcję. Nad planszą są cel i postęp. Zasobnik, historia, podpowiedzi i kamera dzielą dolną belkę. Przyrząd można przeciągnąć lub przenieść po wskazaniu nowego pola. Interfejs i opisy plansz obsługują PL/EN. |
 | Zapisy | `localStorage` przechowuje kampanię, postęp, podpowiedzi i ustawienia. Szkice plansz mają identyfikator pakietu i są walidowane przez `src/puzzle-drafts.js`. |
 | Podpowiedzi | Wszystkie 200 znanych plansz ma obserwację PL/EN oraz polską technikę i opis efektu zweryfikowanego ruchu. `src/hint-assistant.js` dobiera kolejny krok na podstawie obecnego układu, a rozwiązanie sprawdza tracer promieni. Kredyty i postęp są przechowywane lokalnie. |
 | Narzędzia | Blender 5.3.0 w `C:\Tools\blender-5.3.0-windows-x64\blender.exe`, sprawdzony bez okna. Playwright 1.65.0 ma projektową instalację Chromium w ignorowanym katalogu `test-results/playwright-browsers`. |
@@ -24,6 +24,7 @@
 - Faza 5 obejmuje 200 polskich zestawów. Drugie odsłonięcie prowadzi do techniki, trzecie podaje pole i obrót oraz wskazuje spodziewany efekt. W razie zmiany drogi wiązki kolejne wskazówki korzystają z aktualnego układu. Pierwotne próbki i eksport do `data/hints.pl.json` pozostają lokalne.
 - Faza 6 obejmuje pełną regresję po zmianie interfejsu, pomiary oraz arkusz z ośmiu publicznych demonstracji. Stan pomiarów i ograniczenia są w [QA_LOG.md](QA_LOG.md).
 - Po fazie 6 dodano przybliżanie dwoma palcami. Dotknięcie zatwierdza wybrane pole dopiero po podniesieniu palca, więc początek gestu daje czas na zmianę przybliżenia przed postawieniem optyki.
+- Menu główne spina start, powrót do częściowego układu i przejście do mapy po finale. Kolejne ulepszenia sterowania są opisane w audycie w [QA_LOG.md](QA_LOG.md).
 
 ## Punkty odniesienia
 

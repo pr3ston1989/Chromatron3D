@@ -1,0 +1,106 @@
+import {test,expect} from '@playwright/test';
+
+test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>{
+  if(!localStorage.getItem('chromatron-start-campaign'))localStorage.setItem('chromatron-start-campaign','demo');
+  if(!localStorage.getItem('chromatron-graphics-quality'))localStorage.setItem('chromatron-graphics-quality','performance');
+ });
+});
+
+test('main menu owns focus, settings apply and Continue restores a partial puzzle',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:1366,height:768});
+ await page.goto('/');
+ const menu=page.locator('#main-menu'),play=page.locator('#menu-play');
+ await expect(play).toBeEnabled();
+ await expect(play).toContainText('GRAJ');
+ await expect(play).toBeFocused();
+ await menu.screenshot({path:'test-results/main-menu-desktop.png'});
+ await expect(page.locator('#play-surface')).toHaveAttribute('inert','');
+ await page.keyboard.press('Shift+Tab');
+ await expect(page.locator('#menu-guide')).toBeFocused();
+ await page.locator('#menu-settings').click();
+ const settings=page.locator('#settings-overlay');
+ await expect(settings).toBeVisible();
+ await expect(menu).toHaveAttribute('inert','');
+ await page.locator('#menu-language').selectOption('en');
+ await page.locator('#menu-quality').selectOption('balanced');
+ await page.locator('#menu-audio').click();
+ await expect(page.locator('#menu-audio')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#settings-title')).toHaveText('SETTINGS');
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#menu-settings')).toBeFocused();
+ await page.locator('#menu-campaign').click();
+ await expect(page.locator('#level-menu')).toBeVisible();
+ await page.locator('#levels-close').click();
+ await expect(page.locator('#menu-campaign')).toBeFocused();
+ await page.locator('#menu-campaign').click();
+ await page.locator('#level-grid [data-level-index="0"]').click();
+ await expect(menu).toBeHidden();
+ await expect(page.locator('#graphics-quality')).toHaveValue('balanced');
+ await page.locator('#inventory button[data-optic-type="mirror"]').click();
+ const tile=await page.evaluate(()=>window.chromatron.projectCell(6,8));
+ await page.mouse.click(tile.x,tile.y);
+ await page.locator('#main-menu-toggle').click();
+ await expect(play).toContainText('CONTINUE');
+ await page.reload();
+ await expect(play).toContainText('CONTINUE');
+ await page.locator('#menu-settings').click();
+ await expect(page.locator('#menu-audio')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#close-settings').click();
+ await play.click();
+ const mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
+ expect(mirror).toMatchObject({inTray:false,x:6,y:8});
+ await expect(page.locator('#play-surface')).not.toHaveAttribute('inert','');
+ expect(errors).toEqual([]);
+});
+
+test('finishing the final puzzle opens the atlas and keeps the completed puzzle visible',async({page})=>{
+ await page.goto('/');
+ await page.locator('#menu-play').click();
+ await page.evaluate(()=>window.chromatron.loadLevels([{title:'Finał',startMovablesInTray:true,pieces:[
+  ['laser',1,7,2,1],['target',6,2,0,1],['mirror',6,7,1,0]
+ ]}]));
+ await page.locator('#inventory button[data-optic-type="mirror"]').click();
+ const point=await page.evaluate(()=>window.chromatron.projectCell(6,7));
+ await page.mouse.click(point.x,point.y);
+ const finish=page.locator('#continue');
+ await expect(finish).toHaveText('ZOBACZ KAMPANIĘ →');
+ await expect(finish).toBeFocused();
+ await finish.click();
+ await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
+ await page.locator('#levels-close').click();
+ await expect(finish).toBeFocused();
+ await page.locator('#menu-from-win').click();
+ await expect(page.locator('#menu-play')).toBeFocused();
+});
+
+test.describe('mobile menu and movement',()=>{
+ test.use({hasTouch:true,viewport:{width:390,height:844},reducedMotion:'reduce'});
+
+ test('touch play and move use reachable controls and reject occupied cells',async({page})=>{
+  await page.goto('/');
+  const menu=page.locator('#main-menu');
+  await expect(page.locator('#menu-guide')).toBeInViewport({ratio:1});
+  await menu.screenshot({path:'test-results/main-menu-mobile.png'});
+  await page.locator('#menu-play').tap();
+  await page.locator('#inventory button[data-optic-type="mirror"]').tap();
+  const project=(x,y)=>page.evaluate(([x,y])=>window.chromatron.projectCell(x,y),[x,y]);
+  const tap=async(x,y)=>{const tile=await project(x,y);await page.touchscreen.tap(tile.x,tile.y)};
+  const board=()=>page.evaluate(()=>window.chromatron.getState());
+  await tap(6,8);
+  await expect(page.locator('#relocate')).toBeInViewport({ratio:1});
+  await page.locator('#relocate').tap();
+  await expect(page.locator('#relocate')).toHaveAttribute('aria-pressed','true');
+  const emitter=(await board()).pieces.find(p=>p.type==='laser');
+  await tap(emitter.x,emitter.y);
+  expect((await board()).pieces.find(p=>p.type==='mirror')).toMatchObject({x:6,y:8});
+  await expect(page.locator('#toast')).toHaveClass(/show/);
+  await expect(page.locator('#relocate')).toHaveAttribute('aria-pressed','true');
+  await tap(8,8);
+  expect((await board()).pieces.find(p=>p.type==='mirror')).toMatchObject({x:8,y:8});
+  await expect(page.locator('#relocate')).toHaveAttribute('aria-pressed','false');
+  await page.locator('#undo').tap();
+  expect((await board()).pieces.find(p=>p.type==='mirror')).toMatchObject({x:6,y:8});
+ });
+});
