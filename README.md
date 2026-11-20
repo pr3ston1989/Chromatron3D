@@ -33,6 +33,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - **Click** a movable optic on the board to select it. Clicking the same optic again does not rotate it.
 - **Click a tray optic**, then click an empty tile to place it. After placement it remains selected for rotation, but no longer follows empty-board clicks.
 - **Q / E** or the visible **↶ / ↷ buttons** rotate the selected optic 45° in opposite directions.
+- **G** or the keyboard icon focuses the board. **Arrows** move the tile cursor, **Enter** selects or places an optic, and **Space** starts moving a selected optic.
 - **Drag a placed optic** to move it; drag empty board space to orbit. **Mouse wheel** rotates the selected optic; **Shift + wheel** zooms (or just wheel when none selected). **Right-click / Escape** cancels selection.
 - On a touch screen, spread or pinch two fingers over the board to zoom. For tap placement, the optic is committed when you lift your finger.
 - With a placed optic selected, choose **Move** and then an empty tile to reposition it with two taps. The move can be undone.
@@ -40,6 +41,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - **C** switches between isometric and top-down camera presets with a smooth transition (respecting reduced-motion preferences).
 - The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.
 - **Ctrl+Z** undo, **Ctrl+Y / Ctrl+Shift+Z** redo, **Escape** closes the active dialog or deselects an optic. With the board idle, **Escape** opens the game menu.
+- **Reset** restores the starting layout. Use **Undo** to recover the layout before reset during the current session. The draft follows the restored layout.
 - **H** opens progressive hints. Three clues per puzzle; skip is offered after the final clue without awarding a solve badge.
 - **PL / EN** header button changes interface and level guidance; language preference saves automatically.
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.

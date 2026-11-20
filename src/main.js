@@ -47,7 +47,7 @@ import {createAtmosphereParticles} from './atmosphere-particles.js';
 import {normalizeQuality,profileFor,reflectionCandidates,nextAutoProfile} from './visual-quality.js';
 import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
-import {classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
+import {boardArrowOffset,classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
 import {createOpticContactShadows} from './optic-contact-shadows.js';
 import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
@@ -118,6 +118,10 @@ composer.addPass(smaaPass);
 composer.addPass(new OutputPass());
 
 $('scene').appendChild(renderer.domElement);
+renderer.domElement.tabIndex=0;
+renderer.domElement.setAttribute('role','application');
+renderer.domElement.setAttribute('aria-describedby','board-keyboard-help');
+renderer.domElement.setAttribute('aria-keyshortcuts','G');
 const ambient=new THREE.AmbientLight(0xc8d6e1,.70);scene.add(ambient);
 const key=new THREE.DirectionalLight(0xffebce,1.67);key.position.set(-8,16,12);scene.add(key);
 const fill=new THREE.PointLight(0x2c6bff,25,35);fill.position.set(9,9,-9);scene.add(fill);
@@ -811,7 +815,9 @@ function setLanguage(next){
  syncFullscreenButton();syncBoardFocus();
  $('language').textContent=language.toUpperCase();
  $('menu-language').value=language;
+ renderer.domElement.setAttribute('aria-label',t(language,'boardKeyboardLabel'));
  updateLocalizedLevel();
+ refreshKeyboardCursor();
 }
 function switchLevelPack(nextLevels){
  if(!Array.isArray(nextLevels)||!nextLevels.length||nextLevels.length>250)
@@ -838,6 +844,12 @@ function switchLevelPack(nextLevels){
  load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
  return levels.length;
 }
+function initialBoard(level,previous=[]){
+ return level.pieces.map(([type,x,y,rot,color],index)=>{
+  const inTray=Boolean(level.startMovablesInTray&&movable.has(type));
+  return {id:previous[index]?.id??++nextId,type,x,y,color,rot:level.sourceGame&&inTray?0:rot,sourceGame:level.sourceGame,inTray};
+ });
+}
 function load(i,{silentIntro=false,allowLocked=false}={}){
  if(!Number.isInteger(i))return false;
  const requested=(i%levels.length+levels.length)%levels.length;
@@ -859,10 +871,8 @@ function load(i,{silentIntro=false,allowLocked=false}={}){
    exposureFrom:cinematic.pass.uniforms.uExposure.value,phase:'in'};
  }
 
- const l=levels[levelIndex];pieces=l.pieces.map(([type,x,y,rot,color])=>{
-  const inTray=Boolean(l.startMovablesInTray&&movable.has(type));
-  return {id:++nextId,type,x,y,color,rot:l.sourceGame&&inTray?0:rot,sourceGame:l.sourceGame,inTray};
- });
+ const l=levels[levelIndex];pieces=initialBoard(l);
+ keyboardCell={x:HALF,y:HALF};
  let restoredDraft=false;
  // Restore a private, validated per-level draft. Invalid or old versions
  // cannot modify the board and are discarded without losing the puzzle.
@@ -1117,6 +1127,7 @@ function syncTransformTools(){
  $('beam-guide-legend').classList.toggle('hidden',!showGuides);
  $('guide-incoming').textContent=t(language,'guideIncoming');
  $('guide-outgoing').textContent=t(language,'guideOutgoing');
+ refreshKeyboardCursor();
 }
 function clearSelection(){wheelRotation.reset();selected=null;placementMode=false;relocation=false;draggedPiece=null;refreshSelection()}
 function selectFromTray(p){
@@ -1489,6 +1500,7 @@ function setBoardZoom(value){
  if(reducedMotion.matches){dist=zoomTarget;updateCamera()}
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
+ setKeyboardCursor(false);
  const touch=e.pointerType==='touch';
  if(touch){
   boardTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1524,8 +1536,61 @@ const hoverOutline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(
  [[-.46,-.46],[.46,-.46],[.46,.46],[-.46,.46]].map(([x,z])=>new THREE.Vector3(x*T,0,z*T))),
  new THREE.LineBasicMaterial({color:0xffdd95,toneMapped:false,depthTest:false}));
 hoverOutline.visible=false;hoverOutline.renderOrder=17;world.add(hoverOutline);
+const keyboardCursor=new THREE.LineLoop(hoverOutline.geometry,
+ new THREE.LineBasicMaterial({color:0xffc65d,toneMapped:false,depthTest:false}));
+keyboardCursor.visible=false;keyboardCursor.renderOrder=19;world.add(keyboardCursor);
+let keyboardCell={x:HALF,y:HALF};
+function setKeyboardCursor(visible){
+ keyboardCursor.visible=visible;
+ $('board-keyboard').classList.toggle('active',visible);
+ refreshKeyboardCursor();
+}
+function keyboardOccupant(){
+ return pieces.find(p=>!p.inTray&&p.x===keyboardCell.x&&p.y===keyboardCell.y);
+}
+function refreshKeyboardCursor(){
+ if(!keyboardCursor.visible)return;
+ const {x,y}=keyboardCell;
+ keyboardCursor.position.copy(vec(x,y,.062));
+ const part=keyboardOccupant();
+ let content=part?t(language,'type'+part.type[0].toUpperCase()+part.type.slice(1)):t(language,'boardEmpty');
+ if(part&&['laser','target','filter'].includes(part.type))content+=' · '+colorName(part.color,language);
+ const action=placingByCell()?(relocation?'boardMoving':'boardCarrying'):null;
+ const status=t(language,'boardCell',{x,y,content})+(action?' · '+t(language,action):'');
+ if($('board-cell-status').textContent!==status)$('board-cell-status').textContent=status;
+}
+function focusKeyboardBoard(){
+ if(!keyboardCursor.visible&&selected&&!selected.inTray)keyboardCell={x:selected.x,y:selected.y};
+ renderer.domElement.focus({preventScroll:true});
+ setKeyboardCursor(true);
+}
+function handleBoardKeyboard(event){
+ if(event.target!==renderer.domElement||event.ctrlKey||event.metaKey||event.altKey)return false;
+ const offset=boardArrowOffset(event.code,camera.matrixWorld.elements);
+ if(!offset&&!['Enter','Space'].includes(event.code))return false;
+ event.preventDefault();
+ if(offset){
+  keyboardCell={x:THREE.MathUtils.clamp(keyboardCell.x+offset.x,0,GRID-1),
+   y:THREE.MathUtils.clamp(keyboardCell.y+offset.y,0,GRID-1)};
+ }else if(!event.repeat){
+  const {x,y}=keyboardCell;
+  if(placingByCell())move(x,y,relocation);
+  else if(event.code==='Space'&&selected&&!selected.inTray)toggleRelocation();
+  else{
+   const part=keyboardOccupant();
+   if(part)select(part);
+   else if(selected)clearSelection();
+  }
+ }
+ setKeyboardCursor(true);
+ return true;
+}
+renderer.domElement.addEventListener('focus',()=>{
+ if(renderer.domElement.matches(':focus-visible'))setKeyboardCursor(true);
+});
+renderer.domElement.addEventListener('blur',()=>setKeyboardCursor(false));
 function setHoverGlow(piece){
- hoverOutline.visible=Boolean(piece&&!piece.inTray&&movable.has(piece.type)&&!placingByCell());
+ hoverOutline.visible=Boolean(piece&&!piece.inTray&&movable.has(piece.type)&&!placingByCell()&&!keyboardCursor.visible);
  if(hoverOutline.visible)hoverOutline.position.copy(vec(piece.x,piece.y,.045));
 }
 renderer.domElement.addEventListener('pointermove',e=>{
@@ -1678,12 +1743,14 @@ document.addEventListener('keydown',e=>{
   return;
  }
  if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement)return;
+ if(handleBoardKeyboard(e))return;
  if(e.code==='Escape'){
   if(selected||down||trayGesture){cancelBoardGesture();finishTrayGesture(null,false);clearSelection()}
   else openMainMenu();
   return;
  }
  if(e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();openLevelAtlas();return}
+ if(e.code==='KeyG'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();focusKeyboardBoard();return}
  if(e.code==='KeyQ')rotate(-1);if(e.code==='KeyE'||e.code==='KeyR')rotate(1);
  if(e.code==='Backspace'||e.code==='Delete'){e.preventDefault();returnToTray()}
  if(e.code==='KeyV' && !e.ctrlKey){toggleAnalyzer();return}
@@ -1712,24 +1779,35 @@ $('level-menu').addEventListener('click',event=>{
 });
 $('prev').onclick=()=>load(levelIndex-1);$('next').onclick=()=>load(levelIndex+1);
 function resetLevel(allowLocked=false){
- try{gameStorage().removeItem(draftKey(currentPackId,levelIndex))}catch{}
- return load(levelIndex,{silentIntro:true,allowLocked});
+ if(!allowLocked&&!getLevelAtlas().entries[levelIndex].unlocked)return false;
+ const level=levels[levelIndex];
+ const changed=Boolean(encodePuzzleDraft(level,pieces,movable));
+ cancelBoardGesture();finishTrayGesture(null,false);
+ if(changed)saveHistory();
+ pieces=initialBoard(level,pieces);
+ selected=null;placementMode=false;relocation=false;tutorialPlaced=false;wheelRotation.reset();
+ closeScreen('win',false);closeScreen('hint-overlay',false);hideLevelIntro();
+ update();
+ if(changed)toast(t(language,'resetUndo'));
+ return true;
 }
 $('reset').onclick=()=>resetLevel();
 $('undo').onclick=undo;$('redo').onclick=redo;
 $('return-tray').onclick=returnToTray;
-$('relocate').onclick=()=>{
+function toggleRelocation(){
  if(!selected||selected.inTray)return;
  relocation=!relocation;
  placementPreview.visible=false;
  syncTransformTools();
-};
+}
+$('relocate').onclick=toggleRelocation;
 $('turn-left').onclick=()=>rotate(-1);
 $('turn-right').onclick=()=>rotate(1);
 $('cancel-selection').onclick=clearSelection;
 $('analysis-toggle').onclick=toggleAnalyzer;
 $('analysis-close').onclick=toggleAnalyzer;
 $('camera-preset').onclick=toggleCameraPreset;
+$('keyboard-board-button').onclick=focusKeyboardBoard;
 $('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>{
  if(levelIndex<levels.length-1){if(load(levelIndex+1))$('main-menu-toggle').focus()}

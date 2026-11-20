@@ -51,9 +51,17 @@ test('partial mirror layout and inventory rotation survive reload; reset clears 
  mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
  expect(mirror).toMatchObject({x:7,y:9,rot:0,inTray:true});
  await expect(page.locator('#draft-status')).toBeEmpty();
+ await expect(page.locator('#undo')).toBeEnabled();
+ await page.locator('#undo').click();
+ mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
+ expect(mirror).toMatchObject({x:6,y:7,rot:1,inTray:false});
+ await expect(page.locator('#draft-status')).toContainText('ZAPISANY');
+ await page.locator('#redo').click();
+ await expect(page.locator('#draft-status')).toBeEmpty();
  await page.reload({waitUntil:'domcontentloaded'});
  mirror=await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
  expect(mirror).toMatchObject({x:7,y:9,rot:0,inTray:true});
+ await expect(page.locator('#undo')).toBeDisabled();
  expect(errors).toEqual([]);
 });
 

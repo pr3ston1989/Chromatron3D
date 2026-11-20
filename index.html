@@ -24,6 +24,10 @@
  </main>
  <div id="play-surface" inert>
  <div id="scene"></div><div class="grain"></div>
+ <div id="board-keyboard" class="board-keyboard">
+  <span id="board-cell-status" role="status" aria-live="polite" aria-atomic="true"></span>
+  <span id="board-keyboard-help" data-i18n="boardKeyboardHelp">Strzałki zmieniają pole. Enter wybiera lub ustawia. Spacja przygotowuje przeniesienie.</span>
+ </div>
  <header class="header">
   <button id="main-menu-toggle" class="brand" type="button" data-i18n-aria="mainMenu" data-i18n-title="mainMenu"><img src="%BASE_URL%portraits/prism.png" alt=""><strong data-i18n="mainMenu">MENU GRY</strong><kbd aria-hidden="true">Esc</kbd></button>
   <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
@@ -68,20 +72,13 @@
     <div class="equipment-heading"><h2 data-i18n="optics">ZASOBNIK</h2><button id="spectral-toggle" class="spectrum-toggle" type="button" data-i18n="spectralShort" aria-expanded="false">WIDMO</button></div>
     <div id="inventory"></div>
    </div>
-   <div class="optic-workbench">
-    <div id="transform-tools" class="transform-tools hidden" role="group" data-i18n-aria="transformAria" aria-label="Wybrany przyrząd">
-     <div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" data-i18n-aria="angleAria" aria-label="Kąt obrotu">000°</span></div>
-     <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="relocate" type="button" aria-pressed="false" data-i18n="relocate">PRZENIEŚ</button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
-     <div id="beam-guide-legend" class="beam-guide-legend hidden"><span class="legend-dot input"></span><span id="guide-incoming">DO LUSTRA</span><span class="legend-dot output"></span><span id="guide-outgoing">ODBICIE</span></div>
-    </div>
-    <div id="optic-info" class="optic-info hidden" role="note" aria-live="polite"></div>
-   </div>
    <div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div>
   </aside>
   <div class="hud-bottom">
    <div class="dock-view">
     <button id="analysis-toggle" class="action-key analyzer-btn" type="button" aria-pressed="false" data-i18n-title="analysisToggle" data-i18n-aria="analysisToggle">∿</button>
     <button id="camera-preset" class="camera-preset" type="button" data-i18n-title="cameraSwitch" aria-pressed="false"><span id="camera-preset-label">WIDOK Z GÓRY</span></button>
+    <button id="keyboard-board-button" class="action-key" type="button" data-i18n-title="boardKeyboardOpen" data-i18n-aria="boardKeyboardOpen">⌨</button>
    </div>
    <div class="quality-widget">
     <label for="graphics-quality" data-i18n="graphicsQuality">GRAFIKA</label>
@@ -93,6 +90,14 @@
     </select><span id="graphics-fps" class="graphics-fps" aria-label="FPS">— FPS</span>
    </div>
   </div>
+ </div>
+ <div class="optic-workbench">
+  <div id="transform-tools" class="transform-tools hidden" role="group" data-i18n-aria="transformAria" aria-label="Wybrany przyrząd">
+   <div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" data-i18n-aria="angleAria" aria-label="Kąt obrotu">000°</span></div>
+   <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="relocate" type="button" aria-pressed="false" data-i18n="relocate">PRZENIEŚ</button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
+   <div id="beam-guide-legend" class="beam-guide-legend hidden"><span class="legend-dot input"></span><span id="guide-incoming">DO LUSTRA</span><span class="legend-dot output"></span><span id="guide-outgoing">ODBICIE</span></div>
+  </div>
+  <div id="optic-info" class="optic-info hidden" role="note" aria-live="polite"></div>
  </div>
  <aside id="analysis-panel" class="analysis-panel hidden" role="region" aria-label="Analiza światła">
   <div class="analysis-heading"><span class="eyebrow" data-i18n="analysisHeading">ANALIZATOR SPEKTRUM</span><button id="analysis-close" class="analysis-close" type="button" data-i18n-aria="analysisClose" aria-label="Zamknij analizę">×</button></div>

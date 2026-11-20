@@ -319,3 +319,9 @@ Oceny dotyczą reprezentatywnych demonstracji. Ciasne skupiska podobnych przyrz�
 | Historia | Cofanie obejmuje normalny ruch i obrót. Reset przeładowuje planszę i czyści historię. | Średni. Umożliwić odzyskanie poprzedniego układu bezpośrednio po przypadkowym resecie. |
 
 Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył problem z fokusem po imporcie z instrukcji. Po poprawce przeszły ponowne próby importu, ustawień, wznowienia zapisu, ostatniej planszy, podpowiedzi i ruchu dotykiem. Trzy nowe scenariusze menu przeszły także w SwiftShader. Odtworzono oraz ponownie otwarto 200 lokalnych plansz z zerem błędów przeglądarki. Raport jest w `test-results/menu-campaigns/report.json`.
+
+## 21 listopada 2026 · plansza klawiaturą i cofanie resetu
+
+- W widoku 1093 × 614 test przechodzi klawiaturą z menu do zasobnika, wybiera lustro, ustawia je na planszy, obraca, przenosi i cofa ruch. Sprawdza też zawartość pola i dostęp do czterech narożników w widoku z góry po wybraniu przyrządu.
+- W teście zapisu reset usuwa bieżący szkic, cofnięcie przywraca położenie i obrót lustra, a ponowienie zapisuje stan początkowy. Po odświeżeniu gra odtwarza stan zapisany przy ostatniej czynności.
+- Przeszły 226 testów Node, build Vite i 37 testów Playwright w Chromium ze sprzętowym WebGL. Scenariusze klawiatury oraz cofania resetu powtórzono również w Chromium z renderowaniem programowym. Zrzut widoku planszy jest w `test-results/keyboard-board.png`.

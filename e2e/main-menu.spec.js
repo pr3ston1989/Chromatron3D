@@ -75,6 +75,51 @@ test('finishing the final puzzle opens the atlas and keeps the completed puzzle 
  await expect(page.locator('#menu-play')).toBeFocused();
 });
 
+test('keyboard navigation selects tray and board optics and places and moves them',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.setViewportSize({width:1093,height:614});
+ await page.goto('/');
+ await expect(page.locator('#menu-play')).toBeFocused();
+ await page.keyboard.press('Enter');
+ await page.keyboard.press('c');
+ await expect(page.locator('#camera-preset')).toHaveAttribute('aria-pressed','true');
+ const tray=page.locator('#inventory button[data-optic-type="mirror"]');
+ for(let n=0;n<24;n++){
+  await page.keyboard.press('Tab');
+  if(await tray.evaluate(el=>document.activeElement===el))break;
+ }
+ await expect(tray).toBeFocused();
+ await page.keyboard.press('Enter');
+ await expect(tray).toHaveAttribute('aria-pressed','true');
+ await page.keyboard.press('g');
+ const board=page.getByRole('application',{name:'Plansza optyczna'});
+ const cell=page.locator('#board-cell-status');
+ await expect(board).toBeFocused();
+ await expect(cell).toContainText('Pole (7, 7)');
+ await page.keyboard.press('ArrowDown');
+ await expect(cell).toContainText('Pole (7, 8)');
+ await page.keyboard.press('Enter');
+ await expect(cell).toContainText('LUSTRO');
+ await page.keyboard.press('e');
+ await expect(page.locator('#rotation-angle')).toHaveText('045°');
+ await page.keyboard.press('Space');
+ await expect(page.locator('#relocate')).toHaveAttribute('aria-pressed','true');
+ await page.keyboard.press('ArrowRight');
+ await page.keyboard.press('Enter');
+ const mirror=()=>page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror'));
+ expect(await mirror()).toMatchObject({x:8,y:8,rot:1,inTray:false});
+ await page.keyboard.press('Escape');
+ await page.keyboard.press('Enter');
+ expect(await page.evaluate(()=>window.chromatron.getState().selectedId)).toBe((await mirror()).id);
+ expect(await page.evaluate(()=>[[0,0],[14,0],[14,14],[0,14]].every(([x,y])=>{
+  const point=window.chromatron.projectCell(x,y);
+  return Boolean(document.elementFromPoint(point.x,point.y)?.closest('#scene'));
+ }))).toBe(true);
+ await page.screenshot({path:'test-results/keyboard-board.png'});
+ await page.keyboard.press('Control+z');
+ expect(await mirror()).toMatchObject({x:7,y:8,rot:1,inTray:false});
+});
+
 test.describe('mobile menu and movement',()=>{
  test.use({hasTouch:true,viewport:{width:390,height:844},reducedMotion:'reduce'});
 

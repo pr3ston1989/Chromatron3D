@@ -154,7 +154,7 @@
 .action-key:hover:not(:disabled), .ui-button:hover:not(:disabled), .transform-controls button:hover:not(:disabled),
 .camera-preset:hover, .spectrum-toggle:hover { border-color: var(--world); color: var(--world); background: #202c39; }
 .analyzer-btn[aria-pressed='true'], .camera-preset[aria-pressed='true'], #spectral-toggle[aria-expanded='true'] { border-color: var(--world); color: var(--world); box-shadow: none; }
-.camera-preset { flex: 1; margin: 0; padding: 5px 4px; font-size: 11px; }
+.camera-preset { flex: 1; margin: 0; padding: 5px 4px; font-size: 11px; white-space: normal; }
 .game-dock .hint-button {
   display: flex;
   justify-content: space-between;
@@ -247,7 +247,7 @@
   transform: translateX(-50%);
   width: min(470px, calc(100vw - 2 * var(--inset)));
 }
-.optic-workbench { display: grid; grid-template-columns: minmax(200px, auto) 1fr; gap: 5px; pointer-events: none; }
+.optic-workbench { z-index: 4; bottom: calc(var(--dock-raised) + 1px); display: grid; grid-template-columns: minmax(200px, auto) 1fr; gap: 5px; pointer-events: none; }
 .transform-tools, .optic-info, #spectral-inspector {
   margin: 0;
   padding: 7px 9px;
@@ -262,10 +262,39 @@
 .rotation-angle { min-width: auto; color: var(--world); background: none; border: 0; margin: 0; padding: 0; }
 .transform-controls { display: flex; align-items: stretch; gap: 4px; }
 .transform-controls button { flex: 1; padding: 5px; font-size: 14px; white-space: nowrap; }
-.transform-controls #return-tray { width: auto; flex: 1.8; margin: 0; font-size: 11px; }
+.transform-controls #return-tray { width: auto; flex: 1.8; margin: 0; font-size: 11px; white-space: normal; }
 .transform-controls #return-tray:disabled { display: none; }
 .beam-guide-legend { padding: 5px 0 0; }
 .optic-info { align-self: end; max-height: 97px; }
+#scene canvas:focus { outline: none; }
+.board-keyboard {
+  position: absolute;
+  z-index: 3;
+  left: var(--inset);
+  bottom: calc(var(--dock-raised) + 8px);
+  width: min(245px, calc(100% - 2 * var(--inset)));
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--amber);
+  background: #141923f2;
+  color: var(--muted);
+  font: 500 10px/1.4 var(--body);
+  pointer-events: none;
+}
+.board-keyboard:not(.active) { width: 1px; height: 1px; overflow: hidden; padding: 0; border: 0; clip-path: inset(50%); }
+.board-keyboard.active ~ .coach { visibility: hidden; }
+#board-cell-status { display: block; margin-bottom: 3px; color: var(--ink); font: 700 15px/1 var(--display); }
+#keyboard-board-button { font-size: 15px; }
+@media (pointer: coarse) { #keyboard-board-button { display: none; } }
+@media (min-width: 820px) and (orientation: landscape) {
+  #play-surface:has(.board-keyboard.active) .optic-workbench {
+    left: auto;
+    right: var(--inset);
+    width: clamp(215px, 24vw, 275px);
+    transform: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 #spectral-inspector { z-index: 4; bottom: calc(100% + 20px); }
 .analysis-panel { inset: auto var(--inset) var(--dock-raised) auto; max-height: calc(100dvh - var(--dock-raised) - 80px); width: min(310px, calc(100vw - 2 * var(--inset))); background: var(--plating); border-radius: 3px; z-index: 5; }
 .coach { inset: auto auto var(--dock-raised) var(--inset); transform: none; width: min(295px, 26vw); min-width: 0; padding: 8px 10px; border: 1px solid #846549; border-left: 3px solid var(--amber); border-radius: 0; background: #211c1bf0; pointer-events: none; }
@@ -433,6 +462,7 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
   .stage-navigation { margin-bottom: 3px; }
   .game-dock { width: min(94vw, 600px); padding: 8px 12px; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 5px 8px; }
   .tool-panel { grid-column: 1/-1; grid-row: 1; border: 0; padding-bottom: 3px; }
+  .board-keyboard { top: 22dvh; bottom: auto; }
   .equipment-bay { padding: 0; }
   .equipment-slots { min-height: 56px; }
   #inventory .equipment-slots button.inventory-item { min-height: 49px; flex-basis: 63px; grid-template-rows: 33px auto; }
@@ -441,7 +471,7 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
   .dock-actions, .hud-bottom { gap: 3px; }
   .game-dock .hint-button { min-height: 30px; }
   .quality-widget select { min-height: 29px; }
-  .optic-workbench { display: block; bottom: calc(100% + 13px); }
+  .optic-workbench { display: block; bottom: calc(var(--dock-raised) + 16px); }
   .optic-info { max-height: 34px; margin-top: 2px; padding: 4px 7px; font-size: 10px; }
   .coach { inset: auto var(--inset) calc(var(--dock-raised) + 24px); transform: none; width: auto; padding: 5px 8px; }
   #app:has(.transform-tools:not(.hidden)) .coach { bottom: calc(var(--dock-raised) + 127px); }

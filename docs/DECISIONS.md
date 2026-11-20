@@ -60,3 +60,8 @@
 - Ścieżka domyślna zaczyna się w menu. Gracz wraca do bieżącej planszy z tego samego zapisu, z którego korzysta rozgrywka. Bezpośredni link `?play=1` wznawia planszę od razu.
 - Górne okno przejmuje klawiaturę oraz blokuje kontrolki znajdujące się pod nim. Zamknięcie przywraca fokus do przycisku otwierającego. Po ukończeniu ostatniej planszy główna akcja otwiera mapę kampanii.
 - „Przenieś” uzbraja przeniesienie dla pojedynczego wybranego przyrządu. Pole docelowe zatwierdza się po zwolnieniu wskaźnika. Zajęte pole pokazuje komunikat i pozostawia akcję aktywną. Udany ruch trafia do historii cofania.
+
+## 21 listopada 2026 · klawiatura i cofanie resetu
+
+- Kursor klawiatury wskazuje jedno pole, a strzałki wynikają z aktualnego kierunku kamery. Enter korzysta z tych samych warunków ustawiania co wskaźnik. Spacja włącza wspólną akcję przeniesienia wybranego przyrządu. Komunikat podaje współrzędne zgodne z podpowiedziami i nazwę zawartości.
+- Reset dodaje migawkę układu do historii przy rzeczywistej zmianie. Cofnięcie odtwarza położenia, kąty i zawartość zasobnika. Nowy stan natychmiast aktualizuje zapis planszy. Historia pozostaje dostępna w bieżącej sesji na planszy.
