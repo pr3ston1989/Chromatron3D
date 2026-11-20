@@ -65,3 +65,8 @@
 
 - Kursor klawiatury wskazuje jedno pole, a strzałki wynikają z aktualnego kierunku kamery. Enter korzysta z tych samych warunków ustawiania co wskaźnik. Spacja włącza wspólną akcję przeniesienia wybranego przyrządu. Komunikat podaje współrzędne zgodne z podpowiedziami i nazwę zawartości.
 - Reset dodaje migawkę układu do historii przy rzeczywistej zmianie. Cofnięcie odtwarza położenia, kąty i zawartość zasobnika. Nowy stan natychmiast aktualizuje zapis planszy. Historia pozostaje dostępna w bieżącej sesji na planszy.
+
+## 21 listopada 2026 · precyzyjny widok z góry
+
+- Widok prostopadły dopasowuje rozmiar i położenie siatki do wolnej przestrzeni między sterowaniem. W poziomym oknie panel wybranego przyrządu znajduje się z boku. Otwarcie panelu podczas chwytania przyrządu aktualizuje kadr po zakończeniu gestu.
+- W widoku prostopadłym wskaźnik wybiera pole siatki, a przy powrocie do perspektywy obowiązuje trafienie w widoczną powierzchnię modelu. Przełączenie przywraca zachowane ustawienie kamery perspektywicznej. Każde wejście do widoku z góry na nowo dopasowuje całą planszę.

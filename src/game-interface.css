@@ -248,6 +248,7 @@
   width: min(470px, calc(100vw - 2 * var(--inset)));
 }
 .optic-workbench { z-index: 4; bottom: calc(var(--dock-raised) + 1px); display: grid; grid-template-columns: minmax(200px, auto) 1fr; gap: 5px; pointer-events: none; }
+.optic-workbench .transform-tools { width: 100%; max-width: none; }
 .transform-tools, .optic-info, #spectral-inspector {
   margin: 0;
   padding: 7px 9px;
@@ -287,6 +288,8 @@
 #keyboard-board-button { font-size: 15px; }
 @media (pointer: coarse) { #keyboard-board-button { display: none; } }
 @media (min-width: 820px) and (orientation: landscape) {
+  #app.board-overhead .mission-copy { width: min(23vw, 315px); }
+  #app.board-overhead .optic-workbench,
   #play-surface:has(.board-keyboard.active) .optic-workbench {
     left: auto;
     right: var(--inset);
@@ -294,6 +297,32 @@
     transform: none;
     grid-template-columns: minmax(0, 1fr);
   }
+}
+#app.board-overhead .transform-controls kbd { display: none; }
+@media (max-width: 1150px) {
+  #app.board-overhead .transform-controls { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  #app.board-overhead .transform-controls :is(#turn-left,#turn-right,#cancel-selection) { grid-column: span 2; }
+  #app.board-overhead .transform-controls #relocate { grid-column: span 4; white-space: normal; }
+  #app.board-overhead .transform-controls #return-tray { grid-column: span 6; }
+}
+@media (min-width: 540px) and (max-width: 819px) and (orientation: landscape) {
+  #app.board-overhead .game-dock {
+    width: min(calc(100% - 2 * var(--inset)), 585px);
+    grid-template-columns: minmax(110px, .9fr) minmax(130px, 1.6fr) minmax(117px, .9fr);
+    padding: 5px 12px;
+  }
+  #app.board-overhead .tool-panel { grid-column: auto; grid-row: auto; padding-inline: 6px; }
+  #app.board-overhead .optic-workbench {
+    left: auto;
+    right: var(--inset);
+    width: clamp(159px, 25vw, 210px);
+    transform: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #app.board-overhead .mission { display: block; }
+  #app.board-overhead .mission-copy { width: 23vw; }
+  #app.board-overhead .mission-objective { margin-top: 7px; }
+  #app.board-overhead .optic-info { max-height: 31px; }
 }
 #spectral-inspector { z-index: 4; bottom: calc(100% + 20px); }
 .analysis-panel { inset: auto var(--inset) var(--dock-raised) auto; max-height: calc(100dvh - var(--dock-raised) - 80px); width: min(310px, calc(100vw - 2 * var(--inset))); background: var(--plating); border-radius: 3px; z-index: 5; }
@@ -471,7 +500,7 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
   .dock-actions, .hud-bottom { gap: 3px; }
   .game-dock .hint-button { min-height: 30px; }
   .quality-widget select { min-height: 29px; }
-  .optic-workbench { display: block; bottom: calc(var(--dock-raised) + 16px); }
+  .optic-workbench { display: block; bottom: calc(var(--dock-raised) + 23px); }
   .optic-info { max-height: 34px; margin-top: 2px; padding: 4px 7px; font-size: 10px; }
   .coach { inset: auto var(--inset) calc(var(--dock-raised) + 24px); transform: none; width: auto; padding: 5px 8px; }
   #app:has(.transform-tools:not(.hidden)) .coach { bottom: calc(var(--dock-raised) + 127px); }
@@ -491,6 +520,9 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
   .header #levels-button { gap: 2px; font-size: 12px; }
   .header .brand strong { letter-spacing: .025em; }
   .level-atlas-grid.sector-grid { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-height: 680px) and (orientation: portrait) {
+  #app.board-overhead .optic-info { max-height: 27px; }
 }
 
 @media (max-height: 470px) and (min-aspect-ratio: 1/1) {

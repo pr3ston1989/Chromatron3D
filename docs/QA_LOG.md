@@ -325,3 +325,10 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - W widoku 1093 × 614 test przechodzi klawiaturą z menu do zasobnika, wybiera lustro, ustawia je na planszy, obraca, przenosi i cofa ruch. Sprawdza też zawartość pola i dostęp do czterech narożników w widoku z góry po wybraniu przyrządu.
 - W teście zapisu reset usuwa bieżący szkic, cofnięcie przywraca położenie i obrót lustra, a ponowienie zapisuje stan początkowy. Po odświeżeniu gra odtwarza stan zapisany przy ostatniej czynności.
 - Przeszły 226 testów Node, build Vite i 37 testów Playwright w Chromium ze sprzętowym WebGL. Scenariusze klawiatury oraz cofania resetu powtórzono również w Chromium z renderowaniem programowym. Zrzut widoku planszy jest w `test-results/keyboard-board.png`.
+
+## 21 listopada 2026 · dostępność pól w widoku z góry
+
+- Pomiar ze Stocznią orbitalną i wybranym rozdzielaczem wykazał, że interfejs przechwytywał kliknięcia na 30 polach w 1093 × 614, 75 w 844 × 390 i 134 w 640 × 360.
+- Test zlicza trafienia we wszystkie 225 środków pól oraz sprawdza klikalność i szerokość przycisków przy dziewięciu rozmiarach od 320 × 568 do 1366 × 768, z tabletem 768 × 1024. Sprawdza też wybór dwóch sąsiednich luster, stabilny kadr podczas chwytania i zachowanie wcześniejszego obrotu oraz zoomu po wyjściu z widoku z góry.
+- Wszystkie pola były dostępne przy każdym z dziewięciu rozmiarów. W emulacji dotyku udało się przenieść ten sam rozdzielacz do narożników w pionie i w poziomie. Przeszły 226 testów Node, build Vite i 38 scenariuszy Playwright w Chromium.
+- Podglądy są w `test-results/precision-390x844.png` oraz `test-results/precision-640x360.png`.

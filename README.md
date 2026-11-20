@@ -38,7 +38,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - On a touch screen, spread or pinch two fingers over the board to zoom. For tap placement, the optic is committed when you lift your finger.
 - With a placed optic selected, choose **Move** and then an empty tile to reposition it with two taps. The move can be undone.
 - **V** toggles the advanced beam analyzer: exact required/received colors, absorbed rays and RGB channel labels.
-- **C** switches between isometric and top-down camera presets with a smooth transition (respecting reduced-motion preferences).
+- **C** opens a straight overhead view fitted between the controls. Press **C** again to return to the previous angle and zoom. Shift+wheel or a two-finger pinch still zooms in either view.
 - The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.
 - **Ctrl+Z** undo, **Ctrl+Y / Ctrl+Shift+Z** redo, **Escape** closes the active dialog or deselects an optic. With the board idle, **Escape** opens the game menu.
 - **Reset** restores the starting layout. Use **Undo** to recover the layout before reset during the current session. The draft follows the restored layout.

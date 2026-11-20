@@ -26,6 +26,7 @@
 - Po fazie 6 dodano przybliżanie dwoma palcami. Dotknięcie zatwierdza wybrane pole dopiero po podniesieniu palca, więc początek gestu daje czas na zmianę przybliżenia przed postawieniem optyki.
 - Menu główne spina start, powrót do częściowego układu i przejście do mapy po finale. Kolejne ulepszenia sterowania są opisane w audycie w [QA_LOG.md](QA_LOG.md).
 - Plansza ma sterowanie klawiaturą, kursor pola i lokalizowaną informację o zawartości. Reset jest odwracalny w historii ruchów bieżącej sesji.
+- Widok z góry kadruje siatkę między widocznymi kontrolkami. Kliknięcie wybiera pole. Powrót do perspektywy przywraca wcześniejszy kąt i zoom.
 
 ## Punkty odniesienia
 

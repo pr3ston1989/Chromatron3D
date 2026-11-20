@@ -76,8 +76,10 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 const compactBoard=window.matchMedia('(max-width:680px), (max-width:960px) and (orientation:portrait)');
-let yaw=-.80,pitch=.86,dist=44;
-let zoomTarget=44,zoomLastFrame=0;
+const defaultZoom=44;
+let yaw=-.80,pitch=.86,zoomLastFrame=0;
+const orbitZoom={current:defaultZoom,target:defaultZoom};
+const overheadZoom={current:defaultZoom,target:defaultZoom};
 let boardFocus=false;
 try{boardFocus=gameStorage().getItem('chromatron-board-focus')==='yes'}catch{}
 let graphicsMode='auto',autoLevel='balanced';
@@ -1245,18 +1247,47 @@ let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
 const beep=soundscape.effect;
 
-let cameraTween=null,cameraTop=false;
+let cameraTween=null,cameraTop=false,overheadBlend=0,overheadFrame=null;
+let orbitAngles={yaw,pitch};
+const activeZoom=()=>cameraTop?overheadZoom:orbitZoom;
 function syncCameraLabel(){
+ $('app').classList.toggle('board-overhead',cameraTop);
  $('camera-preset').setAttribute('aria-pressed',String(cameraTop));
  $('camera-preset-label').textContent=t(language,cameraTop?'analysisCameraIso':'analysisCameraTop');
 }
+const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#spectral-inspector,#coach')];
+const overheadHeader=document.querySelector('.header'),overheadMission=document.querySelector('.mission');
+const overheadDock=document.querySelector('.game-dock');
+function measureOverheadFrame(){
+ if(!cameraTop)return;
+ const portrait=innerHeight>innerWidth;
+ const headerEnd=overheadHeader.getBoundingClientRect().bottom;
+ const top=(portrait?Math.max(headerEnd,overheadMission.getBoundingClientRect().bottom):headerEnd)+8;
+ let bottom=overheadDock.getBoundingClientRect().top-8;
+ const center=innerWidth/2;
+ let halfWidth=center-10;
+ for(const element of overheadObstacles){
+  const bounds=element.getBoundingClientRect();
+  if(!bounds.height||getComputedStyle(element).visibility==='hidden')continue;
+  if(bounds.left<=center&&bounds.right>=center)bottom=Math.min(bottom,bounds.top-8);
+  else halfWidth=Math.min(halfWidth,Math.max(bounds.left-center,center-bounds.right)-8);
+ }
+ const height=Math.max(32,bottom-top);
+ const size=Math.max(32,Math.min(height,halfWidth*2));
+ overheadFrame={distance:GRID*T*innerHeight/(2*size*Math.tan(camera.fov*Math.PI/360)),
+  offset:innerHeight/2-top-height/2};
+}
 function toggleCameraPreset(){
+ if(!cameraTop&&!cameraTween)orbitAngles={yaw,pitch};
  cameraTop=!cameraTop;
- const nextYaw=cameraTop?0:-.80,nextPitch=cameraTop?1.49:.86;
- if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
-  cameraTween=null;yaw=nextYaw;pitch=nextPitch;updateCamera();
- }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,time:performance.now()};
  syncCameraLabel();
+ if(cameraTop){overheadZoom.current=overheadZoom.target=defaultZoom;measureOverheadFrame()}
+ const nextYaw=cameraTop?0:orbitAngles.yaw,nextPitch=cameraTop?Math.PI/2:orbitAngles.pitch;
+ const endBlend=cameraTop?1:0;
+ if(reducedMotion.matches){
+  cameraTween=null;yaw=nextYaw;pitch=nextPitch;overheadBlend=endBlend;updateCamera();
+ }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,
+  blend0:overheadBlend,blend1:endBlend,time:performance.now()};
 }
 function updateCamera(){
  const viewportWidth=innerWidth;
@@ -1267,15 +1298,30 @@ function updateCamera(){
  const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):Math.max(1,pilotMargin);
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&!mobile?(innerHeight<650 ? .93 : .86):1;
- const cameraDistance=dist*portraitScale*focusScale*(pilot&&!mobile?.94:1);
+ const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94:1);
+ const overheadDistance=overheadFrame?overheadFrame.distance*overheadZoom.current/defaultZoom:orbitDistance;
+ const cameraDistance=THREE.MathUtils.lerp(orbitDistance,overheadDistance,overheadBlend);
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
  const viewPitch=Math.max(.27,pitch-(mobile?.22:shipyard.isVisible()?.32:.25)*framing);
  const viewYaw=yaw+.23*framing;
- cameraTarget.y=pilot?(mobile?1.15:-.65):0;
+ cameraTarget.y=(pilot?(mobile?1.15:-.65):0)*(1-overheadBlend);
+ camera.up.set(0,overheadBlend===1?0:1,overheadBlend===1?-1:0);
  camera.position.set(Math.sin(viewYaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(viewYaw)*Math.cos(viewPitch)*cameraDistance);
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
+ const orbitOffset=mobile?0:innerHeight<470?42:30;
+ const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
+ if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
+  camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
 }
+function refreshOverheadLayout(){
+ // Selecting a piece can open controls under a drag. Keep its projected
+ // start position stable until the gesture ends.
+ if(!cameraTop||down||touchPinch||trayGesture?.active)return;
+ measureOverheadFrame();updateCamera();
+}
+const overheadObserver=new ResizeObserver(refreshOverheadLayout);
+for(const element of [overheadHeader,overheadMission,overheadDock,...overheadObstacles])overheadObserver.observe(element);
 function syncBoardFocus(){
  const enabled=boardFocus&&!compactBoard.matches;
  const app=$('app'),btn=$('board-focus');
@@ -1336,17 +1382,15 @@ async function toggleFullscreen(){
 document.addEventListener('fullscreenchange',()=>{
  syncFullscreenButton();
  syncMenuSettings();
- resize();updateCamera();
+ resize();
 });
 function resize(){
  const w=innerWidth,h=innerHeight;
- camera.aspect=w/h;
- if(compactBoard.matches)camera.clearViewOffset();
- else camera.setViewOffset(w,h,0,h<470?42:30,w,h);
  renderer.setSize(w,h);composer.setSize(w,h);
  const pixelRatio=renderer.getPixelRatio();
  fxaaPass.uniforms.resolution.value.set(1/Math.max(1,w*pixelRatio),1/Math.max(1,h*pixelRatio));
  syncBoardFocus();
+ measureOverheadFrame();updateCamera();
 }
 function applyGraphicsQuality(){
  graphicsProfile=profileFor(graphicsMode,autoLevel);
@@ -1374,7 +1418,7 @@ function applyGraphicsQuality(){
  }
  $('graphics-quality').value=graphicsMode;
 }
-window.addEventListener('resize',()=>{resize();updateCamera()});resize();updateCamera();
+window.addEventListener('resize',resize);resize();
 const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function boardPoint(clientX,clientY){
  mouse.set(clientX/innerWidth*2-1,-clientY/innerHeight*2+1);
@@ -1388,8 +1432,13 @@ function cellAt(clientX,clientY,offset){
  const x=Math.round(point.x/T+HALF),y=Math.round(point.z/T+HALF);
  return x>=0&&x<GRID&&y>=0&&y<GRID?{x,y}:null;
 }
+function cellOccupant(cell){
+ return cell&&pieces.find(p=>!p.inTray&&p.x===cell.x&&p.y===cell.y);
+}
 function hit(clientX,clientY){
  const cell=cellAt(clientX,clientY);
+ // The overhead view is a precise tile map even if an optic's model overhangs.
+ if(overheadBlend===1){const part=cellOccupant(cell);return part?{piece:part}:cell}
  // A tall head can cover a neighbouring cell from this camera angle. Resolve
  // the foremost visible surface first, including instanced barrier panels.
  const front=ray.intersectObjects(hitObjects,false)[0];
@@ -1399,7 +1448,7 @@ function hit(clientX,clientY){
   if(piece)return {piece};
  }
  // The full tile is still an easy target in the gaps around a small optic.
- const occupant=cell&&pieces.find(p=>!p.inTray&&p.x===cell.x&&p.y===cell.y);
+ const occupant=cellOccupant(cell);
  return occupant?{piece:occupant}:cell;
 }
 const previewMat=new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.25,depthWrite:false,depthTest:false});
@@ -1486,7 +1535,7 @@ function touchSpan(){
 }
 function beginTouchPinch(){
  resetBoardPointer();
- touchPinch={span:touchSpan(),zoom:zoomTarget};
+ touchPinch={span:touchSpan(),zoom:activeZoom().target};
 }
 function endBoardTouch(e){
  if(!boardTouches.delete(e.pointerId)||!touchPinch)return false;
@@ -1496,8 +1545,9 @@ function endBoardTouch(e){
  return true;
 }
 function setBoardZoom(value){
- zoomTarget=Math.max(22,Math.min(60,value));
- if(reducedMotion.matches){dist=zoomTarget;updateCamera()}
+ const zoom=activeZoom();
+ zoom.target=Math.max(22,Math.min(60,value));
+ if(reducedMotion.matches){zoom.current=zoom.target;updateCamera()}
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
  setKeyboardCursor(false);
@@ -1546,7 +1596,7 @@ function setKeyboardCursor(visible){
  refreshKeyboardCursor();
 }
 function keyboardOccupant(){
- return pieces.find(p=>!p.inTray&&p.x===keyboardCell.x&&p.y===keyboardCell.y);
+ return cellOccupant(keyboardCell);
 }
 function refreshKeyboardCursor(){
  if(!keyboardCursor.visible)return;
@@ -1626,6 +1676,7 @@ renderer.domElement.addEventListener('pointermove',e=>{
  // Orbiting requires a drag on the empty board, not on an optic.
  if(down.button===0){
   placementPreview.visible=false;
+  if(cameraTop)return;
   yaw=down.yaw-dx*.0045;pitch=Math.max(.35,Math.min(1.49,down.pitch+dy*.004));
   updateCamera();
  }
@@ -1712,8 +1763,8 @@ window.addEventListener('pointermove',e=>{
  carriedPortrait.hidden=placementPreview.visible&&Boolean(previewModel);
  if(!carriedPortrait.hidden)carriedPortrait.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';
 });
-window.addEventListener('pointerup',e=>finishTrayGesture(e,true));
-window.addEventListener('pointercancel',e=>finishTrayGesture(e,false));
+window.addEventListener('pointerup',e=>{finishTrayGesture(e,true);refreshOverheadLayout()});
+window.addEventListener('pointercancel',e=>{finishTrayGesture(e,false);refreshOverheadLayout()});
 $('inventory').addEventListener('lostpointercapture',e=>{
  if(e.target===$('inventory'))finishTrayGesture(e,false);
 });
@@ -1729,7 +1780,7 @@ renderer.domElement.addEventListener('wheel',e=>{
  }else{
   wheelRotation.reset();
   const delta=toWheelPixels(e.deltaY,e.deltaMode,innerHeight);
-  setBoardZoom(zoomTarget+delta*.021);
+  setBoardZoom(activeZoom().target+delta*.021);
  }
 },{passive:false});
 document.addEventListener('keydown',e=>{
@@ -1992,11 +2043,12 @@ function animate(time){
  // Damped camera dolly, independent of mouse/trackpad event granularity.
  const zoomDt=Math.min(70,Math.max(0,time-(zoomLastFrame||time-16)));
  zoomLastFrame=time;
- if(Math.abs(zoomTarget-dist)>.015){
+ const zoom=activeZoom();
+ if(Math.abs(zoom.target-zoom.current)>.015){
   const amount=still?1:1-Math.exp(-zoomDt/115);
-  dist+=(zoomTarget-dist)*amount;
+  zoom.current+=(zoom.target-zoom.current)*amount;
   updateCamera();
- }else if(zoomTarget!==dist){dist=zoomTarget;updateCamera()}
+ }else if(zoom.target!==zoom.current){zoom.current=zoom.target;updateCamera()}
  for(let i=opticTweens.length-1;i>=0;i--){
   const a=opticTweens[i];
   const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
@@ -2008,6 +2060,7 @@ function animate(time){
   const f=debugFrozen?1:Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
   yaw=cameraTween.yaw0+(cameraTween.yaw1-cameraTween.yaw0)*ease;
   pitch=cameraTween.pitch0+(cameraTween.pitch1-cameraTween.pitch0)*ease;
+  overheadBlend=THREE.MathUtils.lerp(cameraTween.blend0,cameraTween.blend1,ease);
   if(f===1)cameraTween=null;
   updateCamera();
  }
