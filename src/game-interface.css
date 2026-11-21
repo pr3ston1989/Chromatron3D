@@ -483,17 +483,45 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
 .hint-modal #hint-title { font-size: clamp(34px, 4.5vw, 54px); }
 .hint-modal .modal-wallet { border: 0; border-bottom: 1px solid var(--line); padding: 8px 0; border-radius: 0; background: none; }
 .hint-modal .hint-step .eyebrow { color: var(--world); }
-#win .modal {
-  width: min(560px, 92vw);
-  background: radial-gradient(ellipse at 50% 12%, #76533a8e, transparent 62%), linear-gradient(160deg, #1f2636, #0e1422 64%);
-  border: 1px solid #866948;
+#win { background: #080d18bf; backdrop-filter: blur(6px); }
+#win .victory-modal {
+  width: min(545px, 94vw);
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  padding: 0;
+  text-align: left;
+  color: var(--ink);
+  background: #101522;
+  border: 1px solid #89704f;
   border-top: 3px solid var(--amber);
   box-shadow: 0 15px 75px #070a16, 0 0 42px #ffb05e29;
 }
-#win .eyebrow { color: var(--amber); }
-#win .ui-button { min-height: 39px; }
-.victory-emblem { width: 64px; aspect-ratio: 1; transform: rotate(45deg); margin: 0 auto 24px; border: 1px solid var(--amber); background: radial-gradient(#f8d39a4f, transparent 70%); box-shadow: 0 0 28px #ffcc7544; display: grid; place-items: center; }
-.victory-emblem i { border: 2px solid var(--amber); width: 28px; aspect-ratio: 1; }
+.victory-hero {
+  position: relative;
+  padding: clamp(15px, 3vw, 32px);
+  overflow: hidden;
+  background: linear-gradient(90deg, #111929 6%, #111929b3 50%, #131c2c28),
+    linear-gradient(0deg, #101522 0%, transparent 66%), var(--victory-art, none) center 52% / cover, #253246;
+}
+#win .victory-hero .eyebrow { color: var(--amber); padding-right: 40px; }
+#win .victory-hero h2 { margin: 8px 0 4px; font: 800 clamp(29px, 5vw, 54px)/.94 var(--display); max-width: 12ch; text-wrap: balance; }
+#win .victory-hero p { margin: 0; color: var(--ink); font: 700 15px/1.2 var(--display); }
+.victory-emblem { position: absolute; top: 18px; right: 21px; width: 27px; aspect-ratio: 1; transform: rotate(45deg); border: 1px solid var(--amber); background: #8c663840; box-shadow: 0 0 18px #ffcc7544; display: grid; place-items: center; }
+.victory-emblem i { border: 2px solid var(--amber); width: 12px; aspect-ratio: 1; }
+.victory-body { padding: 0 clamp(14px, 3vw, 32px) clamp(14px, 3vw, 25px); }
+.victory-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.victory-stats > div { padding: 6px 9px; border: 1px solid var(--line); background: #161e2c; }
+.victory-stats strong, .victory-stats span { display: block; }
+.victory-stats strong { color: var(--world); font: 800 23px/1 var(--display); }
+.victory-stats span { margin-top: 3px; color: var(--muted); font: 700 10px/1.2 var(--display); letter-spacing: .08em; }
+#win .win-reward { margin: 7px 0; font: 700 12px/1.25 var(--display) !important; }
+.victory-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+#win .victory-actions button { width: 100%; min-height: 37px; margin: 0; padding: 5px 8px; border-radius: 3px; }
+#win #continue { grid-column: 1 / -1; display: grid; justify-items: start; padding: 8px 11px; text-align: left; background: #f6c583; border-color: #ffdda9; color: #20160d; }
+#win #continue:hover { background: #ffda9f; color: #20160d; }
+#win #continue strong { font: 800 19px/1 var(--display); }
+#win-next { margin-top: 3px; font: 700 12px/1 var(--display); }
+#win-next:empty { display: none; }
 
 @media (min-width: 681px) and (min-aspect-ratio: 1/1) {
   #app.board-focus :is(.mission,.tool-panel) { transform: none; transition: none; overflow: visible; max-height: none; }

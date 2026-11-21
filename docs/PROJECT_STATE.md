@@ -34,6 +34,7 @@
 - Karty kampanii na mapie pokazują zapisany postęp. Wybranie planszy ładuje kampanię, a ponowne wskazanie bieżącej zagadki zachowuje historię ruchów.
 - Menu tytułowe pokazuje nazwę docelowej planszy. Po rozwiązaniu proponuje kolejną dostępną zagadkę lub mapę kampanii.
 - Klawiaturą można przeglądać zakładki kampanii oraz dostępne plansze przy użyciu strzałek. Enter otwiera wybraną planszę.
+- Ekran ukończenia pokazuje wynik bieżącej planszy i dokąd prowadzi główna akcja.
 
 ## Punkty odniesienia
 

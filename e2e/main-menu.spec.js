@@ -72,6 +72,8 @@ test('finishing the final puzzle opens the atlas and keeps the completed puzzle 
  await page.mouse.click(point.x,point.y);
  const finish=page.locator('#continue');
  await expect(finish).toHaveText('ZOBACZ KAMPANIĘ →');
+ await expect(page.locator('#win-next')).toBeEmpty();
+ await expect(page.locator('#win-progress')).toHaveText('1 / 1');
  await expect(finish).toBeFocused();
  await finish.click();
  await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
@@ -87,7 +89,7 @@ test('finishing the final puzzle opens the atlas and keeps the completed puzzle 
  await expect(play).toBeFocused();
 });
 
-test('the title screen offers the next puzzle after a solve and survives a reload',async({page})=>{
+test('the title screen offers the next puzzle after a solve and survives a reload',async({page},testInfo)=>{
  await page.setViewportSize({width:390,height:844});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
@@ -98,6 +100,19 @@ test('the title screen offers the next puzzle after a solve and survives a reloa
  const cell=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.mouse.click(cell.x,cell.y);
  await page.locator('#turn-right').click();
+ await expect(page.locator('#win')).toBeVisible();
+ await expect(page.locator('#win-level')).toHaveText('PIERWSZE ŚWIATŁO');
+ await expect(page.locator('#win-resonators')).toHaveText('1 / 1');
+ await expect(page.locator('#win-progress')).toHaveText('1 / 8');
+ await expect(page.locator('#win-next')).toHaveText('PODWÓJNY ZAKRĘT');
+ for(const [width,height] of [[1366,768],[1280,720],[1093,614],[640,360],[390,844]]){
+  await page.setViewportSize({width,height});
+  await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.victory-actions button')].every(button=>{
+   const b=button.getBoundingClientRect();
+   return b.top>=0&&b.bottom<=innerHeight&&document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('button')===button;
+  })),`${width} × ${height} victory actions`).toBe(true);
+  if(width===390||width===640)await page.screenshot({path:testInfo.outputPath(`victory-${width}x${height}.png`)});
+ }
  await page.locator('#menu-from-win').click();
  const resume=page.locator('#menu-destination');
  await expect(play).toContainText('NASTĘPNA ZAGADKA');

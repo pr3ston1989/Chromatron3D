@@ -45,7 +45,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - **H** opens progressive hints. After revealing a verified move, **Show on the board** marks its tile and keeps the next instruction visible as you play. The final clue also offers a skip without awarding a solve badge.
 - **PL / EN** header button changes interface and level guidance; language preference saves automatically.
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.
-- Navigate demo puzzles with arrows. Progress saves locally.
+- **M** opens the campaign atlas. Use the arrow keys to browse the map and **Enter** to play the focused puzzle. Progress saves locally.
 
 ## Campaigns
 

@@ -182,12 +182,25 @@
   </div>
  </div>
  <div id="win" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="win-title">
-  <div class="modal"><div class="victory-emblem" aria-hidden="true"><i></i></div><div class="eyebrow" data-i18n="complete">EKSPERYMENT UKOŃCZONY</div><h2 id="win-title" data-i18n="aligned">ŚWIATŁO USTAWIONE.</h2>
-   <p data-i18n="completeDesc">Wszystkie rezonatory otrzymały właściwe kolory światła.</p>
-   <p id="win-reward" class="win-reward" aria-live="polite"></p>
-   <button id="continue" class="ui-button accent" type="button" data-i18n="next">NASTĘPNA ZAGADKA →</button>
-   <button id="levels-from-win" class="ui-button win-atlas-button" type="button" data-i18n="atlasOpen">▦ MAPA POZIOMÓW</button>
-   <button id="menu-from-win" class="ui-button win-menu-button" type="button" data-i18n="mainMenu">MENU GRY</button>
+  <div class="modal victory-modal">
+   <header class="victory-hero">
+    <div class="victory-emblem" aria-hidden="true"><i></i></div>
+    <div class="eyebrow" id="win-stage"></div>
+    <h2 id="win-title" data-i18n="complete">EKSPERYMENT UKOŃCZONY</h2>
+    <p id="win-level"></p>
+   </header>
+   <div class="victory-body">
+    <div class="victory-stats">
+     <div><strong id="win-resonators"></strong><span data-i18n="resonators">AKTYWNE REZONATORY</span></div>
+     <div><strong id="win-progress"></strong><span data-i18n="winCampaignProgress">POSTĘP KAMPANII</span></div>
+    </div>
+    <p id="win-reward" class="win-reward" aria-live="polite"></p>
+    <div class="victory-actions">
+     <button id="continue" class="ui-button accent" type="button"><strong id="win-action-label">NASTĘPNA ZAGADKA →</strong><span id="win-next"></span></button>
+     <button id="levels-from-win" class="ui-button win-atlas-button" type="button" data-i18n="atlasOpen">▦ MAPA POZIOMÓW</button>
+     <button id="menu-from-win" class="ui-button win-menu-button" type="button" data-i18n="mainMenu">MENU GRY</button>
+    </div>
+   </div>
   </div>
  </div>
  <div id="help-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">

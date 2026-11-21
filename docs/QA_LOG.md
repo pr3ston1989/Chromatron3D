@@ -374,3 +374,8 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 
 - Test przełącza cztery zakładki lokalnych kampanii bez przeładowania zagadki. Test listy demonstracyjnej sprawdza strzałki, Home, End, Tab i Enter w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844.
 - Przeszło siedem scenariuszy mapy i menu w Chromium, 226 testów Node i build Vite.
+
+## 21 listopada 2026 · ekran ukończenia
+
+- Test sprawdza nazwę bieżącej i następnej planszy, liczbę aktywnych rezonatorów i postęp kampanii. Wszystkie trzy akcje są dostępne w 1366 × 768, 1280 × 720, 1093 × 614, 640 × 360 i 390 × 844. Po finale główna akcja otwiera mapę.
+- Przeszły cztery scenariusze Chromium sprawdzające kampanie, menu i finał, 226 testów Node i build Vite.

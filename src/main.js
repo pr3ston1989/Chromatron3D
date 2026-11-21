@@ -356,6 +356,7 @@ let offeredGuide=null,guidedSolution=null;
 let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,relocation=false,draggedPiece=null;
 let hasPlayed=false,winPending=false;
+let winReward=0;
 let wantsAudio=false,showBoardSymbols=true;
 let saved=0;
 try{
@@ -545,8 +546,8 @@ function rebuildBeams(){
   }
   const earned=rewardOnce(wallet,currentLevelKey());
   wallet=earned.wallet;saveWallet();
-  $('win-reward').textContent=earned.awarded?
-   t(language,'earnedCredits',{amount:earned.awarded}):t(language,'noRewardRepeat');
+  winReward=earned.awarded;
+  syncVictorySummary();
   updateStatus();syncLevelControls();renderLevelAtlas();
   const completedKey=currentLevelKey();
   winPending=true;
@@ -649,6 +650,20 @@ function atlasStage(index,campaign=currentCampaign(),packId=currentPackId){
 }
 function atlasImage(biome){
  return getCampaignWorld(biome)?`url('${import.meta.env.BASE_URL}art/sectors/${biome}.jpg')`:'none';
+}
+function syncVictorySummary(){
+ if(!won)return;
+ const stage=atlasStage(levelIndex),number=String(levelIndex+1).padStart(3,'0');
+ const {solvedCount,total}=getLevelAtlas();
+ const next=levels[levelIndex+1];
+ $('win').style.setProperty('--victory-art',atlasImage(stage.biome));
+ $('win-stage').textContent=t(language,'atlasLevel',{number})+' · '+stage.biomeLabel;
+ $('win-level').textContent=loc(levels[levelIndex].title,language);
+ $('win-resonators').textContent=currentResult.active+' / '+currentResult.total;
+ $('win-progress').textContent=solvedCount+' / '+total;
+ $('win-action-label').textContent=t(language,next?'next':'viewCampaign');
+ $('win-next').textContent=next?loc(next.title,language):'';
+ $('win-reward').textContent=winReward?t(language,'earnedCredits',{amount:winReward}):t(language,'noRewardRepeat');
 }
 function showAtlasStage(biome,title){
  const feature=$('atlas-feature');
@@ -850,7 +865,7 @@ function updateLocalizedLevel(){
  $('mission-world').textContent=atlasStage(levelIndex).biomeLabel;
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
- $('continue').textContent=t(language,levelIndex<levels.length-1?'next':'viewCampaign');
+ syncVictorySummary();
  updateStatus();renderInventory();renderHints();renderAnalyzer();syncCameraLabel();updateCoach();
  syncLevelIntroText();renderLevelAtlas();syncDraftIndicator();syncCampaignTabs();syncMainMenu();syncMenuSettings();
 }
