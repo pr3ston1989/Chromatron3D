@@ -191,3 +191,5 @@ See [modernization plan](docs/MODERNIZATION.md) for the spectral inspector, colo
 Modele 22 przyrządów można obejrzeć i edytować w [katalogu Blendera](art/Instruments.blend). Zasobnik pokazuje miniatury tych samych modeli. Przeciągnij przyrząd na pole lub wybierz go kliknięciem i wskaż pole na planszy. Stałe elementy znajdziesz w rozwijanej sekcji zasobnika.
 
 Gdy przyrządy zajmują więcej miejsca, zasobnik pokazuje strzałki przewijania. Na ekranie dotykowym przesuń palcem w bok, aby przejrzeć przyrządy, lub zacznij przeciąganie w górę, aby podnieść wybrany przyrząd.
+
+Widok z góry (**C**) pokazuje symbole przyrządów. Lustro oznacza ukośna kreska, a rozdzielacz rozwidlenie. Symbole można wyłączyć w ustawieniach z menu gry.

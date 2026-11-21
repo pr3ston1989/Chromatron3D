@@ -17,6 +17,27 @@
   background: linear-gradient(#090e1ac9, transparent 30%, transparent 76%, #090d18a6),
     radial-gradient(ellipse at 50% 44%, transparent 55%, #090d184d);
 }
+#board-symbols {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.board-symbol {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--symbol-size);
+  height: var(--symbol-size);
+  color: #f8f3eb;
+  border: 1px solid var(--symbol-accent);
+  border-radius: 3px;
+  background: #101522ed;
+  box-shadow: 0 1px 3px #08101c99;
+}
+.board-symbol svg { display: block; width: 100%; height: 100%; }
+.board-symbol.selected { border-color: var(--amber); color: var(--amber); }
+.board-symbol[data-optic-type='wall'], .board-symbol[data-optic-type='occupiedSquare'] { opacity: .7; }
 
 /* The top edge is navigation. The board and its objective stay in the scene. */
 .header {

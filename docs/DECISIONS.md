@@ -75,3 +75,8 @@
 
 - Na ekranie dotykowym zasobnik pozostawia poziomy gest przeglądarce. Wyraźny ruch w górę rozpoczyna podnoszenie przyrządu. Dotknięcie kafelka nadal wybiera przyrząd do ustawienia na planszy.
 - Strzałki pojawiają się po przekroczeniu szerokości zasobnika. Przy przewijaniu większej liczby kart zachowują część bieżącego widoku, a na końcu pozostają widoczne z informacją o niedostępności danego kierunku.
+
+## 21 listopada 2026 · symbole optyki w widoku z góry
+
+- Symbole pojawiają się po ustawieniu kamery prostopadle do planszy. Osobna warstwa interfejsu zostawia trafianie w pola płótnu gry. Położenie i wielkość symboli wynikają z rzutu aktualnej siatki, niezależnie od rozdzielczości renderera.
+- Symbole rozróżniają rodzaj przyrządu. Obwódka nadaje dodatkową informację o kolorze lasera, filtra lub rezonatora. Ustawienie wyświetlania jest zapisywane lokalnie.

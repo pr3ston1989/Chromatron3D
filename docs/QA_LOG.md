@@ -338,3 +338,10 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - W emulacji 390 × 844 poziome przesunięcie od środka portretu wcześniej pozostawiało zasobnik przy zerowym przesunięciu. Po poprawce przewija karty bez podnoszenia przyrządu. Przeciągnięcie w górę podnosi przyrząd, anulowanie zostawia go w zasobniku, a puszczenie na wolnym polu ustawia go na planszy.
 - Strzałki przewijania sprawdzono w 1366 × 768, 1280 × 720, 1093 × 614 i 640 × 360. W 390 × 844 test dociera do ostatniej karty i sprawdza krótką etykietę przy zachowaniu pełnej nazwy dostępnej dla czytnika ekranu. Mały zasobnik ukrywa strzałki.
 - Przeszło 226 testów Node, build Vite i pełny przebieg 40 scenariuszy Playwright na sprzętowym Chromium. Nowe scenariusze gestów i przewijania przeszły również w SwiftShader. Zrzuty menu oraz demonstracyjnej Stoczni orbitalnej po załadowaniu modeli są w `test-results/current-game/`.
+
+## 21 listopada 2026 · symbole w widoku z góry
+
+- Test stawia obok siebie lustro i rozdzielacz. Sprawdza rozróżnialne kształty, położenie poza środkiem pola, odstęp między symbolami oraz trafienie w pole po kliknięciu przez symbol. Wymiary okien to 1366 × 768, 1280 × 720, 1093 × 614, 390 × 844 i 640 × 360.
+- Znacznik wraca razem z rozdzielaczem po cofnięciu zwrotu do zasobnika. Wyłączenie symboli w menu jest zachowane po przeładowaniu. Kamera kończy przejście również po naciśnięciu planszy w trakcie animacji.
+- Na demonstracjach Stoczni i Ogrodu symbole są widoczne przy modelach i obok głównej osi wiązki. W 640 × 360 kontrast części linii siatki nadal jest słaby. Zrzuty dla obu światów są w `test-results/current-game/symbols-*.png`.
+- Przeszło 226 testów Node, build Vite i 41 scenariuszy Chromium. Nowy scenariusz przeszedł również w SwiftShader.

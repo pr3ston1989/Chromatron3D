@@ -16,6 +16,7 @@
 - Wiązka i miejsce kontaktu mają najwyższą jasność punktową. Kontrast pokładu z obrysem przewyższa kontrast tła. Sprawdzamy pełne spektrum na wybranych pokładach w 1920 × 1080 i 390 × 844.
 - Pokład równy w całej siatce 15 × 15, odstęp środków pól 1,30 m. Krawędzie płyt i rowki mają niższy kontrast od przyrządów. Zmiana wyglądu poszczególnych pól wyraża stan mechaniki.
 - Przyrząd odróżnia się kształtem, rozkładem trzech wartości jasności i geometrią kierunkową. Lustro ma płaską powierzchnię odbijającą, rozdzielacz wyraźne otwarte rozwidlenie. Kolor emisji dopełnia sylwetkę.
+- W widoku z góry małe symbole o wysokim kontraście pomagają rozpoznać przyrządy także przy małym rozmiarze siatki. Są odsunięte od środka pola. Kształt identyfikuje mechanizm, a kolor obwódki wybranych przyrządów uzupełnia informację o widmie.
 - Plansza utrzymuje rytm symetryczny, a otoczenie kadrują dwie lub trzy duże formy z przerwami między sylwetkami. Ruchome części i dominanty są poza siatką. Dalsze plany mają coraz słabszy kontrast i nasycenie.
 - Domyślny kadr odniesienia to perspektywa o pionowym FOV 40°, odległość 44 m, azymut −0,80 rad, elewacja 0,86 rad. Oceniamy też w grze widok pionowy, z góry i po obrocie. W trybie ograniczonego ruchu otoczenie zachowuje statyczną kompozycję.
 

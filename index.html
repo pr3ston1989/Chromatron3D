@@ -24,6 +24,7 @@
  </main>
  <div id="play-surface" inert>
  <div id="scene"></div><div class="grain"></div>
+ <div id="board-symbols" aria-hidden="true" hidden></div>
  <div id="board-keyboard" class="board-keyboard">
   <span id="board-cell-status" role="status" aria-live="polite" aria-atomic="true"></span>
   <span id="board-keyboard-help" data-i18n="boardKeyboardHelp">Strzałki zmieniają pole. Enter wybiera lub ustawia. Spacja przygotowuje przeniesienie.</span>
@@ -198,6 +199,7 @@
    <div class="settings-heading"><h2 id="settings-title" data-i18n="menuSettings">USTAWIENIA</h2><button id="close-settings" class="level-atlas-close" type="button" data-i18n-aria="menuBack">×</button></div>
    <div class="settings-row"><label for="menu-language" data-i18n="menuLanguage">Język</label><select id="menu-language"><option value="pl">Polski</option><option value="en">English</option></select></div>
    <div class="settings-row"><label for="menu-quality" data-i18n="graphicsQuality">Grafika</label><select id="menu-quality"></select></div>
+   <div class="settings-row"><span id="menu-symbols-label" data-i18n="boardSymbols">Symbole w widoku z góry</span><button id="menu-symbols" class="ui-button" type="button" aria-pressed="true" aria-labelledby="menu-symbols-label"></button></div>
    <div class="settings-row"><span id="menu-sound-label" data-i18n="soundAria">Dźwięk</span><button id="menu-audio" class="ui-button" type="button" aria-pressed="false" aria-labelledby="menu-sound-label"></button></div>
    <button id="settings-fullscreen" class="ui-button" type="button" aria-pressed="false"></button>
   </div>

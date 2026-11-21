@@ -1,5 +1,61 @@
 import {expect,test} from '@playwright/test';
 
+test('top view labels adjacent optics without intercepting their cells',async({page})=>{
+ await page.setViewportSize({width:1366,height:768});
+ await page.addInitScript(()=>{
+  localStorage.setItem('chromatron-start-campaign','demo');
+  localStorage.setItem('chromatron-graphics-quality','performance');
+ });
+ await page.goto('/?play=1');
+ const camera=page.locator('#camera-preset'),symbols=page.locator('#board-symbols');
+ await expect(symbols).toBeHidden();
+ // Deliver a press while the camera is still between its two presets.
+ await page.evaluate(()=>{
+  document.querySelector('#camera-preset').click();
+  document.querySelector('#scene canvas').dispatchEvent(new PointerEvent('pointerdown',{isPrimary:true,button:0}));
+ });
+ await expect(symbols).toBeVisible();
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.evaluate(()=>window.chromatron.loadLevels([{title:'Sąsiednie przyrządy',pieces:[
+  ['laser',1,6,2,1],['target',11,4,0,1],['mirror',7,8,0,0],['splitter',8,8,1,0]
+ ]}]));
+ await expect(symbols.locator('.board-symbol')).toHaveCount(4);
+ const mirror=symbols.locator('[data-optic-type=mirror]');
+ const splitter=symbols.locator('[data-optic-type=splitter]');
+ expect(await mirror.locator('path').getAttribute('d')).not.toBe(await splitter.locator('path').getAttribute('d'));
+ for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844],[640,360]]){
+  await page.setViewportSize({width,height});
+  await expect.poll(()=>page.evaluate(()=>{
+   const parts=window.chromatron.getState().pieces;
+   const marker=type=>document.querySelector(`.board-symbol[data-optic-type="${type}"]`).getBoundingClientRect();
+   const left=marker('mirror'),right=marker('splitter');
+   const part=parts.find(p=>p.type==='splitter');
+   const {x,y}=window.chromatron.projectCell(part.x,part.y);
+   return left.right<=right.left&&right.left>x&&right.top>y&&
+    Boolean(document.elementFromPoint(right.x+right.width/2,right.y+right.height/2)?.closest('#scene'));
+  }),`${width} × ${height} distinct symbols and unobstructed pointer target`).toBe(true);
+ }
+ const box=await splitter.boundingBox();
+ await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+ await expect(splitter).toHaveClass(/selected/);
+ await page.locator('#return-tray').click();
+ await expect(splitter).toHaveCount(0);
+ await page.locator('#undo').click();
+ await expect(splitter).toBeVisible();
+
+ await page.locator('#main-menu-toggle').click();
+ await page.locator('#menu-settings').click();
+ const preference=page.getByRole('button',{name:'Symbole w widoku z góry'});
+ await expect(preference).toHaveAttribute('aria-pressed','true');
+ await preference.click();
+ await page.keyboard.press('Escape');
+ await page.locator('#menu-play').click();
+ await expect(symbols).toBeHidden();
+ await page.reload();
+ await camera.click();
+ await expect(symbols).toBeHidden();
+});
+
 test('shipyard pilot frames the mobile grid and keeps the same playable splitter puzzle',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto('/?debug=1');

@@ -28,6 +28,7 @@
 - Plansza ma sterowanie klawiaturą, kursor pola i lokalizowaną informację o zawartości. Reset jest odwracalny w historii ruchów bieżącej sesji.
 - Widok z góry kadruje siatkę między widocznymi kontrolkami. Kliknięcie wybiera pole. Powrót do perspektywy przywraca wcześniejszy kąt i zoom.
 - Pełny zasobnik ma strzałki przewijania. Poziomy gest na ekranie dotykowym przewija też od miniatury przyrządu, a rozpoczęcie gestu w górę podnosi przyrząd.
+- W widoku z góry mały symbol przy modelu oznacza typ przyrządu. Symbole są dopasowane do kadru i można je wyłączyć w ustawieniach.
 
 ## Punkty odniesienia
 

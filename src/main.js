@@ -49,6 +49,7 @@ import {easeOutCubic,shortestAngle,travelDuration} from './optic-motion.js';
 import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
 import {boardArrowOffset,classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
+import {createBoardSymbols} from './board-symbols.js';
 import {createOpticContactShadows} from './optic-contact-shadows.js';
 import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
@@ -349,7 +350,7 @@ let hintWorker=null,solvingId=null,solverStatus='';
 let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,relocation=false,draggedPiece=null;
 let hasPlayed=false,winPending=false;
-let wantsAudio=false;
+let wantsAudio=false,showBoardSymbols=true;
 let saved=0;
 try{
  saved=Number(gameStorage().getItem('chromatron-reborn-level-'+currentPackId)??
@@ -363,6 +364,7 @@ try{
  else if(/^classic[1-4]$/.test(previous)&&classicLibrary.has(Number(previous.slice(7))))campaignPreference=previous;
  coachDismissed=gameStorage().getItem('chromatron-coach-dismissed')==='yes';
  wantsAudio=gameStorage().getItem('chromatron-audio')==='on';
+ showBoardSymbols=gameStorage().getItem('chromatron-board-symbols')!=='off';
  solved=JSON.parse(gameStorage().getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(gameStorage().getItem('chromatron-reborn-skipped')||'[]');
  spectrumActive=gameStorage().getItem('chromatron-reborn-spectrum')==='true';
@@ -937,12 +939,14 @@ function refreshSelection(){
  reconcileMirrorReflections();
  rebuildSelectionGuides();renderInventory();updateCoach();syncTransformTools();
  placementPreview.visible=false;
+ syncBoardSymbols();
 }
 function update(){
  rebuildBeams();rebuildPieces();
  selectionReticle.setPiece(selected);
  rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
  placementPreview.visible=false;
+ syncBoardSymbols();
  persistDraft();
 }
 function syncEquipmentScroll(){
@@ -1273,6 +1277,12 @@ function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');
 const beep=soundscape.effect;
 
 let cameraTween=null,cameraTop=false,overheadBlend=0,overheadFrame=null;
+const symbolPoint=new THREE.Vector3();
+const boardSymbols=createBoardSymbols($('board-symbols'),(x,y)=>{
+ symbolPoint.set((x-HALF)*T,0,(y-HALF)*T).project(camera);
+ return {x:(symbolPoint.x+1)*innerWidth/2,y:(1-symbolPoint.y)*innerHeight/2};
+});
+function syncBoardSymbols(){boardSymbols.update(showBoardSymbols&&overheadBlend===1,pieces,selected)}
 let orbitAngles={yaw,pitch};
 const activeZoom=()=>cameraTop?overheadZoom:orbitZoom;
 function syncCameraLabel(){
@@ -1338,6 +1348,7 @@ function updateCamera(){
  const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
  if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
   camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
+ syncBoardSymbols();
 }
 function refreshOverheadLayout(){
  // Selecting a piece can open controls under a drag. Keep its projected
@@ -1575,6 +1586,7 @@ function setBoardZoom(value){
  if(reducedMotion.matches){zoom.current=zoom.target;updateCamera()}
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
+ if(cameraTween)return;
  setKeyboardCursor(false);
  const touch=e.pointerType==='touch';
  if(touch){
@@ -1587,7 +1599,6 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  if(boardFocus)closeFocusDrawers();
  hideOpticTooltip();setHoverGlow(null);
  if(e.button!==0&&e.button!==2)return;
- cameraTween=null;
  // Placement always uses the board's world-space cell, not a raycast mesh:
  // raised optics and glass can otherwise steal a click on an empty tile.
  const placing=e.button===0&&placingByCell();
@@ -1997,7 +2008,14 @@ $('close-help').onclick=()=>closeScreen('help-overlay');
 $('close-settings').onclick=()=>closeScreen('settings-overlay');
 $('menu-language').onchange=event=>setLanguage(event.target.value);
 $('settings-fullscreen').onclick=toggleFullscreen;
+$('menu-symbols').onclick=()=>{
+ showBoardSymbols=!showBoardSymbols;
+ store('chromatron-board-symbols',showBoardSymbols?'on':'off');
+ syncMenuSettings();syncBoardSymbols();
+};
 function syncMenuSettings(){
+ $('menu-symbols').textContent=t(language,showBoardSymbols?'soundOn':'soundOff');
+ $('menu-symbols').setAttribute('aria-pressed',String(showBoardSymbols));
  $('menu-audio').textContent=t(language,wantsAudio?'soundOn':'soundOff');
  $('menu-audio').setAttribute('aria-pressed',String(wantsAudio));
  $('audio').setAttribute('aria-pressed',String(wantsAudio));
