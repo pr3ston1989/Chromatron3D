@@ -15,7 +15,7 @@
  */
 export const DX=Object.freeze([0,1,1,1,0,-1,-1,-1]);
 export const DY=Object.freeze([-1,-1,0,1,1,1,0,-1]);
-export const COLORS=Object.freeze(['#000000','#ff3b62','#6afba1','#ffe778','#6399ff','#ed65ff','#5ff8ef','#ffffff']);
+export const COLORS=Object.freeze(['#000000','#ff252f','#29fa23','#ffda17','#306aff','#ff27e9','#0cf1ff','#ffffff']);
 export const movable=new Set(['mirror','bender','filter','prism','doppler','splitter','tangler',
  'multiFilter','complementor','logicGate','mobileTeleporter','dualReflector','quadBender','primaryLogicGate']);
 const wrap=n=>(n+16)%8, inBounds=(x,y)=>x>=0&&y>=0&&x<15&&y<15, id=(x,y)=>x+','+y;

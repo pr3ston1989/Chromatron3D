@@ -44,7 +44,7 @@ Kolory sRGB. Tabela i moduł Blendera stosują domieszkę czerni 19% i 38% oraz 
 | `cyan` | `#3F7B80` | `#52A0A7` | `#65C6CE` | `#84D1D8` | `#A3DDE2` |
 | `amber` | `#8C693B` | `#B6894D` | `#E1A95F` | `#E7BA7F` | `#EDCB9F` |
 
-Mechanika wiązek używa masek R=1, G=2, B=4. Kolory z gry w kolejności maski 1–7 to `#FF3B62`, `#6AFBA1`, `#FFE778`, `#6399FF`, `#ED65FF`, `#5FF8EF`, `#FFFFFF`. Kolory portów i rezonatorów zależne od stanu korzystają z tej samej palety.
+Mechanika wiązek używa masek R=1, G=2, B=4. Kolory z gry w kolejności maski 1–7 to `#FF252F`, `#51FF27`, `#FFDA17`, `#306AFF`, `#FF27E9`, `#0CF1FF`, `#FFFFFF`. Wiązka ma nasycony rdzeń, którego miękka krawędź przechodzi w poświatę. Soczewka pokazuje wymagany kolor rezonatora niezależnie od oświetlenia biomu. Prawidłowe trafienie rozjaśnia soczewkę i dodaje poświatę w kolorze rezonatora.
 
 ## Geometria i eksport
 

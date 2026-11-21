@@ -2,6 +2,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from './classic-pieces.js';
 
 const housings={
+ kepler:{'Naval enamel':0x1c3354,'Titanium chamfers':0x86a4b9,'Copper fittings':0xbc794c,'Porcelain':0xc4d1da},
  garden:{'Naval enamel':0x6a5136,'Titanium chamfers':0xb38550,'Copper fittings':0xd4aa70,'Porcelain':0xe3c698},
  grotto:{'Naval enamel':0x534268,'Titanium chamfers':0xaa86c4,'Copper fittings':0xa15f9c,'Porcelain':0xd0afd6},
  shipyard:{'Naval enamel':0x2b3e54,'Titanium chamfers':0xa0b5cc,'Copper fittings':0x6f869c,'Porcelain':0xc3d5e3}
@@ -46,14 +47,21 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,onReady,loader
    catalog.set(type,scene);onReady?.(type);
   },undefined,()=>{});
  }
- function tint(model,color,energized){
+ function tint(model,color,energized,type){
+  const isSignal=type==='laser'||type==='target';
+  const intensity=type==='target'&&!energized?.43:1;
   model.traverse(node=>{
    if(!node.isMesh||node.material.name!=='glow')return;
-   const key=color.getHex()+':'+energized;
+   const key=color.getHex()+':'+energized+':'+(isSignal?type:'optic');
    if(!lenses.has(key)){
-    const mat=node.material.clone();
-    mat.color.copy(color);mat.emissive.copy(color);
-    mat.emissiveIntensity=energized?1.55:.64;
+    const mat=isSignal
+     ?new THREE.MeshBasicMaterial({name:'glow',side:node.material.side,toneMapped:false})
+     :node.material.clone();
+    mat.color.copy(color).multiplyScalar(intensity);
+    if(mat.emissive){
+     mat.emissive.copy(color);
+     mat.emissiveIntensity=energized?1.55:.64;
+    }
     lenses.set(key,mat);
    }
    node.material=lenses.get(key);
@@ -64,7 +72,7 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,onReady,loader
   if(model){
    if(deck&&type!=='wall')model.scale.set(1.16,1,1.16);
    model.traverse(node=>{if(node.isMesh)node.material=finish(node.material,deck)});
-   tint(model,color,energized);
+   tint(model,color,energized,type);
   }
   return model;
  }

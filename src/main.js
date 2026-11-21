@@ -33,6 +33,7 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {createTerraces} from './terraces.js';
 import {createShipyard} from './shipyard.js';
 import {createCampaignArt} from './campaign-art.js';
+import {createOrbitalBenchmark,orbitalArt,orbitalLevel} from './orbital-benchmark.js';
 import {campaignWorld, getCampaignWorld} from './campaign-worlds.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
@@ -60,11 +61,21 @@ import './level-atlas.css';
 import './stage-arrival.css';
 import './game-interface.css';
 import './main-menu.css';
+import './orbital-benchmark.css';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const searchParams=new URLSearchParams(location.search);
 const debugEnabled=searchParams.get('debug')==='1';
-const startsInGame=debugEnabled||searchParams.get('play')==='1';
+const orbitalPilot=searchParams.get('benchmark')==='orbital';
+const startsInGame=orbitalPilot||debugEnabled||searchParams.get('play')==='1';
+$('app').classList.toggle('orbital-pilot',orbitalPilot);
+if(orbitalPilot){
+ const header=document.querySelector('.header');
+ const sector=$('mission-world');
+ sector.className='pilot-sector';header.insertBefore(sector,header.querySelector('.header-right'));
+ header.querySelector('.header-right').prepend($('camera-preset'));
+ document.querySelector('.hud-bottom').append($('hint'),$('review-result'));
+}
 const baselineScenery=debugEnabled&&searchParams.get('pilot')==='0';
 const debugData=debugEnabled?new Map():null;
 const transientStorage=debugData&&{
@@ -72,14 +83,19 @@ const transientStorage=debugData&&{
  setItem:(key,value)=>debugData.set(key,String(value)),
  removeItem:key=>debugData.delete(key)
 };
-const gameStorage=()=>transientStorage||window.localStorage;
+const pilotStorage={
+ getItem:key=>localStorage.getItem('kepler:'+key)??(['chromatron-reborn-language','chromatron-graphics-quality','chromatron-audio'].includes(key)?localStorage.getItem(key):null),
+ setItem:(key,value)=>localStorage.setItem('kepler:'+key,value),
+ removeItem:key=>localStorage.removeItem('kepler:'+key)
+};
+const gameStorage=()=>transientStorage||(orbitalPilot?pilotStorage:window.localStorage);
 let debugFrozen=false,debugTheme=null;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 const compactBoard=window.matchMedia('(max-width:680px), (max-width:960px) and (orientation:portrait)');
 const defaultZoom=44;
-let yaw=-.80,pitch=.86,zoomLastFrame=0;
+let yaw=orbitalPilot?-.56:-.80,pitch=.86,zoomLastFrame=0;
 const orbitZoom={current:defaultZoom,target:defaultZoom};
 const overheadZoom={current:defaultZoom,target:defaultZoom};
 let boardFocus=false;
@@ -128,6 +144,12 @@ renderer.domElement.setAttribute('aria-describedby','board-keyboard-help');
 renderer.domElement.setAttribute('aria-keyshortcuts','G');
 const ambient=new THREE.AmbientLight(0xc8d6e1,.70);scene.add(ambient);
 const key=new THREE.DirectionalLight(0xffebce,1.67);key.position.set(-8,16,12);scene.add(key);
+if(orbitalPilot){
+ renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
+ key.castShadow=true;key.shadow.mapSize.set(1536,1536);
+ Object.assign(key.shadow.camera,{left:-23,right:23,top:23,bottom:-23,near:.5,far:68});
+ key.shadow.camera.updateProjectionMatrix();key.shadow.normalBias=.028;key.shadow.bias=-.00018;
+}
 const fill=new THREE.PointLight(0x2c6bff,25,35);fill.position.set(9,9,-9);scene.add(fill);
 const world=new THREE.Group();scene.add(world);
 const legacyScenery=new THREE.Group();world.add(legacyScenery);
@@ -143,6 +165,7 @@ const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,
 applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const sceneryLoader=new GLTFLoader();
+const orbitalScene=orbitalPilot?createOrbitalBenchmark(THREE,scene,world,sceneryLoader,syncBoardPresentation):null;
 const campaignArt=createCampaignArt(THREE,scene,world,{loader:sceneryLoader,onReady:syncBoardPresentation});
 const shipyard=createShipyard(THREE,scene,world,{
  loader:sceneryLoader,
@@ -246,10 +269,11 @@ const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7ffff
 const soundscape=createSoundscape();
 let activeEnvironment=null,baseEnvironment=null;
 function artForLevel(index,campaign=currentCampaign()){
+ if(orbitalPilot&&levels[index]===orbitalLevel)return orbitalArt;
  if(baselineScenery)return null;
  return debugTheme?getCampaignWorld(debugTheme):campaignWorld(campaign,index);
 }
-function usesNewArt(){return shipyard.isVisible()||campaignArt.isVisible()}
+function usesNewArt(){return orbitalScene?.isVisible()||shipyard.isVisible()||campaignArt.isVisible()}
 function syncBoardPresentation(){
  const preview=usesNewArt();
  legacyScenery.visible=legacyAtmosphere.visible=!preview;
@@ -262,6 +286,10 @@ function syncBoardPresentation(){
  key.intensity=sunset?2.04:preview?1.61:1.67;
  fill.intensity=sunset?9:preview?16:25;
  ambient.intensity=preview?.43:.70;
+ if(orbitalScene?.isVisible()){
+  key.position.set(-13,22,6);key.intensity=1.64;ambient.intensity=.31;
+  renderer.shadowMap.needsUpdate=true;
+ }
  if(preview){
   scene.fog.color.setHex(activeEnvironment.fog);
   scene.fog.density=.007;
@@ -275,8 +303,9 @@ function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:art?.legacyId??debugTheme});
  baseEnvironment=theme;
  activeEnvironment=art??theme;
+ orbitalScene?.setLevel(art===orbitalArt);
  shipyard.setLevel(art?.id==='shipyard',currentCampaign(),levelIndex);
- campaignArt.setLevel(art?.id==='shipyard'?null:art,currentPackId,levelIndex);
+ campaignArt.setLevel(art?.id==='shipyard'||art===orbitalArt?null:art,currentPackId,levelIndex);
  if(theme.id==='orbital')loadOrbitalChassis();
  syncBoardPresentation();
  soundscape.setBiome(activeEnvironment.id);
@@ -334,7 +363,7 @@ const guideGroup=new THREE.Group();world.add(guideGroup);
 const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T),T);
 const wheelRotation=createWheelRotation();
 const hitObjects=[];
-const demoLevels=validateLevels(PROTOTYPE_LEVELS);
+const demoLevels=orbitalPilot?[orbitalLevel]:validateLevels(PROTOTYPE_LEVELS);
 let levels=demoLevels,levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let wallet=normalizeWallet(null);
@@ -350,7 +379,7 @@ for(let game=1;game<=4;game++){
   }
  }catch{}
 }
-for(const {game,levels:pack} of globalThis.chromatronLocalCampaigns||[])classicLibrary.set(game,pack);
+if(!orbitalPilot)for(const {game,levels:pack} of globalThis.chromatronLocalCampaigns||[])classicLibrary.set(game,pack);
 delete globalThis.chromatronLocalCampaigns;
 const firstOriginal=[...classicLibrary.keys()].sort((a,b)=>a-b)[0];
 let campaignPreference=firstOriginal?'classic'+firstOriginal:'demo';
@@ -440,7 +469,7 @@ function rebuildPieces(){
    head.add(model);g.add(head);
    if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
    if(p.type==='target')g.userData.modelActive=energized;
-   model.traverse(c=>{if(c.isMesh){c.userData.piece=p;hitObjects.push(c)}});
+   model.traverse(c=>{if(c.isMesh){c.castShadow=orbitalPilot;c.userData.piece=p;hitObjects.push(c)}});
   }else{
    // Keep the exact silhouette visible and selectable while the mesh arrives.
    // Slow or interrupted downloads use the matching Blender portrait.
@@ -481,6 +510,7 @@ function rebuildPieces(){
  // Input may arrive between loading/rebuilding a mesh and the next draw.
  // Raycasters must already see the new board positions in that interval.
  componentGroup.updateWorldMatrix(true,true);
+ if(orbitalPilot)renderer.shadowMap.needsUpdate=true;
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
 let levelTransition=null;
@@ -626,6 +656,7 @@ function playFromMainMenu(){
  enterGame();
 }
 function openMainMenu(){
+ if(orbitalPilot){location.assign(location.pathname);return}
  hideLevelIntro();
  syncMainMenu();showScreen('main-menu','menu-play');
 }
@@ -875,6 +906,7 @@ function updateLocalizedLevel(){
  packLabel.removeAttribute('data-i18n');
  packLabel.textContent=t(language,packLabelKey());
  $('mission-world').textContent=atlasStage(levelIndex).biomeLabel;
+ if(orbitalPilot)$('level-pack-label').textContent=t(language,'orbitalDemo');
  $('prev').setAttribute('aria-label',language==='pl'?'Poprzednia zagadka':'Previous puzzle');
  $('next').setAttribute('aria-label',language==='pl'?'Następna zagadka':'Next puzzle');
  syncVictorySummary();
@@ -922,7 +954,7 @@ function switchLevelPack(nextLevels,requestedIndex){
 }
 function initialBoard(level,previous=[]){
  return level.pieces.map(([type,x,y,rot,color],index)=>{
-  const inTray=Boolean(level.startMovablesInTray&&movable.has(type));
+  const inTray=movable.has(type)&&Boolean(level.startMovablesInTray||level.trayIndices?.includes(index));
   return {id:previous[index]?.id??++nextId,type,x,y,color,rot:level.sourceGame&&inTray?0:rot,sourceGame:level.sourceGame,inTray};
  });
 }
@@ -940,6 +972,7 @@ function load(i,{silentIntro=false,allowLocked=false}={}){
  // ── Level transition animation: fog-in → swap → fog-out ──
  const prevBiome=activeEnvironment?.id;
  levelIndex=requested;
+ closeReceiver();
  applyLevelEnvironment();
  const newBiome=activeEnvironment?.id;
  if(prevBiome&&prevBiome!==newBiome&&!reducedMotion.matches){
@@ -1074,6 +1107,7 @@ function renderInventory(){
   const label=type==='filter'?typeLabel+' · '+colorName(color,language):typeLabel;
   const tray=candidates.filter(p=>p.inTray);
   const movableType=movable.has(type);
+  if(orbitalPilot&&(!movableType||!tray.length))continue;
   const item=document.createElement(movableType?'button':'div');
   item.className='inventory-item'+(movableType?' selectable':'');
   if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
@@ -1130,6 +1164,32 @@ function renderInventory(){
  }
  $('return-tray').disabled=!(selected&&!selected.inTray&&movable.has(selected.type));
  renderSpectrum();
+ refreshReceiver();
+}
+let inspectedReceiver=null;
+function closeReceiver(restoreFocus=false){
+ inspectedReceiver=null;
+ $('receiver-card').hidden=true;
+ $('receiver-toggle').setAttribute('aria-expanded','false');
+ if(restoreFocus)$('receiver-toggle').focus();
+}
+function refreshReceiver(){
+ if(!inspectedReceiver)return;
+ const part=pieces.find(piece=>piece.id===inspectedReceiver);
+ if(!part){closeReceiver();return}
+ $('receiver-name').textContent=t(language,'spectralTarget')+' · '+(part.x+1)+', '+(part.y+1);
+ for(const [id,mask] of [['receiver-required',part.color],['receiver-actual',currentResult?.received.get(part.id)||0]]){
+  $(id).textContent=mask?colorName(mask,language):t(language,'analysisNoLight');
+  $(id).style.setProperty('--signal',mask?COLORS[mask]:'#516075');
+ }
+}
+function inspectReceiver(part){
+ if(!part)return;
+ inspectedReceiver=part.id;
+ hideOpticTooltip();
+ $('receiver-card').hidden=false;
+ $('receiver-toggle').setAttribute('aria-expanded','true');
+ refreshReceiver();
 }
 function renderSpectrum(){
  const panel=$('spectral-inspector');
@@ -1267,6 +1327,8 @@ function redo(){
  update();syncUndoButtons();beep(580,.045);
 }
 function select(p){
+ if(orbitalPilot&&p.type==='target'){inspectReceiver(p);return}
+ closeReceiver();
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
  // Clicking the same optic again is intentionally inert: rotation is explicit.
  if(selected===p && !placementMode&&!relocation)return;
@@ -1301,7 +1363,7 @@ function syncTargetGlow(){
   if(piece?.type!=='target'||group.userData.modelActive===undefined)continue;
   const active=(currentResult?.received.get(piece.id)||0)===piece.color;
   if(group.userData.modelActive!==active){
-   opticModels.tint(group,new THREE.Color(COLORS[piece.color]),active);
+   opticModels.tint(group,new THREE.Color(COLORS[piece.color]),active,piece.type);
    group.userData.modelActive=active;
   }
  }
@@ -1411,7 +1473,7 @@ function updateCamera(){
  const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):Math.max(1,pilotMargin);
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&!mobile?(innerHeight<650 ? .93 : .86):1;
- const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94-.19*closeup:1);
+ const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94-.19*closeup:1)*(orbitalPilot&&!mobile?.94:1);
  const overheadDistance=overheadFrame?overheadFrame.distance*overheadZoom.current/defaultZoom:orbitDistance;
  const cameraDistance=THREE.MathUtils.lerp(orbitDistance,overheadDistance,overheadBlend);
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
@@ -1423,7 +1485,7 @@ function updateCamera(){
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
  const portraitOffset=pilot&&viewportWidth<innerHeight?Math.min(88,Math.max(0,(innerHeight-600)*.35)):0;
- const orbitOffset=mobile?portraitOffset:innerHeight<470?42:30+innerHeight*.075*closeup;
+ const orbitOffset=mobile?portraitOffset:innerHeight<470?42:30+innerHeight*(orbitalPilot?.045:.075)*closeup;
  const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
  if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
   camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
@@ -1515,6 +1577,10 @@ function resize(){
  measureOverheadFrame();updateCamera();
 }
 function applyGraphicsQuality(){
+ if(orbitalPilot){
+  renderer.shadowMap.enabled=(graphicsMode==='auto'?autoLevel:graphicsMode)!=='performance';
+  renderer.shadowMap.needsUpdate=true;
+ }
  graphicsProfile=profileFor(graphicsMode,autoLevel);
  spaceEnvironments.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  heroScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
@@ -1826,6 +1892,7 @@ renderer.domElement.addEventListener('pointerup',e=>{
  // Clicking an optic only selects it. Clicking elsewhere only places a
  // tray optic, otherwise it cancels selection (never warps an existing optic).
  const intent=classifyClick(state.origin,selected,placementMode);
+ if(orbitalPilot&&intent.piece?.type!=='target')closeReceiver();
  if(intent.action==='select')select(intent.piece);
  else if(intent.action==='place')move(intent.x,intent.y);
  else if(selected)clearSelection();
@@ -1923,6 +1990,7 @@ document.addEventListener('keydown',e=>{
  if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement)return;
  if(handleBoardKeyboard(e))return;
  if(e.code==='Escape'){
+  if(inspectedReceiver){closeReceiver(true);return}
   if(selected||down||trayGesture){cancelBoardGesture();finishTrayGesture(null,false);clearSelection()}
   else openMainMenu();
   return;
@@ -1944,6 +2012,17 @@ $('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
 $('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
 $('levels-close').onclick=closeLevelAtlas;
 $('main-menu-toggle').onclick=openMainMenu;
+$('menu-orbital').onclick=()=>location.assign('?benchmark=orbital');
+$('orbital-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('orbital-settings'));
+$('receiver-toggle').onclick=()=>{
+  if(inspectedReceiver){closeReceiver(true);return}
+  inspectReceiver(pieces.find(p=>p.type==='target'&&currentResult?.received.get(p.id)!==p.color)??pieces.find(p=>p.type==='target'));
+};
+$('receiver-next').onclick=()=>{
+ const targets=pieces.filter(p=>p.type==='target');
+ inspectReceiver(targets[(targets.findIndex(p=>p.id===inspectedReceiver)+1)%targets.length]);
+};
+$('receiver-close').onclick=()=>closeReceiver(true);
 $('menu-play').onclick=playFromMainMenu;
 $('menu-campaign').onclick=()=>openLevelAtlas($('menu-campaign'));
 $('menu-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('menu-settings'));
@@ -2223,6 +2302,7 @@ function animate(time){
  const still=debugFrozen||reducedMotion.matches;
  const animationTime=debugFrozen?0:time;
  if(usesNewArt()){
+  orbitalScene?.update(animationTime*.001,still,camera.position);
   shipyard.update(animationTime*.001,still,camera.position);
   campaignArt.update(animationTime*.001,still,camera.position);
  }else{
@@ -2398,7 +2478,7 @@ if(debugEnabled){
   },
   getLevelCount:()=>levels.length,
   getLevelState:()=>({...window.chromatron.getState(),number:levelIndex+1,campaign:currentCampaign(),
-   theme:activeEnvironment.id,pilotStatus:activeEnvironment.id==='shipyard'?shipyard.getStatus():campaignArt.getStatus(),
+   theme:activeEnvironment.id,pilotStatus:activeEnvironment===orbitalArt?orbitalScene.getStatus():activeEnvironment.id==='shipyard'?shipyard.getStatus():campaignArt.getStatus(),
    completed:solved.includes(levelIndex)}),
   setTheme(name){
    if(name!==null&&!getCampaignWorld(name)&&!SPACE_BIOMES.some(theme=>theme.id===name))return false;

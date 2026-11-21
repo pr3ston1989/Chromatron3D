@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    orbitalPilot:'STACJA ORBITALNA',orbitalDemo:'Poziom wzorcowy',receiverInfo:'Sprawdź rezonator',nextReceiver:'Następny rezonator',closeInfo:'Zamknij informacje',
     winBackToBoard:'Wróć do planszy',winReview:'WYNIK',
     hintShowMove:'POKAŻ NA PLANSZY',hintGuideTitle:'NASTĘPNY RUCH',hintDismissGuide:'Schowaj wskazówkę na planszy',
     mainMenu:'MENU GRY',menuPlay:'GRAJ',menuContinue:'KONTYNUUJ',menuDestination:'Plansza {level} · {title}',menuNextPuzzle:'NASTĘPNA ZAGADKA',menuReviewCampaign:'ZOBACZ KAMPANIĘ',menuCompletion:'Ukończone zagadki {solved}/{total}',menuCampaign:'KAMPANIE',menuSettings:'USTAWIENIA',menuGuide:'JAK GRAĆ',menuBack:'Wróć',menuLanguage:'Język',soundOn:'WŁĄCZONY',soundOff:'WYŁĄCZONY',viewCampaign:'ZOBACZ KAMPANIĘ →',webglUnavailable:'Nie udało się uruchomić grafiki 3D. Włącz akcelerację sprzętową w ustawieniach przeglądarki i odśwież stronę.',
@@ -60,6 +61,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    orbitalPilot:'ORBITAL STATION',orbitalDemo:'Showcase level',receiverInfo:'Inspect receiver',nextReceiver:'Next receiver',closeInfo:'Close information',
     winBackToBoard:'Back to the board',winReview:'RESULT',
     hintShowMove:'SHOW ON THE BOARD',hintGuideTitle:'NEXT MOVE',hintDismissGuide:'Hide the guide on the board',
     mainMenu:'GAME MENU',menuPlay:'PLAY',menuContinue:'CONTINUE',menuDestination:'Puzzle {level} · {title}',menuNextPuzzle:'NEXT PUZZLE',menuReviewCampaign:'VIEW CAMPAIGN',menuCompletion:'Puzzles completed {solved}/{total}',menuCampaign:'CAMPAIGNS',menuSettings:'SETTINGS',menuGuide:'HOW TO PLAY',menuBack:'Back',menuLanguage:'Language',soundOn:'ON',soundOff:'OFF',viewCampaign:'VIEW CAMPAIGN →',webglUnavailable:'3D graphics could not start. Enable hardware acceleration in your browser settings and reload.',

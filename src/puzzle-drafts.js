@@ -38,7 +38,7 @@ export function encodePuzzleDraft(level,pieces,movableTypes){
    continue;
   }
   items.push({index:i,x:p.x,y:p.y,rot:p.rot,inTray:p.inTray});
-  const initiallyInTray=Boolean(level.startMovablesInTray);
+  const initiallyInTray=Boolean(level.startMovablesInTray||level.trayIndices?.includes(i));
   const initialRot=level.sourceGame&&initiallyInTray?0:rot;
   if(p.x!==x||p.y!==y||p.rot!==initialRot||p.inTray!==initiallyInTray)
    changed=true;

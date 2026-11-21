@@ -1,5 +1,19 @@
 import {createBeamBatcher} from './beam-batching.js';
 const flareTextureCache=new WeakMap();
+
+function visibleBeamPaths(segments){
+ const paths=new Map();
+ for(const segment of segments){
+  const start=segment.x+','+segment.y,end=segment.nx+','+segment.ny;
+  const key=start<end?start+':'+end:end+':'+start;
+  const previous=paths.get(key);
+  if(!previous)paths.set(key,segment);
+  else if(previous.color!==segment.color)
+   paths.set(key,{...previous,color:previous.color|segment.color});
+ }
+ return paths.values();
+}
+
 /**
  * One reusable GPU lens-flare texture for the lifetime of the renderer.
  * A wheel turn updates beam geometry, not an entire new GPU texture upload.
@@ -27,8 +41,8 @@ export function getLaserFlareTexture(THREE){
  * Cinematic additive laser renderer. Physical ray routing still comes exclusively
  * from src/optics.js; this module never affects puzzle mechanics.
  *
- * Three visible layers: crisp white-hot core, colored plasma sleeve and
- * crossed shader ribbons for soft volumetric scatter. Glows at interactions
+ * A soft-edged color core faces the camera. Crossed shader ribbons add
+ * a glow from the beam into the scene. Glows at interactions
  * and carefully budgeted dynamic point lights connect the beam to the world.
  */
 export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point, lightingProfile={}, boundaryHits=[]) {
@@ -46,16 +60,21 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    uniform vec3 uColor;
    uniform float uTime;
    uniform float uStrength;
+   uniform bool uSurface;
    varying vec2 vUv;
    void main(){
     float radial=abs(vUv.y-.5)*2.0;
     float halo=exp(-radial*radial*4.4);
+    if(uSurface){
+     gl_FragColor=vec4(uColor,halo*.35*uStrength);
+     return;
+    }
     float middle=exp(-radial*radial*30.0);
     float core=exp(-radial*radial*165.0);
     float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
-    float energy=(halo*.18+middle*.55+core*.62)*ripples;
-    vec3 radiance=uColor*(halo*.52+middle*1.46+core*2.28)+mix(uColor,vec3(1.0),.12)*core*.35;
-    gl_FragColor=vec4(radiance*energy*uStrength,clamp(halo*.19+middle*.47+core*.9,0.0,.94)*uStrength);
+    vec3 radiance=uColor*(halo*.30+middle*.92+core*.42)*ripples;
+    float alpha=min(.88,halo*.23+middle*.46+core*.28)*uStrength;
+    gl_FragColor=vec4(radiance,alpha);
    }
   `
  };
@@ -64,7 +83,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   if(!materials.has(key)){
    const mat=new THREE.ShaderMaterial({
     ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0},
-     uStrength:{value:floor?(lightingProfile.surfaceGlow??.18):1}},
+     uStrength:{value:floor?(lightingProfile.surfaceGlow??.18)*.55:1},uSurface:{value:floor}},
     transparent:true,depthWrite:false,side:THREE.DoubleSide,
     blending:THREE.AdditiveBlending,toneMapped:false
    });
@@ -73,10 +92,10 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   return materials.get(key);
  }
  const flareTexture=getLaserFlareTexture(THREE);
- function flare(x,y,color,scale=1){
+ function flare(x,y,color,scale,opacity=.48){
   const m=new THREE.SpriteMaterial({
    map:flareTexture,color:new THREE.Color(palette[color]),transparent:true,
-   depthWrite:false,depthTest:true,toneMapped:false,opacity:.78,blending:THREE.AdditiveBlending
+   depthWrite:false,depthTest:true,toneMapped:false,opacity,blending:THREE.AdditiveBlending
   });
   const sprite=new THREE.Sprite(m);
   sprite.position.copy(point(x,y,.79));
@@ -85,37 +104,52 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  }
  // Shader ribbons are assembled in shared GPU buffers instead of
  // allocating one mesh per ray segment. Color/layer still define materials.
- const ribbon=(a,b,width,vertical,shader,order=6)=>
-  beamBatcher.addRibbon(a,b,width,vertical,shader,order);
+ const ribbon=(a,b,width,orientation,shader,order=6)=>
+  beamBatcher.addRibbon(a,b,width,orientation,shader,order);
  const coreMaterials=new Map();
- const shellMaterials=new Map();
  function coloredCore(mask){
   if(!coreMaterials.has(mask)){
-   const base=new THREE.Color(palette[mask]);
-   const ice=base.clone().lerp(new THREE.Color(0xffffff),.16);
-   coreMaterials.set(mask,new THREE.MeshBasicMaterial({
-    color:ice,transparent:true,opacity:.74,depthWrite:false,
-    toneMapped:false,blending:THREE.AdditiveBlending
+   coreMaterials.set(mask,new THREE.ShaderMaterial({
+    uniforms:{uColor:{value:new THREE.Color(palette[mask])}},
+    transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide,
+    vertexShader:`
+     attribute vec4 beamAxis;
+     varying vec2 vUv;
+     void main(){
+      vUv=uv;
+      vec4 eye=modelViewMatrix*vec4(position,1.);
+      vec3 axis=normalize((modelViewMatrix*vec4(beamAxis.xyz,0.)).xyz);
+      vec3 across=normalize(cross(axis,eye.xyz));
+      eye.xyz+=across*(uv.y-.5)*beamAxis.w;
+      eye.xyz+=axis*(uv.x-.5)*.024;
+      gl_Position=projectionMatrix*eye;
+     }
+    `,
+    fragmentShader:`
+     uniform vec3 uColor;
+     varying vec2 vUv;
+     void main(){
+      float radius=abs(vUv.y-.5)*2.;
+      float alpha=1.-smoothstep(.35,1.,radius);
+      float highlight=exp(-radius*radius*9.);
+      gl_FragColor=vec4(uColor*(.91+.16*highlight)+vec3(.018)*highlight,alpha);
+     }
+    `
    }));
   }
   return coreMaterials.get(mask);
  }
- for(const s of drawnSegments){
+ // The solid core shows the combined wavelength when rays share an edge.
+ // Photon trails below still follow each ray in its original direction.
+ for(const s of visibleBeamPaths(drawnSegments)){
   const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
   if(positions.get(s.x+','+s.y)?.type==='laser')a.lerp(b,.50); // Beam emerges from actual barrel tip
-  const segment=b.clone().sub(a),len=segment.length();
-  if(len<.001)continue;
-  if(!shellMaterials.has(s.color))shellMaterials.set(s.color,new THREE.MeshBasicMaterial({
-   color:new THREE.Color(palette[s.color]),transparent:true,opacity:.8,
-   depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending
-  }));
-  beamBatcher.addTube(a,b,.052,shellMaterials.get(s.color),8);
-  beamBatcher.addTube(a,b,.010,coloredCore(s.color),9);
-  ribbon(a,b,.66,false,material(s.color));
-  ribbon(a,b,.47,true,material(s.color));
+  ribbon(a,b,.22,'camera',coloredCore(s.color),9);
+  ribbon(a,b,.66,'horizontal',material(s.color));
+  ribbon(a,b,.47,'vertical',material(s.color));
   // A low-intensity pool of colored light on the board under the beam.
   // This ground-level optical light spill makes the ray feel spatial.
-  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,false,material(s.color,true),5);
+  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,'horizontal',material(s.color,true),5);
  }
  const laserGeometryStats=beamBatcher.flush();
 
@@ -172,7 +206,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
      float hot=exp(-d*d*13.0);
      float haze=exp(-d*d*3.3);
      float alpha=min(1.0,.88*hot+.26*haze);
-     gl_FragColor=vec4(vColor*(1.4*hot+.58*haze)+vec3(.46)*hot,alpha);
+     gl_FragColor=vec4(vColor*(.61*hot+.29*haze)+vec3(.035)*hot,alpha);
     }
    `
   });
@@ -194,16 +228,16 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   parent.add(l);
  }
  const flareCells=new Set();
- function flareOnce(x,y,color,scale){
+ function flareOnce(x,y,color,scale,opacity){
   const key=x+','+y;
   if(flareCells.has(key))return;
   flareCells.add(key);
-  flare(x,y,color,scale);
+  flare(x,y,color,scale,opacity);
  }
  let lightBudget=0;
  for(const piece of activePieces){
   if(piece.type==='laser'){
-   flareOnce(piece.x,piece.y,piece.color,.69);
+   flareOnce(piece.x,piece.y,piece.color,.51);
    if(lightBudget<Math.min(5,maxOpticLights)){
     lightBudget++;
     const light=new THREE.PointLight(new THREE.Color(palette[piece.color]),3.2,4,2);
@@ -237,20 +271,20 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   }
  }
  // Wall-piece impacts get the same treatment
- const wallHitSegments=[];
+ const litTargets=new Set();
  for(const s of segments){
   const piece=positions.get(s.nx+','+s.ny);
   if(!piece||piece.type==='laser')continue;
   if(piece.type==='target'){
-   const active=received.get(piece.id)===piece.color;
-   flareOnce(piece.x,piece.y,s.color,active?.90:.46);
-   if(active&&lightBudget<maxOpticLights){
+   if(received.get(piece.id)!==piece.color||litTargets.has(piece.id))continue;
+   litTargets.add(piece.id);
+   flareOnce(piece.x,piece.y,piece.color,.54,.12);
+   if(lightBudget<maxOpticLights){
     lightBudget++;
     const l=new THREE.PointLight(new THREE.Color(palette[piece.color]),5.4,5,2);
     l.position.copy(point(piece.x,piece.y,1));parent.add(l);
    }
   }else if(piece.type==='wall'){
-   wallHitSegments.push(s);
    const impactPos=point(piece.x,piece.y,.78);
    const beamDir=new THREE.Vector3(s.nx-s.x,0,s.ny-s.y).normalize();
    impactPoints.push({pos:impactPos,dir:beamDir,color:s.color});

@@ -16,6 +16,7 @@
    <nav class="menu-actions" aria-label="Menu gry" data-i18n-aria="mainMenu">
     <button id="menu-play" class="menu-play" type="button" disabled><strong id="menu-play-label" data-i18n="menuPlay">GRAJ</strong><span id="menu-destination"></span><span class="menu-arrow" aria-hidden="true">→</span></button>
     <button id="menu-campaign" type="button" disabled><span class="menu-symbol" aria-hidden="true">◈</span><span data-i18n="menuCampaign">KAMPANIE</span><span class="menu-arrow" aria-hidden="true">›</span></button>
+    <button id="menu-orbital" type="button" disabled><span class="menu-symbol" aria-hidden="true">◎</span><span data-i18n="orbitalPilot">STACJA ORBITALNA</span><span class="menu-arrow" aria-hidden="true">›</span></button>
     <button id="menu-settings" type="button" disabled><span class="menu-symbol" aria-hidden="true">⚙</span><span data-i18n="menuSettings">USTAWIENIA</span><span class="menu-arrow" aria-hidden="true">›</span></button>
     <button id="menu-guide" type="button" disabled><span class="menu-symbol" aria-hidden="true">?</span><span data-i18n="menuGuide">JAK GRAĆ</span><span class="menu-arrow" aria-hidden="true">›</span></button>
    </nav>
@@ -33,6 +34,7 @@
   <button id="main-menu-toggle" class="brand" type="button" data-i18n-aria="mainMenu" data-i18n-title="mainMenu"><img src="%BASE_URL%portraits/prism.png" alt=""><strong data-i18n="mainMenu">MENU GRY</strong><kbd aria-hidden="true">Esc</kbd></button>
   <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
   <div class="header-right">
+    <button id="orbital-settings" class="icon-btn pilot-control" type="button" data-i18n-aria="menuSettings" data-i18n-title="menuSettings">⚙</button>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
     <button id="audio" aria-pressed="false" data-i18n-aria="soundAria" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
     <button id="board-focus" class="icon-btn focus-btn" type="button" data-i18n-title="focusEnter" aria-pressed="false" aria-label="Tryb skupienia na planszy">▣</button>
@@ -40,6 +42,12 @@
     <button id="help" class="icon-btn" type="button" data-i18n-title="helpAria" aria-label="Pomoc">?</button>
   </div>
  </header>
+ <button id="receiver-toggle" class="pilot-control" type="button" aria-controls="receiver-card" aria-expanded="false" data-i18n-aria="receiverInfo" data-i18n-title="receiverInfo">i</button>
+ <aside id="receiver-card" hidden aria-labelledby="receiver-name">
+  <header><strong id="receiver-name"></strong><button id="receiver-close" type="button" data-i18n-aria="closeInfo">×</button></header>
+  <dl><dt data-i18n="spectralNeed">Wymagane</dt><dd id="receiver-required"></dd><dt data-i18n="spectralReceived">Otrzymane</dt><dd id="receiver-actual"></dd></dl>
+  <button id="receiver-next" type="button" data-i18n="nextReceiver">Następny rezonator</button>
+ </aside>
  <aside class="mission"><button id="mission-drawer" class="drawer-handle mission-handle" type="button" aria-expanded="false" aria-label="Rozwiń panel zagadki">☰ <span>INFO</span></button>
   <div class="mission-copy">
    <div class="mission-location"><span id="mission-world"></span><span id="level-pack-label" data-i18n="prototype">PROTOTYP</span></div>
