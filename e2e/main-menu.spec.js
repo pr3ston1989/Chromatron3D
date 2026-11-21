@@ -41,6 +41,12 @@ test('main menu owns focus, settings apply and Continue restores a partial puzzl
  await page.locator('#inventory button[data-optic-type="mirror"]').click();
  const tile=await page.evaluate(()=>window.chromatron.projectCell(6,8));
  await page.mouse.click(tile.x,tile.y);
+ await page.locator('#levels-button').click();
+ await page.locator('#level-grid [aria-current="step"]').click();
+ await expect(page.locator('#undo')).toBeEnabled();
+ await page.locator('#undo').click();
+ expect(await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror').inTray)).toBe(true);
+ await page.locator('#redo').click();
  await page.locator('#main-menu-toggle').click();
  await expect(play).toContainText('CONTINUE');
  await page.reload();

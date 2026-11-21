@@ -359,3 +359,8 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - Scenariusz modeli orbitalnych wskazuje teraz konkretny biom. Poprzednia próba losowała szereg pakietów i mogła skończyć bez sceny orbitalnej, mimo dostępności wszystkich modeli.
 - Podgląd prowadzenia w działającej demonstracji zapisano w `test-results/current-game/hint-guide-390x844.png`.
 - Przeszło 226 testów Node, build Vite i 43 scenariusze Chromium. Prowadzenie i rozliczanie kredytów sprawdzono również w SwiftShader.
+
+## 21 listopada 2026 · przegląd kampanii
+
+- W Chromium przejście po zakładkach czterech lokalnych kampanii zachowuje aktywną planszę do wyboru nowej. Po wejściu do czwartej kampanii i odświeżeniu gra odtwarza wybór. Ponowne wskazanie aktywnej zagadki na mapie zachowuje cofanie i ponawianie.
+- Przeszło pięć scenariuszy Chromium, 226 testów Node i build Vite.

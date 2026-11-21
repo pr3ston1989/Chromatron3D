@@ -34,17 +34,27 @@ test('fresh local game opens the first of four retail campaigns and restores the
  const tab=key=>page.locator('[data-campaign="'+key+'"]');
  for(const i of [1,2,3,4]){
   await tab('classic'+i).click();
-  await expect(page.locator('#level-title')).toContainText('CHROMATRON '+i);
+  await expect(tab('classic'+i)).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#level-title')).toContainText('CHROMATRON 1');
   await expect(page.locator('#level-grid .level-atlas-card')).toHaveCount(50);
   await expect(page.locator('.atlas-sector')).toHaveCount(2);
   await expect(page.locator('.atlas-sector').first().locator('.level-atlas-card')).toHaveCount(25);
-  expect(await page.evaluate(()=>window.chromatron.getPuzzleTools().verifiedSolution)).toBe(true);
  }
+ await page.locator('#levels-close').click();
+ expect(await page.evaluate(()=>window.chromatron.getCampaign())).toBe('classic1');
+ await page.locator('#levels-button').click();
+ await expect(tab('classic1')).toHaveAttribute('aria-selected','true');
+ await tab('classic4').click();
+ await page.locator('#level-grid [data-level-index="0"]').click();
+ await expect(page.locator('#level-title')).toContainText('CHROMATRON 4');
+ expect(await page.evaluate(()=>window.chromatron.getPuzzleTools().verifiedSolution)).toBe(true);
  await page.reload();
  await expect(page.locator('#level-title')).toContainText('CHROMATRON 4');
  await page.locator('#levels-button').click();
  await tab('demo').click();
- await expect(page.locator('#level-pack-label')).toHaveText('PROTOTYP');
  await expect(tab('classic4')).toBeVisible();
+ await expect(page.locator('#level-grid .level-atlas-card')).toHaveCount(8);
+ await page.locator('#level-grid [data-level-index="0"]').click();
+ await expect(page.locator('#level-pack-label')).toHaveText('PROTOTYP');
  expect(errors).toEqual([]);
 });

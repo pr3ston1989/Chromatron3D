@@ -31,6 +31,7 @@
 - W widoku z góry mały symbol przy modelu oznacza typ przyrządu. Symbole są dopasowane do kadru i można je wyłączyć w ustawieniach.
 - Granice 15 × 15 pól w widoku z góry zachowują czytelność w małych oknach dzięki siatce o szerokości dopasowanej do rozdzielczości renderera.
 - Zweryfikowany trzeci etap podpowiedzi można przypiąć do planszy. Znacznik i instrukcja przechodzą do następnego ruchu w miarę gry i cofania.
+- Karty kampanii na mapie pokazują zapisany postęp. Wybranie planszy ładuje kampanię, a ponowne wskazanie bieżącej zagadki zachowuje historię ruchów.
 
 ## Punkty odniesienia
 

@@ -245,9 +245,9 @@ const opticModels=createOpticModelLoader(THREE,{
 const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7fffffff);
 const soundscape=createSoundscape();
 let activeEnvironment=null,baseEnvironment=null;
-function artForLevel(index){
+function artForLevel(index,campaign=currentCampaign()){
  if(baselineScenery)return null;
- return debugTheme?getCampaignWorld(debugTheme):campaignWorld(currentCampaign(),index);
+ return debugTheme?getCampaignWorld(debugTheme):campaignWorld(campaign,index);
 }
 function usesNewArt(){return shipyard.isVisible()||campaignArt.isVisible()}
 function syncBoardPresentation(){
@@ -627,8 +627,8 @@ function syncLevelControls(){
  $('prev').disabled=levelIndex===0;
  $('next').disabled=levelIndex>=levels.length-1||!atlas.entries[levelIndex+1]?.unlocked;
 }
-function atlasStage(index){
- return stagePresentation(artForLevel(index)??environmentForLevel(currentPackId,index,environmentSessionSeed),language);
+function atlasStage(index,campaign=currentCampaign(),packId=currentPackId){
+ return stagePresentation(artForLevel(index,campaign)??environmentForLevel(packId,index,environmentSessionSeed),language);
 }
 function atlasImage(biome){
  return getCampaignWorld(biome)?`url('${import.meta.env.BASE_URL}art/sectors/${biome}.jpg')`:'none';
@@ -642,30 +642,37 @@ function showAtlasStage(biome,title){
 }
 function renderLevelAtlas(){
  if($('level-menu').classList.contains('hidden'))return;
+ const campaign=atlasCampaign??currentCampaign();
+ const pack=campaignPack(campaign)??levels;
+ const packId=pack===levels?currentPackId:packFingerprint(pack);
+ const progress=pack===levels?null:readCampaignProgress(packId);
+ const atlas=progress?buildLevelAtlas(pack.length,progress.solved,progress.skipped,progress.access):getLevelAtlas();
+ const current=progress?(atlas.entries[progress.resume]?.unlocked?progress.resume:0):levelIndex;
+ const stage=index=>atlasStage(index,campaign,packId);
  syncCampaignTabs();
- const atlas=getLevelAtlas(),grid=$('level-grid');
+ const grid=$('level-grid');
  $('level-atlas-summary').textContent=t(language,'atlasSummary',{
   done:atlas.solvedCount,total:atlas.total,unlocked:atlas.unlockedCount
  });
  grid.replaceChildren();
- const campaign=currentCampaign(),sectors=/^classic[1-4]$/.test(campaign);
+ const sectors=/^classic[1-4]$/.test(campaign);
  grid.classList.toggle('sector-grid',sectors);
  grid.classList.toggle('demo-grid',campaign==='demo');
- showAtlasStage(atlasStage(levelIndex),loc(levels[levelIndex].title,language));
+ showAtlasStage(stage(current),loc(pack[current].title,language));
  const fragment=document.createDocumentFragment();
  let sectorTiles=fragment;
  for(const entry of atlas.entries){
-  const name=loc(levels[entry.index].title,language);
+  const name=loc(pack[entry.index].title,language);
   const button=document.createElement('button');
   button.type='button';button.className='level-atlas-card';
   button.dataset.levelIndex=String(entry.index);
   button.dataset.status=entry.status;
   button.disabled=!entry.unlocked;
-  if(entry.index===levelIndex)button.setAttribute('aria-current','step');
+  if(entry.index===current)button.setAttribute('aria-current','step');
   const number=String(entry.index+1).padStart(3,'0');
   const label=t(language,'atlasLevel',{number});
   const status=t(language,'atlas'+entry.status[0].toUpperCase()+entry.status.slice(1));
-  const biome=atlasStage(entry.index);
+  const biome=stage(entry.index);
   if(sectors&&entry.index%25===0){
    const sector=document.createElement('section');sector.className='atlas-sector';
    sector.style.setProperty('--atlas-art',atlasImage(biome.biome));
@@ -678,7 +685,7 @@ function renderLevelAtlas(){
   if(campaign==='demo')button.style.setProperty('--atlas-art',atlasImage(biome.biome));
   let hasDraft=false;
   if(entry.unlocked&&entry.status!=='solved'){
-   try{hasDraft=Boolean(gameStorage().getItem(draftKey(currentPackId,entry.index)))}catch{}
+   try{hasDraft=Boolean(gameStorage().getItem(draftKey(packId,entry.index)))}catch{}
   }
   if(hasDraft)button.dataset.draft='true';
   button.setAttribute('aria-label',label+': '+(entry.unlocked?name+' · '+status+
@@ -688,7 +695,7 @@ function renderLevelAtlas(){
   const title=document.createElement('strong');title.className='level-atlas-card-title';
   title.textContent=name;
   const caption=document.createElement('span');caption.className='level-atlas-card-status';
-  caption.textContent=(entry.index===levelIndex?t(language,'atlasNow')+' · ':'')+
+  caption.textContent=(entry.index===current?t(language,'atlasNow')+' · ':'')+
    (hasDraft?t(language,'atlasInProgress')+' · ':'')+status;
   button.append(n);
   if(entry.unlocked){
@@ -704,11 +711,11 @@ function renderLevelAtlas(){
    button.addEventListener('pointerenter',preview);
    button.addEventListener('focus',preview);
    button.addEventListener('click',()=>{
-    if(load(entry.index)){
-     const fromMenu=screenVisible('main-menu');
-     closeLevelAtlas();
-     if(fromMenu)enterGame();
-    }
+    if(pack!==levels)switchCampaign(campaign,entry.index);
+    else if((entry.index!==levelIndex||won)&&!load(entry.index))return;
+    const fromMenu=screenVisible('main-menu');
+    closeLevelAtlas();
+    if(fromMenu)enterGame();
    });
   }
   sectorTiles.appendChild(button);
@@ -716,6 +723,7 @@ function renderLevelAtlas(){
  grid.append(fragment);
 }
 function openLevelAtlas(opener=document.activeElement){
+ atlasCampaign=currentCampaign();
  showScreen('level-menu','levels-close',opener);
  renderLevelAtlas();
  const current=$('level-grid').querySelector('[aria-current="step"]');
@@ -783,8 +791,12 @@ function currentCampaign(){
  for(const [game,pack] of classicLibrary)if(pack===levels)return 'classic'+game;
  return currentPackId===demoPackId?'demo':'imported';
 }
+let atlasCampaign=null;
+function campaignPack(key){
+ return key==='demo'?demoLevels:/^classic[1-4]$/.test(key)?classicLibrary.get(Number(key.slice(7))):null;
+}
 function syncCampaignTabs(){
- const campaign=currentCampaign();
+ const campaign=(screenVisible('level-menu')&&atlasCampaign)||currentCampaign();
  for(const tab of document.querySelectorAll('.campaign-tab')){
   const key=tab.dataset.campaign;
   if(key.startsWith('classic'))tab.hidden=!classicLibrary.has(Number(key.slice(7)));
@@ -793,10 +805,10 @@ function syncCampaignTabs(){
   tab.setAttribute('aria-selected',String(active));
  }
 }
-function switchCampaign(next){
- const pack=next==='demo'?demoLevels:/^classic[1-4]$/.test(next)?classicLibrary.get(Number(next.slice(7))):null;
+function switchCampaign(next,requestedIndex){
+ const pack=campaignPack(next);
  if(!pack)return currentCampaign();
- if(levels!==pack)switchLevelPack(pack);
+ if(levels!==pack)switchLevelPack(pack,requestedIndex);
  campaignPreference=next;
  store('chromatron-start-campaign',next);
  syncCampaignTabs();
@@ -828,7 +840,18 @@ function setLanguage(next){
  updateLocalizedLevel();
  refreshKeyboardCursor();
 }
-function switchLevelPack(nextLevels){
+function readCampaignProgress(packId){
+ const read=(key,fallback)=>{
+  try{return JSON.parse(gameStorage().getItem('chromatron-reborn-'+key+'-'+packId))??fallback}
+  catch{return fallback}
+ };
+ const readList=key=>{
+  const value=read(key,[]);
+  return Array.isArray(value)?value:[];
+ };
+ return {solved:readList('solved'),skipped:readList('skipped'),access:read('access',0),resume:read('level',0)};
+}
+function switchLevelPack(nextLevels,requestedIndex){
  if(!Array.isArray(nextLevels)||!nextLevels.length||nextLevels.length>250)
   throw new Error('Expected 1–250 validated puzzles');
  // Preserve earlier progress separately; a user's privately imported pack
@@ -838,19 +861,11 @@ function switchLevelPack(nextLevels){
  levels=nextLevels;currentPackId=packFingerprint(levels);
  levelIndex=0;
  verifiedSolutions.clear();
- try{
-  solved=JSON.parse(gameStorage().getItem('chromatron-reborn-solved-'+currentPackId)||'[]');
-  skipped=JSON.parse(gameStorage().getItem('chromatron-reborn-skipped-'+currentPackId)||'[]');
-  if(!Array.isArray(solved))solved=[];
-  if(!Array.isArray(skipped))skipped=[];
- }catch{solved=[];skipped=[]}
- try{
-  const remembered=Number(gameStorage().getItem('chromatron-reborn-access-'+currentPackId));
-  accessFloor=Number.isFinite(remembered)?Math.max(0,Math.min(levels.length-1,Math.trunc(remembered))):0;
- }catch{accessFloor=0}
- let resume=0;
- try{resume=Number(gameStorage().getItem('chromatron-reborn-level-'+currentPackId)||0)}catch{}
- load(Number.isInteger(resume)?Math.min(Math.max(resume,0),levels.length-1):0);
+ const progress=readCampaignProgress(currentPackId);
+ ({solved,skipped,access:accessFloor}=progress);
+ const atlas=getLevelAtlas();
+ const resume=requestedIndex??progress.resume;
+ load(Number.isInteger(resume)&&atlas.entries[resume]?.unlocked?resume:0);
  return levels.length;
 }
 function initialBoard(level,previous=[]){
@@ -1875,7 +1890,11 @@ $('menu-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('
 $('menu-guide').onclick=()=>showScreen('help-overlay','close-help',$('menu-guide'));
 $('menu-from-win').onclick=()=>{closeScreen('win',false);openMainMenu()};
 for(const tab of document.querySelectorAll('.campaign-tab')){
- tab.addEventListener('click',()=>switchCampaign(tab.dataset.campaign));
+ tab.addEventListener('click',()=>{
+  atlasCampaign=tab.dataset.campaign;
+  $('level-grid').scrollTop=0;
+  renderLevelAtlas();
+ });
 }
 $('level-menu').addEventListener('click',event=>{
  if(event.target===$('level-menu'))closeLevelAtlas();
@@ -1948,6 +1967,7 @@ async function handleDroppedFiles(fileList){
    }
    switchCampaign('classic'+Math.min(...groups.keys()));
   }else switchLevelPack(packs.flatMap(p=>p.levels));
+  atlasCampaign=currentCampaign();renderLevelAtlas();
   closeScreen('help-overlay');
   const message=t(language,'classicImportSuccess',{count:games.length});
   $('classic-import-status').textContent=message;toast(message);

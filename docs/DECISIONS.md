@@ -90,3 +90,7 @@
 
 - Akcja „Pokaż na planszy” pojawia się po odblokowaniu zweryfikowanego trzeciego etapu. Po jej wybraniu fioletowy znacznik wskazuje pole, a przy sterowaniu pozostaje krótka instrukcja. Wcześniejsze etapy zachowują dotychczasowy zakres wskazówek.
 - Instrukcja uwzględnia ruchy, obrót i historię. Obrót podaje docelowy kąt, liczbę kroków i krótszy kierunek. Wyłączenie prowadzenia, zmiana planszy lub jej rozwiązanie usuwa instrukcję z planszy. Koszt rozlicza się podczas odblokowania etapu.
+
+## 21 listopada 2026 · przeglądanie kampanii
+
+- Zakładka mapy przełącza podgląd i postęp wybranej kampanii. Dopiero wybranie planszy zmienia rozgrywkę oraz zapamiętaną kampanię. Wejście z mapy na bieżącą, nierozwiązaną planszę zachowuje ułożenie i historię ruchów.
