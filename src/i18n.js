@@ -2,7 +2,7 @@ export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
     hintShowMove:'POKAŻ NA PLANSZY',hintGuideTitle:'NASTĘPNY RUCH',hintDismissGuide:'Schowaj wskazówkę na planszy',
-    mainMenu:'MENU GRY',menuPlay:'GRAJ',menuContinue:'KONTYNUUJ',menuDestination:'{world} · plansza {level}',menuCampaign:'KAMPANIE',menuSettings:'USTAWIENIA',menuGuide:'JAK GRAĆ',menuBack:'Wróć',menuLanguage:'Język',soundOn:'WŁĄCZONY',soundOff:'WYŁĄCZONY',viewCampaign:'ZOBACZ KAMPANIĘ →',webglUnavailable:'Nie udało się uruchomić grafiki 3D. Włącz akcelerację sprzętową w ustawieniach przeglądarki i odśwież stronę.',
+    mainMenu:'MENU GRY',menuPlay:'GRAJ',menuContinue:'KONTYNUUJ',menuDestination:'Plansza {level} · {title}',menuNextPuzzle:'NASTĘPNA ZAGADKA',menuReviewCampaign:'ZOBACZ KAMPANIĘ',menuCompletion:'Ukończone zagadki {solved}/{total}',menuCampaign:'KAMPANIE',menuSettings:'USTAWIENIA',menuGuide:'JAK GRAĆ',menuBack:'Wróć',menuLanguage:'Język',soundOn:'WŁĄCZONY',soundOff:'WYŁĄCZONY',viewCampaign:'ZOBACZ KAMPANIĘ →',webglUnavailable:'Nie udało się uruchomić grafiki 3D. Włącz akcelerację sprzętową w ustawieniach przeglądarki i odśwież stronę.',
     relocate:'PRZENIEŚ',relocateCaption:'WSKAŻ NOWE POLE',tipRelocate:'Wybierz wolne pole, aby przesunąć',
     boardKeyboardLabel:'Plansza optyczna',boardKeyboardOpen:'Sterowanie planszą klawiaturą (G)',boardKeyboardHelp:'Strzałki zmieniają pole. Enter wybiera lub ustawia. Spacja przygotowuje przeniesienie. Q i E obracają przyrząd.',
     boardCell:'Pole ({x}, {y}) · {content}',boardEmpty:'puste',boardCarrying:'wybierz pole do ustawienia',boardMoving:'wybierz nowe pole',resetUndo:'Przywrócono początkowy układ. Reset można cofnąć.',
@@ -60,7 +60,7 @@ const strings = {
   },
   en:{
     hintShowMove:'SHOW ON THE BOARD',hintGuideTitle:'NEXT MOVE',hintDismissGuide:'Hide the guide on the board',
-    mainMenu:'GAME MENU',menuPlay:'PLAY',menuContinue:'CONTINUE',menuDestination:'{world} · puzzle {level}',menuCampaign:'CAMPAIGNS',menuSettings:'SETTINGS',menuGuide:'HOW TO PLAY',menuBack:'Back',menuLanguage:'Language',soundOn:'ON',soundOff:'OFF',viewCampaign:'VIEW CAMPAIGN →',webglUnavailable:'3D graphics could not start. Enable hardware acceleration in your browser settings and reload.',
+    mainMenu:'GAME MENU',menuPlay:'PLAY',menuContinue:'CONTINUE',menuDestination:'Puzzle {level} · {title}',menuNextPuzzle:'NEXT PUZZLE',menuReviewCampaign:'VIEW CAMPAIGN',menuCompletion:'Puzzles completed {solved}/{total}',menuCampaign:'CAMPAIGNS',menuSettings:'SETTINGS',menuGuide:'HOW TO PLAY',menuBack:'Back',menuLanguage:'Language',soundOn:'ON',soundOff:'OFF',viewCampaign:'VIEW CAMPAIGN →',webglUnavailable:'3D graphics could not start. Enable hardware acceleration in your browser settings and reload.',
     relocate:'MOVE',relocateCaption:'CHOOSE A NEW TILE',tipRelocate:'Choose an empty tile to move here',
     boardKeyboardLabel:'Optical puzzle board',boardKeyboardOpen:'Control the board with the keyboard (G)',boardKeyboardHelp:'Use arrows to move between tiles. Enter selects or places. Space picks up an optic for moving. Q and E rotate it.',
     boardCell:'Tile ({x}, {y}) · {content}',boardEmpty:'empty',boardCarrying:'choose a tile to place on',boardMoving:'choose a destination tile',resetUndo:'The starting layout is restored. You can undo this reset.',

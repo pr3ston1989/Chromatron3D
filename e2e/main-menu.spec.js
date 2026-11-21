@@ -78,7 +78,35 @@ test('finishing the final puzzle opens the atlas and keeps the completed puzzle 
  await page.locator('#levels-close').click();
  await expect(finish).toBeFocused();
  await page.locator('#menu-from-win').click();
- await expect(page.locator('#menu-play')).toBeFocused();
+ const play=page.locator('#menu-play');
+ await expect(play).toBeFocused();
+ await expect(play).toContainText('ZOBACZ KAMPANIĘ');
+ await play.click();
+ await expect(page.locator('#level-grid [data-level-index="0"]')).toHaveAttribute('data-status','solved');
+ await page.locator('#levels-close').click();
+ await expect(play).toBeFocused();
+});
+
+test('the title screen offers the next puzzle after a solve and survives a reload',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ const play=page.locator('#menu-play');
+ await play.click();
+ await page.locator('#camera-preset').click();
+ await page.locator('#inventory button[data-optic-type="mirror"]').click();
+ const cell=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.click(cell.x,cell.y);
+ await page.locator('#turn-right').click();
+ await page.locator('#menu-from-win').click();
+ const resume=page.locator('#menu-destination');
+ await expect(play).toContainText('NASTĘPNA ZAGADKA');
+ await expect(resume).toHaveText('Plansza 002 · PODWÓJNY ZAKRĘT');
+ await page.reload();
+ await expect(resume).toHaveText('Plansza 002 · PODWÓJNY ZAKRĘT');
+ await play.click();
+ await expect(page.locator('#main-menu')).toBeHidden();
+ await expect(page.locator('#level-index')).toHaveText('002');
 });
 
 test('keyboard navigation selects tray and board optics and places and moves them',async({page})=>{

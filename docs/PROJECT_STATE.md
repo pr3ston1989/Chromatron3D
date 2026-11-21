@@ -32,6 +32,7 @@
 - Granice 15 × 15 pól w widoku z góry zachowują czytelność w małych oknach dzięki siatce o szerokości dopasowanej do rozdzielczości renderera.
 - Zweryfikowany trzeci etap podpowiedzi można przypiąć do planszy. Znacznik i instrukcja przechodzą do następnego ruchu w miarę gry i cofania.
 - Karty kampanii na mapie pokazują zapisany postęp. Wybranie planszy ładuje kampanię, a ponowne wskazanie bieżącej zagadki zachowuje historię ruchów.
+- Menu tytułowe pokazuje nazwę docelowej planszy. Po rozwiązaniu proponuje kolejną dostępną zagadkę lub mapę kampanii.
 
 ## Punkty odniesienia
 

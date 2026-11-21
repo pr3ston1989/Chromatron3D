@@ -364,3 +364,8 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 
 - W Chromium przejście po zakładkach czterech lokalnych kampanii zachowuje aktywną planszę do wyboru nowej. Po wejściu do czwartej kampanii i odświeżeniu gra odtwarza wybór. Ponowne wskazanie aktywnej zagadki na mapie zachowuje cofanie i ponawianie.
 - Przeszło pięć scenariuszy Chromium, 226 testów Node i build Vite.
+
+## 21 listopada 2026 · wznowienie z menu tytułowego
+
+- Na demonstracji po ukończeniu pierwszej planszy menu proponuje drugą i zachowuje propozycję po odświeżeniu. Ukończenie ostatniej zagadki udostępnia mapę, a jej zamknięcie przywraca fokus głównej akcji. Test częściowego układu zachowuje wcześniejsze ustawienie lustra po odświeżeniu.
+- Przeszło pięć scenariuszy menu w Chromium, 226 testów Node i build Vite.

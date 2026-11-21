@@ -595,12 +595,29 @@ function keepScreenFocus(event,id){
   event.preventDefault();(event.shiftKey?last:first).focus();
  }
 }
+function menuResumeIndex(){
+ if(!hasPlayed||!solved.includes(levelIndex)||(!won&&encodePuzzleDraft(levels[levelIndex],pieces,movable)))
+  return levelIndex;
+ return getLevelAtlas().entries.find(entry=>entry.index>levelIndex&&entry.status==='available')?.index??null;
+}
 function syncMainMenu(){
- const level=levels[levelIndex];
- $('menu-play-label').textContent=t(language,hasPlayed?'menuContinue':'menuPlay');
- $('menu-destination').textContent=level?t(language,'menuDestination',{
-  level:String(levelIndex+1).padStart(3,'0'),world:atlasStage(levelIndex).biomeLabel
- }):'';
+ const index=menuResumeIndex();
+ const label=!hasPlayed?'menuPlay':index===null?'menuReviewCampaign':index===levelIndex?'menuContinue':'menuNextPuzzle';
+ $('menu-play-label').textContent=t(language,label);
+ if(index===null){
+  const {solvedCount,total}=getLevelAtlas();
+  $('menu-destination').textContent=t(language,'menuCompletion',{solved:solvedCount,total});
+ }else{
+  $('menu-destination').textContent=t(language,'menuDestination',{
+   level:String(index+1).padStart(3,'0'),title:loc(levels[index].title,language)
+  });
+ }
+}
+function playFromMainMenu(){
+ const index=menuResumeIndex();
+ if(index===null){openLevelAtlas($('menu-play'));return}
+ if(index!==levelIndex&&!load(index,{silentIntro:true}))return;
+ enterGame();
 }
 function openMainMenu(){
  hideLevelIntro();
@@ -1884,7 +1901,7 @@ $('levels-button').onclick=()=>openLevelAtlas($('levels-button'));
 $('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
 $('levels-close').onclick=closeLevelAtlas;
 $('main-menu-toggle').onclick=openMainMenu;
-$('menu-play').onclick=()=>enterGame();
+$('menu-play').onclick=playFromMainMenu;
 $('menu-campaign').onclick=()=>openLevelAtlas($('menu-campaign'));
 $('menu-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('menu-settings'));
 $('menu-guide').onclick=()=>showScreen('help-overlay','close-help',$('menu-guide'));

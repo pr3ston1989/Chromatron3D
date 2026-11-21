@@ -94,3 +94,4 @@
 ## 21 listopada 2026 · przeglądanie kampanii
 
 - Zakładka mapy przełącza podgląd i postęp wybranej kampanii. Dopiero wybranie planszy zmienia rozgrywkę oraz zapamiętaną kampanię. Wejście z mapy na bieżącą, nierozwiązaną planszę zachowuje ułożenie i historię ruchów.
+- Główna akcja menu pokazuje numer i nazwę planszy. Ma pierwszeństwo bieżąca nierozwiązana plansza lub zmieniony układ. Po ukończeniu menu wskazuje kolejną dostępną zagadkę, a po finale otwiera mapę z postępem.
