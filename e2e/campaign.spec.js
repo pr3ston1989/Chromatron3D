@@ -283,29 +283,20 @@ test('picking uses current world transforms immediately after switching boards, 
  expect(picked).toMatchObject({pieceType:'mirror'});
 });
 
-test('pilot scenery loads all three GLBs on a laptop layout',async({page})=>{
+test('orbital scenery loads all three GLBs on a laptop layout',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.addInitScript(()=>{
-  localStorage.setItem('chromatron-start-campaign','demo');
-  localStorage.setItem('chromatron-graphics-quality','performance');
-  Object.defineProperty(window,'devicePixelRatio',{get:()=>.70});
- });
+ await page.addInitScript(()=>Object.defineProperty(window,'devicePixelRatio',{get:()=>.70}));
  await page.setViewportSize({width:1366,height:768});
- await page.goto('/?play=1');
+ await page.goto('/?debug=1&pilot=0');
+ await page.waitForFunction(()=>Boolean(window.__debug));
+ await page.locator('#graphics-quality').selectOption('performance');
+ await page.evaluate(()=>{
+  window.__debug.switchCampaign('demo');
+  window.__debug.setTheme('orbital');
+ });
  await expect.poll(()=>page.evaluate(()=>window.chromatron?.getVisualStats().modeledScenery))
   .toEqual({chassis:true,absorber:true,shuttle:true});
- const biome=await page.evaluate(()=>{
-  for(let x=1;x<14;x++){
-   if(x===10)continue;
-   const game=window.chromatron;
-   game.loadLevels([{title:'Orbital workshop',pieces:[
-    ['laser',x,8,2,1],['target',13,3,0,1],['mirror',10,8,1,0]
-   ]}]);
-   if(game.getVisualStats().environment.biome==='orbital')return 'orbital';
-  }
-  return null;
- });
- expect(biome).toBe('orbital');
+ expect(await page.evaluate(()=>window.chromatron.getVisualStats().environment.biome)).toBe('orbital');
  await expect.poll(()=>page.evaluate(()=>window.chromatron.getVisualStats().boardChassis)).toBe('orbital');
  await page.screenshot({path:'test-results/scenery-pilot-orbital.png'});
 });
