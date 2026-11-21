@@ -109,6 +109,38 @@ test('the title screen offers the next puzzle after a solve and survives a reloa
  await expect(page.locator('#level-index')).toHaveText('002');
 });
 
+test('atlas arrows track responsive rows and Tab leaves the board list in one step',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-level','5'));
+ await page.goto('/?play=1');
+ await page.locator('#levels-button').click();
+ const grid=page.locator('#level-grid');
+ const card=index=>grid.locator(`[data-level-index="${index}"]`);
+ await expect(card(5)).toBeFocused();
+ for(const [width,height,columns] of [[1366,768,4],[1280,720,4],[1093,614,4],[390,844,2]]){
+  await page.setViewportSize({width,height});
+  await page.keyboard.press('Home');
+  await expect(card(0)).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(card(columns)).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(card(columns+1)).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(card(1)).toBeFocused();
+  await expect(grid.locator('[tabindex="0"]')).toHaveCount(1);
+ }
+ await page.keyboard.press('End');
+ await expect(card(5)).toBeFocused();
+ await page.keyboard.press('Tab');
+ await expect(page.locator('#levels-close')).toBeFocused();
+ await page.keyboard.press('Shift+Tab');
+ await expect(card(5)).toBeFocused();
+ await page.keyboard.press('Home');
+ await page.keyboard.press('Enter');
+ await expect(page.locator('#level-menu')).toBeHidden();
+ await expect(page.locator('#level-index')).toHaveText('001');
+ await expect(page.locator('#levels-button')).toBeFocused();
+});
+
 test('keyboard navigation selects tray and board optics and places and moves them',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.setViewportSize({width:1093,height:614});

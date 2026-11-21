@@ -369,3 +369,8 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 
 - Na demonstracji po ukończeniu pierwszej planszy menu proponuje drugą i zachowuje propozycję po odświeżeniu. Ukończenie ostatniej zagadki udostępnia mapę, a jej zamknięcie przywraca fokus głównej akcji. Test częściowego układu zachowuje wcześniejsze ustawienie lustra po odświeżeniu.
 - Przeszło pięć scenariuszy menu w Chromium, 226 testów Node i build Vite.
+
+## 21 listopada 2026 · klawiatura na mapie
+
+- Test przełącza cztery zakładki lokalnych kampanii bez przeładowania zagadki. Test listy demonstracyjnej sprawdza strzałki, Home, End, Tab i Enter w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844.
+- Przeszło siedem scenariuszy mapy i menu w Chromium, 226 testów Node i build Vite.

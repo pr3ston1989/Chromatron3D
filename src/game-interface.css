@@ -406,7 +406,8 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
 .level-atlas-heading { align-items: center; }
 .level-atlas-heading h2 { font: 800 clamp(34px, 5vw, 64px)/.9 var(--display); letter-spacing: .01em; margin: 0; }
 .level-atlas-close { min-width: 38px; border-radius: 3px; background: #101724; color: var(--ink); border-color: var(--line); }
-.campaign-switch { display: flex; gap: 4px; flex-wrap: wrap; }
+.campaign-switch, .campaign-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.campaign-tabs { min-width: 0; }
 .campaign-tab {
   flex: 0 1 auto;
   min-height: 37px;

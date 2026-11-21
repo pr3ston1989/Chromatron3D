@@ -95,3 +95,4 @@
 
 - Zakładka mapy przełącza podgląd i postęp wybranej kampanii. Dopiero wybranie planszy zmienia rozgrywkę oraz zapamiętaną kampanię. Wejście z mapy na bieżącą, nierozwiązaną planszę zachowuje ułożenie i historię ruchów.
 - Główna akcja menu pokazuje numer i nazwę planszy. Ma pierwszeństwo bieżąca nierozwiązana plansza lub zmieniony układ. Po ukończeniu menu wskazuje kolejną dostępną zagadkę, a po finale otwiera mapę z postępem.
+- Zakładki kampanii i lista dostępnych plansz mają po jednym przystanku klawisza Tab. Wybór strzałkami zachowuje układ wierszy listy przy zmianie szerokości. Home i End przenoszą do pierwszej lub ostatniej dostępnej pozycji.

@@ -159,15 +159,18 @@
     <h2 id="level-menu-title" data-i18n="atlasTitle">MAPA POZIOMÓW</h2>
     <button id="levels-close" class="level-atlas-close" type="button" data-i18n-aria="atlasClose" aria-label="Zamknij mapę">×</button>
    </div>
-   <div class="campaign-switch" role="tablist" data-i18n-aria="campaignTabsAria" aria-label="Kampanie">
-    <button class="campaign-tab" type="button" role="tab" data-campaign="demo" aria-selected="true" data-i18n="campaignDemo">SAMOUCZKI · 8</button>
-    <button class="campaign-tab" type="button" role="tab" data-campaign="classic1" hidden>Chromatron 1 · 50</button>
-    <button class="campaign-tab" type="button" role="tab" data-campaign="classic2" hidden>Chromatron 2 · 50</button>
-    <button class="campaign-tab" type="button" role="tab" data-campaign="classic3" hidden>Chromatron 3 · 50</button>
-    <button class="campaign-tab" type="button" role="tab" data-campaign="classic4" hidden>Chromatron 4 · 50</button>
+   <div class="campaign-switch">
+    <div class="campaign-tabs" id="campaign-tabs" role="tablist" data-i18n-aria="campaignTabsAria" aria-label="Kampanie">
+     <button id="campaign-demo" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="demo" aria-selected="true" data-i18n="campaignDemo">SAMOUCZKI · 8</button>
+     <button id="campaign-classic1" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="classic1" hidden>Chromatron 1 · 50</button>
+     <button id="campaign-classic2" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="classic2" hidden>Chromatron 2 · 50</button>
+     <button id="campaign-classic3" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="classic3" hidden>Chromatron 3 · 50</button>
+     <button id="campaign-classic4" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="classic4" hidden>Chromatron 4 · 50</button>
+     <button id="campaign-imported" class="campaign-tab" type="button" role="tab" aria-controls="atlas-content" data-campaign="imported" data-i18n="classicPack" hidden>IMPORTOWANE</button>
+    </div>
     <button id="atlas-import" type="button" class="ui-button" data-i18n="importOriginal">Wczytaj oryginały</button>
    </div>
-   <div class="atlas-content">
+   <div class="atlas-content" id="atlas-content" role="tabpanel" aria-labelledby="campaign-demo">
     <div class="atlas-feature" id="atlas-feature">
      <div class="atlas-feature-caption"><p id="atlas-world-name"></p><h3 id="atlas-world-title"></h3><p id="level-atlas-summary" class="level-atlas-summary" aria-live="polite"></p></div>
     </div>

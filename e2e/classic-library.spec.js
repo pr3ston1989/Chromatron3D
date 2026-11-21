@@ -32,6 +32,16 @@ test('fresh local game opens the first of four retail campaigns and restores the
  await expect(page.locator('#level-pack-label')).toHaveText('ORYGINAŁ');
  await expect(page.locator('[data-campaign=expert]')).toHaveCount(0);
  const tab=key=>page.locator('[data-campaign="'+key+'"]');
+ await tab('classic1').focus();
+ await page.keyboard.press('ArrowRight');
+ await expect(tab('classic2')).toBeFocused();
+ await expect(page.locator('#atlas-content')).toHaveAttribute('aria-labelledby','campaign-classic2');
+ await page.keyboard.press('Home');
+ await expect(tab('demo')).toBeFocused();
+ await expect(page.locator('#level-grid .level-atlas-card')).toHaveCount(8);
+ await page.keyboard.press('End');
+ await expect(tab('classic4')).toBeFocused();
+ expect(await page.evaluate(()=>window.chromatron.getCampaign())).toBe('classic1');
  for(const i of [1,2,3,4]){
   await tab('classic'+i).click();
   await expect(tab('classic'+i)).toHaveAttribute('aria-selected','true');
