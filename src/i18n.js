@@ -17,6 +17,8 @@ const strings = {
     placementCaption:'WYBIERZ POLE NA PLANSZY',
     selectedCaption:'WYBRANY ELEMENT — OBRÓĆ LUB PRZECIĄGNIJ',
     emptyTray:'Wszystkie elementy tego typu są już na planszy. Kliknij element na planszy, aby go wybrać.',
+    trayPrevious:'Przewiń zasobnik w lewo',trayNext:'Przewiń zasobnik w prawo',
+    trayMultiFilter:'FILTR RGB',trayDualReflector:'LUSTRO PODWÓJNE',trayQuadBender:'ZAKRZYWIACZ 4×',trayPrimaryLogicGate:'BRAMKA RGB',
     coachRotateDetail:'Obróć wybrane lustro przyciskami ↶ / ↷ lub klawiszami Q / E. Powierzchnia odbijająca jest jasna, tylna strona ciemna.',
 
     coachChoose:'1. Wybierz lustro',coachChooseDetail:'Kliknij podświetlone LUSTRO w panelu elementów. To właśnie nim zmienisz kierunek światła.',
@@ -71,6 +73,8 @@ const strings = {
     placementCaption:'CHOOSE AN EMPTY BOARD TILE',
     selectedCaption:'SELECTED OPTIC — ROTATE OR DRAG TO MOVE',
     emptyTray:'All optics of this type are already on the board. Click one on the board to select it.',
+    trayPrevious:'Scroll equipment left',trayNext:'Scroll equipment right',
+    trayMultiFilter:'MULTIFILTER',trayDualReflector:'DUAL REFLECTOR',trayQuadBender:'QUAD BENDER',trayPrimaryLogicGate:'PRIMARY GATE',
     coachRotateDetail:'Use ↶ / ↷ or Q / E to rotate. The reflective face is bright; the back is dark.',
 
     coachChoose:'1. Pick up the mirror',coachChooseDetail:'Click the highlighted MIRROR in the components panel. You will use it to redirect the laser.',

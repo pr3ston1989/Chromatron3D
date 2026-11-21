@@ -194,7 +194,20 @@
 }
 .equipment-bay { padding: 0 var(--dock-gap); }
 .equipment-heading { display: flex; justify-content: space-between; align-items: center; gap: 5px; margin-bottom: 3px; }
-.equipment-heading h2 { margin: 0; color: var(--muted); font: 700 12px/1 var(--display); letter-spacing: .17em; }
+.equipment-heading h2 { margin: 0 auto 0 0; color: var(--muted); font: 700 12px/1 var(--display); letter-spacing: .17em; }
+.equipment-scroll:not([hidden]) { display: flex; gap: 2px; }
+.equipment-scroll button {
+  width: 32px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #141b28;
+  color: var(--ink);
+  font: 700 21px/1 var(--display);
+}
+.equipment-scroll button[aria-disabled='true'] { opacity: .42; cursor: default; }
+.equipment-scroll button:hover:not([aria-disabled='true']) { border-color: var(--world); color: var(--world); }
 .tool-panel #spectral-toggle { position: static; width: auto; min-height: 24px; margin: 0; padding: 3px 8px; font-size: 10px; }
 #inventory { display: flex; align-items: center; gap: 8px; max-height: none; margin: 0; overflow: visible; }
 .equipment-slots { display: flex; flex: 1; gap: 4px; min-width: 0; overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: thin; }
@@ -221,7 +234,8 @@
   box-shadow: 0 -2px #060a13 inset;
   touch-action: pan-x;
 }
-#inventory .equipment-slots button.inventory-item .component-icon { width: 51px; height: 43px; background: none; border: 0; justify-self: center; }
+#inventory .equipment-slots button.inventory-item .component-icon { width: 51px; height: 43px; background: none; border: 0; justify-self: center; touch-action: inherit; }
+#inventory .equipment-slots button.inventory-item .equipment-name { letter-spacing: 0; text-wrap: balance; }
 #inventory .equipment-slots img { filter: drop-shadow(0 3px 3px #080b13); }
 #inventory .equipment-slots button.inventory-item strong { position: absolute; top: 3px; right: 3px; font: 700 12px/1 var(--display); background: #1c2633; color: var(--ink); padding: 2px 3px; }
 #inventory .equipment-slots button.inventory-item.selected, #inventory .equipment-slots button.inventory-item:hover { border-color: var(--world); background: radial-gradient(ellipse at 50% 62%, #496c8077, #192837 73%); box-shadow: 0 -2px var(--world) inset; }

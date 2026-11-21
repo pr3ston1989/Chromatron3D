@@ -70,3 +70,8 @@
 
 - Widok prostopadły dopasowuje rozmiar i położenie siatki do wolnej przestrzeni między sterowaniem. W poziomym oknie panel wybranego przyrządu znajduje się z boku. Otwarcie panelu podczas chwytania przyrządu aktualizuje kadr po zakończeniu gestu.
 - W widoku prostopadłym wskaźnik wybiera pole siatki, a przy powrocie do perspektywy obowiązuje trafienie w widoczną powierzchnię modelu. Przełączenie przywraca zachowane ustawienie kamery perspektywicznej. Każde wejście do widoku z góry na nowo dopasowuje całą planszę.
+
+## 21 listopada 2026 · przewijanie zasobnika
+
+- Na ekranie dotykowym zasobnik pozostawia poziomy gest przeglądarce. Wyraźny ruch w górę rozpoczyna podnoszenie przyrządu. Dotknięcie kafelka nadal wybiera przyrząd do ustawienia na planszy.
+- Strzałki pojawiają się po przekroczeniu szerokości zasobnika. Przy przewijaniu większej liczby kart zachowują część bieżącego widoku, a na końcu pozostają widoczne z informacją o niedostępności danego kierunku.

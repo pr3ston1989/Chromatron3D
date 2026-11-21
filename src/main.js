@@ -945,6 +945,27 @@ function update(){
  placementPreview.visible=false;
  persistDraft();
 }
+function syncEquipmentScroll(){
+ const slots=$('equipment-slots');
+ if(!slots)return;
+ const end=slots.scrollWidth-slots.clientWidth;
+ $('equipment-scroll').hidden=end<=1||!slots.clientWidth;
+ $('equipment-prev').setAttribute('aria-disabled',String(slots.scrollLeft<=1));
+ $('equipment-next').setAttribute('aria-disabled',String(slots.scrollLeft>=end-1));
+}
+function scrollEquipment(direction){
+ const slots=$('equipment-slots');
+ const [first,second]=slots.children;
+ if(!second)return;
+ const step=second.offsetLeft-first.offsetLeft;
+ const columns=Math.max(1,Math.floor(slots.clientWidth/step)-1);
+ slots.scrollBy({left:direction*columns*step,behavior:reducedMotion.matches?'instant':'smooth'});
+}
+$('equipment-prev').onclick=()=>scrollEquipment(-1);
+$('equipment-next').onclick=()=>scrollEquipment(1);
+new ResizeObserver(syncEquipmentScroll).observe($('inventory'));
+const compactTrayLabels={multiFilter:'trayMultiFilter',dualReflector:'trayDualReflector',
+ quadBender:'trayQuadBender',primaryLogicGate:'trayPrimaryLogicGate'};
 function renderInventory(){
  const el=$('inventory'),scroll=el.scrollTop;
  const scrollAcross=el.querySelector('.equipment-slots')?.scrollLeft??0;
@@ -953,7 +974,8 @@ function renderInventory(){
  const focused=active?.matches(':focus-visible')&&el.contains(active)?active.dataset.slot:null;
  el.replaceChildren();
  const slots=document.createElement('div');
- slots.className='equipment-slots';
+ slots.id='equipment-slots';slots.className='equipment-slots';
+ slots.addEventListener('scroll',syncEquipmentScroll,{passive:true});
  el.append(slots);
  const fixtures=document.createElement('details');
  fixtures.className='tray-fixtures';fixtures.open=expanded;
@@ -1007,7 +1029,9 @@ function renderInventory(){
   const portrait=document.createElement('img');
   portrait.src=import.meta.env.BASE_URL+'portraits/'+type+'.png';
   portrait.alt='';portrait.draggable=false;icon.append(portrait);
-  const name=document.createElement('span');name.textContent=label;
+  const name=document.createElement('span');
+  if(movableType)name.className='equipment-name';
+  name.textContent=movableType&&compactTrayLabels[type]?t(language,compactTrayLabels[type]):label;
   const count=document.createElement('strong');
   count.textContent='×'+(movableType?tray.length:candidates.length);
   item.append(icon,name,count);(movableType?slots:fixtureItems).appendChild(item);
@@ -1017,6 +1041,7 @@ function renderInventory(){
  slots.scrollLeft=scrollAcross;
  el.scrollTop=scroll;
  if(focused)el.querySelector(`[data-slot="${focused}"]`)?.focus({preventScroll:true});
+ syncEquipmentScroll();
  const details=$('optic-info');
  details.classList.toggle('hidden',!selected);
  if(selected){
@@ -1750,7 +1775,12 @@ window.addEventListener('pointermove',e=>{
  const drag=trayGesture;
  if(!drag||e.pointerId!==drag.id)return;
  if(!drag.active){
-  if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(e.pointerType==='touch'){
+   if(Math.hypot(dx,dy)<12)return;
+   // Horizontal touch movement belongs to the native scrolling strip.
+   if(-dy<=Math.abs(dx)){trayGesture=null;return}
+  }else if(Math.hypot(dx,dy)<6)return;
   if(!drag.piece?.inTray){trayGesture=null;return}
   drag.active=true;
   $('inventory').setPointerCapture(e.pointerId);

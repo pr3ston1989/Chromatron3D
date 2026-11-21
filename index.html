@@ -69,7 +69,14 @@
   <aside class="tool-panel">
    <button id="tool-drawer" class="drawer-handle" type="button" aria-expanded="false" aria-label="Rozwiń narzędzia"><span data-i18n="optics">ZASOBNIK</span></button>
    <div class="equipment-bay">
-    <div class="equipment-heading"><h2 data-i18n="optics">ZASOBNIK</h2><button id="spectral-toggle" class="spectrum-toggle" type="button" data-i18n="spectralShort" aria-expanded="false">WIDMO</button></div>
+    <div class="equipment-heading">
+     <h2 data-i18n="optics">ZASOBNIK</h2>
+     <div class="equipment-scroll" id="equipment-scroll" hidden>
+      <button type="button" id="equipment-prev" aria-controls="equipment-slots" data-i18n-title="trayPrevious" data-i18n-aria="trayPrevious">‹</button>
+      <button type="button" id="equipment-next" aria-controls="equipment-slots" data-i18n-title="trayNext" data-i18n-aria="trayNext">›</button>
+     </div>
+     <button id="spectral-toggle" class="spectrum-toggle" type="button" data-i18n="spectralShort" aria-expanded="false">WIDMO</button>
+    </div>
     <div id="inventory"></div>
    </div>
    <div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div>

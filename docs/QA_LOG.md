@@ -332,3 +332,9 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - Test zlicza trafienia we wszystkie 225 środków pól oraz sprawdza klikalność i szerokość przycisków przy dziewięciu rozmiarach od 320 × 568 do 1366 × 768, z tabletem 768 × 1024. Sprawdza też wybór dwóch sąsiednich luster, stabilny kadr podczas chwytania i zachowanie wcześniejszego obrotu oraz zoomu po wyjściu z widoku z góry.
 - Wszystkie pola były dostępne przy każdym z dziewięciu rozmiarów. W emulacji dotyku udało się przenieść ten sam rozdzielacz do narożników w pionie i w poziomie. Przeszły 226 testów Node, build Vite i 38 scenariuszy Playwright w Chromium.
 - Podglądy są w `test-results/precision-390x844.png` oraz `test-results/precision-640x360.png`.
+
+## 21 listopada 2026 · pełny zasobnik i gesty
+
+- W emulacji 390 × 844 poziome przesunięcie od środka portretu wcześniej pozostawiało zasobnik przy zerowym przesunięciu. Po poprawce przewija karty bez podnoszenia przyrządu. Przeciągnięcie w górę podnosi przyrząd, anulowanie zostawia go w zasobniku, a puszczenie na wolnym polu ustawia go na planszy.
+- Strzałki przewijania sprawdzono w 1366 × 768, 1280 × 720, 1093 × 614 i 640 × 360. W 390 × 844 test dociera do ostatniej karty i sprawdza krótką etykietę przy zachowaniu pełnej nazwy dostępnej dla czytnika ekranu. Mały zasobnik ukrywa strzałki.
+- Przeszło 226 testów Node, build Vite i pełny przebieg 40 scenariuszy Playwright na sprzętowym Chromium. Nowe scenariusze gestów i przewijania przeszły również w SwiftShader. Zrzuty menu oraz demonstracyjnej Stoczni orbitalnej po załadowaniu modeli są w `test-results/current-game/`.
