@@ -107,7 +107,7 @@ test('the title screen offers the next puzzle after a solve and survives a reloa
  await expect(page.locator('#win-next')).toHaveText('PODWÓJNY ZAKRĘT');
  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[640,360],[390,844]]){
   await page.setViewportSize({width,height});
-  await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.victory-actions button')].every(button=>{
+  await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.victory-actions button,#win-close')].every(button=>{
    const b=button.getBoundingClientRect();
    return b.top>=0&&b.bottom<=innerHeight&&document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('button')===button;
   })),`${width} × ${height} victory actions`).toBe(true);
@@ -203,6 +203,42 @@ test('keyboard navigation selects tray and board optics and places and moves the
 
 test.describe('mobile menu and movement',()=>{
  test.use({hasTouch:true,viewport:{width:390,height:844},reducedMotion:'reduce'});
+
+ test('touch can inspect the solved board and reopen its result without another reward',async({page})=>{
+  await page.goto('/');
+  await page.locator('#menu-play').tap();
+  await page.locator('#camera-preset').tap();
+  const tray=page.locator('#inventory button[data-optic-type="mirror"]');
+  await tray.tap();
+  await expect(tray).toHaveAttribute('aria-pressed','true');
+  const cell=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+  await page.touchscreen.tap(cell.x,cell.y);
+  await expect.poll(()=>page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror')))
+   .toMatchObject({x:7,y:7,inTray:false});
+  await expect.poll(()=>page.evaluate(()=>{
+   const coach=document.querySelector('#coach').getBoundingClientRect();
+   return coach.bottom<document.querySelector('#turn-right').getBoundingClientRect().top;
+  })).toBe(true);
+  await page.locator('#turn-right').tap();
+  const result=page.locator('#win'),review=page.locator('#review-result');
+  const credits=()=>page.evaluate(()=>window.chromatron.getPuzzleTools().credits);
+  await expect(result).toBeVisible();
+  const reward=await credits();
+  await page.locator('#win-close').tap();
+  await expect(result).toBeHidden();
+  await expect(review).toBeVisible();
+  await expect(review).toBeFocused();
+  expect(await page.evaluate(()=>window.chromatron.getState().result.won)).toBe(true);
+  await review.tap();
+  await expect(result).toBeVisible();
+  await expect(page.locator('#win-reward')).toContainText('+5');
+  expect(await credits()).toBe(reward);
+  await page.locator('#win-close').tap();
+  await page.locator('#undo').tap();
+  await expect(review).toBeHidden();
+  await expect(page.locator('#hint')).toBeVisible();
+  expect(await page.evaluate(()=>window.chromatron.getState().result.won)).toBe(false);
+ });
 
  test('touch play and move use reachable controls and reject occupied cells',async({page})=>{
   await page.goto('/');

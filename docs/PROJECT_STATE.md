@@ -35,6 +35,7 @@
 - Menu tytułowe pokazuje nazwę docelowej planszy. Po rozwiązaniu proponuje kolejną dostępną zagadkę lub mapę kampanii.
 - Klawiaturą można przeglądać zakładki kampanii oraz dostępne plansze przy użyciu strzałek. Enter otwiera wybraną planszę.
 - Ekran ukończenia pokazuje wynik bieżącej planszy i dokąd prowadzi główna akcja.
+- Ekran ukończenia można zamknąć także dotykiem. Rozwiązana plansza pozwala ponownie przywołać wynik z dolnej belki.
 
 ## Punkty odniesienia
 

@@ -60,6 +60,7 @@
  <div class="game-dock">
   <div class="dock-actions">
    <button id="hint" class="hint-button" type="button" data-i18n-aria="hintAria"><span aria-hidden="true">✦</span><span data-i18n="hintButton">PODPOWIEDŹ</span><span id="hint-badge">0/3</span></button>
+   <button id="review-result" class="hint-button review-result" type="button" hidden><span aria-hidden="true">✓</span><span data-i18n="winReview">WYNIK</span><span aria-hidden="true">›</span></button>
    <div class="dock-history">
     <button id="undo" class="action-key" type="button" data-i18n-title="undoTitle" data-i18n-aria="undoTitle" disabled>↶</button>
     <button id="reset" class="action-key" type="button" data-i18n-title="reset" data-i18n-aria="reset">⟲</button>
@@ -185,6 +186,7 @@
   <div class="modal victory-modal">
    <header class="victory-hero">
     <div class="victory-emblem" aria-hidden="true"><i></i></div>
+    <button id="win-close" type="button" class="level-atlas-close" data-i18n-title="winBackToBoard" data-i18n-aria="winBackToBoard">×</button>
     <div class="eyebrow" id="win-stage"></div>
     <h2 id="win-title" data-i18n="complete">EKSPERYMENT UKOŃCZONY</h2>
     <p id="win-level"></p>

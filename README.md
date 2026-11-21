@@ -46,6 +46,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - **PL / EN** header button changes interface and level guidance; language preference saves automatically.
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.
 - **M** opens the campaign atlas. Use the arrow keys to browse the map and **Enter** to play the focused puzzle. Progress saves locally.
+- After solving a puzzle, close the results to inspect your layout. **Result** in the bottom console reopens the summary.
 
 ## Campaigns
 

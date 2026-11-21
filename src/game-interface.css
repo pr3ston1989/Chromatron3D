@@ -192,6 +192,9 @@
   letter-spacing: .055em;
 }
 .game-dock .hint-button:hover { background: #553a21 !important; border-color: var(--amber) !important; }
+.game-dock .hint-button[hidden] { display: none; }
+.game-dock .review-result { color: #c7f2df; border-color: #639080; background: #1a342e; }
+.game-dock .review-result:hover { background: #234c42 !important; border-color: #91cfbb !important; }
 #hint-badge { background: #161013; color: var(--amber); border-radius: 2px; padding: 2px 4px; }
 .quality-widget { display: flex; min-width: 0; margin: 0; gap: 4px; }
 .quality-widget label { display: none; }
@@ -506,7 +509,8 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
 #win .victory-hero .eyebrow { color: var(--amber); padding-right: 40px; }
 #win .victory-hero h2 { margin: 8px 0 4px; font: 800 clamp(29px, 5vw, 54px)/.94 var(--display); max-width: 12ch; text-wrap: balance; }
 #win .victory-hero p { margin: 0; color: var(--ink); font: 700 15px/1.2 var(--display); }
-.victory-emblem { position: absolute; top: 18px; right: 21px; width: 27px; aspect-ratio: 1; transform: rotate(45deg); border: 1px solid var(--amber); background: #8c663840; box-shadow: 0 0 18px #ffcc7544; display: grid; place-items: center; }
+#win-close { position: absolute; top: 8px; right: 8px; min-width: 38px; min-height: 34px; }
+.victory-emblem { position: absolute; right: 29px; bottom: 20px; width: 27px; aspect-ratio: 1; transform: rotate(45deg); border: 1px solid var(--amber); background: #8c663840; box-shadow: 0 0 18px #ffcc7544; display: grid; place-items: center; }
 .victory-emblem i { border: 2px solid var(--amber); width: 12px; aspect-ratio: 1; }
 .victory-body { padding: 0 clamp(14px, 3vw, 32px) clamp(14px, 3vw, 25px); }
 .victory-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
@@ -586,7 +590,7 @@ button:focus-visible, #inventory button.inventory-item:focus-visible, .campaign-
   .optic-workbench { display: block; bottom: calc(var(--dock-raised) + 23px); }
   .optic-info { max-height: 34px; margin-top: 2px; padding: 4px 7px; font-size: 10px; }
   .coach { inset: auto var(--inset) calc(var(--dock-raised) + 24px); transform: none; width: auto; padding: 5px 8px; }
-  #app:has(.transform-tools:not(.hidden)) .coach { bottom: calc(var(--dock-raised) + 127px); }
+  #app:has(.transform-tools:not(.hidden)) .coach { bottom: calc(var(--dock-raised) + var(--workbench-height, 0px) + 29px); }
   .atlas-content { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(113px, 26%) minmax(0,1fr); gap: 9px; }
   .atlas-feature { background-position: 50% 57%; }
   .atlas-feature-caption { padding: 9px; }

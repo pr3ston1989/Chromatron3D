@@ -374,8 +374,16 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 
 - Test przełącza cztery zakładki lokalnych kampanii bez przeładowania zagadki. Test listy demonstracyjnej sprawdza strzałki, Home, End, Tab i Enter w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844.
 - Przeszło siedem scenariuszy mapy i menu w Chromium, 226 testów Node i build Vite.
+- Widok czwartej kampanii w 390 × 844 i 1366 × 768 zapisano w `test-results/current-game/campaign-navigation-*.png`.
 
 ## 21 listopada 2026 · ekran ukończenia
 
 - Test sprawdza nazwę bieżącej i następnej planszy, liczbę aktywnych rezonatorów i postęp kampanii. Wszystkie trzy akcje są dostępne w 1366 × 768, 1280 × 720, 1093 × 614, 640 × 360 i 390 × 844. Po finale główna akcja otwiera mapę.
 - Przeszły cztery scenariusze Chromium sprawdzające kampanie, menu i finał, 226 testów Node i build Vite.
+
+## 21 listopada 2026 · podgląd rozwiązanej planszy
+
+- Test z emulacją dotyku zamyka ekran ukończenia, sprawdza zachowanie rozwiązania, ponownie otwiera wynik i potwierdza saldo bez ponownego naliczenia nagrody. Cofnięcie obrotu przywraca przycisk podpowiedzi w belce gry.
+- Próba przy renderowaniu programowym ujawniła opóźnione kadrowanie po dotknięciu karty w zasobniku i nakładanie samouczka na obrót. Kadr jest teraz przeliczany przy zmianie wyboru, a samouczek uwzględnia rzeczywistą wysokość panelu. Test sprawdza pole ustawienia oraz odstęp samouczka od obrotu.
+- Zrzuty aktualnej demonstracji są w `test-results/current-game/victory-390x844.png` i `test-results/current-game/victory-640x360.png`.
+- Końcowa regresja przeszła 46 scenariuszy Chromium, 226 testów Node i build Vite. Próba dotykowa przeszła osobno w SwiftShader. W osobnym przebiegu Chromium rozwiązano i ponownie otwarto po 200 zagadek z lokalnych kampanii bez błędów i z zachowanymi oznaczeniami ukończenia. Raport zapisano w `test-results/progression-200-report.json`.

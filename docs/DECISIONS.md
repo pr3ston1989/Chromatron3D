@@ -97,3 +97,4 @@
 - Główna akcja menu pokazuje numer i nazwę planszy. Ma pierwszeństwo bieżąca nierozwiązana plansza lub zmieniony układ. Po ukończeniu menu wskazuje kolejną dostępną zagadkę, a po finale otwiera mapę z postępem.
 - Zakładki kampanii i lista dostępnych plansz mają po jednym przystanku klawisza Tab. Wybór strzałkami zachowuje układ wierszy listy przy zmianie szerokości. Home i End przenoszą do pierwszej lub ostatniej dostępnej pozycji.
 - Ekran ukończenia pokazuje nazwę zagadki, bilans rezonatorów, postęp kampanii, nagrodę i nazwę kolejnej zagadki. Nagłówek korzysta z grafiki tego samego świata co mapa kampanii.
+- Przycisk zamknięcia na ekranie ukończenia pozwala obejrzeć gotową planszę. W belce gry przycisk „Wynik” ponownie otwiera podsumowanie, gdy układ nadal zasila wszystkie rezonatory.

@@ -533,7 +533,7 @@ function rebuildBeams(){
  laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,lighting,currentResult.boundaryHits);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
- if(!currentResult.won&&won){won=false;winPending=false;closeScreen('win',false);if(victoryFX){victoryFX.dispose();victoryFX=null}}
+ if(!currentResult.won&&won){won=false;winPending=false;closeScreen('win',false);updateStatus();if(victoryFX){victoryFX.dispose();victoryFX=null}}
  if(currentResult.won&&!won){
   won=true;
   if(victoryFX)victoryFX.dispose();
@@ -553,7 +553,7 @@ function rebuildBeams(){
   winPending=true;
   setTimeout(()=>{
    if(won&&winPending&&currentLevelKey()===completedKey&&!screenVisible('main-menu')){
-    winPending=false;showScreen('win','continue');beep(880,.15);
+    openVictory();beep(880,.15);
    }
   },650);
  }
@@ -629,13 +629,15 @@ function enterGame(showArrival=true){
  hasPlayed=true;store('chromatron-play-entered','yes');
  closeScreen('main-menu');
  if(opened&&wantsAudio&&!audioEnabled)void applySound(true);
- if(winPending&&won){winPending=false;showScreen('win','continue')}
+ if(winPending&&won)openVictory();
  else if(opened&&showArrival)showLevelIntro();
 }
 function updateStatus(){
  const el=$('level-status');
  el.textContent=solved.includes(levelIndex)?t(language,'statusSolved'):skipped.includes(levelIndex)?t(language,'statusSkipped'):'';
  el.classList.toggle('solved',solved.includes(levelIndex));
+ $('hint').hidden=won;
+ $('review-result').hidden=!won;
 }
 function getLevelAtlas(){
  return buildLevelAtlas(levels.length,solved,skipped,accessFloor);
@@ -664,6 +666,11 @@ function syncVictorySummary(){
  $('win-action-label').textContent=t(language,next?'next':'viewCampaign');
  $('win-next').textContent=next?loc(next.title,language):'';
  $('win-reward').textContent=winReward?t(language,'earnedCredits',{amount:winReward}):t(language,'noRewardRepeat');
+}
+function openVictory(){
+ if(!won)return;
+ winPending=false;
+ showScreen('win','continue',$('review-result'));
 }
 function showAtlasStage(biome,title){
  const feature=$('atlas-feature');
@@ -1001,6 +1008,7 @@ function refreshSelection(){
  rebuildSelectionGuides();renderInventory();updateCoach();syncTransformTools();
  placementPreview.visible=false;
  syncBoardSymbols();
+ refreshOverheadLayout();
 }
 function update(){
  rebuildBeams();rebuildPieces();
@@ -1417,6 +1425,10 @@ function updateCamera(){
  syncBoardSymbols();
 }
 function refreshOverheadLayout(){
+ if(compactBoard.matches){
+  const height=document.querySelector('.optic-workbench').getBoundingClientRect().height;
+  $('app').style.setProperty('--workbench-height',height+'px');
+ }
  // Selecting a piece can open controls under a drag. Keep its projected
  // start position stable until the gesture ends.
  if(!cameraTop||down||touchPinch||trayGesture?.active)return;
@@ -1929,6 +1941,8 @@ $('menu-campaign').onclick=()=>openLevelAtlas($('menu-campaign'));
 $('menu-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('menu-settings'));
 $('menu-guide').onclick=()=>showScreen('help-overlay','close-help',$('menu-guide'));
 $('menu-from-win').onclick=()=>{closeScreen('win',false);openMainMenu()};
+$('review-result').onclick=openVictory;
+$('win-close').onclick=()=>closeScreen('win');
 for(const tab of document.querySelectorAll('.campaign-tab')){
  tab.addEventListener('click',()=>{
   atlasCampaign=tab.dataset.campaign;
