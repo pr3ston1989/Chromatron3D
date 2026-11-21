@@ -57,10 +57,10 @@ function nextAction(pieces,solution,actual,solved){
  return {};
 }
 
-export function contextualHint(level,pieces,step,lang='pl',solution=null){
+export function contextualHint(level,pieces,step,lang='pl',solution=null,liveTrace=null){
  const en=lang==='en';
  const reply=(body,verified=false,focus=null)=>({body,verified,focus});
- const actual=trace(pieces);
+ const actual=liveTrace??trace(pieces);
  if(actual.won)return reply(en?'Every receiver is lit.':'Wszystkie rezonatory są zasilane.',true);
  const check=Array.isArray(solution)&&verifyPuzzleSolution(level,solution);
  if(check?.valid){
@@ -87,22 +87,30 @@ export function contextualHint(level,pieces,step,lang='pl',solution=null){
    if(kind==='remove'){
     const body=step===3?(en?'Return '+name+' at '+pos+' to the tray.':'Odłóż do zasobnika element '+name+' z pola '+pos+'.'):
      (en?'Clear '+name+' from this part of the light path.':'Zwolnij tę część toru wiązki. Odłóż element '+name+' do zasobnika.');
-    return reply(lead+body,true,step>1?focus:null);
+    const hint=reply(lead+body,true,step>1?focus:null);
+    return step===3?{...hint,instruction:body}:hint;
    }
    if(step===3){
     const from='('+part.x+', '+part.y+')';
     const angle=rot*45+'°';
+    if(kind==='turn'){
+     const clockwise=(rot-part.rot+8)%8;
+     const right=clockwise<=4;
+     const turns=right?clockwise:8-clockwise;
+     const suffix=turns+' × '+(en?(right?'right':'left'):(right?'w prawo':'w lewo'));
+     const instruction=en?'Rotate '+name+' at '+pos+' to '+angle+' ('+suffix+').':
+      'Obróć '+name+' na polu '+pos+' do '+angle+' ('+suffix+').';
+     return {...reply(instruction,true,focus),instruction};
+    }
     const verbs=en?{
-     turn:'Rotate '+name+' at '+pos,
      move:'Move '+name+' from '+from+' to '+pos,
      place:'Take '+name+' from the tray and put it at '+pos
     }:{
-     turn:'Obróć '+name+' na polu '+pos,
      move:'Przenieś '+name+' z pola '+from+' na '+pos,
      place:'Weź '+name+' z zasobnika i ustaw na polu '+pos
     };
     const instruction=verbs[kind]+(en?' and set it to ':' pod kątem ')+angle+'.';
-    return reply(editorial?instruction+' '+editorial.confirmation:instruction,true,focus);
+    return {...reply(editorial?instruction+' '+editorial.confirmation:instruction,true,focus),instruction};
    }
    const exits=check.result.segments.filter(r=>r.x===x&&r.y===y);
    const outputs=[...new Set(exits.map(r=>colorName(r.color,lang)+' '+heading(r,lang)))];

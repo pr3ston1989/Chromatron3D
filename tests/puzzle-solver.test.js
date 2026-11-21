@@ -88,7 +88,9 @@ test('verified clues pick the first reachable optic before a downstream move in 
  Object.assign(pieces[2],{x:8,y:7,rot:1,inTray:false});
  assert.deepEqual(contextualHint(level,pieces,3,'pl',solution).focus,{x:8,y:3});
  Object.assign(pieces[3],{x:8,y:3,rot:0,inTray:false});
- assert.match(contextualHint(level,pieces,3,'en',solution).body,/Rotate.*225°/);
+ const rotate=contextualHint(level,pieces,3,'en',solution);
+ assert.match(rotate.body,/Rotate.*225° \(3 × left\)/);
+ assert.equal(rotate.instruction,rotate.body);
 });
 
 test('an extra tool interrupting the verified route is removed before a downstream placement',()=>{

@@ -351,3 +351,11 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - Na demonstracji Stoczni orbitalnej w 640 × 360 warunek różnicy jasności co najmniej 12/255 spełniało wcześniej 8 z 14 pionowych linii wewnętrznych. Po poprawce test wykrywa 14 linii pionowych i 14 poziomych. Każda linia jest mierzona w pięciu miejscach, z których do porównania trafia mediana.
 - Test przełącza w Stoczni profile grafiki i rozmiary 640 × 360, 1093 × 614, 390 × 844, 1280 × 720 i 1366 × 768. Na zrzutach bieżącej gry sprawdzono także Ogród heliostatów. Porównanie znajduje się w `test-results/current-game/grid-before-640x360.png` i `test-results/current-game/grid-demo-8-640x360.png`.
 - Przeszło 226 testów Node, build Vite i 42 scenariusze Chromium. Test kontrastu przeszedł także w SwiftShader.
+
+## 21 listopada 2026 · zweryfikowana podpowiedź na planszy
+
+- Scenariusz demonstracji „Podwójny zakręt” odblokowuje trzy stopnie pomocy za łącznie pięć kredytów. Sprawdza przejście od przeniesienia pierwszego lustra do jego obrotu, wskazanie drugiego pola, cofnięcie, ponowne otwarcie prowadzenia, zmianę języka i schowanie instrukcji po wygranej. W czasie prowadzenia każde pole pozostaje klikalne w rozmiarach 390 × 844, 640 × 360, 1093 × 614, 1280 × 720 i 1366 × 768.
+- Testy lokalnych czterech kampanii odtwarzają instrukcje od początku do rozwiązania każdej z 200 plansz. Sprawdzają zgodność zaznaczonego pola i kąta oraz zachowanie tekstów autorskich w oknie podpowiedzi.
+- Scenariusz modeli orbitalnych wskazuje teraz konkretny biom. Poprzednia próba losowała szereg pakietów i mogła skończyć bez sceny orbitalnej, mimo dostępności wszystkich modeli.
+- Podgląd prowadzenia w działającej demonstracji zapisano w `test-results/current-game/hint-guide-390x844.png`.
+- Przeszło 226 testów Node, build Vite i 43 scenariusze Chromium. Prowadzenie i rozliczanie kredytów sprawdzono również w SwiftShader.

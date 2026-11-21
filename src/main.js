@@ -322,7 +322,10 @@ let componentRebuilds=0;
 const opticTweens=[];
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 const beamGroup=new THREE.Group();world.add(beamGroup);
-const assistGroup=new THREE.Group();world.add(assistGroup);
+const hintMarker=mesh(new THREE.TorusGeometry(.49,.05,8,36),new THREE.MeshBasicMaterial({
+ color:0xc992ff,transparent:true,opacity:.9,depthWrite:false,depthTest:false
+}));
+hintMarker.rotation.x=Math.PI/2;hintMarker.renderOrder=20;hintMarker.visible=false;
 const guideGroup=new THREE.Group();world.add(guideGroup);
 const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T),T);
 const wheelRotation=createWheelRotation();
@@ -349,6 +352,7 @@ const firstOriginal=[...classicLibrary.keys()].sort((a,b)=>a-b)[0];
 let campaignPreference=firstOriginal?'classic'+firstOriginal:'demo';
 const verifiedSolutions=new Map();
 let hintWorker=null,solvingId=null,solverStatus='';
+let offeredGuide=null,guidedSolution=null;
 let coachDismissed=false,tutorialPlaced=false;
 let placementMode=false,relocation=false,draggedPiece=null;
 let hasPlayed=false,winPending=false;
@@ -391,7 +395,6 @@ try{
 }catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
-function torus(radius,tube,mat,parent,rotation=Math.PI/2){const a=mesh(new THREE.TorusGeometry(radius,tube,10,48),mat,parent);a.rotation.x=rotation;return a}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
  opticShadows.update(pieces);
@@ -865,6 +868,7 @@ function load(i,{silentIntro=false,allowLocked=false}={}){
  }
  cancelBoardGesture();finishTrayGesture(null,false);
  cancelSolutionSearch();
+ guidedSolution=offeredGuide=null;
  if(victoryFX){victoryFX.dispose();victoryFX=null}
  // ── Level transition animation: fog-in → swap → fog-out ──
  const prevBiome=activeEnvironment?.id;
@@ -949,6 +953,7 @@ function update(){
  rebuildSelectionGuides();renderInventory();renderAnalyzer();updateCoach();syncTransformTools();
  placementPreview.visible=false;
  syncBoardSymbols();
+ refreshHintGuide();
  persistDraft();
 }
 function syncEquipmentScroll(){
@@ -1255,6 +1260,7 @@ function rotate(dir){
  syncTargetGlow();
  rebuildSelectionGuides();
  renderAnalyzer();updateCoach();syncTransformTools();
+ refreshHintGuide();
  persistDraft();
  beep(540,.05);
 }
@@ -1976,10 +1982,22 @@ document.addEventListener('drop',e=>{
 function openHint(){
  requestSolutionSearch();
  renderHints();
- showScreen('hint-overlay',$('reveal-hint').disabled?'close-hint':'reveal-hint');
+ const focus=offeredGuide?'hint-show-move':$('reveal-hint').disabled?'close-hint':'reveal-hint';
+ showScreen('hint-overlay',focus);
 }
 $('hint').onclick=openHint;
 $('close-hint').onclick=()=>closeScreen('hint-overlay');
+$('hint-show-move').onclick=()=>{
+ if(!offeredGuide)return;
+ guidedSolution=offeredGuide;
+ refreshHintGuide();
+ closeScreen('hint-overlay');
+};
+$('hint-dismiss-guide').onclick=()=>{
+ guidedSolution=null;
+ refreshHintGuide();
+ $('hint').focus({preventScroll:true});
+};
 $('reveal-hint').onclick=()=>{
  if(hintCount>=3)return toast(t(language,'allHints'));
  if(hintCount===2&&!verifiedSolutionForCurrent())
@@ -1991,7 +2009,7 @@ $('reveal-hint').onclick=()=>{
  saveWallet();
  if(currentPackId===demoPackId)store(progressKey(levelIndex),String(hintCount));
  renderHints();beep(460,.09);
- if($('reveal-hint').disabled)$('close-hint').focus();
+ if($('reveal-hint').disabled)$(offeredGuide?'hint-show-move':'close-hint').focus();
 };
 $('skip-level').onclick=()=>{
  if(hintCount<3)return;
@@ -2118,7 +2136,7 @@ function animate(time){
   updateCamera();
  }
  for(const p of componentGroup.children)for(const c of p.children)if(c.userData.spin)c.rotation.y=debugFrozen?0:(time-start)*.001;
- for(const c of assistGroup.children)c.scale.setScalar(1+.09*Math.sin(animationTime*.005));
+ if(hintMarker.visible)hintMarker.scale.setScalar(still?1:1+.07*Math.sin(animationTime*.006));
  selectionReticle.update(animationTime,still);
  if(laserVisuals)laserVisuals.update(animationTime*.001);
  if(victoryFX && (debugFrozen||!victoryFX.update((time-victorySince)*.001))){
@@ -2151,22 +2169,38 @@ function animate(time){
  composer.render();
  if(debugEnabled)debugFrames++;
 }
+function setHintMarker(focus){
+ hintMarker.visible=Boolean(focus);
+ if(focus)hintMarker.position.copy(vec(focus.x,focus.y,.055));
+}
+function showHintGuide(hint){
+ const guide=$('hint-guide'),copy=$('hint-guide-copy');
+ const body=hint?.instruction??'';
+ guide.hidden=!body;
+ if(copy.textContent!==body)copy.textContent=body;
+ setHintMarker(body?hint.focus:null);
+}
+function refreshHintGuide(){
+ const hint=guidedSolution&&contextualHint(levels[levelIndex],pieces,3,language,guidedSolution,currentResult);
+ showHintGuide(hint);
+}
 function renderHints(){
  const root=$('hint-steps');
  if(!root)return;
  root.replaceChildren();
  const level=levels[levelIndex];
  const known=verifiedSolutionForCurrent();
- let finalFocus=null;
+ let finalFocus=null,exactHint=null;
  for(let step=1;step<=hintCount;step++){
   // Built-in prose sets up a puzzle; a state-aware verified plan then reveals
   // one concrete next action, never a fabricated move.
   const authored=step<3&&level.hints?.[step-1]?
    hintFor(level,language,step):null;
-  const dynamic=contextualHint(level,pieces,step,language,known);
+  const dynamic=contextualHint(level,pieces,step,language,known,currentResult);
   const hint=dynamic.verified?dynamic:(authored||dynamic);
   if(!hint)continue;
-  finalFocus=hint.focus||finalFocus;
+  if(hint.verified&&hint.focus)finalFocus=hint.focus;
+  if(step===3&&hint.instruction)exactHint=hint;
   const block=document.createElement('section');block.className='hint-step';
   const header=document.createElement('div');
   header.className='eyebrow';
@@ -2174,13 +2208,10 @@ function renderHints(){
   const copy=document.createElement('p');copy.textContent=hint.body;
   block.append(header,copy);root.appendChild(block);
  }
- disposeGroupChildren(assistGroup);
- if(finalFocus&&hintCount>=2&&Number.isInteger(finalFocus.x)&&Number.isInteger(finalFocus.y)){
-  const marker=torus(.43,.032,new THREE.MeshBasicMaterial({
-   color:0xc992ff,transparent:true,opacity:.82,depthTest:false
-  }),assistGroup);
-  marker.position.copy(vec(finalFocus.x,finalFocus.y,.055));marker.renderOrder=20;
- }
+ offeredGuide=exactHint?known:null;
+ $('hint-show-move').hidden=!offeredGuide;
+ if(guidedSolution)showHintGuide(exactHint);
+ else setHintMarker(finalFocus);
  $('hint-badge').textContent=hintCount+'/3';
  syncWalletUI();
  const next=hintCount;
@@ -2189,6 +2220,7 @@ function renderHints(){
  const canBuy=next<3&&wallet.balance>=cost&&!needsVerified;
  const button=$('reveal-hint');
  button.textContent=t(language,hintCount===0?'hintReveal':'hintAgain');
+ button.hidden=next===3;
  button.disabled=!canBuy;
  const help=$('hint-cost');
  help.textContent=next===3?'':needsVerified?t(language,'hintNeedVerified'):

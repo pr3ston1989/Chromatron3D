@@ -100,6 +100,10 @@
   </div>
  </div>
  <div class="optic-workbench">
+  <aside id="hint-guide" class="hint-guide" aria-labelledby="hint-guide-title" hidden>
+   <div><strong id="hint-guide-title" data-i18n="hintGuideTitle">NASTĘPNY RUCH</strong><p id="hint-guide-copy" role="status" aria-atomic="true"></p></div>
+   <button id="hint-dismiss-guide" type="button" data-i18n-title="hintDismissGuide" data-i18n-aria="hintDismissGuide">×</button>
+  </aside>
   <div id="transform-tools" class="transform-tools hidden" role="group" data-i18n-aria="transformAria" aria-label="Wybrany przyrząd">
    <div class="transform-heading"><div id="transform-caption" class="transform-caption"></div><span id="rotation-angle" class="rotation-angle" data-i18n-aria="angleAria" aria-label="Kąt obrotu">000°</span></div>
    <div class="transform-controls"><button type="button" id="turn-left" data-i18n-title="rotateLeft" data-i18n-aria="rotateLeft">↶ <kbd>Q</kbd></button><button type="button" id="turn-right" data-i18n-title="rotateRight" data-i18n-aria="rotateRight">↷ <kbd>E</kbd></button><button id="relocate" type="button" aria-pressed="false" data-i18n="relocate">PRZENIEŚ</button><button id="return-tray" type="button" data-i18n="returnTray" disabled>↤ DO ZASOBNIKA</button><button type="button" id="cancel-selection" data-i18n-title="cancelSelection" data-i18n-aria="cancelSelection">×</button></div>
@@ -213,6 +217,7 @@
    <div id="hint-steps" class="hint-steps" aria-live="polite"></div>
    <button id="reveal-hint" class="ui-button accent" type="button" data-i18n="hintReveal">ODKRYJ WSKAZÓWKĘ</button>
    <p id="hint-cost" class="hint-cost"></p>
+   <button id="hint-show-move" class="ui-button accent" type="button" data-i18n="hintShowMove" hidden>POKAŻ NA PLANSZY</button>
    <button id="skip-level" class="ui-button hint-skip hidden" type="button" data-i18n="hintSkip">POMIŃ ZAGADKĘ →</button>
    <button id="close-hint" class="ui-button hint-close" type="button" data-i18n="hintClose">WRÓĆ DO GRY</button>
   </div>

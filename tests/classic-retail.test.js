@@ -51,7 +51,8 @@ for(const game of [1,2,3,4]){
     assert.ok(exact.verified&&exact.focus,'Missing exact clue '+game+':'+(slot+1));
     const {x,y}=exact.focus;
     const move=level.solution.find(m=>m.x===x&&m.y===y);
-    assert.ok(move&&exact.body.includes(move.rot*45+'°'),'Invalid exact angle '+slot);
+    assert.ok(move&&exact.instruction?.includes(move.rot*45+'°'),'Invalid guide angle '+slot);
+    assert.ok(exact.instruction.includes('('+x+', '+y+')'),'Missing marked cell '+slot);
     if(count===0)assert.ok(exact.body.endsWith(editorial.confirmation),'Missing editorial check '+slot);
     else assert.ok(!exact.body.endsWith(editorial.confirmation),'Opening persists after the first move '+slot);
     const want=pieces[move.index];

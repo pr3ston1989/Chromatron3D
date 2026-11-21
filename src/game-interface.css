@@ -283,6 +283,25 @@
   width: min(470px, calc(100vw - 2 * var(--inset)));
 }
 .optic-workbench { z-index: 4; bottom: calc(var(--dock-raised) + 1px); display: grid; grid-template-columns: minmax(200px, auto) 1fr; gap: 5px; pointer-events: none; }
+.hint-guide:not([hidden]) {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 5px;
+  margin-bottom: 3px;
+  padding: 6px 7px 6px 9px;
+  background: var(--plating);
+  border: 1px solid var(--line);
+  border-left: 2px solid #cb9aff;
+  border-radius: 3px;
+  color: var(--ink);
+  pointer-events: auto;
+}
+.hint-guide strong { color: #dec3ff; font: 700 11px/1 var(--display); letter-spacing: .08em; }
+.hint-guide p { margin: 3px 0 0; font: 500 11px/1.35 var(--body); }
+.hint-guide button { width: 27px; height: 27px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: #151f31; color: var(--ink); }
+#play-surface:has(.hint-guide:not([hidden])) .coach { visibility: hidden; }
 .optic-workbench .transform-tools { width: 100%; max-width: none; }
 .transform-tools, .optic-info, #spectral-inspector {
   margin: 0;

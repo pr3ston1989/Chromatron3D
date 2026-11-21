@@ -60,6 +60,74 @@ test('hints are progressive and non-destructive; narrow layout stays interactive
  expect(exceptions).toEqual([]);
 });
 
+test('an unlocked verified guide follows the next unfinished move without charging again',async({page},testInfo)=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.setViewportSize({width:390,height:844});
+ await page.addInitScript(()=>{
+  localStorage.setItem('chromatron-reborn-level','1');
+  localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify({balance:5}));
+ });
+ await page.goto('/?play=1');
+ await expect(page.locator('#level-index')).toHaveText('002');
+ await page.locator('#camera-preset').click();
+ const wallet=()=>page.evaluate(()=>window.chromatron.getPuzzleTools());
+ const project=(x,y)=>page.evaluate(([x,y])=>window.chromatron.projectCell(x,y),[x,y]);
+ const clickCell=async(x,y)=>{
+  const point=await project(x,y);
+  await page.mouse.click(point.x,point.y);
+ };
+ const show=page.locator('#hint-show-move'),guide=page.locator('#hint-guide');
+ const copy=page.locator('#hint-guide-copy');
+ await page.locator('#hint').click();
+ await page.locator('#reveal-hint').click();
+ await page.locator('#reveal-hint').click();
+ await expect(show).toBeHidden();
+ await page.locator('#reveal-hint').click();
+ await expect(show).toBeEnabled();
+ await show.click();
+ await expect(page.locator('#hint-overlay')).toBeHidden();
+ await expect(guide).toBeVisible();
+ await expect(copy).toContainText(/Przenieś.*\(5, 9\).*45°/);
+ await clickCell(5,11);
+ await page.locator('#relocate').click();
+ await clickCell(5,9);
+ await expect(copy).toContainText(/Obróć.*\(5, 9\).*45° \(1 × w prawo\)/);
+ await page.locator('#turn-right').click();
+ await expect(copy).toContainText(/Przenieś.*\(5, 4\).*225°/);
+
+ for(const [width,height] of [[640,360],[1093,614],[1280,720],[1366,768],[390,844]]){
+  await page.setViewportSize({width,height});
+  await expect.poll(()=>page.evaluate(()=>{
+   for(let x=0;x<15;x++)for(let y=0;y<15;y++){
+    const point=window.chromatron.projectCell(x,y);
+    if(!document.elementFromPoint(point.x,point.y)?.closest('#scene'))return false;
+   }
+   return true;
+  }),`${width} × ${height} guided board`).toBe(true);
+ }
+ await page.screenshot({path:testInfo.outputPath('guide-390x844.png')});
+ await page.locator('#language').click();
+ await expect(copy).toContainText(/Move.*\(5, 4\).*225°/);
+ await page.locator('#language').click();
+ await page.locator('#undo').click();
+ await expect(copy).toContainText(/Obróć.*\(5, 9\).*45°/);
+ await page.locator('#hint-dismiss-guide').click();
+ await expect(guide).toBeHidden();
+ expect(await wallet()).toMatchObject({credits:0,unlocked:3});
+ await page.locator('#hint').click();
+ await show.click();
+ await page.locator('#turn-right').click();
+ await clickCell(9,11);
+ await page.locator('#relocate').click();
+ await clickCell(5,4);
+ await page.keyboard.press('q');
+ await page.keyboard.press('q');
+ await page.keyboard.press('q');
+ await expect(page.locator('#win')).toBeVisible();
+ await expect(guide).toBeHidden();
+ expect(await wallet()).toMatchObject({credits:5,unlocked:3});
+});
+
 
 test('first puzzle teaches the three interactions and can be solved using the UI',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));

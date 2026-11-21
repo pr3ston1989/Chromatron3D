@@ -42,7 +42,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.
 - **Ctrl+Z** undo, **Ctrl+Y / Ctrl+Shift+Z** redo, **Escape** closes the active dialog or deselects an optic. With the board idle, **Escape** opens the game menu.
 - **Reset** restores the starting layout. Use **Undo** to recover the layout before reset during the current session. The draft follows the restored layout.
-- **H** opens progressive hints. Three clues per puzzle; skip is offered after the final clue without awarding a solve badge.
+- **H** opens progressive hints. After revealing a verified move, **Show on the board** marks its tile and keeps the next instruction visible as you play. The final clue also offers a skip without awarding a solve badge.
 - **PL / EN** header button changes interface and level guidance; language preference saves automatically.
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.
 - Navigate demo puzzles with arrows. Progress saves locally.

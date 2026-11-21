@@ -85,3 +85,8 @@
 
 - Cienkie rowki w modelu platformy znikają miejscami po pomniejszeniu. W rzucie z góry granice pól dopełnia jedna płaszczyzna z materiałem, który wylicza szerokość i wygładzenie linii w pikselach renderera. W widoku ukośnym rowki nadal wynikają z geometrii pokładu.
 - Siatka jest wyrównana do 15 × 15 pól. Głębokość sceny pozwala wiązkom i przyrządom zasłonić linie tam, gdzie się przecinają. Na jasnych platformach linie otrzymują ciemny odcień świata, a zapasowy zestaw ciemnych kafelków korzysta z jasnej siatki.
+
+## 21 listopada 2026 · prowadzenie przez następny ruch
+
+- Akcja „Pokaż na planszy” pojawia się po odblokowaniu zweryfikowanego trzeciego etapu. Po jej wybraniu fioletowy znacznik wskazuje pole, a przy sterowaniu pozostaje krótka instrukcja. Wcześniejsze etapy zachowują dotychczasowy zakres wskazówek.
+- Instrukcja uwzględnia ruchy, obrót i historię. Obrót podaje docelowy kąt, liczbę kroków i krótszy kierunek. Wyłączenie prowadzenia, zmiana planszy lub jej rozwiązanie usuwa instrukcję z planszy. Koszt rozlicza się podczas odblokowania etapu.
