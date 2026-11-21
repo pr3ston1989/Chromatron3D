@@ -347,6 +347,7 @@
 @media (min-width: 820px) and (orientation: landscape) {
   #app.board-overhead .mission-copy { width: min(23vw, 315px); }
   #app.board-overhead .optic-workbench,
+  #app.stage-closeup .optic-workbench,
   #play-surface:has(.board-keyboard.active) .optic-workbench {
     left: auto;
     right: var(--inset);

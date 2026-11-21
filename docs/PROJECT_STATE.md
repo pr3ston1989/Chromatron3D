@@ -36,6 +36,7 @@
 - Klawiaturą można przeglądać zakładki kampanii oraz dostępne plansze przy użyciu strzałek. Enter otwiera wybraną planszę.
 - Ekran ukończenia pokazuje wynik bieżącej planszy i dokąd prowadzi główna akcja.
 - Ekran ukończenia można zamknąć także dotykiem. Rozwiązana plansza pozwala ponownie przywołać wynik z dolnej belki.
+- Po porównaniu z czterema wizualizacjami dopracowano kadry, wykończenie optyki oraz rozmieszczenie scenerii. Ogród używa ręcznie wymodelowanych detali heliostatu, cokołu i krzewów. Pliki źródłowe i budżety są w [inwentarzu](ASSETS.md). Pozostałe światy nadal używają wcześniejszych modeli otoczenia. Test przeglądarkowy sprawdza widoczność wszystkich pól w czterech kadrach.
 
 ## Punkty odniesienia
 

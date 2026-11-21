@@ -1,5 +1,24 @@
 import {expect,test} from '@playwright/test';
 
+test('concept scenery keeps all playable cells visible in the four reference worlds',async({page})=>{
+ test.setTimeout(120000);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.setViewportSize({width:1366,height:768});
+ await page.goto('/?debug=1');
+ await page.waitForFunction(()=>Boolean(window.__debug));
+ await page.locator('#graphics-quality').selectOption('performance');
+ await page.evaluate(()=>window.__debug.switchCampaign('demo'));
+ for(const level of [1,2,3,8]){
+  await page.evaluate(n=>{window.__debug.loadLevel(n);window.__debug.freezeAnimations(true)},level);
+  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
+   await page.setViewportSize({width,height});
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),`Demo ${level} · ${width} × ${height}`).toEqual([]);
+  }
+ }
+});
+
 test('compact overhead framing retains all 14 inner grid lines on each axis',async({page})=>{
  test.setTimeout(120000);
  await page.setViewportSize({width:640,height:360});

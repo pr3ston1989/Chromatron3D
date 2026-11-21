@@ -14,7 +14,7 @@ export function createOpticContactShadows(THREE,parent,{
   const dx=(x+.5-resolution/2)/(resolution*.5);
   const dy=(y+.5-resolution/2)/(resolution*.5);
   const radial=Math.min(1,Math.hypot(dx,dy));
-  const falloff=Math.pow(Math.max(0,1-radial),2.25);
+  const falloff=Math.pow(Math.max(0,1-radial),1.75);
   const offset=(y*resolution+x)*4;
   bytes[offset]=1;bytes[offset+1]=7;bytes[offset+2]=17;
   bytes[offset+3]=Math.round(224*falloff);
@@ -25,7 +25,7 @@ export function createOpticContactShadows(THREE,parent,{
  texture.minFilter=THREE.LinearFilter;
  texture.generateMipmaps=false;
  const material=new THREE.MeshBasicMaterial({
-  map:texture,color:0xffffff,transparent:true,opacity:.84,
+  map:texture,color:0xffffff,transparent:true,opacity:.9,
   depthWrite:false,depthTest:true,polygonOffset:true,polygonOffsetFactor:-1,
   side:THREE.DoubleSide
  });
@@ -50,7 +50,7 @@ export function createOpticContactShadows(THREE,parent,{
    // Bulkhead shadows are wider than the precision optics, so the physical
    // silhouettes read clearly while the grid stays bright enough to play.
    const scale=p.type==='wall'?1.19:p.type==='laser'?1.03:1;
-   matrix.scale.set(scale,scale,1);
+   matrix.scale.set(scale*1.12,scale*.95,1);
    matrix.updateMatrix();
    mesh.setMatrixAt(i,matrix.matrix);
   }

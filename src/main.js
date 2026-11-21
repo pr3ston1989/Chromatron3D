@@ -257,7 +257,11 @@ function syncBoardPresentation(){
  laboratory.userData.setSceneryVisible(!preview);
  syncBoardChassis();
  key.color.setHex(preview?activeEnvironment.key:0xffebce);
- ambient.intensity=preview?.48:.70;
+ const sunset=preview&&activeEnvironment.id==='heliostat';
+ key.position.set(sunset?9:-8,sunset?12:16,sunset?-8:12);
+ key.intensity=sunset?2.04:preview?1.61:1.67;
+ fill.intensity=sunset?9:preview?16:25;
+ ambient.intensity=preview?.43:.70;
  if(preview){
   scene.fog.color.setHex(activeEnvironment.fog);
   scene.fog.density=.007;
@@ -417,7 +421,8 @@ function rebuildPieces(){
  const reflectingIds=new Set(reflectionCandidates(pieces,selected,graphicsProfile.reflectorCount).map(p=>p.id));
  const walls=pieces.filter(p=>p.type==='wall'&&!p.inTray);
  for(const type of new Set(pieces.map(p=>p.type)))opticModels.load(type);
- const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24));
+ const deck=activeEnvironment?.deck;
+ const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24),deck);
  if(wallBatch){componentGroup.add(wallBatch);hitObjects.push(...wallBatch.children)}
  for(const p of pieces){
   if(p.inTray)continue;
@@ -425,7 +430,7 @@ function rebuildPieces(){
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
   const color=new THREE.Color(COLORS[p.type==='target'?p.color:(p.color||7)]);
   const energized=p.type==='target'&&(currentResult?.received.get(p.id)||0)===p.color;
-  const model=opticModels.cloneOptic(p.type,color,{energized});
+  const model=opticModels.cloneOptic(p.type,color,{energized,deck});
   if(model){
    const head=new THREE.Group();
    head.userData.motionHead=true;
@@ -1399,23 +1404,26 @@ function updateCamera(){
  const viewportWidth=innerWidth;
  const pilot=usesNewArt();
  const mobile=compactBoard.matches;
+ const closeup=pilot&&!mobile?Math.max(0,Math.min(1,(viewportWidth-1040)/300,(innerHeight-575)/160)):0;
+ $('app').classList.toggle('stage-closeup',closeup>.4);
  // Portrait mode: fit a 15×15 board into the usable central viewport.
  const pilotMargin=pilot?2.13*(390/viewportWidth)*(innerHeight/844):1;
  const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):Math.max(1,pilotMargin);
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&!mobile?(innerHeight<650 ? .93 : .86):1;
- const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94:1);
+ const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94-.19*closeup:1);
  const overheadDistance=overheadFrame?overheadFrame.distance*overheadZoom.current/defaultZoom:orbitDistance;
  const cameraDistance=THREE.MathUtils.lerp(orbitDistance,overheadDistance,overheadBlend);
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
- const viewPitch=Math.max(.27,pitch-(mobile?.22:shipyard.isVisible()?.32:.25)*framing);
- const viewYaw=yaw+.23*framing;
+ const viewPitch=Math.max(.27,pitch-(mobile?.22:shipyard.isVisible()?.32:.25)*framing-.08*closeup*framing);
+ const viewYaw=yaw+.23*framing*(1-closeup);
  cameraTarget.y=(pilot?(mobile?1.15:-.65):0)*(1-overheadBlend);
  camera.up.set(0,overheadBlend===1?0:1,overheadBlend===1?-1:0);
  camera.position.set(Math.sin(viewYaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(viewYaw)*Math.cos(viewPitch)*cameraDistance);
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
- const orbitOffset=mobile?0:innerHeight<470?42:30;
+ const portraitOffset=pilot&&viewportWidth<innerHeight?Math.min(88,Math.max(0,(innerHeight-600)*.35)):0;
+ const orbitOffset=mobile?portraitOffset:innerHeight<470?42:30+innerHeight*.075*closeup;
  const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
  if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
   camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
@@ -1576,7 +1584,7 @@ function previewInstrument(piece){
  if(previewPiece!==piece||!previewModel){
   if(previewModel)placementPreview.remove(previewModel);
   previewPiece=piece;
-  previewModel=opticModels.cloneOptic(piece.type,new THREE.Color(COLORS[piece.color||7]));
+  previewModel=opticModels.cloneOptic(piece.type,new THREE.Color(COLORS[piece.color||7]),{deck:activeEnvironment?.deck});
   if(previewModel){
    previewModel.position.y=.23;
    placementPreview.add(previewModel);
@@ -2418,6 +2426,23 @@ if(debugEnabled){
    return true;
   },
   isSolved:()=>Boolean(currentResult?.won),
+  getSceneryOcclusion(){
+   const scenery=world.children.find(node=>node.visible&&node.name===activeEnvironment?.en);
+   if(!scenery)return [];
+   scene.updateMatrixWorld(true);
+   const meshes=[];
+   scenery.traverseVisible(node=>{if(node.isMesh)meshes.push(node)});
+   const sight=new THREE.Raycaster();
+   const hits=[];
+   for(let y=0;y<GRID;y++)for(let x=0;x<GRID;x++){
+    const delta=vec(x,y,.11).sub(camera.position);
+    sight.far=delta.length()-.04;
+    sight.set(camera.position,delta.normalize());
+    const blocker=sight.intersectObjects(meshes,false)[0];
+    if(blocker)hits.push({x,y,object:blocker.object.name});
+   }
+   return hits;
+  },
   getStats:()=>({fps:measuredFps,frames:debugFrames,drawCalls:renderer.info.render.calls,
    triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,
    geometries:renderer.info.memory.geometries,pixelRatio:renderer.getPixelRatio(),backend,

@@ -15,7 +15,7 @@ function sequence(seed){
 function gradientSky(THREE){
  const uniforms={
   dark:{value:new THREE.Color()}, glow:{value:new THREE.Color()},
-  shaft:{value:0}
+  shaft:{value:0}, sun:{value:0}
  };
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.ShaderMaterial({
   uniforms,depthWrite:false,side:THREE.BackSide,
@@ -29,14 +29,19 @@ function gradientSky(THREE){
   fragmentShader:`
    varying vec3 direction;
    uniform vec3 dark, glow;
-   uniform float shaft;
+   uniform float shaft, sun;
    void main(){
     vec3 ray=normalize(direction);
     float elevation=(ray.y+.38)*2.45;
     float horizon=exp(-elevation*elevation);
     float atmosphere=horizon*(.29+.31*smoothstep(-.8,.9,ray.x));
     float columns=pow(max(0.,sin(ray.x*16.+ray.z*6.)),8.)*.19*shaft;
-    gl_FragColor=vec4(mix(dark,glow,atmosphere+columns*horizon),1.);
+    float facing=dot(ray,normalize(vec3(.87,-.32,-.37)));
+    float sunset=exp(-(1.-facing)*25.)*.57+exp(-(1.-facing)*108.)*.23;
+    float disk=smoothstep(.99983,.99990,facing);
+    vec3 color=mix(dark,glow,atmosphere+columns*horizon);
+    color+=vec3(1.,.48,.19)*sun*(sunset+disk*1.35);
+    gl_FragColor=vec4(color,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
    }`
@@ -64,13 +69,15 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(!active)return;
   const {definition,root}=active;
   root.visible=true;
-  const {dark,glow,shaft}=sky.material.uniforms;
+  const {dark,glow,shaft,sun}=sky.material.uniforms;
   dark.value.setHex(definition.sky);
   glow.value.setHex(definition.haze);
   shaft.value=definition.id==='abyss'?1:0;
+  sun.value=definition.id==='heliostat'?1:0;
  }
  function setup(record,base,scatter,fixtures){
   const {definition,root}=record;
+  const plantings=definition.scatter[3];
   record.platform=base.clone(true);
   record.platform.position.y=-3.768;
   const materials=new Map();
@@ -102,21 +109,24 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
     mesh.traverse(node=>{
      if(!node.isMesh)return;
      if(!horizon.has(node.material)){
-      const color=node.material.color.clone().lerp(tint.setHex(definition.sky),.62);
+      const mist=definition.id==='heliostat'?definition.haze:definition.sky;
+      const color=node.material.color.clone().lerp(tint.setHex(mist),.62);
       horizon.set(node.material,new THREE.MeshBasicMaterial({color}));
      }
      node.material=horizon.get(node.material);
     });
    }
    root.add(mesh);
-   return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role};
+   return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role,id};
   });
 
+  record.plantingSurfaces=plantings?record.props.filter(prop=>prop.id==='garden-terrace').map(prop=>prop.mesh):[];
   record.instances=[];
   scatter.updateMatrixWorld(true);
   scatter.traverse(node=>{
    if(!node.isMesh)return;
-   const mesh=new THREE.InstancedMesh(node.geometry,node.material,14);
+   const mesh=new THREE.InstancedMesh(node.geometry,node.material,plantings?.length??14);
+   mesh.name=node.name;
    record.instances.push({mesh,base:node.matrixWorld.clone()});
    root.add(mesh);
   });
@@ -141,21 +151,35 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.position.set(anchor[0]+dx,anchor[1],anchor[2]+dz);
    mesh.rotation.y=yaw;
   }
-  const [,scale,color]=record.definition.scatter;
+  const [,scale,color,plantings]=record.definition.scatter;
   tint.setHex(color).lerp(white,.77);
-  for(let i=0;i<14;i++){
-   const angle=i*2.399+(rand()-.5)*.49;
-   const radius=16.8+rand()*17;
-   dummy.position.set(Math.cos(angle)*radius,-7.3+rand()*1.85,Math.sin(angle)*radius);
+  for(const mesh of record.plantingSurfaces)mesh.updateWorldMatrix(true,true);
+  const ground=plantings?new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,-1,0)):null;
+  let count=0;
+  for(let i=0;i<(plantings?.length??14);i++){
+   if(plantings){
+    const [x,z]=plantings[i];
+    ground.ray.origin.set(x,0,z);
+    const contact=ground.intersectObjects(record.plantingSurfaces,true)[0];
+    if(!contact)continue;
+    dummy.position.copy(contact.point);
+    dummy.position.y-=.11;
+   }else{
+    const angle=i*2.399+(rand()-.5)*.49;
+    const radius=16.8+rand()*17;
+    dummy.position.set(Math.cos(angle)*radius,-7.3+rand()*1.85,Math.sin(angle)*radius);
+   }
    dummy.rotation.y=rand()*Math.PI*2;
-   dummy.scale.setScalar(scale*(.65+rand()*.55));
+   dummy.scale.setScalar(plantings?plantings[i][2]*(.83+rand()*.32):scale*(.65+rand()*.55));
    dummy.updateMatrix();
    for(const {mesh,base} of record.instances){
-    mesh.setMatrixAt(i,instanceMatrix.multiplyMatrices(dummy.matrix,base));
-    mesh.setColorAt(i,tint);
+    mesh.setMatrixAt(count,instanceMatrix.multiplyMatrices(dummy.matrix,base));
+    mesh.setColorAt(count,tint);
    }
+   count++;
   }
   for(const {mesh} of record.instances){
+   mesh.count=count;
    mesh.instanceMatrix.needsUpdate=true;
    mesh.instanceColor.needsUpdate=true;
    mesh.computeBoundingSphere();

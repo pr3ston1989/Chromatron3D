@@ -69,14 +69,15 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
      material.color.multiplyScalar(.59);
     if(material.name==='Inlay seam')material.color.multiplyScalar(.70);
    });
-   rib.position.set(-11.9,-5.8,-20);
-   rib.rotation.y=-.51;
-   rib.scale.setScalar(1.18);
+   rib.position.set(-13.4,-9.8,-17.9);
+   rib.rotation.y=-.67;
+   rib.scale.setScalar(1.61);
    rib.traverse(node=>{
     if(node.isMesh&&node.material.name!=='Warm status marker')node.material.color.multiplyScalar(.59);
    });
-   berth.position.set(37,-12.5,-29.5);
-   berth.rotation.y=-.49;
+   berth.position.set(36,-19.2,-12);
+   berth.rotation.y=-.74;
+   berth.scale.setScalar(1.28);
    craft.scale.setScalar(.75);
    craft.rotation.y=-.34;
    root.add(platform,rib,berth,craft);
@@ -100,7 +101,7 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
   // Keep the framing structures from crossing the puzzle when orbiting the board.
   rib.visible=rib.position.x*cameraPosition.x+rib.position.z*cameraPosition.z<0;
   berth.visible=berth.position.x*cameraPosition.x+berth.position.z*cameraPosition.z<0;
-  berth.position.x=37+drift*3.2;
+  berth.position.x=36+drift*3.2;
   craft.position.set(23+drift*2.4+Math.sin(t*.13)*3,-3.1+Math.sin(t*.24)*.23,-20+Math.cos(t*.13)*1.7);
  }
  return {setLevel,update,isVisible:()=>root.visible,getStatus:()=>status};

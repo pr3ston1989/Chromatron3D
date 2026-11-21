@@ -62,6 +62,17 @@ Wymiary plików GLB wynikają z ich obwiedni przed skalowaniem instancji.
 
 ## Pozostałe modele GLB do przeglądu
 
+### Ogród heliostatów
+
+| Model i plik źródłowy Blendera | Wymiary GLB | Trójkąty / limit |
+| --- | --- | ---: |
+| Heliostat i cokół ([Heliostat.blend](../art/Heliostat.blend)) | 6,57 × 5,51 × 6,57 | 1460 / 1500 |
+| Krzew tarasowy ([TerraceShrub.blend](../art/TerraceShrub.blend)) | 2,36 × 1,34 × 2,53 | 520 / 600 |
+
+Siatki żeber, piasty i piaskowcowego cokołu dodano w edytorze Blendera do istniejącego heliostatu. Liście i korony krzewu wymodelowano w osobnym pliku. Eksporty w `assets/models/scenery` zachowują płaskie cieniowanie, materiały bez tekstur obrazkowych i podstawę na osi Y=0. Krzewy współdzielą siatkę i są osadzane na powierzchni tarasów.
+
+### Zestawy otoczenia
+
 | Zestaw i lokacja | Model / rozmiar | Limit trójkątów na model |
 | --- | --- | ---: |
 | Dominanty `public/models/biomes` | `orbital` 6,90 × 4,76 × 7,13; `verdant` 7,83 × 3,89 × 7,57; `polar` 7,41 × 3,67 × 7,16; `nebula` 8,13 × 7,26 × 7,89 | 2000 |

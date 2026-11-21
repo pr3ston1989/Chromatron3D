@@ -7,37 +7,49 @@ export const CAMPAIGN_WORLDS=Object.freeze([
   0x101a32,0x395272,0x242f48,0xffe5c8,0x75d3e1,'deck',{
    face:.49,groove:.58,dust:0x7b9ab5,
    models:[
-    ['observatory-arc',[-7,-3.8,-18],.99,-.58,'left'],
-    ['observatory-lens',[18,-3.9,-5],.88,-.64,'right'],
-    ['observatory-landing',[-7,-5,-18],1.03,-.58],
-    ['observatory-landing',[18,-5.34,-5],[.48,1,1.04],-.64],
-    ['observatory-iris',[18,-3.60,-5],.88,-.64,'iris'],
-    ['skyline-ridge',[22,-16,-34],[1.85,2.6,2.54],-.57],
-    ['skyline-ridge',[39,-24,-51],[2.9,3.12,2.5],-.57]
+    ['observatory-arc',[-14.2,-5.5,-18.5],1.91,-.64,'left'],
+    ['observatory-landing',[-14.2,-8.84,-18.5],[1.86,2.74,1.6],-.64],
+    ['observatory-lens',[18,-8.1,12.4],1.47,-.72],
+    ['observatory-iris',[18,-7.58,12.4],1.47,-.72],
+    ['observatory-landing',[18,-11,12.4],[.79,2.32,1.7],-.72],
+    ['observatory-landing',[26,-14,-11],[1.8,2.1,2.7],-.72],
+    ['skyline-ridge',[23,-13,-34],[2.15,2.6,2.54],-.57],
+    ['skyline-ridge',[42,-19,-51],[2.9,3.12,2.5],-.57]
    ],scatter:['survey-mast',.62,0x5c7184]
   }),
  world('heliostat','Ogród heliostatów','Heliostat Garden','verdant',
   0x14252d,0x567976,0x3b534e,0xffe4b2,0xd3b471,'garden',{
    face:.48,groove:.65,dust:0x889c73,
    models:[
-    ['garden-heliostat',[-7,-4.45,-18],1.55,-.80,'left'],
-    ['garden-arcade',[19,-4,-5],.97,-.65,'right'],
-    ['garden-terrace',[-9,-8.2,-20],[.75,1.0,1.53],-.67],
-    ['garden-terrace',[22,-8.2,-9],[.90,1.14,1.51],-.69],
-    ['greenhouse-habitat',[27,-5.9,-29],.87,-.59],
-    ['garden-terrace',[27,-15,-38],[2.9,2.3,2.3],-.62],
-    ['wind-turbine',[22,-3.7,-15],.62,-.61,'turn']
-   ],scatter:['garden-fern',.90,0x788360]
+    ['garden-heliostat-authored',[-9.8,-7.55,-13.1],1.79,-.33,'left'],
+    ['garden-terrace',[-12,-13.8,-13.8],[.98,1.56,2.15],-.67],
+    ['garden-arcade',[19,-6.2,7.9],1.68,-.69,'right'],
+    ['garden-terrace',[19,-13.5,7.9],[.86,1.88,2.14],-.69],
+    ['garden-arcade',[27.3,-9.5,-13.5],1.18,-.63,'right'],
+    ['garden-arcade',[34.3,-10.3,-16.8],1.07,-.63,'right'],
+    ['garden-terrace',[31,-13.5,-15],[1.42,1.56,2.05],-.63],
+    ['skyline-ridge',[31,-23,-42],[2.5,2.05,2.3],-.62],
+    ['skyline-ridge',[43,-31,-57],[3.1,3.10,2.7],-.45],
+    ['wind-turbine',[22,-5.6,-16],.65,-.70,'turn']
+   ],scatter:['garden-terrace-shrub',1,0x9eaa78,[
+    [-18,-16,1.3],[-16,-12.5,1.16],[-13.2,-11.4,.94],[-20,-17,.8],
+    [-14.5,-15.3,.86],[-12.8,-16,1.05],[-7.8,-16.5,.96],[-7.6,-10.1,.92],
+    [16,4.7,1.06],[18.9,5,1.21],[20.4,9.9,1.3],[23.7,12.7,1.15],
+    [21.2,14.5,.9],[14.6,8.1,1.13],[16.8,10.2,.79],[23,9.3,1.18],
+    [24,-18,.88],[29,-16.8,1.29],[33,-11,1.11],[35,-14,.83]
+   ]]
   }),
  world('grotto','Kryształowa grota','Crystal Grotto','nebula',
-  0x180e24,0x503956,0x442b4c,0xece2ff,0xa889ca,'grotto',{
+  0x22102f,0x703985,0x4b235f,0xece2ff,0xa889ca,'grotto',{
    face:.54,groove:.61,dust:0x9c82b3,
    models:[
-    ['grotto-buttress',[-7,-6,-17],1.48,-.69,'left'],
-    ['grotto-buttress',[19,-6,-3],[.91,1.31,.99],.29,'right'],
-    ['grotto-ridge',[-8,-9.2,-24],[.94,1.86,1.41],-.60],
-    ['grotto-ridge',[23,-13.6,-22],[1.54,1.92,1.72],-.54],
-    ['grotto-ridge',[37,-9,-46],[2.6,3.5,1.9],-.65]
+    ['grotto-buttress',[-14.8,-7.3,-17.8],[1.64,1.74,1.45],-.73,'left'],
+    ['grotto-buttress',[18.8,-7.7,8],[1.38,1.89,1.26],.23,'right'],
+    ['grotto-buttress',[25,-11.6,-22],[1.34,1.38,1.35],-.38,'right'],
+    ['grotto-ridge',[-14.8,-14,-17.8],[1.12,1.95,1.93],-.62],
+    ['grotto-ridge',[18.8,-15,8],[1.12,2.27,2.1],.23],
+    ['grotto-ridge',[27,-18,-29],[1.65,2.76,2.18],-.56],
+    ['grotto-ridge',[40,-22,-47],[2.74,4.19,2.75],-.65]
    ],scatter:['amethyst-shard',1.31,0x8e6f9f]
   }),
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',

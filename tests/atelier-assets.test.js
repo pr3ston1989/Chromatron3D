@@ -135,3 +135,20 @@ test('overhaul samples load as untextured, Y-up models within the design budgets
   }
  }
 });
+
+test('the garden meshes from Blender fit their scenery budgets and stand on a Y-up base',async()=>{
+ const loader=new GLTFLoader();
+ const budgets={'garden-heliostat-authored':1500,'garden-terrace-shrub':600};
+ for(const [name,budget] of Object.entries(budgets)){
+  const file=readFileSync(new URL('../assets/models/scenery/'+name+'.glb',import.meta.url));
+  const doc=JSON.parse(file.toString('utf8',20,20+file.readUInt32LE(12)));
+  const parts=doc.meshes.flatMap(mesh=>mesh.primitives);
+  const triangles=parts.reduce((sum,part)=>sum+doc.accessors[part.indices].count/3,0);
+  assert.ok(triangles>0&&triangles<=budget,name);
+  assert.equal(doc.images,undefined,name+' uses solid materials');
+  assert.ok(new Set(parts.map(part=>part.material)).size>=3,name+' uses at least three finishes');
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-6,name+' stands on Y=0');
+ }
+});

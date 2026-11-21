@@ -54,7 +54,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     float core=exp(-radial*radial*165.0);
     float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
     float energy=(halo*.18+middle*.55+core*.62)*ripples;
-    vec3 radiance=uColor*(halo*.55+middle*1.72+core*2.9)+mix(uColor,vec3(1.0),.23)*core*.62;
+    vec3 radiance=uColor*(halo*.52+middle*1.46+core*2.28)+mix(uColor,vec3(1.0),.12)*core*.35;
     gl_FragColor=vec4(radiance*energy*uStrength,clamp(halo*.19+middle*.47+core*.9,0.0,.94)*uStrength);
    }
   `
@@ -76,7 +76,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  function flare(x,y,color,scale=1){
   const m=new THREE.SpriteMaterial({
    map:flareTexture,color:new THREE.Color(palette[color]),transparent:true,
-   depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending
+   depthWrite:false,depthTest:true,toneMapped:false,opacity:.78,blending:THREE.AdditiveBlending
   });
   const sprite=new THREE.Sprite(m);
   sprite.position.copy(point(x,y,.79));
@@ -92,7 +92,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  function coloredCore(mask){
   if(!coreMaterials.has(mask)){
    const base=new THREE.Color(palette[mask]);
-   const ice=base.clone().lerp(new THREE.Color(0xffffff),.23);
+   const ice=base.clone().lerp(new THREE.Color(0xffffff),.16);
    coreMaterials.set(mask,new THREE.MeshBasicMaterial({
     color:ice,transparent:true,opacity:.74,depthWrite:false,
     toneMapped:false,blending:THREE.AdditiveBlending
@@ -109,7 +109,7 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
    color:new THREE.Color(palette[s.color]),transparent:true,opacity:.8,
    depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending
   }));
-  beamBatcher.addTube(a,b,.063,shellMaterials.get(s.color),8);
+  beamBatcher.addTube(a,b,.052,shellMaterials.get(s.color),8);
   beamBatcher.addTube(a,b,.010,coloredCore(s.color),9);
   ribbon(a,b,.66,false,material(s.color));
   ribbon(a,b,.47,true,material(s.color));
