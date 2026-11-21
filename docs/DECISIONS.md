@@ -80,3 +80,8 @@
 
 - Symbole pojawiają się po ustawieniu kamery prostopadle do planszy. Osobna warstwa interfejsu zostawia trafianie w pola płótnu gry. Położenie i wielkość symboli wynikają z rzutu aktualnej siatki, niezależnie od rozdzielczości renderera.
 - Symbole rozróżniają rodzaj przyrządu. Obwódka nadaje dodatkową informację o kolorze lasera, filtra lub rezonatora. Ustawienie wyświetlania jest zapisywane lokalnie.
+
+## 21 listopada 2026 · czytelność siatki w widoku z góry
+
+- Cienkie rowki w modelu platformy znikają miejscami po pomniejszeniu. W rzucie z góry granice pól dopełnia jedna płaszczyzna z materiałem, który wylicza szerokość i wygładzenie linii w pikselach renderera. W widoku ukośnym rowki nadal wynikają z geometrii pokładu.
+- Siatka jest wyrównana do 15 × 15 pól. Głębokość sceny pozwala wiązkom i przyrządom zasłonić linie tam, gdzie się przecinają. Na jasnych platformach linie otrzymują ciemny odcień świata, a zapasowy zestaw ciemnych kafelków korzysta z jasnej siatki.

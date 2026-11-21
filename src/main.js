@@ -50,6 +50,7 @@ import {applyOpticTween,enqueueOpticTween} from './optic-tween-clock.js';
 import {boardArrowOffset,classifyClick,isFreeCell,nextTrayPiece} from './interaction-model.js';
 import {createSelectionReticle} from './selection-reticle.js';
 import {createBoardSymbols} from './board-symbols.js';
+import {createOverheadGrid} from './overhead-grid.js';
 import {createOpticContactShadows} from './optic-contact-shadows.js';
 import {createWheelRotation,toWheelPixels} from './wheel-rotation.js';
 import './style.css';
@@ -135,6 +136,7 @@ const tileGeo=new THREE.BoxGeometry(T*.97,.22,T*.97);
 function mesh(geo,mat,parent=world){const m=new THREE.Mesh(geo,mat);parent.add(m);return m;}
 const deck=mesh(new RoundedBoxGeometry(21,.75,21,4,.26),new THREE.MeshStandardMaterial({color:0x0a1324,metalness:.65,roughness:.32}));deck.position.y=-.62;
 const gridGroup=new THREE.Group();world.add(gridGroup);
+const setOverheadGrid=createOverheadGrid(THREE,world,{cells:GRID,tileSize:T});
 // Two instanced draw calls replace 450 independent tile/line meshes.
 // This preserves every logical cell and its coloring while keeping GPU headroom.
 const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
@@ -1348,6 +1350,9 @@ function updateCamera(){
  const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
  if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
   camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
+ const overhead=overheadBlend===1;
+ boardLines.visible=!overhead;
+ setOverheadGrid(overhead,renderer.getPixelRatio(),pilot?activeEnvironment.fog:undefined);
  syncBoardSymbols();
 }
 function refreshOverheadLayout(){

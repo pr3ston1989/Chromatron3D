@@ -29,6 +29,7 @@
 - Widok z góry kadruje siatkę między widocznymi kontrolkami. Kliknięcie wybiera pole. Powrót do perspektywy przywraca wcześniejszy kąt i zoom.
 - Pełny zasobnik ma strzałki przewijania. Poziomy gest na ekranie dotykowym przewija też od miniatury przyrządu, a rozpoczęcie gestu w górę podnosi przyrząd.
 - W widoku z góry mały symbol przy modelu oznacza typ przyrządu. Symbole są dopasowane do kadru i można je wyłączyć w ustawieniach.
+- Granice 15 × 15 pól w widoku z góry zachowują czytelność w małych oknach dzięki siatce o szerokości dopasowanej do rozdzielczości renderera.
 
 ## Punkty odniesienia
 

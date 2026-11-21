@@ -345,3 +345,9 @@ Przeszły 225 testów Node i build Vite. Pełny przebieg Chromium wykrył proble
 - Znacznik wraca razem z rozdzielaczem po cofnięciu zwrotu do zasobnika. Wyłączenie symboli w menu jest zachowane po przeładowaniu. Kamera kończy przejście również po naciśnięciu planszy w trakcie animacji.
 - Na demonstracjach Stoczni i Ogrodu symbole są widoczne przy modelach i obok głównej osi wiązki. W 640 × 360 kontrast części linii siatki nadal jest słaby. Zrzuty dla obu światów są w `test-results/current-game/symbols-*.png`.
 - Przeszło 226 testów Node, build Vite i 41 scenariuszy Chromium. Nowy scenariusz przeszedł również w SwiftShader.
+
+## 21 listopada 2026 · siatka na małym ekranie
+
+- Na demonstracji Stoczni orbitalnej w 640 × 360 warunek różnicy jasności co najmniej 12/255 spełniało wcześniej 8 z 14 pionowych linii wewnętrznych. Po poprawce test wykrywa 14 linii pionowych i 14 poziomych. Każda linia jest mierzona w pięciu miejscach, z których do porównania trafia mediana.
+- Test przełącza w Stoczni profile grafiki i rozmiary 640 × 360, 1093 × 614, 390 × 844, 1280 × 720 i 1366 × 768. Na zrzutach bieżącej gry sprawdzono także Ogród heliostatów. Porównanie znajduje się w `test-results/current-game/grid-before-640x360.png` i `test-results/current-game/grid-demo-8-640x360.png`.
+- Przeszło 226 testów Node, build Vite i 42 scenariusze Chromium. Test kontrastu przeszedł także w SwiftShader.

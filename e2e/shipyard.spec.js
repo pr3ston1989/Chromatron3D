@@ -1,5 +1,57 @@
 import {expect,test} from '@playwright/test';
 
+test('compact overhead framing retains all 14 inner grid lines on each axis',async({page})=>{
+ test.setTimeout(120000);
+ await page.setViewportSize({width:640,height:360});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/?debug=1');
+ await page.waitForFunction(()=>Boolean(window.__debug));
+ await page.evaluate(()=>{
+  const quality=document.querySelector('#graphics-quality');
+  quality.value='balanced';quality.dispatchEvent(new Event('change'));
+  window.__debug.switchCampaign('demo');window.__debug.loadLevel(8);
+  window.__debug.freezeAnimations(true);
+ });
+ await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ await page.locator('#camera-preset').click();
+ await expect(page.locator('.board-symbol').first()).toBeVisible();
+ const setups=[[640,360,'balanced'],[1093,614,'performance'],[390,844,'performance'],[1280,720,'cinematic'],[1366,768,'balanced']];
+ for(const [width,height,profile] of setups){
+  await page.setViewportSize({width,height});
+  await page.locator('#graphics-quality').selectOption(profile);
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const image=await page.screenshot({scale:'css'});
+  const contrast=await page.evaluate(async source=>{
+   const bitmap=await createImageBitmap(await (await fetch('data:image/png;base64,'+source)).blob());
+   const canvas=new OffscreenCanvas(bitmap.width,bitmap.height);
+   const context=canvas.getContext('2d');
+   context.drawImage(bitmap,0,0);
+   const {data,width}=context.getImageData(0,0,bitmap.width,bitmap.height);
+   bitmap.close();
+   const luminance=(x,y)=>{
+    const index=(Math.round(y)*width+Math.round(x))*4;
+    return data[index]*.2126+data[index+1]*.7152+data[index+2]*.0722;
+   };
+   const project=window.chromatron.projectCell;
+   function axisContrast(vertical){
+    return Array.from({length:14},(_,line)=>{
+     // Sample ordinary cells, away from the bright horizontal beam and the board rim.
+     const samples=[1,5,10,12,13].map(cell=>{
+      const {x,y}=vertical?project(line+.5,cell):project(cell,line+.5);
+      const sample=offset=>vertical?luminance(x+offset,y):luminance(x,y+offset);
+      const surface=(sample(-3)+sample(3))/2;
+      return surface-Math.min(sample(-1),sample(0),sample(1));
+     }).sort((a,b)=>a-b);
+     return Math.round(samples[2]);
+    });
+   }
+   return {vertical:axisContrast(true),horizontal:axisContrast(false)};
+  },image.toString('base64'));
+  for(const [axis,lines] of Object.entries(contrast))
+   expect(lines.filter(delta=>delta>=12),`${width} × ${height} ${axis} luminance deltas: ${lines.join(', ')}`).toHaveLength(14);
+ }
+});
+
 test('top view labels adjacent optics without intercepting their cells',async({page})=>{
  await page.setViewportSize({width:1366,height:768});
  await page.addInitScript(()=>{
