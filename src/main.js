@@ -1159,6 +1159,14 @@ function renderInventory(){
     else toast(t(language,'emptyTray'));
    });
    item.setAttribute('aria-pressed',String(selected?.inTray&&candidates.includes(selected)||false));
+   item.addEventListener('contextmenu',e=>e.preventDefault());
+   item.addEventListener('auxclick',e=>{
+    if(e.button!==2||e.pointerType==='touch'||!tray.length)return;
+    const part=tray.includes(selected)?selected:nextTrayPiece(candidates,type);
+    if(!part?.inTray)return;
+    if(part!==selected)selectFromTray(part);
+    rotate(1);
+   });
    if(tray.length)item.addEventListener('pointerdown',e=>{
     if(e.isPrimary&&e.button===0)trayGesture={id:e.pointerId,x:e.clientX,y:e.clientY,
      piece:nextTrayPiece(candidates,type),active:false};
@@ -1899,7 +1907,16 @@ renderer.domElement.addEventListener('pointerup',e=>{
  if(endBoardTouch(e))return;
  if(e.pointerId!==down?.id)return;
  const state=down;down=null;
- if(state.button===2){clearSelection();return}
+ if(state.button===2){
+  if(e.button!==2||state.moved||document.elementFromPoint(e.clientX,e.clientY)!==renderer.domElement)return;
+  const part=state.origin?.piece;
+  if(part&&movable.has(part.type)){
+   select(part);rotate(1);
+  }else if(!part&&state.origin&&selected?.inTray&&placementMode){
+   rotate(1);updatePlacementPreview(e);
+  }else if(!part&&selected)clearSelection();
+  return;
+ }
  if(state.moved){
   if(state.mode==='piece'){
    const dest=document.elementFromPoint(e.clientX,e.clientY)===renderer.domElement&&cellAt(e.clientX,e.clientY,state.offset);
@@ -1989,7 +2006,7 @@ $('inventory').addEventListener('lostpointercapture',e=>{
  if(e.target===$('inventory'))finishTrayGesture(e,false);
 });
 window.addEventListener('blur',()=>finishTrayGesture(null,false));
-renderer.domElement.addEventListener('contextmenu',e=>{e.preventDefault();clearSelection()});
+renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 renderer.domElement.addEventListener('wheel',e=>{
  e.preventDefault();
  if(selected&&!e.shiftKey&&!e.ctrlKey){

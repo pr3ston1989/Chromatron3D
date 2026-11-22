@@ -170,6 +170,43 @@ test('first puzzle teaches the three interactions and can be solved using the UI
 });
 
 
+for(const [width,height] of [[1366,768],[1280,720],[1093,614]]){
+ test(`right-click rotates the pointed optic once on the board and in the tray at ${width}x${height}`,async({page})=>{
+  await page.setViewportSize({width,height});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?play=1');
+  const tray=page.locator('#inventory button').filter({hasText:'LUSTRO'});
+  const state=()=>page.evaluate(()=>window.chromatron.getState());
+  const mirror=async()=>(await state()).pieces.find(p=>p.type==='mirror');
+  const point=(x,y,height=0)=>page.evaluate(args=>window.chromatron.projectCell(...args),[x,y,height]);
+  const start=await mirror();
+  await tray.click({button:'right'});
+  expect(await mirror()).toMatchObject({rot:(start.rot+1)%8,inTray:true});
+  expect((await state()).placementMode).toBe(true);
+  const dest=await point(5,7);
+  await page.mouse.click(dest.x,dest.y,{button:'right'});
+  expect(await mirror()).toMatchObject({rot:(start.rot+2)%8,inTray:true});
+  await page.mouse.click(dest.x,dest.y);
+  await page.keyboard.press('Escape');
+  expect((await state()).selectedId).toBeNull();
+  const head=await point(5,7,.78);
+  await page.mouse.click(head.x,head.y,{button:'right'});
+  expect(await mirror()).toMatchObject({x:5,y:7,inTray:false,rot:(start.rot+3)%8});
+  expect((await state()).selectedId).toBe(start.id);
+  await page.keyboard.press('Control+z');
+  expect(await mirror()).toMatchObject({x:5,y:7,rot:(start.rot+2)%8});
+  const fixed=(await state()).pieces.find(p=>p.type==='laser');
+  const source=await point(fixed.x,fixed.y,.78);
+  await page.mouse.click(source.x,source.y,{button:'right'});
+  expect((await state()).pieces.find(p=>p.id===fixed.id)).toEqual(fixed);
+  await page.mouse.move(head.x,head.y);
+  await page.mouse.down({button:'right'});
+  await page.mouse.move(head.x+35,head.y+22,{steps:4});
+  await page.mouse.up({button:'right'});
+  expect(await mirror()).toMatchObject({x:5,y:7,rot:(start.rot+2)%8});
+ });
+}
+
 test('select, place, rotate both ways and never teleport a placed mirror',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/?play=1');

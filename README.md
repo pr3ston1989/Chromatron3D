@@ -34,7 +34,7 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 - **Click a tray optic**, then click an empty tile to place it. After placement it remains selected for rotation, but no longer follows empty-board clicks.
 - **Q / E** or the visible **↶ / ↷ buttons** rotate the selected optic 45° in opposite directions.
 - **G** or the keyboard icon focuses the board. **Arrows** move the tile cursor, **Enter** selects or places an optic, and **Space** starts moving a selected optic.
-- **Drag a placed optic** to move it; drag empty board space to orbit. **Mouse wheel** rotates the selected optic; **Shift + wheel** zooms (or just wheel when none selected). **Right-click / Escape** cancels selection.
+- **Drag a placed optic** to move it; drag empty board space to orbit. **Mouse wheel** rotates the selected optic; **Shift + wheel** zooms (or just wheel when none selected). **Right-click** turns the pointed movable optic 45° clockwise, on the board or in the tray. With a tray optic ready to place, right-click a free tile to rotate its preview. **Escape** cancels selection.
 - On a touch screen, spread or pinch two fingers over the board to zoom. For tap placement, the optic is committed when you lift your finger.
 - With a placed optic selected, choose **Move** and then an empty tile to reposition it with two taps. The move can be undone.
 - **V** toggles the advanced beam analyzer: exact required/received colors, absorbed rays and RGB channel labels.
