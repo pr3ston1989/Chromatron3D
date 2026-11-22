@@ -1,5 +1,17 @@
 # QA
 
+## 22 listopada 2026 · oblot Węzła Keplera
+
+- Test odczytuje rzeczywisty GLB z Blendera i próbkuje pełną 57-sekundową
+  trasę promu co ćwierć sekundy. Kadłub pozostaje poza obrysem planszy
+  i poniżej powierzchni pól. Po oblocie wraca do swojego miejsca na pomoście.
+- Natywne Chromium na AMD Radeon sprawdziło 225 pól podczas lotu przy
+  1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844. Układ zagadki pozostał
+  ten sam. Po włączeniu ograniczenia ruchu prom zaparkował, antena wróciła
+  do pozycji spoczynkowej, a meteor zniknął.
+- Ujęcie meteoru i nagranie z działającego poziomu są w
+  `screenshots/kepler-oblot/07-meteor.png` i `screenshots/kepler-oblot/06-oblot.webm`.
+
 ## 22 listopada 2026 · obrót myszą i powłoki optyczne
 
 Prawy przycisk myszy sprawdzono na planszy, na karcie zasobnika i na wolnym

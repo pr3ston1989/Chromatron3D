@@ -34,6 +34,7 @@ import {createTerraces} from './terraces.js';
 import {createShipyard} from './shipyard.js';
 import {createCampaignArt} from './campaign-art.js';
 import {createOrbitalBenchmark,orbitalArt} from './orbital-benchmark.js';
+import {createSkyMeteor} from './sky-meteor.js';
 import {campaignWorld, getCampaignWorld} from './campaign-worlds.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
@@ -277,6 +278,7 @@ const opticModels=createOpticModelLoader(THREE,{
  }
 });
 const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7fffffff);
+const skyMeteor=createSkyMeteor(THREE,scene,environmentSessionSeed);
 const soundscape=createSoundscape();
 let activeEnvironment=null,baseEnvironment=null;
 function artForLevel(index,campaign=currentCampaign()){
@@ -2338,14 +2340,19 @@ function trackFrameRate(time){
  }
  fpsFrames=0;fpsMark=time;
 }
+let lastSceneryFrame;
 function animate(time){
  requestAnimationFrame(animate);
- if(screenVisible('main-menu')){fpsMark=fpsFrames=0;return}
+ if(screenVisible('main-menu')||document.hidden){lastSceneryFrame=undefined;fpsMark=fpsFrames=0;return}
  trackFrameRate(time);
  const still=debugFrozen||reducedMotion.matches;
  const animationTime=debugFrozen?0:time;
+ const sceneryDelta=Math.min(.25,Math.max(0,(time-(lastSceneryFrame??time))*.001));
+ lastSceneryFrame=time;
+ const openSky=activeEnvironment===orbitalArt||activeEnvironment?.id==='observatory'||activeEnvironment?.id==='shipyard';
+ skyMeteor.update(sceneryDelta,openSky&&!still&&usesNewArt()&&!cameraTop,camera);
  if(usesNewArt()){
-  orbitalScene?.update(animationTime*.001,still,camera.position);
+  orbitalScene?.update(sceneryDelta,still,camera.position);
   shipyard.update(animationTime*.001,still,camera.position);
   campaignArt.update(animationTime*.001,still,camera.position);
  }else{
@@ -2549,6 +2556,16 @@ if(debugEnabled){
    return true;
   },
   isSolved:()=>Boolean(currentResult?.won),
+  getAmbientMotion(){
+   const tender=world.getObjectByName('Survey_tender');
+   const dish=world.getObjectByName('Tracking_reflector');
+   const meteor=skyMeteor.mesh;
+   const head=meteor.visible?meteor.material.uniforms.head.value.clone().multiplyScalar(100)
+    .add(camera.position).project(camera):null;
+   return {tender:tender?.position.toArray(),dish:dish?.quaternion.toArray(),
+    meteor:head?{x:(head.x+1)*innerWidth/2,y:(1-head.y)*innerHeight/2,
+     intensity:meteor.material.uniforms.intensity.value}:null};
+  },
   getSceneryOcclusion(){
    const scenery=world.children.find(node=>node.visible&&node.name===activeEnvironment?.en);
    if(!scenery)return [];

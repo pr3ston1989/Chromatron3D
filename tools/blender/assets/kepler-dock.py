@@ -27,14 +27,22 @@ blue = make_material("Dock | Instrument glass", "cyan", .27, .28, .78)
 canopy = make_material("Dock | Polarised canopy", "navy", .57, .12)
 teal = make_material("Dock | Survey enamel", "jade", .40, .28)
 assemblies = []
+moving_parts = []
 
 
-def save_part(s, name):
+def save_part(s, name, pivot=None):
     obj = s.object(name)
     for vertex in obj.data.vertices:
         vertex.co.z += BASE_DEPTH
     finish_surface(obj, reach=.72)
-    assemblies.append(obj)
+    if pivot is None:
+        assemblies.append(obj)
+    else:
+        origin = Vector(pivot) + Vector((0, 0, BASE_DEPTH))
+        for vertex in obj.data.vertices:
+            vertex.co -= origin
+        obj.location = origin
+        moving_parts.append(obj)
 
 
 def polar(angle, radius, z):
@@ -334,6 +342,8 @@ def survey_tender():
             [teal,pearl,teal,trim])
         girder(s,f(-1.22,side*.54,-3.20),f(-1.38,side*.79,-3.78),.13,.13,steel,trim)
         girder(s,f(.85,side*.30,-3.13),f(1.03,side*.47,-3.77),.10,.13,hull,trim)
+    save_part(s, "Survey tender", f(0, 0, -2.85))
+    s = Sculpture()
     # Cantilevered landing apron with a painted docking centreline and an
     # umbilical routed underneath. It physically joins the main gallery.
     apron=[(-2.72,-1.64),(2.28,-1.64),(2.74,-1.14),(2.74,1.51),
@@ -342,7 +352,7 @@ def survey_tender():
     for side in (-1,1):
         girder(s,f(-2.26,side*1.41,-3.77),f(2.16,side*1.41,-3.77),.07,.034,pearl)
         girder(s,f(side*1.98,-1.84,-5.81),f(side*1.98,1.52,-4.16),.22,.28,hull,trim)
-    save_part(s,"Survey launch on cantilevered apron")
+    save_part(s,"Cantilevered landing apron")
 
 
 def tracking_dish():
@@ -351,6 +361,8 @@ def tracking_dish():
     for side in (-1,1):
         girder(s,f(side*.72,-.56,-3.86),f(side*.49,.12,-2.72),.24,.27,hull,trim)
         girder(s,f(side*.77,.66,-3.87),f(side*.49,.12,-2.72),.21,.23,steel,pearl)
+    save_part(s, "Antenna elevation cradle")
+    s = Sculpture()
     center=Vector(f(0,.12,-2.64))
     tangent=Vector(f(1,0,0))-Vector(f(0,0,0))
     radial=Vector(f(0,1,0))-Vector(f(0,0,0))
@@ -373,7 +385,7 @@ def tracking_dish():
             girder(s,bowl(1.27,angle,.02),tuple(center+axis*1.35),.068,.065,trim)
     s.cable([(*tuple(center+axis*d),r) for d,r in [(1.17,.13),(1.32,.18),(1.51,.09)]],bronze,12)
     s.cable([(*tuple(center+axis*d),r) for d,r in [(1.49,.094),(1.54,.069)]],blue,10)
-    save_part(s,"Petal reflector and elevation cradle")
+    save_part(s,"Tracking reflector",center)
 
 
 service_arc(84,9,"Port armoured service gallery")
@@ -401,4 +413,4 @@ model=bpy.context.active_object
 model.name="kepler-service-dock"
 model.data.calc_loop_triangles()
 print("Dock triangles",len(model.data.loop_triangles),"place at Three Y =",-BASE_DEPTH)
-export(model.name,[model],OUTPUT)
+export(model.name,[model,*moving_parts],OUTPUT)

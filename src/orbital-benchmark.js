@@ -1,4 +1,5 @@
 import {applyOpticFinish} from './optic-textures.js';
+import {createDockPatrol} from './kepler-traffic.js';
 
 export const orbitalArt={
  id:'kepler',pl:'Stacja orbitalna',en:'Orbital Station',legacyId:'orbital',deck:'kepler',
@@ -84,9 +85,10 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  root.visible=false;world.add(root);
  const sky=orbitalSky(THREE);
  sky.visible=false;scene.add(sky);
- let wanted=false,status='idle',station,carriage;
+ let wanted=false,status='idle',station,carriage,patrol,elapsed=0;
  const sync=()=>{root.visible=sky.visible=wanted&&status==='ready'};
  function setLevel(enabled){
+  if(!enabled)elapsed=0;
   wanted=enabled;sync();
   if(!enabled||status!=='idle')return;
   status='loading';
@@ -122,6 +124,8 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
    // The Blender kit shares the centre of the logical deck. Its lowest
    // maintenance skid sits 6.80 m below the playing surface.
    dock.position.y=-6.80;root.add(dock);
+   const beltGroup=new THREE.Group();
+   root.add(beltGroup);
    const dummy=new THREE.Object3D(),matrix=new THREE.Matrix4();
    const count=37;
    fragment.updateMatrixWorld(true);
@@ -136,8 +140,9 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
      dummy.scale.set(size*(1.+.30*Math.cos(a)),size*(.88+.2*Math.sin(a*1.9)),size);
      dummy.updateMatrix();belt.setMatrixAt(i,matrix.multiplyMatrices(dummy.matrix,mesh.matrixWorld));
     }
-    root.add(belt);
+    beltGroup.add(belt);
    });
+   patrol=createDockPatrol(THREE,dock,beltGroup);
    const finished=new Set();
    root.traverse(mesh=>{
     if(!mesh.isMesh)return;
@@ -150,13 +155,19 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
      applyOpticFinish(THREE,mesh.material,'polished');
    });
    station.userData.clearSight=true;
+   // The benchmark caches its shadow map. Moving hardware already carries
+   // baked cavity shading and must not leave a stationary shadow in its berth.
+   for(const name of ['Survey_tender','Tracking_reflector'])
+    dock.getObjectByName(name).traverse(node=>{node.castShadow=false});
    status='ready';sync();onReady();
   }).catch(error=>{status='error';console.error('Orbital station',error);sync();onReady()});
  }
- function update(seconds,still,camera){
+ function update(delta,still,camera){
   if(!root.visible)return;
-  station.rotation.y=-.6+(still?0:Math.sin(seconds*.09)*.085);
-  if(carriage)carriage.rotation.z=Math.PI*(.61+(still?0:.31*Math.sin(seconds*.19)));
+  elapsed=still?0:elapsed+delta;
+  patrol(elapsed);
+  station.rotation.y=-.6+Math.sin(elapsed*.09)*.085;
+  if(carriage)carriage.rotation.z=Math.PI*(.61+.31*Math.sin(elapsed*.19));
   for(const prop of root.children)if(prop.userData.clearSight)
    prop.visible=prop.position.x*camera.x+prop.position.z*camera.z<30;
  }

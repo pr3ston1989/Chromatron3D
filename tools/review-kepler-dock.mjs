@@ -81,6 +81,36 @@ try{
   await catalog.screenshot({path:join(output,'05-katalog.png'),fullPage:true});
   await catalog.close();
  }
+ if(process.argv.includes('--motion')){
+  const state=()=>page.evaluate(()=>window.__debug.getAmbientMotion());
+  const parked=await state();
+  const layout=await page.evaluate(()=>window.chromatron.getState().pieces);
+  await page.screencast.start({path:join(output,'06-oblot.webm'),size:{width:1280,height:720},fps:24});
+  try{
+   await page.emulateMedia({reducedMotion:'no-preference'});
+   await page.evaluate(()=>window.__debug.freezeAnimations(false));
+   await page.waitForFunction(()=>{
+    const head=window.__debug.getAmbientMotion().meteor;
+    return head?.intensity>.8&&head.x>innerWidth*.47;
+   });
+   await page.screenshot({path:join(output,'07-meteor.png'),scale:'css'});
+   assert.notDeepEqual((await state()).dish,parked.dish);
+   await page.waitForFunction(home=>{
+    const {tender,meteor}=window.__debug.getAmbientMotion();
+    return !meteor&&Math.hypot(tender[0]-home[0],tender[2]-home[2])>8;
+   },parked.tender);
+   await verifyView('08-prom-w-locie',true);
+  }finally{await page.screencast.stop()}
+  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
+   await page.setViewportSize({width,height});
+   await verifyView('oblot '+width+'x'+height);
+  }
+  await page.setViewportSize({width:1672,height:941});
+  assert.deepEqual(await page.evaluate(()=>window.chromatron.getState().pieces),layout);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await verifyView('ruch ograniczony');
+  assert.deepEqual(await state(),parked);
+ }
  // Use the player's ordinary orbit gesture, away from the pieces and HUD.
  await page.mouse.move(820,680);
  await page.mouse.down();

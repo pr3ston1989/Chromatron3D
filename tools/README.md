@@ -44,6 +44,12 @@ node tools/review-kepler-dock.mjs
 
 Druga komenda sprawdza widoczność 225 pól w lokalnej grze i zapisuje dwa
 zrzuty z kamery gracza w katalogu `screenshots/kepler-service-dock`.
+Wariant `node tools/review-kepler-dock.mjs screenshots/kepler-oblot --optics --motion`
+nagrywa rzeczywisty start promu i przelot meteoru do `06-oblot.webm`. Dwa
+ruchome węzły tego samego GLB mają osie w kadłubie promu i łożysku czaszy.
+`src/kepler-traffic.js` prowadzi je po trasie, a `src/sky-meteor.js` rysuje
+smugę za geometrią planszy i otoczenia. Systemowe ograniczenie ruchu parkuje
+prom i wyłącza przeloty.
 
 ## Instrumenty i bariera pola
 
