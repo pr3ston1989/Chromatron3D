@@ -116,4 +116,7 @@ def export(name, objects, folder):
         obj.select_set(True)
     bpy.context.view_layer.objects.active=objects[0]
     bpy.ops.export_scene.gltf(filepath=str(folder/(name+".glb")),use_selection=True,
-                              export_format="GLB",export_yup=True)
+                              export_format="GLB",export_yup=True,
+                              **({"export_vertex_color":"ACTIVE"} if any(
+                                  obj.type=="MESH" and obj.data.color_attributes.get("Baked cavity")
+                                  for obj in objects) else {}))

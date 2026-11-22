@@ -48,6 +48,11 @@ Mechanika wiązek używa masek R=1, G=2, B=4. Kolory z gry w kolejności maski 1
 
 ## Geometria i eksport
 
+Wspólny katalog instrumentów ma granatowe korpusy, jasne ceramiczne osłony,
+miedziane pierścienie regulacyjne i odrębne sylwetki głowic. W aktualnym
+eksporcie elementy mają 244–2468 trójkątów. Kaseta bariery ma 192 trójkąty
+i jest powielana instancyjnie. Poniższe limity dotyczą wcześniejszej biblioteki.
+
 | Kategoria | Limit trójkątów na model |
 | --- | ---: |
 | Powtarzana wkładka lub panel obwodu | 180 |

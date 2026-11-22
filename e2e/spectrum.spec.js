@@ -59,7 +59,7 @@ test('beam cores and receiver lenses keep distinct hues at playable screen sizes
   },{png:png.toString('base64'),points});
   for(const [index,{kind,mask}] of points.entries()){
    const threshold=mask===7?145:kind==='active lens'?27:38;
-   expect(scores[index],`${width} × ${height} · ${kind} · RGB mask ${mask}`).toBeGreaterThan(threshold);
+   expect.soft(scores[index],`${width} × ${height} · ${kind} · RGB mask ${mask}`).toBeGreaterThan(threshold);
   }
  }
 });

@@ -202,7 +202,7 @@ test('the workshop shows Blender portraits and cancels a carried optic released 
  const mirror=tray.locator('button[data-optic-type=mirror]');
  const splitter=tray.locator('button[data-optic-type=splitter]');
  await expect(splitter.locator('img')).toHaveAttribute('src',/portraits\/splitter\.png$/);
- await expect.poll(()=>mirror.locator('img').evaluate(img=>img.naturalWidth)).toBe(128);
+ await expect.poll(()=>mirror.locator('img').evaluate(img=>[img.naturalWidth,img.naturalHeight])).toEqual([160,160]);
  await expect(tray.locator('details')).not.toHaveAttribute('open','');
  const textHeight=await splitter.locator('span').nth(1).evaluate(el=>({
   height:el.getBoundingClientRect().height,line:parseFloat(getComputedStyle(el).lineHeight)

@@ -33,11 +33,12 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {createTerraces} from './terraces.js';
 import {createShipyard} from './shipyard.js';
 import {createCampaignArt} from './campaign-art.js';
-import {createOrbitalBenchmark,orbitalArt,orbitalLevel} from './orbital-benchmark.js';
+import {createOrbitalBenchmark,orbitalArt} from './orbital-benchmark.js';
 import {campaignWorld, getCampaignWorld} from './campaign-worlds.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
+import {createCollectorField} from './collector-field.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
 import {applyOpticFinish} from './optic-textures.js';
@@ -110,7 +111,8 @@ catch(error){
  throw error;
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.23;
+renderer.toneMapping=orbitalPilot?THREE.NeutralToneMapping:THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=orbitalPilot?1.06:1.23;
 // Physically based studio reflections: low-roughness metals and mirror fronts
 // need environment radiance to look like metal instead of unlit gray plastic.
 const studioEnvironment=new RoomEnvironment();
@@ -204,6 +206,9 @@ boardTiles.instanceColor.needsUpdate=true;
 boardLines.instanceMatrix.needsUpdate=true;
 gridGroup.add(boardTiles,boardLines);
 const laboratory=buildLaboratory(THREE,scene,world,T);
+const collectorField=createCollectorField(THREE,world,{cells:GRID,tileSize:T,palette:COLORS});
+sceneryLoader.load(new URL('../assets/models/field-rail.glb',import.meta.url).href,
+ ({scene:rail})=>collectorField.setRail(rail));
 const spaceEnvironments=createSpaceEnvironments(THREE,scene,legacyScenery,{tileSize:T,backdrop:legacyAtmosphere,
  loadFlora:(id,ready)=>sceneryLoader.load(import.meta.env.BASE_URL+'models/terraces/'+id+'-flora.glb',({scene})=>ready(scene))
 });
@@ -257,8 +262,12 @@ const livingWorld=createLivingWorld(THREE,legacyAtmosphere,legacyScenery);
 const boardEdgeGlow=createBoardEdgeGlow(THREE,legacyScenery,{tileSize:T,half:HALF});
 const atmosphereParticles=createAtmosphereParticles(THREE,legacyAtmosphere);
 let modelRefresh=0;
+const benchModels=import.meta.glob('../assets/models/optical-bench/*.glb',{eager:true,import:'default',query:'?url'});
+const benchPortraits=import.meta.glob('../assets/models/optical-bench/portraits/*.png',{eager:true,import:'default',query:'?url'});
+const assetNames=files=>Object.fromEntries(Object.entries(files).map(([path,url])=>[path.split('/').pop().split('.')[0],url]));
 const opticModels=createOpticModelLoader(THREE,{
  baseUrl:import.meta.env.BASE_URL+'models/optics/',portraitUrl:import.meta.env.BASE_URL+'portraits/',
+ modelUrls:assetNames(benchModels),portraitUrls:assetNames(benchPortraits),
  onReady(type){
   if(previewPiece?.type===type&&placementPreview.visible)previewInstrument(previewPiece);
   if(modelRefresh||!pieces.some(p=>p.type===type&&!p.inTray))return;
@@ -269,7 +278,7 @@ const environmentSessionSeed=debugEnabled?48129:Math.floor(Math.random()*0x7ffff
 const soundscape=createSoundscape();
 let activeEnvironment=null,baseEnvironment=null;
 function artForLevel(index,campaign=currentCampaign()){
- if(orbitalPilot&&levels[index]===orbitalLevel)return orbitalArt;
+ if(orbitalPilot&&levels===demoLevels)return orbitalArt;
  if(baselineScenery)return null;
  return debugTheme?getCampaignWorld(debugTheme):campaignWorld(campaign,index);
 }
@@ -279,6 +288,7 @@ function syncBoardPresentation(){
  legacyScenery.visible=legacyAtmosphere.visible=!preview;
  gridGroup.visible=!preview;
  laboratory.userData.setSceneryVisible(!preview);
+ collectorField.group.visible=preview;
  syncBoardChassis();
  key.color.setHex(preview?activeEnvironment.key:0xffebce);
  const sunset=preview&&activeEnvironment.id==='heliostat';
@@ -363,14 +373,22 @@ const guideGroup=new THREE.Group();world.add(guideGroup);
 const selectionReticle=createSelectionReticle(THREE,world,(x,y,height)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T),T);
 const wheelRotation=createWheelRotation();
 const hitObjects=[];
-const demoLevels=orbitalPilot?[orbitalLevel]:validateLevels(PROTOTYPE_LEVELS);
+function choosePilotLevel(){
+ let local=globalThis.chromatronLocalCampaigns?.find(pack=>pack.game===1)?.levels;
+ if(!local&&!debugEnabled){try{local=JSON.parse(localStorage.getItem('chromatron-classic-1'))}catch{}}
+ if(local?.length===50&&local[14]?.sourceGame===1){
+  try{return validateLevels([local[14]])}catch{}
+ }
+ return validateLevels([PROTOTYPE_LEVELS[6]]);
+}
+const demoLevels=orbitalPilot?choosePilotLevel():validateLevels(PROTOTYPE_LEVELS);
 let levels=demoLevels,levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
 let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
 let wallet=normalizeWallet(null);
 let currentPackId=packFingerprint(levels);
 const demoPackId=currentPackId;
 const classicLibrary=new Map();
-for(let game=1;game<=4;game++){
+for(let game=1;!orbitalPilot&&game<=4;game++){
  try{
   const json=gameStorage().getItem('chromatron-classic-'+game);
   if(json){
@@ -451,7 +469,7 @@ function rebuildPieces(){
  const walls=pieces.filter(p=>p.type==='wall'&&!p.inTray);
  for(const type of new Set(pieces.map(p=>p.type)))opticModels.load(type);
  const deck=activeEnvironment?.deck;
- const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,.24),deck);
+ const wallBatch=opticModels.instanceWalls(walls,p=>vec(p.x,p.y,0),deck);
  if(wallBatch){componentGroup.add(wallBatch);hitObjects.push(...wallBatch.children)}
  for(const p of pieces){
   if(p.inTray)continue;
@@ -465,9 +483,14 @@ function rebuildPieces(){
    head.userData.motionHead=true;
    head.rotation.y=-p.rot*Math.PI/4;
    head.position.y=.65;
-   model.position.y=-.65;
+   model.position.y=-(g.position.y+head.position.y);
    head.add(model);g.add(head);
-   if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
+   if(reflectingIds.has(p.id)){
+    const surface=mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
+    // Put the dynamic coating just in front of the silver face, including
+    // the wider mount used by the authored decks.
+    surface.position.set(-.067*model.scale.x-.003,model.position.y+.87,0);
+   }
    if(p.type==='target')g.userData.modelActive=energized;
    model.traverse(c=>{if(c.isMesh){c.castShadow=orbitalPilot;c.userData.piece=p;hitObjects.push(c)}});
   }else{
@@ -564,7 +587,8 @@ function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
- const lighting=activeEnvironment?.deck?{...graphicsProfile,surfaceGlow:activeEnvironment.glow??.26}:graphicsProfile;
+ collectorField.updateHits(currentResult.boundaryHits);
+ const lighting=activeEnvironment?.deck?{...graphicsProfile,opticScale:1.05,surfaceGlow:activeEnvironment.glow??.26}:graphicsProfile;
  laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,lighting,currentResult.boundaryHits);
  $('counter').textContent=currentResult.active+' / '+currentResult.total;
  $('progress').style.width=(currentResult.total?currentResult.active/currentResult.total*100:0)+'%';
@@ -902,6 +926,8 @@ function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
  $('level-desc').textContent=loc(l.description,language);
+ if(orbitalPilot&&l.sourceGame===1&&language==='pl')
+  $('level-desc').textContent='Filtr przepuszcza jedną składową białego światła. Doprowadź właściwy kolor do każdego rezonatora.';
  const packLabel=$('level-pack-label');
  packLabel.removeAttribute('data-i18n');
  packLabel.textContent=t(language,packLabelKey());
@@ -1140,7 +1166,7 @@ function renderInventory(){
   }
   const icon=document.createElement('span');icon.className='component-icon';
   const portrait=document.createElement('img');
-  portrait.src=import.meta.env.BASE_URL+'portraits/'+type+'.png';
+  portrait.src=opticModels.portraitPath(type);
   portrait.alt='';portrait.draggable=false;icon.append(portrait);
   const name=document.createElement('span');
   if(movableType)name.className='equipment-name';
@@ -1593,7 +1619,7 @@ function applyGraphicsQuality(){
  cinematic.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));
  composer.setPixelRatio(renderer.getPixelRatio());
- bloomPass.strength=graphicsProfile.bloomStrength;
+ bloomPass.strength=graphicsProfile.bloomStrength*.48;
  bloomPass.enabled=graphicsProfile.bloomStrength>0&&(graphicsMode==='auto'?autoLevel:graphicsMode)!=='performance';
  fxaaPass.enabled=graphicsProfile.antialias==='fxaa';
  smaaPass.enabled=graphicsProfile.antialias==='smaa';
@@ -1652,7 +1678,7 @@ function previewInstrument(piece){
   previewPiece=piece;
   previewModel=opticModels.cloneOptic(piece.type,new THREE.Color(COLORS[piece.color||7]),{deck:activeEnvironment?.deck});
   if(previewModel){
-   previewModel.position.y=.23;
+   previewModel.position.y=0;
    placementPreview.add(previewModel);
   }
  }
@@ -1948,7 +1974,7 @@ window.addEventListener('pointermove',e=>{
   if(!drag.piece?.inTray){trayGesture=null;return}
   drag.active=true;
   $('inventory').setPointerCapture(e.pointerId);
-  carriedPortrait.src=import.meta.env.BASE_URL+'portraits/'+drag.piece.type+'.png';
+  carriedPortrait.src=opticModels.portraitPath(drag.piece.type);
   hideOpticTooltip();selectFromTray(drag.piece);
   document.body.classList.add('carrying-optic');
  }
@@ -2512,6 +2538,7 @@ if(debugEnabled){
    scene.updateMatrixWorld(true);
    const meshes=[];
    scenery.traverseVisible(node=>{if(node.isMesh)meshes.push(node)});
+   collectorField.group.traverseVisible(node=>{if(node.name==='collector-cassettes')meshes.push(node)});
    const sight=new THREE.Raycaster();
    const hits=[];
    for(let y=0;y<GRID;y++)for(let x=0;x<GRID;x++){

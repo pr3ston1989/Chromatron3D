@@ -1,18 +1,7 @@
 import {createBeamBatcher} from './beam-batching.js';
+import {beamMaterial,beamSpans} from './beam-profile.js';
+import {DX,DY} from './optics.js';
 const flareTextureCache=new WeakMap();
-
-function visibleBeamPaths(segments){
- const paths=new Map();
- for(const segment of segments){
-  const start=segment.x+','+segment.y,end=segment.nx+','+segment.ny;
-  const key=start<end?start+':'+end:end+':'+start;
-  const previous=paths.get(key);
-  if(!previous)paths.set(key,segment);
-  else if(previous.color!==segment.color)
-   paths.set(key,{...previous,color:previous.color|segment.color});
- }
- return paths.values();
-}
 
 /**
  * One reusable GPU lens-flare texture for the lifetime of the renderer.
@@ -30,6 +19,7 @@ export function getLaserFlareTexture(THREE){
   flareData[i+3]=Math.round(255*Math.min(1,center*.75+outer*.35));
  }
  const flareTexture=new THREE.DataTexture(flareData,64,64,THREE.RGBAFormat);
+ flareTexture.minFilter=flareTexture.magFilter=THREE.LinearFilter;
  flareTexture.needsUpdate=true;
  flareTexture.colorSpace=THREE.SRGBColorSpace;
 
@@ -41,8 +31,8 @@ export function getLaserFlareTexture(THREE){
  * Cinematic additive laser renderer. Physical ray routing still comes exclusively
  * from src/optics.js; this module never affects puzzle mechanics.
  *
- * A soft-edged color core faces the camera. Crossed shader ribbons add
- * a glow from the beam into the scene. Glows at interactions
+ * A camera-facing filament, optical halo and diffuse deck reflection
+ * separate the beam from its environment. Glows at interactions
  * and carefully budgeted dynamic point lights connect the beam to the world.
  */
 export function renderLaserFX(THREE, parent, segments, pieces, received, palette, point, lightingProfile={}, boundaryHits=[]) {
@@ -51,54 +41,19 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  const beamBatcher=createBeamBatcher(THREE,parent);
  const activePieces=pieces.filter(p=>!p.inTray);
  const positions=new Map(activePieces.map(p=>[p.x+','+p.y,p]));
- const rayShader={
-  vertexShader:`
-   varying vec2 vUv;
-   void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}
-  `,
-  fragmentShader:`
-   uniform vec3 uColor;
-   uniform float uTime;
-   uniform float uStrength;
-   uniform bool uSurface;
-   varying vec2 vUv;
-   void main(){
-    float radial=abs(vUv.y-.5)*2.0;
-    float halo=exp(-radial*radial*4.4);
-    if(uSurface){
-     gl_FragColor=vec4(uColor,halo*.35*uStrength);
-     return;
-    }
-    float middle=exp(-radial*radial*30.0);
-    float core=exp(-radial*radial*165.0);
-    float ripples=.94+.06*sin(vUv.x*37.0-uTime*7.0);
-    vec3 radiance=uColor*(halo*.30+middle*.92+core*.42)*ripples;
-    float alpha=min(.88,halo*.23+middle*.46+core*.28)*uStrength;
-    gl_FragColor=vec4(radiance,alpha);
-   }
-  `
- };
- function material(mask,floor=false){
-  const key=mask+':'+(floor?'floor':'beam');
-  if(!materials.has(key)){
-   const mat=new THREE.ShaderMaterial({
-    ...rayShader,uniforms:{uColor:{value:new THREE.Color(palette[mask])},uTime:{value:0},
-     uStrength:{value:floor?(lightingProfile.surfaceGlow??.18)*.55:1},uSurface:{value:floor}},
-    transparent:true,depthWrite:false,side:THREE.DoubleSide,
-    blending:THREE.AdditiveBlending,toneMapped:false
-   });
-   materials.set(key,mat);
-  }
+ function material(mask,layer){
+  const key=mask+':'+layer;
+  if(!materials.has(key))materials.set(key,beamMaterial(THREE,palette[mask],layer,lightingProfile.surfaceGlow??.22));
   return materials.get(key);
  }
  const flareTexture=getLaserFlareTexture(THREE);
- function flare(x,y,color,scale,opacity=.48){
+ function flare(x,y,color,scale,opacity=.48,at=point(x,y,.78)){
   const m=new THREE.SpriteMaterial({
    map:flareTexture,color:new THREE.Color(palette[color]),transparent:true,
    depthWrite:false,depthTest:true,toneMapped:false,opacity,blending:THREE.AdditiveBlending
   });
   const sprite=new THREE.Sprite(m);
-  sprite.position.copy(point(x,y,.79));
+  sprite.position.copy(at);
   sprite.scale.setScalar(scale);sprite.renderOrder=12;parent.add(sprite);
   flicker.push({sprite,scale});
  }
@@ -106,68 +61,43 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  // allocating one mesh per ray segment. Color/layer still define materials.
  const ribbon=(a,b,width,orientation,shader,order=6)=>
   beamBatcher.addRibbon(a,b,width,orientation,shader,order);
- const coreMaterials=new Map();
- function coloredCore(mask){
-  if(!coreMaterials.has(mask)){
-   coreMaterials.set(mask,new THREE.ShaderMaterial({
-    uniforms:{uColor:{value:new THREE.Color(palette[mask])}},
-    transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide,
-    vertexShader:`
-     attribute vec4 beamAxis;
-     varying vec2 vUv;
-     void main(){
-      vUv=uv;
-      vec4 eye=modelViewMatrix*vec4(position,1.);
-      vec3 axis=normalize((modelViewMatrix*vec4(beamAxis.xyz,0.)).xyz);
-      vec3 across=normalize(cross(axis,eye.xyz));
-      eye.xyz+=across*(uv.y-.5)*beamAxis.w;
-      eye.xyz+=axis*(uv.x-.5)*.024;
-      gl_Position=projectionMatrix*eye;
-     }
-    `,
-    fragmentShader:`
-     uniform vec3 uColor;
-     varying vec2 vUv;
-     void main(){
-      float radius=abs(vUv.y-.5)*2.;
-      float alpha=1.-smoothstep(.35,1.,radius);
-      float highlight=exp(-radius*radius*9.);
-      gl_FragColor=vec4(uColor*(.91+.16*highlight)+vec3(.018)*highlight,alpha);
-     }
-    `
-   }));
-  }
-  return coreMaterials.get(mask);
+ function trimAperture(x,y,nx,ny,a,b){
+  const source=positions.get(x+','+y);
+  if(source?.type!=='laser'||DX[source.rot]!==Math.sign(nx-x)||DY[source.rot]!==Math.sign(ny-y))return;
+  const distance=a.distanceTo(b);
+  if(distance>0)a.lerp(b,Math.min(1,.427*(lightingProfile.opticScale??1)/distance));
  }
- // The solid core shows the combined wavelength when rays share an edge.
- // Photon trails below still follow each ray in its original direction.
- for(const s of visibleBeamPaths(drawnSegments)){
+ function ends(s){
   const a=point(s.x,s.y,.78),b=point(s.nx,s.ny,.78);
-  if(positions.get(s.x+','+s.y)?.type==='laser')a.lerp(b,.50); // Beam emerges from actual barrel tip
-  ribbon(a,b,.22,'camera',coloredCore(s.color),9);
-  ribbon(a,b,.66,'horizontal',material(s.color));
-  ribbon(a,b,.47,'vertical',material(s.color));
-  // A low-intensity pool of colored light on the board under the beam.
-  // This ground-level optical light spill makes the ray feel spatial.
-  ribbon(point(s.x,s.y,.028),point(s.nx,s.ny,.028),1.02,'horizontal',material(s.color,true),5);
+  trimAperture(s.x,s.y,s.nx,s.ny,a,b);
+  trimAperture(s.nx,s.ny,s.x,s.y,b,a);
+  return [a,b];
+ }
+ for(const s of beamSpans(drawnSegments,positions)){
+  const [a,b]=ends(s);
+  ribbon(a,b,.215,'camera',material(s.color,'filament'),9);
+  ribbon(a,b,.68,'camera',material(s.color,'halo'),8);
+  // This light is on the deck plane. Parallax separates it from the
+  // suspended filament as the player lowers the camera.
+  a.y=b.y=.037;
+  ribbon(a,b,1.33,'horizontal',material(s.color,'floor'),5);
  }
  const laserGeometryStats=beamBatcher.flush();
 
  // Directional moving photons reveal how the light travels, especially with
  // several mirrors. A single GPU points draw call handles the entire board.
  const photonStarts=[],photonEnds=[],photonColors=[],photonPhases=[],photonSizes=[];
- const usedSegments=drawnSegments.slice(0,120);
+ const usedSegments=beamSpans(drawnSegments,positions,true).slice(0,120);
  for(let i=0;i<usedSegments.length;i++){
   const seg=usedSegments[i];
+  const [a,b]=ends(seg);
   for(let n=0;n<2;n++){
-   const a=point(seg.x,seg.y,.82),b=point(seg.nx,seg.ny,.82);
-   if(positions.get(seg.x+','+seg.y)?.type==='laser')a.lerp(b,.50); // Start photons at the aperture
    photonStarts.push(...a.toArray());
    photonEnds.push(...b.toArray());
    const c=new THREE.Color(palette[seg.color]);
    photonColors.push(c.r,c.g,c.b);
    photonPhases.push(((i*0.61803398875+n*.47)%1+1)%1);
-   photonSizes.push(n===0?4.0:2.5);
+   photonSizes.push(n===0?2.8:1.8);
   }
  }
  let photons=null;
@@ -190,9 +120,8 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
     uniform float uTime;
     varying vec3 vColor;
     void main(){
-     float progress=fract(uTime*.68+aPhase);
+     float progress=fract(uTime*2.8/max(length(aDestination-position),.5)+aPhase);
      vec3 p=mix(position,aDestination,progress);
-     p.y+=.04*sin(progress*6.2831853);
      vec4 eye=modelViewMatrix*vec4(p,1.0);
      gl_Position=projectionMatrix*eye;
      gl_PointSize=clamp(aSize*90.0/max(1.0,-eye.z),1.5,9.5);
@@ -237,7 +166,10 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
  let lightBudget=0;
  for(const piece of activePieces){
   if(piece.type==='laser'){
-   flareOnce(piece.x,piece.y,piece.color,.51);
+   const muzzle=point(piece.x,piece.y,.78);
+   const forward=point(piece.x+DX[piece.rot],piece.y+DY[piece.rot],.78).sub(muzzle).normalize();
+   muzzle.addScaledVector(forward,.515*(lightingProfile.opticScale??1));
+   flare(piece.x,piece.y,piece.color,.86,.69,muzzle);
    if(lightBudget<Math.min(5,maxOpticLights)){
     lightBudget++;
     const light=new THREE.PointLight(new THREE.Color(palette[piece.color]),3.2,4,2);
@@ -252,22 +184,13 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   const impactPos=point(hit.nx,hit.ny,.78);
   const beamDir=new THREE.Vector3(hit.nx-hit.x,0,hit.ny-hit.y).normalize();
   impactPoints.push({pos:impactPos,dir:beamDir,color:hit.color});
-  // Large primary flare
-  flare(hit.nx,hit.ny,hit.color,1.4);
-  // Secondary bloom halo — softer, wider
-  const bloomMat=new THREE.SpriteMaterial({
-   map:flareTexture,color:new THREE.Color(palette[hit.color]),transparent:true,
-   opacity:.35,depthWrite:false,depthTest:true,toneMapped:false,blending:THREE.AdditiveBlending
-  });
-  const bloom=new THREE.Sprite(bloomMat);
-  bloom.position.copy(impactPos);bloom.position.y=.85;
-  bloom.scale.setScalar(2.8);bloom.renderOrder=10;parent.add(bloom);
-  flicker.push({sprite:bloom,scale:2.8});
+  // Keep the contact on the collector legible; the field itself lights up.
+  flare(hit.nx,hit.ny,hit.color,.55,.37);
   // Budget-limited point light per impact
   if(lightBudget<maxOpticLights){
    lightBudget++;
-   const l=new THREE.PointLight(new THREE.Color(palette[hit.color]),12,5.5,2);
-   l.position.copy(impactPos);l.position.y=1.2;parent.add(l);
+   const l=new THREE.PointLight(new THREE.Color(palette[hit.color]),4,3.4,2);
+   l.position.copy(impactPos);parent.add(l);
   }
  }
  // Wall-piece impacts get the same treatment
@@ -405,7 +328,6 @@ export function renderLaserFX(THREE, parent, segments, pieces, received, palette
   geometryStats:laserGeometryStats,
   dynamicLightCount:parent.children.filter(x=>x.isPointLight).length,
   update(seconds){
-   for(const m of materials.values())m.uniforms.uTime.value=seconds;
    if(photons)photons.material.uniforms.uTime.value=seconds;
    if(sparks)sparks.material.uniforms.uTime.value=seconds;
    for(const f of flicker){

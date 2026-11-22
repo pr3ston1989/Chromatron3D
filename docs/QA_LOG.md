@@ -1,5 +1,25 @@
 # QA
 
+## 22 listopada 2026 · Węzeł Keplera
+
+Porównano ten sam stan Chromatron 1–15 z czterema aktywnymi rezonatorami
+w `screenshots/kepler-crystals` i `screenshots/kepler-fotonika`.
+Po pierwszej próbie prom przeniesiono z dolnej krawędzi na lewy pomost.
+Ograniczono też poświatę białej wiązki przy filtrach. Ocena wizualna 4/5.
+Przy dużym oddaleniu kształty urządzeń są czytelniejsze od grawerów na podstawach.
+
+Chromium z natywnym WebGL na AMD Radeon potwierdziło widoczność 225 pól
+z obu ujęć, z góry oraz w rozmiarach 1366 × 768, 1280 × 720, 1093 × 614
+i 390 × 844. Konsola gry była wolna od błędów. Przeszły 234 testy Node,
+build Vite i sześć scenariuszy Playwright obejmujących modele, chwytanie
+lustra, wiązki, barierę, odbicia oraz zmianę jakości.
+
+Siódmy scenariusz porównał piksele wszystkich siedmiu barw wiązek oraz
+czynnych i nieczynnych kryształów na jasnym pokładzie. Przy pierwszej próbie
+zielony nieczynny odbiornik miał zbyt słabe nasycenie. Po przyciemnieniu
+neutralnych refleksów pomiar przeszedł dla wszystkich czterech rozdzielczości
+oraz profili filmowego, zrównoważonego i wydajnego.
+
 ## 18 listopada 2026 · Faza 0
 
 - Blender 5.3.0 uruchomił `bpy` w trybie headless.

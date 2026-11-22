@@ -25,6 +25,47 @@ akcenty biomów.
 
 Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami, kratownicą i czterema napędami. Kontrolowany test w Chrome pokazuje modele w widoku 1366 × 768.
 
+## Dok serwisowy Węzła Keplera
+
+Poziom wzorcowy otwiera się z parametrem `?benchmark=orbital`. Przy dostępnej
+lokalnej kampanii wykorzystuje zagadkę Chromatron 1–15. Galeria ciśnieniowa,
+ramiona doku, wsporniki, radiatory, prom na pomoście i antena kierunkowa są osobnymi siatkami w
+`assets/models/benchmark/kepler-service-dock.blend`. Gra wczytuje ich wspólny
+eksport GLB o tej samej nazwie. Podstawa doku znajduje się 6,80 m poniżej planszy.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/kepler-dock.py
+node tools/review-kepler-dock.mjs
+```
+
+Druga komenda sprawdza widoczność 225 pól w lokalnej grze i zapisuje dwa
+zrzuty z kamery gracza w katalogu `screenshots/kepler-service-dock`.
+
+## Instrumenty i bariera pola
+
+Gra korzysta z 22 modeli i portretów w `assets/models/optical-bench`.
+Edytowalne siatki znajdują się w `optical-bench.blend`, a receptury w
+`tools/blender/assets/orbital-instruments.py` i `tools/blender/optical_specialties.py`.
+Wszystkie głowice pracują w układzie z osią wiązki na wysokości 0,78 m.
+Barwę kryształu wyznacza wymaganie odbiornika, a podświetlenie podstawy
+oznacza zgodność odebranego widma. Promień przechodzi przez kryształ.
+
+Wiązkę rysują trzy warstwy. Rdzeń i poświata zwracają się do kamery,
+a rozproszone światło pada na płaszczyznę pokładu. Moduł
+`src/beam-profile.js` łączy kolejne odcinki o wspólnym kolorze
+i kierunku aż do urządzenia lub bariery. Ślad cząstek zachowuje kierunek emisji.
+
+Listwę bariery eksportuje `tools/blender/assets/field-rail.py`. Cztery
+płaszczyzny pochłaniające w `src/collector-field.js` pobierają pozycję
+i kolor każdego trafienia z wyniku symulacji. Wariant stacji z galerią
+przekaźnika i pancerzem pokładu można odtworzyć przez uruchomienie
+`tools/blender/assets/orbital-benchmark.py` w Blenderze z argumentami
+`-- --station`.
+
+```powershell
+node tools/review-kepler-dock.mjs screenshots/kepler-fotonika --optics
+```
+
 ## Próbki przebudowy wizualnej
 
 Wspólny moduł `tools/blender/style.py` używa zatwierdzonej [palety czterech światów](../docs/DESIGN_BIBLE.md) i eksportuje płasko cieniowane GLB Y-up. Renderujemy skrypt z czystej sceny. Z katalogu projektu uruchom:

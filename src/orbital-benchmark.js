@@ -1,23 +1,4 @@
-import {validateLevels} from './levels.js';
-
-export const [orbitalLevel]=validateLevels([{
- title:{pl:'Węzeł Keplera',en:'Kepler Junction'},
- description:{pl:'Rozdziel turkusową wiązkę między dwa rezonatory, utrzymując oba filtry pod napięciem.',en:'Split the cyan beam between two receivers while keeping both filters powered.'},
- pieces:[
-  ['laser',2,9,2,7],['splitter',6,9,1,0],['filter',10,9,0,1],['target',13,9,0,1],
-  ['filter',6,5,2,2],['target',6,2,0,2],['laser',12,2,4,6],['target',12,12,0,6],
-  ['target',9,3,0,6],['splitter',3,12,0,0],['mirror',3,13,0,0]
- ],
- hints:[
-  {pl:'Zostaw zasilone filtry na miejscu. Turkusowy laser już trafia do jednego celu. Poszukaj miejsca, z którego jego druga gałąź może dojść pod drugi turkusowy rezonator.',en:'Leave the live filters in place. Cyan already reaches one receiver. Find a point where a second branch could pass underneath the other cyan receiver.'},
-  {pl:'Skieruj boczną gałąź turkusowej wiązki w lewo. Gdy znajdzie się w kolumnie drugiego turkusowego rezonatora, odbij ją w górę.',en:'Send the side branch of cyan light left. Once it is in the column of the second cyan receiver, turn it upward.'},
-  {pl:'Rozdziel turkus na przecięciu jego trasy z rzędem 7. Lustro na tym samym rzędzie zawróci światło ku górnemu odbiornikowi.',en:'Split cyan where its path crosses row 7. A mirror on the same row can turn the light toward the upper receiver.'}
- ],
- solution:[{index:1,x:6,y:9,rot:1},{index:2,x:10,y:9,rot:0},{index:4,x:6,y:5,rot:2},
-           {index:9,x:12,y:6,rot:1},{index:10,x:9,y:6,rot:3}]
-}]);
-// This authored starting rack is private to the pilot. Imported packs retain their own layout.
-orbitalLevel.trayIndices=[9,10];
+import {applyOpticFinish} from './optic-textures.js';
 
 export const orbitalArt={
  id:'kepler',pl:'Stacja orbitalna',en:'Orbital Station',legacyId:'orbital',deck:'kepler',
@@ -56,10 +37,10 @@ function orbitalSky(THREE){
     vec2 field=uv*vec2(1750.,875.);
     vec3 cell=vec3(floor(field),2.);
     vec2 sub=fract(field)-vec2(hash(cell+3.),hash(cell-4.))*.7-.15;
-    float stars=step(.974,hash(cell))*exp(-dot(sub,sub)*24.);
+    float stars=step(.979,hash(cell))*exp(-dot(sub,sub)*22.);
     float band=exp(-10.*abs(ray.y+.39+.13*ray.x));
     vec3 sky=mix(vec3(.002,.006,.019),vec3(.022,.052,.115),band*(.29+.71*noise3(ray*12.)));
-    sky+=vec3(.16,.27,.44)*stars;
+    sky+=mix(vec3(.17,.27,.42),vec3(.35,.30,.29),hash(cell+1.))*stars;
     vec3 center=normalize(vec3(-.12,-.88,-1.01));
     float facing=dot(ray,center),limb=.883;
     float haze=exp(-abs(facing-limb)*115.);
@@ -69,16 +50,23 @@ function orbitalSky(THREE){
      vec3 normal=normalize(ray*distanceToFace-center);
      float day=smoothstep(-.39,.78,dot(normal,light));
      float continent=terrain(normal*5.7+12.);
-     float coast=smoothstep(.505,.56,continent);
-     vec3 ground=mix(vec3(.014,.047,.115),vec3(.12,.17,.19),coast);
-     vec3 wind=normal*37.+vec3(3.9*sin(normal.z*11.+normal.y*5.),1.3*cos(normal.x*14.),0.);
-     float clouds=smoothstep(.47,.71,terrain(wind))*.65;
-     sky=mix(ground,vec3(.21,.32,.51),clouds)*(.12+.68*day);
+     float coast=smoothstep(.503,.546,continent);
+     vec3 ground=mix(vec3(.013,.049,.129),vec3(.068,.118,.145),coast);
+     vec3 wind=normal*31.+vec3(3.4*sin(normal.z*12.+normal.y*5.),1.8*cos(normal.x*14.),0.);
+     vec2 storm=wind.xy-vec2(-10.,13.);
+     float turn=1.7*exp(-dot(storm,storm)*.019);
+     wind.xy+=mat2(cos(turn)-1.,sin(turn),-sin(turn),cos(turn)-1.)*storm;
+     float clouds=smoothstep(.46,.73,terrain(wind));
+     float cirrus=smoothstep(.52,.74,noise3(wind*vec3(1.1,3.7,1.6)+4.));
+     float oceanGlint=pow(max(0.,dot(reflect(ray,normal),light)),22.)*(1.-coast);
+     ground+=vec3(.15,.17,.19)*oceanGlint;
+     sky=mix(ground,vec3(.25,.36,.49),clouds*(.56+.19*cirrus))*(.12+.68*day);
+     sky+=vec3(.032,.080,.14)*pow(1.-max(0.,dot(normal,-ray)),3.)*(.15+.85*day);
     }
     sky+=haze*vec3(.045,.17,.43)+exp(-abs(facing-limb)*660.)*vec3(.07,.22,.48);
-    vec3 dawn=normalize(vec3(.20,-.43,-.87));
+    vec3 dawn=normalize(vec3(.27,-.36,-.89));
     float sun=max(0.,1.-dot(ray,dawn));
-    sky+=vec3(.24,.106,.054)*exp(-sun*360.)+vec3(.9,.54,.25)*exp(-sun*6500.);
+    sky+=vec3(.26,.13,.071)*exp(-sun*360.)+vec3(1.4,.84,.52)*exp(-sun*11500.);
     gl_FragColor=vec4(sky,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -89,7 +77,7 @@ function orbitalSky(THREE){
  return sky;
 }
 
-const urls=import.meta.glob('../assets/models/benchmark/*.glb',{eager:true,import:'default',query:'?url'});
+const urls=import.meta.glob(['../assets/models/benchmark/kepler-service-dock.glb','../assets/models/benchmark/station/*.glb'],{eager:true,import:'default',query:'?url'});
 export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  const root=new THREE.Group();
  root.name=orbitalArt.en;
@@ -103,7 +91,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
   if(!enabled||status!=='idle')return;
   status='loading';
   const load=name=>loader.loadAsync(urls['../assets/models/benchmark/'+name+'.glb']).then(gltf=>gltf.scene);
-  Promise.all(['station-deck','transfer-arch','relay-crown','mineral-shelf','belt-fragment'].map(load)).then(([deck,arch,relay,shelf,fragment])=>{
+  Promise.all(['station/station-deck','kepler-service-dock','station/relay-crown','station/belt-fragment'].map(load)).then(([deck,dock,relay,fragment])=>{
    deck.traverse(mesh=>{
     if(mesh.material?.name!=='Satin deck')return;
     mesh.material.onBeforeCompile=shader=>{
@@ -112,9 +100,13 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
      shader.fragmentShader='varying vec2 deckXZ;\n'+shader.fragmentShader.replace('#include <color_fragment>',`
       #include <color_fragment>
       vec2 seam=abs(fract(deckXZ/1.30)-.5)*1.30/max(fwidth(deckXZ),vec2(.0001));
-      diffuseColor.rgb*=mix(.22,1.,smoothstep(.12,1.08,min(seam.x,seam.y)));`);
+      float d=min(seam.x,seam.y);
+      vec2 tile=floor(deckXZ/1.30+.5);
+      float temper=fract(sin(dot(tile,vec2(29.17,73.53)))*3712.17);
+      diffuseColor.rgb*=mix(.96,1.04,temper)*mix(.38,1.,smoothstep(.12,1.06,d));
+      diffuseColor.rgb+=vec3(.016,.023,.031)*(1.-smoothstep(.36,1.18,abs(d-1.38)));`);
     };
-    mesh.material.color.multiplyScalar(.64);
+    mesh.material.color.multiplyScalar(.86);
    });
    deck.position.y=-3.53;root.add(deck);
    function place(source,x,y,z,scale,yaw){
@@ -122,11 +114,9 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
     root.add(prop);return prop;
    }
    station=place(relay,25,-7,-5,1.12,-.6);
-   const gate=place(arch,-10,-3.85,-10.5,1.05,-.53);
-   for(const [x,y,z,scale,yaw] of [
-    [-10,-9.1,-10.5,1.30,-.53],[-15,-10.9,-8.9,1.61,-.21],[-17,-12.5,-4,1.47,2.14],
-    [15,-10.7,10,1.35,-.65],[13,-12.3,15,1.35,1.23],[8,-13.5,19,1.53,-1.23]
-   ])place(shelf,x,y,z,scale,yaw);
+   // The Blender kit shares the centre of the logical deck. Its lowest
+   // maintenance skid sits 6.80 m below the playing surface.
+   dock.position.y=-6.80;root.add(dock);
    const dummy=new THREE.Object3D(),matrix=new THREE.Matrix4();
    const count=37;
    fragment.updateMatrixWorld(true);
@@ -137,13 +127,24 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
      const a=i*2.39996;
      dummy.position.set(12+.85*i+3*Math.sin(a),-7+.18*i+1.16*Math.cos(a),-34+.61*i+Math.sin(a*.72)*3);
      dummy.rotation.set(a*.9,a*.37,a*1.12);
-     dummy.scale.setScalar(.16+.51*(.5+.5*Math.cos(a*.67))**3);
+     const size=.14+.47*(.5+.5*Math.cos(a*.67))**3;
+     dummy.scale.set(size*(1.+.30*Math.cos(a)),size*(.88+.2*Math.sin(a*1.9)),size);
      dummy.updateMatrix();belt.setMatrixAt(i,matrix.multiplyMatrices(dummy.matrix,mesh.matrixWorld));
     }
     root.add(belt);
    });
-   root.traverse(mesh=>{if(mesh.isMesh){mesh.receiveShadow=true;mesh.castShadow=!mesh.isInstancedMesh}});
-   gate.userData.clearSight=true;station.userData.clearSight=true;
+   const finished=new Set();
+   root.traverse(mesh=>{
+    if(!mesh.isMesh)return;
+    mesh.receiveShadow=true;mesh.castShadow=!mesh.isInstancedMesh;
+    if(finished.has(mesh.material)||!mesh.geometry.getAttribute('uv'))return;
+    finished.add(mesh.material);
+    if(['Machined rim','Satellite blue','Midnight hull','Satin deck'].includes(mesh.material.name))
+     applyOpticFinish(THREE,mesh.material,mesh.material.name==='Satin deck'?'polished':'brushed');
+    if(['Dock | Cut titanium','Dock | Ceramic enamel','Dock | Blue grey alloy'].includes(mesh.material.name))
+     applyOpticFinish(THREE,mesh.material,'polished');
+   });
+   station.userData.clearSight=true;
    status='ready';sync();onReady();
   }).catch(error=>{status='error';console.error('Orbital station',error);sync();onReady()});
  }

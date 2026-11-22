@@ -1,5 +1,9 @@
 # Stan projektu
 
+Węzeł Keplera otwiera się przez `?benchmark=orbital`. Pokład otaczają galerie
+serwisowe, prom i antena. Wszystkie kampanie korzystają z odświeżonych 22 modeli
+elementów i z tego samego sposobu rysowania światła. [Modele i odtworzenie ujęć](../tools/README.md).
+
 ## Architektura
 
 | Obszar | Aktualny stan |

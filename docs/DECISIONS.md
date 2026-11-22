@@ -98,3 +98,12 @@
 - Zakładki kampanii i lista dostępnych plansz mają po jednym przystanku klawisza Tab. Wybór strzałkami zachowuje układ wierszy listy przy zmianie szerokości. Home i End przenoszą do pierwszej lub ostatniej dostępnej pozycji.
 - Ekran ukończenia pokazuje nazwę zagadki, bilans rezonatorów, postęp kampanii, nagrodę i nazwę kolejnej zagadki. Nagłówek korzysta z grafiki tego samego świata co mapa kampanii.
 - Przycisk zamknięcia na ekranie ukończenia pozwala obejrzeć gotową planszę. W belce gry przycisk „Wynik” ponownie otwiera podsumowanie, gdy układ nadal zasila wszystkie rezonatory.
+## 22 listopada 2026 · optyka i dok Keplera
+
+Wspólną wysokość 0,78 m wyznacza środek apertury emitera. Wiązka ma wąski,
+jasny rdzeń w kolorowej otoczce. Światło pod nią leży na powierzchni planszy,
+co pozwala rozróżnić oba efekty przy obrocie kamery. Główki odbiorników
+załamują światło na ośmiu wewnętrznych ściankach kryształu.
+
+Prom stoi przy lewej galerii, a czasza anteny po przeciwnej stronie.
+Rozstaw wybrano po porównaniu zrzutów z podstawowego ujęcia kamery.

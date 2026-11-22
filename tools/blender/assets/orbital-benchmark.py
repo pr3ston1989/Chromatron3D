@@ -1,16 +1,19 @@
 """Orbital station kit. Run from a clean Blender background session."""
 from math import cos, sin, pi, tau
 from pathlib import Path
-from random import Random
 import sys
 import bpy
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from tools.blender.style import Sculpture, make_material, plate, reset_scene, export_model
+from tools.blender.orbital_finish import finish_surface
 
 reset_scene()
 folder = ROOT / "assets/models/benchmark"
+station_edition = "--station" in sys.argv
+if station_edition:
+    folder = folder / "station"
 ink = make_material("Carbon recess", "obsidian", .39, .54)
 hull = make_material("Midnight hull", "navy", .57, .38)
 titanium = make_material("Machined rim", "titanium", .67, .32)
@@ -20,14 +23,12 @@ amber = make_material("Amber navigation glass", "amber", .18, .25, 3.1)
 ice = make_material("Aperture glass", "cyan", .20, .28, 1.2)
 basalt = make_material("Basalt shade", "graphite", .07, .88)
 strata = make_material("Slate cleavage", "steel", .08, .84, shade=-1)
-moss = make_material("Lichen", "olive", .04, .87, shade=-1)
-leaf = make_material("Silver sage", "olive", .06, .72)
 slate = make_material("Graphitic facets", "navy", .17, .72, shade=-1)
-malachite = make_material("Mineral skin", "jade", .21, .44)
 models = []
 
 def finish(sculpt, name, budget):
     model = sculpt.object(name)
+    finish_surface(model,reach=.95)
     export_model(model, budget, folder)
     models.append(model)
 
@@ -52,17 +53,35 @@ def frame():
             plate(s,[(.649,.649,.012,3.508),(.645,.645,.010,3.530)],
                   tile,[tile],center=((i-7)*1.30,(j-7)*1.30))
     for side in range(4):
+        if station_edition:
+            # A recessed expansion coupling anchors each outer corner.
+            # It lives on the fascia, outside both the tiles and the collector.
+            for sign in (-1,1):
+                shoe=[(-.43,2.44),(.20,2.44),(.43,2.73),(.38,3.18),(-.27,3.18),(-.45,2.95)]
+                for radius,scale,material in [(9.87,1,hull),(9.98,.86,steel),(10.042,.65,titanium)]:
+                    cheek=[(x*scale,2.84+(z-2.84)*scale) for x,z in shoe]
+                    strip(s,side,sign*9.13,[(radius,cheek),(radius+.085,cheek)],material)
         for k in range(5):
             u=(k-2)*3.60
             bay=[(-1.72,.58),(1.43,.58),(1.71,.88),(1.71,2.50),(-1.39,2.50),(-1.72,2.20)]
             strip(s,side,u,[(9.24,bay),(9.42,bay)],ink)
             vent=[(-1.38,.88),(1.22,.88),(1.41,1.08),(1.41,2.13),(-1.19,2.13),(-1.38,1.94)]
-            strip(s,side,u,[(9.42,vent),(9.46,vent)],steel)
+            strip(s,side,u,[(9.42,vent),(9.46,vent)],hull)
             brace=[(-1.80,.16),(-1.54,.16),(-.63,2.53),(-.97,2.62)]
             strip(s,side,u,[(9.41,brace),(9.66,brace)],hull)
+            for z in (1.12,1.33,1.54,1.75):
+                slat=[(-.94,z),(.81,z),(.95,z+.09),(-.84,z+.09)]
+                strip(s,side,u,[(9.46,slat),(9.51,slat)],steel)
+            if station_edition:
+                # Herringbone service cheeks end in a bright, cut metal tip.
+                cheek=[(-1.68,2.66),(-1.12,2.66),(-.76,2.47),(-1.33,2.47)]
+                strip(s,side,u,[(9.49,cheek),(9.69,cheek)],titanium)
+                for pos in (-1.42,1.42):
+                    lock=[(pos-.09,.58),(pos+.09,.58),(pos+.075,.81),(pos-.075,.81)]
+                    strip(s,side,u,[(9.43,lock),(9.56,lock)],steel)
             light=[(-.53,3.025),(.48,3.025),(.56,3.123),(-.48,3.123)]
             strip(s,side,u,[(10.024,light),(10.078,light)],amber)
-    finish(s,"station-deck",9000)
+    finish(s,"station-deck",11800)
 
 def annulus(s, a, b, slices, profile, materials):
     start=len(s.vertices)
@@ -85,16 +104,57 @@ def relay():
         a=i*tau/16
         annulus(s,a+.007,a+tau/16-.007,4,prof,[ink,steel,hull,titanium,steel,hull,ink])
         annulus(s,a+.055,a+.31,3,[(4.592,3.75),(4.599,3.75),(4.599,3.81),(4.592,3.81)],[amber]*4)
+        if i%4==0:
+            # Enclosed galleries taper to the hub; lower forks carry the ring load.
+            def spoke(rad,width,z):
+                return [(rad*cos(a)-dy*sin(a),rad*sin(a)+dy*cos(a),z+dz)
+                        for dy,dz in [(-width,-.12),(-width*.82,.08),(width*.82,.08),(width,-.12),(width*.77,-.34),(-width*.72,-.34)]]
+            s.loft([spoke(r,w,z) for r,w,z in [(1.0,.37,3.23),(2.18,.24,3.68),(3.65,.38,3.90),(4.1,.51,3.95)]],steel,[hull,steel,hull])
+            for h in (-.16,.16):
+                s.cable([(cos(a)*r-sin(a)*h,sin(a)*r+cos(a)*h,z,w) for r,z,w in
+                         [(.81,1.91,.10),(1.9,2.25,.075),(3.91,3.59,.068)]],titanium,6)
         if i%2==0:
-            s.cable([(cos(a)*r,sin(a)*r,z,w) for r,z,w in [(.55,3.16,.17),(2.5,3.42,.115),(3.91,3.78,.14)]],steel,5)
+            annulus(s,a+.04,a+.32,4,[(3.78,4.09),(3.82,4.23),(4.19,4.28),(4.29,4.17)],
+                    [ink,steel,titanium,hull])
+            for j in range(3):
+                offset=a+.095+j*.07
+                annulus(s,offset,offset+.028,2,[(4.57,3.91),(4.579,3.91),(4.579,3.96),(4.57,3.96)],[ice]*4)
     profile=[(0,.03),(.69,.18),(.95,1.19),(1.80,1.52),(2.95,1.30),(3.10,.87),(3.49,.99),
-             (3.62,1.24),(3.86,1.24),(3.99,.91),(4.97,.70),(5.23,.44),(6.05,.34),(6.23,.16),(7.15,.053)]
+            (3.62,1.24),(3.86,1.24),(3.99,.91),(4.97,.70),(5.23,.44),(6.05,.34),(6.23,.16),(7.15,.053)]
     s.lathe([(0,0,z,r,r) for z,r in profile],hull,12,bands=[ink,hull,steel,hull,ink,steel,titanium,
-             hull,titanium,steel,hull,steel,titanium,amber])
+             hull,titanium,steel,hull,steel,titanium,steel if station_edition else amber])
+    if station_edition:
+        for i in range(8):
+            a=i*tau/8
+            # Glazed control room between two continuous pressure collars.
+            annulus(s,a+.025,a+.75,5,[(.78,4.45),(.93,4.54),(.89,4.90),(.73,4.96)],
+                    [titanium,hull,steel,ink])
+            annulus(s,a+.10,a+.62,4,[(.916,4.64),(.913,4.74),(.915,4.76),(.929,4.65)],
+                    [ice,hull,steel,hull])
+            if i%2==0:
+                s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in
+                    [(.43,5.16,.112),(.53,5.68,.073),(.55,6.62,.030),(.55,6.78,.022)]],titanium,6)
+        # Two opposed tracking arrays deploy from the comms collar.
+        # Broad planar leaves contrast with the narrow aerials on the mast.
+        cells=make_material("Photovoltaic cells","navy",.48,.24)
+        for angle in (.14,pi+.14):
+            def wing(r,w,z):
+                return (r*cos(angle)-w*sin(angle),r*sin(angle)+w*cos(angle),z+w*.42)
+            s.cable([(*wing(r,0,z),w) for r,z,w in [(.72,4.91,.09),(1.05,5.10,.085),(2.99,5.10,.046)]],titanium,8)
+            for i in range(3):
+                r=1.14+i*.63
+                outline=[(r,-.35),(r+.46,-.35),(r+.58,-.23),(r+.58,.37),(r,.37)]
+                s.loft([[wing(x,w,z) for x,w in outline] for z in (5.10,5.15)],steel,[titanium])
+                for w in (-.15,.16):
+                    panel_outline=[(r+.04,w-.127),(r+.49,w-.127),(r+.52,w+.13),(r+.04,w+.13)]
+                    s.loft([[wing(x,y,z) for x,y in panel_outline] for z in (5.151,5.162)],cells)
     for i in range(6):
         a=i*tau/6
         s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in [(1.03,1.57,.07),(1.03,2.62,.085),(.70,4.83,.047)]],amber,4)
-    finish(s,"relay-crown",4000)
+    # Radiator sails flank the communications mast at three unequal heights.
+    for i,(a,h) in enumerate([(.24,6.41),(2.48,5.64),(4.67,5.23)]):
+        s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in [(.84,3.76,.20),(.80,4.75,.15),(.56,h,.045)]],hull,6)
+    finish(s,"relay-crown",7800)
 
 def portal():
     s=Sculpture()
@@ -114,53 +174,42 @@ def portal():
             s.cable([(x+dx*t+nx*.04,-.432,z+dz*t+nz*.04,.043) for t in (.22,.80)],amber,5)
     finish(s,"transfer-arch",800)
 
-def escarpment():
+def drydock():
+    """Cantilevered repair quay with twin guide rails and inset landing lights."""
     s=Sculpture()
-    rng=Random(8391)
-    # Offset successive fractures; exposed shoulders catch the blue rim light.
-    for k in range(19):
-        x,y=rng.uniform(-3.7,3.7),rng.uniform(-1.8,1.8)
-        h=2.6+rng.random()*1.65-.065*x*x
-        r=rng.uniform(.72,1.58)
-        outline=[(cos(tau*i/7)*rng.uniform(.80,1.13),sin(tau*i/7)*rng.uniform(.82,1.2)) for i in range(7)]
-        tips=[rng.random()*.42 for _ in outline]
-        rings=[[(x+u*r*scale+dx,y+v*r*scale+.13*sin(i+theta),z+tilt*t) for i,((u,v),t) in enumerate(zip(outline,tips))]
-               for scale,z,dx,tilt,theta in [(.68,0,.20,0,0),(.99,h*.44,.07,.4,.9),
-                                             (1.03,h*.73,0,.65,-.7),(.89,h*.94,-.09,1,.32),(.71,h,-.21,1,.35)]]
-        base=len(s.vertices)
-        for ring in rings:
-            s.vertices.extend(ring)
-        s.face(tuple(reversed(range(base,base+7))),basalt)
-        for row in range(4):
-            for n in range(7):
-                a=base+row*7+n
-                b=base+row*7+(n+1)%7
-                s.face((a,b,b+7),rng.choice([basalt,basalt,slate,strata]))
-                s.face((a,b+7,a+7),rng.choice([basalt,slate,strata]))
-        s.face(tuple(range(base+28,base+35)),strata)
-        if k%3==0:
-            crown=[(x+(a-x)*.68,y+(b-y)*.56,c+.029) for a,b,c in rings[-1]]
-            s.loft([[(a,b,c-.06) for a,b,c in crown],crown],moss)
-            for j in range(8):
-                a=j*2.399
-                u,v=x+.25*cos(a),y+.21*sin(a)
-                z=sum(p[2] for p in crown)/7
-                length=rng.uniform(.25,.51)
-                s.blade([(u,v,z,.017,.014),(u+.18*cos(a),v+.18*sin(a),z+length*.78,.073,.028),
-                         (u+length*cos(a),v+length*sin(a),z+length,.008,.008)],leaf,moss)
-    for cx,cy in [(-2.8,-.97),(1.66,-1.32),(2.43,.91)]:
-        for j in range(7):
-            a=j*2.39
-            x,y=cx+.32*cos(a),cy+.24*sin(a)
-            r=rng.uniform(.085,.20)
-            h=rng.uniform(.53,1.24)
-            z=3.32
-            s.lathe([(x,y,z,r*.63,r*.63),(x+.12*cos(a),y+.12*sin(a),z+h*.73,r,r),
-                     (x+.25*cos(a),y+.22*sin(a),z+h,.016,.016)],malachite,5,bands=[malachite,ice])
-    finish(s,"mineral-shelf",4400)
+    panel(s,[(4.19,1.73,.63,0),(4.46,1.89,.56,.22),(4.78,1.98,.48,1.46),
+             (4.87,2.05,.47,1.60),(4.73,2.00,.47,1.73)],ink,[hull,ink,steel,titanium])
+    for x in (-3.09,-1.54,0,1.54,3.09):
+        plate(s,[(.74,1.83,.13,1.72),(.71,1.79,.13,1.77)],steel,[hull],center=(x,0))
+        for side in (-1,1):
+            s.cable([(x-.48,side*1.70,1.781,.025),(x+.26,side*1.70,1.781,.025)],amber,5)
+    for side in (-1,1):
+        for x in (-2.75,0,2.75):
+            section=[(-.83,.26),(-.49,.21),(.80,1.28),(.80,1.48),(.40,1.48)]
+            s.loft([[(x+u,side*r,z) for u,z in section] for r in (1.90,2.14)],hull)
+        for y in (.95,1.16):
+            plate(s,[(4.01,.049,.023,1.77),(3.96,.038,.019,1.83)],titanium,[steel],center=(0,side*y))
+    finish(s,"transfer-quay",2100)
 
 def asteroid():
     s=Sculpture()
+    if station_edition:
+        # Uneven strata and an actual recessed impact basin in the upper shell.
+        outline=[(1.09,.0),(.93,.51),(.78,1.04),(.96,1.62),(1.16,2.17),(.78,2.72),
+                 (.94,3.24),(1.18,3.80),(.81,4.27),(.89,4.82),(1.08,5.43),(.92,5.98)]
+        rings=[]
+        for r,z,dx,dy,turn in [(.37,.0,0,0,.0),(.94,.24,0,0,.12),(1.02,.56,.02,0,.08),
+                (.96,.78,.10,.04,.02),(.58,1.03,.17,.06,0),(.35,1.06,.20,.09,.07),(.18,.91,.17,.06,.11)]:
+            rings.append([(dx+1.15*r*w*cos(a+turn),dy+.72*r*w*sin(a+turn),
+                           z+(.062*sin(a*3.1) if z else 0)) for w,a in outline])
+        s.loft(rings,slate,[basalt,slate,strata,basalt,strata,basalt])
+        # Break the lathed outline with a chipped spur and an inclined rift.
+        s.loft([[(x+u*r,y+v*r,z+dz) for u,v,dz in [
+            (-.39,-.16,.01),(.15,-.23,.04),(.37,.04,.02),(.08,.29,0),(-.33,.16,.04)]]
+            for x,y,z,r in [(-.74,.18,.30,.77),(-.90,.22,.48,.95),(-.89,.20,.68,.46)]],
+            basalt,[slate,strata])
+        finish(s,"belt-fragment",190)
+        return
     s.loft([[((1+.18*sin(i*13+z))*r*cos(i*tau/7+twist),.70*r*sin(i*tau/7+twist),z+(.10*r*sin(i*3) if z else 0))
               for i in range(7)] for r,z,twist in [(.28,0,0),(.89,.24,.32),(1.02,.74,0),(.62,1.08,.43),(.26,1.20,.22)]],
            basalt,[basalt,slate,basalt,strata])
@@ -168,8 +217,9 @@ def asteroid():
 
 frame()
 relay()
-portal()
-escarpment()
+if not station_edition:
+    portal()
+    drydock()
 asteroid()
 # Keep editable meshes together in a laid-out Blender kit. GLBs have local origins.
 for model,x in zip(models,(0,19,30,41,49)):

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {createBeamBatcher} from '../src/beam-batching.js';
 import {renderLaserFX} from '../src/laser-vfx.js';
+import {beamSpans} from '../src/beam-profile.js';
 import {COLORS} from '../src/optics.js';
 
 test('long laser path batches the glow and camera-facing core into two draw calls',()=>{
@@ -80,4 +81,29 @@ test('receiver flares use the matched target color and skip the wrong wavelength
  const flares=scene.children.filter(obj=>obj.isSprite);
  assert.equal(flares.length,1);
  assert.equal(flares[0].material.color.getHexString(),COLORS[3].slice(1));
+});
+
+test('continuous spans end at instruments, spectrum changes, gaps and the collector face',()=>{
+ const edge=(a,b,c)=>({x:a,y:8-a,nx:b,ny:8-b,color:c});
+ const source=[edge(1,0,1),edge(2,1,1),edge(3,2,1),edge(4,3,1),
+  edge(3,4,2),edge(5,4,1),edge(7,6,1),edge(7.5,7,1)];
+ const saved=structuredClone(source);
+ const spans=beamSpans(source,new Map([['1,7',true]]));
+ assert.deepEqual(spans.map(s=>[s.x,s.nx,s.color]).sort((a,b)=>a[0]-b[0]),
+  [[0,1,1],[1,3,1],[3,4,3],[4,5,1],[6,7.5,1]]);
+ assert.deepEqual(source,saved,'renderer preserves directed tracer data');
+});
+
+test('a west-facing source is trimmed to its lens after canonicalising the span',()=>{
+ const scene=new THREE.Group();
+ const point=(x,y,height)=>new THREE.Vector3(x,height,y);
+ const emitter={id:1,type:'laser',x:3,y:0,rot:6,color:1};
+ const path=[{x:3,y:0,nx:2,ny:0,color:1},{x:2,y:0,nx:1,ny:0,color:1}];
+ const {geometryStats}=renderLaserFX(THREE,scene,path,[emitter],new Map(),COLORS,point);
+ assert.equal(geometryStats.segments,3,'one span per layer');
+ const positions=scene.children.find(obj=>obj.renderOrder===9).geometry.getAttribute('position');
+ assert.ok(Math.abs(positions.getX(2)-(3-.427))<1e-5);
+ assert.equal(positions.getY(2),Math.fround(.78));
+ const muzzle=scene.children.find(obj=>obj.isSprite);
+ assert.ok(Math.abs(muzzle.position.x-(3-.515))<1e-5);
 });
