@@ -20,11 +20,13 @@ porcelain=make_material("Satin porcelain","ceramic",.16,.38)
 bronze=make_material("Copper ferrule","copper",.76,.29)
 glass=make_material("Optical coating","cyan",.50,.14)
 silver=make_material("Front silver","titanium",.83,.13,shade=2)
+aperture=make_material("Silvered aperture","titanium",.91,.095,shade=2)
+meniscus=make_material("Filter doublet","cyan",.18,.12)
 signal=make_material("glow","cyan",.16,.19,1.10)
 gem=make_material("Resonance crystal","cyan",.12,.17,.27)
 witness=make_material("Receiver lock","cyan",.18,.27,.28)
 violet=make_material("Dielectric violet","amethyst",.41,.22)
-for mat in (porcelain,glass,gem):
+for mat in (porcelain,glass,gem,meniscus,aperture):
     bsdf=mat.node_tree.nodes.get("Principled BSDF")
     bsdf.inputs["Coat Weight"].default_value=.46
     bsdf.inputs["Coat Roughness"].default_value=.18
@@ -147,8 +149,15 @@ def filter_wheel(s):
     mount(s);yoke(s,"Y",.66)
     loop=[(-.11,.282),(-.114,.369),(-.068,.406),(.03,.412),(.096,.378),(.106,.306),(.068,.284)]
     sleeve(s,"X",(0,0,.734),loop,[ink,alloy,body,bronze,alloy,ink,glass],28)
-    outline=[(.278*cos(i*tau/28),.278*sin(i*tau/28)) for i in range(28)]
-    section(s,outline,[(-.038,.96),(-.023,1),(.030,1),(.045,.96)],"X",.734,[signal,glass,signal])
+    # Two convex optical faces meet in a silvered gasket. The dome and
+    # stepped retaining ring catch a highlight even nearly edge-on.
+    rings=[[(x,r*cos(i*tau/32),.734+r*sin(i*tau/32)) for i in range(32)] for x,r in [
+        (-.106,.045),(-.100,.123),(-.081,.203),(-.044,.273),(-.022,.280),
+        (.022,.280),(.044,.273),(.081,.203),(.100,.123),(.106,.045)]]
+    s.loft(rings,meniscus,[meniscus]*4+[ink]+[meniscus]*4)
+    for side in (-1,1):
+        sleeve(s,"X",(0,0,.734),[(side*x,r) for x,r in [
+            (.050,.275),(.073,.281),(.075,.292),(.052,.302)]],[alloy,bronze,steel,ink],32)
     # A keyed latch on the high rim is visible from either face.
     s.cable([(-.087,-.145,1.074,.033),(.058,-.145,1.086,.035),(.09,-.132,1.049,.028)],bronze,6)
     for i in range(4):
@@ -162,31 +171,45 @@ def filter_wheel(s):
 def reflector(s,curved=False):
     mount(s);yoke(s,"Y",.65)
     if curved:
-        # A continuous crescent with graduated curvature on the silvered edge.
-        for i in range(10):
-            rings=[]
-            for j in (i,i+1):
-                y=(j/10-.5)*.88
-                x=.90*y*y-.13
-                z=.71+.42*y*y
-                rings.append([(x+dx,y,z+dz) for dx,dz in [(-.046,-.21),(.06,-.245),(.125,-.19),
-                               (.11,.22),(.033,.27),(-.051,.235)]])
-            start=len(s.vertices);s.vertices.extend(rings[0]+rings[1])
-            for n,mat in enumerate([bronze,ink,body,steel,alloy,silver]):
-                q=(n+1)%6;s.face((start+n,start+q,start+6+q,start+6+n),mat)
-            if i==0:s.face(tuple(range(start,start+6)),bronze)
-            if i==9:s.face(tuple(range(start+6,start+12)),bronze)
+        # A scooped toroidal reflector. A low waist and swept horns distinguish
+        # it from the flat mirror in both the side and overhead cameras.
+        n=16
+        start=len(s.vertices)
+        for j in range(n+1):
+            t=2*j/n-1
+            y=.476*t
+            center=.074-.236*t*t
+            low=.527+.118*t*t
+            high=.935+.248*t*t
+            for depth,height in [(.085,low-.027),(.145,low+.015),(.148,high-.061),
+                    (.096,high+.009),(.030,high+.019),(-.022,high-.017),
+                    (-.044,high-.075),(0,(low+high)*.5),(-.054,low+.059),(-.021,low+.008)]:
+                s.vertices.append((center+depth+.25*(height-.78),y,height))
+        bands=[ink,body,steel,bronze,alloy,steel,silver,silver,alloy,bronze]
+        for j in range(n):
+            for k,material in enumerate(bands):
+                a=start+j*10+k;b=start+j*10+(k+1)%10
+                s.face((a,b,b+10,a+10),material)
+        for j in (0,n):
+            s.face(tuple(start+j*10+k for k in range(10)),bronze)
         for y in (-.39,.39):
             s.cable([(.16,y*.54,.22,.052),(.14,y*.92,.43,.04),(.10,y,.56,.042)],bronze,7)
-        # Bright end shoes frame the curved silver face in silhouette.
-        for sign in (-1,1):
-            section(s,[(-.026,.58),(.059,.53),(.18,.57),(.18,.99),(.094,1.04),
-                       (.008,1.012)],[(sign*.415,.99),(sign*.447,1)],"Y",0,[porcelain])
+        for side in (-1,1):
+            s.cable([(.079,side*.24,.37,.054),(.098,side*.29,.49,.060),
+                     (.04,side*.362,.628,.046)],porcelain,8)
     else:
         outline=[(-.405,-.22),(-.316,-.304),(.326,-.304),(.405,-.20),
                  (.405,.203),(.317,.302),(-.315,.302),(-.405,.205)]
-        section(s,outline,[(.115,.80),(.078,1),(-.026,1),(-.059,.917),(-.067,.875)],
-                "X",.87,[body,steel,alloy,silver])
+        # Incline the complete bezel and coating together. The glTF aperture
+        # itself defines the plane used for real-time reflections in Three.
+        first=len(s.vertices)
+        section(s,outline,[(.115,.80),(.078,1),(-.026,1),(-.059,.917),
+                           (-.067,.875),(-.067,.866)],
+                "X",.87,[body,steel,alloy,ink,aperture])
+        tilt=.29
+        for i in range(first,len(s.vertices)):
+            x,y,z=s.vertices[i];h=z-.87
+            s.vertices[i]=(cos(tilt)*x+sin(tilt)*h,y,.87-sin(tilt)*x+cos(tilt)*h)
         for z in (.71,.86,1.01):
             s.cable([(.124,-.263,z,.019),(.138,.11,z+.025,.021),(.112,.26,z+.02,.015)],ink,6)
         for y in (-.31,.31):
@@ -205,6 +228,9 @@ def splitter(s):
                 "X",0,[alloy,body,bronze])
     diamond=[(-.32,0),(0,-.225),(.32,0),(0,.225)]
     section(s,diamond,[(-.053,.81),(-.027,1),(.027,1),(.055,.81)],"X",.78,[glass,alloy,glass])
+    # An exposed secondary exit barrel sits at right angles to the wafer.
+    sleeve(s,"X",(.235,0,.78),[(-.107,.074),(-.052,.109),(.121,.114),
+           (.147,.089),(.146,.062),(-.102,.057)],[alloy,bronze,steel,alloy,ink,body],16)
     for y in (-.34,.34):
         sleeve(s,"Y",(0,y,.74),[(-.023,.095),(.023,.095),(.027,.052),(-.023,.052)],
                [bronze,alloy,ink,steel],8)

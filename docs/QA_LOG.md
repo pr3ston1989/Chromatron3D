@@ -1,5 +1,19 @@
 # QA
 
+## 22 listopada 2026 · obrót myszą i powłoki optyczne
+
+Prawy przycisk myszy sprawdzono na planszy, na karcie zasobnika i na wolnym
+polu podczas ustawiania. Test liczy kroki obrotu, cofa ruch i sprawdza też
+przeciągnięcie prawym przyciskiem oraz próbę obrócenia stałego emitera.
+Przeszedł przy 1366 × 768, 1280 × 720 i 1093 × 614.
+
+Dwa ujęcia tej samej zagadki z działającej gry są w
+`screenshots/kepler-przeglad/03-pole-w-pracy.png` i `02-widok-boczny.png`.
+Po obejrzeniu pierwszej próby obniżono łuk serwisowy. Natywny WebGL na AMD
+Radeon potwierdził widoczność 225 pól w obu ujęciach, w rzucie z góry
+i w czterech rozmiarach ekranu, w tym 390 × 844. Test modelu GLB sprawdza
+położenie i zwrot powłoki lustra po ponownym zaznaczeniu.
+
 ## 22 listopada 2026 · Węzeł Keplera
 
 Porównano ten sam stan Chromatron 1–15 z czterema aktywnymi rezonatorami

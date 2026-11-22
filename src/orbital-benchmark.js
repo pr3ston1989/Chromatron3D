@@ -84,14 +84,14 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  root.visible=false;world.add(root);
  const sky=orbitalSky(THREE);
  sky.visible=false;scene.add(sky);
- let wanted=false,status='idle',station;
+ let wanted=false,status='idle',station,carriage;
  const sync=()=>{root.visible=sky.visible=wanted&&status==='ready'};
  function setLevel(enabled){
   wanted=enabled;sync();
   if(!enabled||status!=='idle')return;
   status='loading';
   const load=name=>loader.loadAsync(urls['../assets/models/benchmark/'+name+'.glb']).then(gltf=>gltf.scene);
-  Promise.all(['station/station-deck','kepler-service-dock','station/relay-crown','station/belt-fragment'].map(load)).then(([deck,dock,relay,fragment])=>{
+  Promise.all(['station/station-deck','kepler-service-dock','station/relay-crown','station/belt-fragment','station/transit-gate'].map(load)).then(([deck,dock,relay,fragment,gantry])=>{
    deck.traverse(mesh=>{
     if(mesh.material?.name!=='Satin deck')return;
     mesh.material.onBeforeCompile=shader=>{
@@ -106,7 +106,9 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
       diffuseColor.rgb*=mix(.96,1.04,temper)*mix(.38,1.,smoothstep(.12,1.06,d));
       diffuseColor.rgb+=vec3(.016,.023,.031)*(1.-smoothstep(.36,1.18,abs(d-1.38)));`);
     };
-    mesh.material.color.multiplyScalar(.86);
+    mesh.material.color.setHex(0x9baac0);
+    mesh.material.roughness=.51;
+    mesh.material.metalness=.34;
    });
    deck.position.y=-3.53;root.add(deck);
    function place(source,x,y,z,scale,yaw){
@@ -114,6 +116,9 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
     root.add(prop);return prop;
    }
    station=place(relay,25,-7,-5,1.12,-.6);
+   const gate=place(gantry,-10.1,-4.75,-12.6,1.02,.06);
+   gate.userData.clearSight=true;
+   carriage=gate.getObjectByName('Inspection_carriage');
    // The Blender kit shares the centre of the logical deck. Its lowest
    // maintenance skid sits 6.80 m below the playing surface.
    dock.position.y=-6.80;root.add(dock);
@@ -151,6 +156,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  function update(seconds,still,camera){
   if(!root.visible)return;
   station.rotation.y=-.6+(still?0:Math.sin(seconds*.09)*.085);
+  if(carriage)carriage.rotation.z=Math.PI*(.61+(still?0:.31*Math.sin(seconds*.19)));
   for(const prop of root.children)if(prop.userData.clearSight)
    prop.visible=prop.position.x*camera.x+prop.position.z*camera.z<30;
  }

@@ -10,7 +10,7 @@ import {t} from '../src/i18n.js';
 
 const output=process.argv[2]||'screenshots/kepler-service-dock';
 await mkdir(output,{recursive:true});
-const server=await createServer({server:{host:'127.0.0.1',port:0},logLevel:'error'});
+const server=await createServer({server:{host:'127.0.0.1',port:0,watch:null},logLevel:'error'});
 let browser;
 try{
  await server.listen();
@@ -20,15 +20,15 @@ try{
  const errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});
- let dockLoaded=false;
+ const loadedModels=new Set();
  page.on('response',r=>{
-  if(r.ok()&&new URL(r.url()).pathname.endsWith('/kepler-service-dock.glb')&&!new URL(r.url()).search)
-   dockLoaded=true;
+  const url=new URL(r.url());
+  if(r.ok()&&url.pathname.endsWith('.glb')&&!url.search)loadedModels.add(url.pathname.split('/').pop());
  });
  await page.goto('http://127.0.0.1:'+server.httpServer.address().port+'/?benchmark=orbital&debug=1');
  await page.waitForFunction(()=>window.__debug?.getLevelState().pilotStatus==='ready');
  await page.waitForLoadState('networkidle');
- assert.ok(dockLoaded,'Kepler GLB must load');
+ for(const model of ['kepler-service-dock.glb','transit-gate.glb'])assert.ok(loadedModels.has(model),model+' must load');
  await page.evaluate(()=>window.__debug.freezeAnimations(true));
  const coach=page.locator('#coach-dismiss');
  if(await coach.isVisible())await coach.click();

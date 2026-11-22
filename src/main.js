@@ -38,6 +38,7 @@ import {campaignWorld, getCampaignWorld} from './campaign-worlds.js';
 import {opticDescription,opticExample} from './optic-help.js';
 import {renderSelectionGuides} from './beam-guides.js';
 import {renderLaserFX} from './laser-vfx.js';
+import {createOpticIllumination} from './optic-illumination.js';
 import {createCollectorField} from './collector-field.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
@@ -265,9 +266,10 @@ let modelRefresh=0;
 const benchModels=import.meta.glob('../assets/models/optical-bench/*.glb',{eager:true,import:'default',query:'?url'});
 const benchPortraits=import.meta.glob('../assets/models/optical-bench/portraits/*.png',{eager:true,import:'default',query:'?url'});
 const assetNames=files=>Object.fromEntries(Object.entries(files).map(([path,url])=>[path.split('/').pop().split('.')[0],url]));
+const opticIllumination=createOpticIllumination(THREE,GRID,T);
 const opticModels=createOpticModelLoader(THREE,{
  baseUrl:import.meta.env.BASE_URL+'models/optics/',portraitUrl:import.meta.env.BASE_URL+'portraits/',
- modelUrls:assetNames(benchModels),portraitUrls:assetNames(benchPortraits),
+ modelUrls:assetNames(benchModels),portraitUrls:assetNames(benchPortraits),illumination:opticIllumination,
  onReady(type){
   if(previewPiece?.type===type&&placementPreview.visible)previewInstrument(previewPiece);
   if(modelRefresh||!pieces.some(p=>p.type===type&&!p.inTray))return;
@@ -297,7 +299,9 @@ function syncBoardPresentation(){
  fill.intensity=sunset?9:preview?16:25;
  ambient.intensity=preview?.43:.70;
  if(orbitalScene?.isVisible()){
-  key.position.set(-13,22,6);key.intensity=1.64;ambient.intensity=.31;
+  // Grazing morning light across the panels, with cool fill from the planet.
+  key.position.set(-18,16,-12);key.color.setHex(0xffead2);
+  key.intensity=2.48;ambient.intensity=.33;
   renderer.shadowMap.needsUpdate=true;
  }
  if(preview){
@@ -485,12 +489,7 @@ function rebuildPieces(){
    head.position.y=.65;
    model.position.y=-(g.position.y+head.position.y);
    head.add(model);g.add(head);
-   if(reflectingIds.has(p.id)){
-    const surface=mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
-    // Put the dynamic coating just in front of the silver face, including
-    // the wider mount used by the authored decks.
-    surface.position.set(-.067*model.scale.x-.003,model.position.y+.87,0);
-   }
+   if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize,opticIllumination);
    if(p.type==='target')g.userData.modelActive=energized;
    model.traverse(c=>{if(c.isMesh){c.castShadow=orbitalPilot;c.userData.piece=p;hitObjects.push(c)}});
   }else{
@@ -587,6 +586,7 @@ function rebuildBeams(){
  if(laserVisuals)laserVisuals.dispose();
  disposeGroupChildren(beamGroup);
  currentResult=trace(pieces);
+ opticIllumination.update(currentResult.segments,currentResult.boundaryHits);
  collectorField.updateHits(currentResult.boundaryHits);
  const lighting=activeEnvironment?.deck?{...graphicsProfile,opticScale:1.05,surfaceGlow:activeEnvironment.glow??.26}:graphicsProfile;
  laserVisuals=renderLaserFX(THREE,beamGroup,currentResult.segments,pieces,currentResult.received,COLORS,vec,lighting,currentResult.boundaryHits);
@@ -1056,7 +1056,7 @@ function reconcileMirrorReflections(){
   if(!head)continue;
   const reflector=head.children.find(c=>c.isReflector);
   if(activeIds.has(piece.id)&&!reflector){
-   mountRealMirror(THREE,head,graphicsProfile.reflectionSize);
+   mountRealMirror(THREE,head,graphicsProfile.reflectionSize,opticIllumination);
   }else if(!activeIds.has(piece.id)&&reflector){
    reflector.getRenderTarget()?.dispose();
    head.remove(reflector);

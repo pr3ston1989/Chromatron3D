@@ -33,6 +33,10 @@ ramiona doku, wsporniki, radiatory, prom na pomoście i antena kierunkowa są os
 `assets/models/benchmark/kepler-service-dock.blend`. Gra wczytuje ich wspólny
 eksport GLB o tej samej nazwie. Podstawa doku znajduje się 6,80 m poniżej planszy.
 
+Łuk serwisowy przy galerii ma osobny plik `assets/models/benchmark/station/transit-gate.blend`.
+Skrypt `tools/blender/assets/transit-gate.py` buduje go razem z wózkiem inspekcyjnym
+i eksportuje sąsiedni GLB. Wózek porusza się po łuku, a tryb ograniczonego ruchu zatrzymuje go.
+
 ```powershell
 & 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/kepler-dock.py
 node tools/review-kepler-dock.mjs
@@ -49,6 +53,10 @@ Edytowalne siatki znajdują się w `optical-bench.blend`, a receptury w
 Wszystkie głowice pracują w układzie z osią wiązki na wysokości 0,78 m.
 Barwę kryształu wyznacza wymaganie odbiornika, a podświetlenie podstawy
 oznacza zgodność odebranego widma. Promień przechodzi przez kryształ.
+
+Lustro ma płaską srebrzoną powierzchnię, zakrzywiacz wklęsły profil, filtr dwuwypukłą
+soczewkę, a rozdzielacz dodatkowy boczny port. `src/optic-illumination.js` podświetla
+powłoki w miejscu przejścia wiązki. Dla każdej strony filtra pobiera osobny kolor z toru promieni.
 
 Wiązkę rysują trzy warstwy. Rdzeń i poświata zwracają się do kamery,
 a rozproszone światło pada na płaszczyznę pokładu. Moduł

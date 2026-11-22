@@ -53,8 +53,22 @@ function cutCrystal(shader){
   #include <opaque_fragment>`);
 }
 
+// A coated doublet returns a bright grazing reflection and a coloured band
+// through the thicker centre, including when a filter is seen from behind.
+function coatedFilter(shader){
+ shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`
+  vec3 eye=normalize(vViewPosition);
+  float facing=abs(dot(normal,eye));
+  float edge=pow(1.-facing,2.);
+  vec3 reflected=reflect(-eye,normal);
+  float strip=smoothstep(.84,.975,dot(reflected,normalize(vec3(-.38,.74,.56))));
+  outgoingLight=diffuse*(.19+.39*facing)+outgoingLight*.28+
+   mix(diffuse,vec3(1.),.28)*(.34*edge+.68*strip);
+  #include <opaque_fragment>`);
+}
+
 // Every placement shares its geometry, metalwork and cached lens colours.
-export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},portraitUrls={},onReady,loader=new GLTFLoader()}){
+export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},portraitUrls={},illumination,onReady,loader=new GLTFLoader()}){
  const catalog=new Map(), lenses=new Map();
  const portraits=new Map();
  const finishes=new WeakMap();
@@ -88,6 +102,8 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
     if(!node.isMesh)return;
     node.receiveShadow=true;
     node.userData.catalogMesh=true;
+    if(['Front silver','Silvered aperture','Optical coating'].includes(node.material.name))
+     illumination?.apply(node.material);
     if(modelUrls[type]&&node.geometry.getAttribute('uv')&&['Brushed titanium','Anodized cobalt','Diamond cut edges'].includes(node.material.name)&&!node.material.normalMap)
      applyOpticFinish(THREE,node.material,node.material.name==='Diamond cut edges'?'polished':'brushed');
    });
@@ -100,7 +116,7 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
   model.traverse(node=>{
    if(!node.isMesh)return;
    const role=node.material.name;
-   if(!['glow','Resonance crystal','Receiver lock'].includes(role))return;
+   if(!['glow','Filter doublet','Resonance crystal','Receiver lock'].includes(role))return;
    const key=role+':'+color.getHex()+':'+energized+':'+(isSignal?type:'optic');
    if(!lenses.has(key)){
     const mat=isSignal&&role==='glow'
@@ -116,6 +132,10 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
      mat.emissiveIntensity=energized?.36:.13;
      mat.envMapIntensity=.78;
      mat.onBeforeCompile=cutCrystal;
+    }else if(role==='Filter doublet'){
+     mat.onBeforeCompile=coatedFilter;
+     mat.emissiveIntensity=.28;
+     illumination?.apply(mat);
     }else if(role==='Receiver lock'){
      mat.color.setHex(energized?0xdbffef:0x263849);
      mat.emissive.setHex(energized?0x96ffe5:0x000000);
