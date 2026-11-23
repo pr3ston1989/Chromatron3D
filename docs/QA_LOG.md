@@ -1,5 +1,16 @@
 # QA
 
+## 23 listopada 2026 · szlif odbiornika
+
+W pierwszej próbie jasnozielone fasety zlewały się na ekranie. Podniesienie
+korony i skupienie poświaty wewnątrz kamienia odsłoniło schodki szlifu.
+Odbiornik z oprawą ma 1016 trójkątów. Test rzeczywistego GLB potwierdza,
+że na wysokości 0,78 m pierwszą powierzchnią trafioną z każdego z ośmiu
+kierunków jest kamień. Chromium sprawdziło siedem barw, w tym niebieski
+odbiornik z turkusową wiązką, w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844.
+Porównanie tego samego odbiornika przed i po trafieniu jest w
+`screenshots/kepler-szlif/10-krysztal-bez-wiazki.png` i `04-krysztal.png`.
+
 ## 23 listopada 2026 · przekaźnik Węzła Keplera
 
 Model ma 7300 trójkątów przy budżecie 7800. W pierwszym ujęciu skrzydła

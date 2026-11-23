@@ -5,6 +5,7 @@ import {createServer} from 'vite';
 import {launchChromium} from './capture-browser.mjs';
 import {readLocalCampaigns} from '../scripts/local-campaigns.mjs';
 import {verifyPuzzleSolution} from '../src/puzzle-solver.js';
+import {trace} from '../src/optics.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
 import {t} from '../src/i18n.js';
 
@@ -56,19 +57,28 @@ try{
   const local=readLocalCampaigns('original').find(pack=>pack.game===1)?.levels[14];
   if(local&&verifyPuzzleSolution(local,local.solution).valid){
    const prefix=local.solution.slice(0,Math.floor(local.solution.length*.80));
+   const initialState=await page.evaluate(()=>window.chromatron.getState());
+   const before=new Map(initialState.result.received);
+   const planned=initialState.pieces.map(p=>({...p}));
+   for(const {index,x,y,rot} of prefix)Object.assign(planned[index],{x,y,rot,inTray:false});
+   const after=trace(planned).received;
+   const receiver=planned.find(p=>p.type==='target'&&p.color!==7&&
+    !before.get(p.id)&&after.get(p.id)===p.color);
+   assert.ok(receiver,'Find a coloured crystal that changes from unlit to correctly lit');
+   async function captureCrystal(name){
+    const point=await page.evaluate(p=>window.chromatron.projectCell(p.x,p.y,.74),receiver);
+    await page.screenshot({path:join(output,name+'.png'),clip:{
+     x:Math.max(0,Math.min(1672-540,Math.round(point.x)-270)),
+     y:Math.max(52,Math.min(941-320,Math.round(point.y)-135)),width:540,height:320}});
+   }
+   await captureCrystal('10-krysztal-bez-wiazki');
    await page.evaluate(moves=>moves.forEach(move=>window.__debug.applyMove(move)),prefix);
    await page.keyboard.press('Escape');
    await verifyView('03-pole-w-pracy',true);
-   const point=await page.evaluate(()=>{
-    const {pieces,result}=window.chromatron.getState();
-    const received=new Map(result.received);
-    const p=pieces.find(p=>p.type==='target'&&p.color!==7&&received.get(p.id)===p.color);
-    if(!p||!result.boundaryHits.length)throw Error('Missing live coloured receiver or field contact');
-    return window.chromatron.projectCell(p.x,p.y,.74);
-   });
-   await page.screenshot({path:join(output,'04-krysztal.png'),
-    clip:{x:Math.max(0,Math.min(1672-540,Math.round(point.x)-270)),
-          y:Math.max(52,Math.min(941-320,Math.round(point.y)-135)),width:540,height:320}});
+   const live=await page.evaluate(()=>window.chromatron.getState().result);
+   assert.equal(new Map(live.received).get(receiver.id),receiver.color);
+   assert.ok(live.boundaryHits.length,'Missing live field contact');
+   await captureCrystal('04-krysztal');
   }
   const catalog=await browser.newPage({viewport:{width:1152,height:1060}});
   const cards=await Promise.all(CLASSIC_TYPE_NAMES.slice(1).map(async kind=>{
@@ -133,6 +143,35 @@ try{
  await page.setViewportSize({width:1366,height:768});
  await page.locator('#camera-preset').click();
  await verifyView('rzut z góry');
+ if(process.argv.includes('--optics')){
+  // Independently authored calibration row, also available without local campaigns.
+  await page.setViewportSize({width:1672,height:941});
+  await page.reload();
+  await page.waitForFunction(()=>window.__debug?.getLevelState().pilotStatus==='ready');
+  if(await coach.isVisible())await coach.click();
+  const row=[[2,4,1],[4,5,3],[5,6,2],[7,7,6],[9,8,4],[10,9,5],[12,10,7]];
+  await page.evaluate(row=>{
+   window.chromatron.loadLevels([{pieces:[['laser',0,1,0,7],
+    ...row.map(([x,y,color])=>['target',x,y,0,color])]}]);
+   window.__debug.setTheme('observatory');
+   window.__debug.freezeAnimations(true);
+  },row);
+  await page.waitForLoadState('networkidle');
+  await page.waitForFunction(()=>window.__debug.getLevelState().pilotStatus==='ready');
+  await page.mouse.move(836,470);
+  await page.mouse.wheel(0,-2400);
+  await page.mouse.move(5,5);
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+  const clip=await page.evaluate(row=>{
+   const bounds=row.flatMap(([x,y])=>[-.5,.5].flatMap(dx=>[-.5,.5].flatMap(dy=>
+    [0,1.20].map(h=>window.chromatron.projectCell(x+dx,y+dy,h)))));
+   const x=Math.floor(Math.min(...bounds.map(p=>p.x)))-8;
+   const y=Math.floor(Math.min(...bounds.map(p=>p.y)))-8;
+   return {x,y,width:Math.ceil(Math.max(...bounds.map(p=>p.x)))-x+8,
+               height:Math.ceil(Math.max(...bounds.map(p=>p.y)))-y+8};
+  },row);
+  await page.screenshot({path:join(output,'11-siedem-kolorow.png'),clip});
+ }
  assert.deepEqual(errors,[],'Browser errors');
 }finally{
  await browser?.close();

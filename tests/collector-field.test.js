@@ -63,7 +63,9 @@ test('the actual coloured crystal intersects all eight beam headings and indicat
  for(let i=0;i<8;i++){
   const d=new THREE.Vector3(Math.cos(i*Math.PI/4),0,Math.sin(i*Math.PI/4));
   const ray=new THREE.Raycaster(new THREE.Vector3(0,.78,0).add(d),d.negate());
-  assert.ok(ray.intersectObject(gem,false).some(hit=>hit.distance<.70),'heading '+i);
+  const first=ray.intersectObject(model,true)[0];
+  assert.equal(first?.object,gem,'mount must leave the crystal exposed at heading '+i);
+  assert.ok(first.distance<.70,'heading '+i);
  }
  const inactive=gem.material;
  const inactiveLock=lock.material;

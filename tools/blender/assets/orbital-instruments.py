@@ -118,32 +118,45 @@ def emitter(s):
                  (side*.192,.11,.44,.029),(side*.15,.215,.29,.024)],bronze,7)
 
 def receiver(s):
-    mount(s,True)
-    s.lathe([(0,0,z,r,r) for z,r in [(.18,.30),(.23,.345),(.31,.30),(.35,.235)]],
-            body,8,bands=[steel,ink,bronze])
-    # A brilliant-cut double termination. Alternating triangular crown and
-    # pavilion facets survive the overhead view as well as a grazing angle.
-    rings=[]
-    for z,r,phase in [(.30,.075,0),(.56,.301,.13),(.78,.366,0),(.86,.356,0),(1.09,.246,.37),(1.31,.12,0)]:
-        rings.append([(r*cos(i*tau/8+phase),r*sin(i*tau/8+phase),z) for i in range(8)])
-    start=len(s.vertices)
-    for ring in rings:s.vertices.extend(ring)
-    s.face(tuple(start+i for i in range(8)),gem)
-    for row in range(len(rings)-1):
-        for i in range(8):
-            a=start+8*row+i;b=start+8*row+(i+1)%8
-            s.face((a,b,b+8),gem);s.face((a,b+8,a+8),gem)
-    s.face(tuple(start+40+i for i in range(8)),gem)
-    for i in range(3):
-        a=i*tau/3
-        s.blade([(r*cos(a),r*sin(a),z,w,h) for r,z,w,h in [
-            (.423,.19,.074,.035),(.365,.29,.092,.049),(.310,.56,.071,.054),
-            (.304,.646,.042,.032),(.285,.64,.023,.015)]],porcelain,bronze)
-        t=a+pi/3
-        s.lathe([(.344*cos(t),.344*sin(t),z,r,r) for z,r in
-                 [(.181,.074),(.20,.072),(.223,.049)]],ink,6,bands=[alloy,witness])
-    sleeve(s,"Z",(0,0,0),[(.15,.48),(.17,.48),(.175,.467),(.15,.467)],
-           [witness,witness,steel,ink],24)
+    # An Asscher cut. Each terrace has a different slope, alternating long
+    # side facets with the corner facets. The laser enters through the girdle.
+    sections=[]
+    for z,r,clip in [(.309,.035,.43),(.499,.212,.48),(.665,.304,.43),
+                     (.756,.391,.42),(.794,.402,.42),(.825,.398,.42),
+                     (.963,.357,.50),(1.073,.296,.39),(1.167,.215,.46),
+                     (1.183,.183,.46)]:
+        v=r*clip
+        sections.append([(x,y,z) for x,y in [
+            (r,v),(v,r),(-v,r),(-r,v),(-r,-v),(-v,-r),(v,-r),(r,-v)]])
+    s.loft(sections,gem)
+
+    # Four open galleries expose the underside and keep metal below beam height.
+    s.lathe([(0,0,z,r,r) for z,r in [(0,.47),(.044,.543),(.096,.548),
+             (.118,.493),(.155,.487),(.178,.518),(.202,.48)]],
+            ink,8,bands=[steel,body,alloy,ink,bronze,steel],phase=pi/8)
+    sleeve(s,"Z",(0,0,0),[(.197,.316),(.235,.323),(.267,.294),
+            (.269,.206),(.205,.199)],[ink,alloy,bronze,ink,steel],16)
+    for i in range(4):
+        a=(i+.5)*pi/2
+        def jaw(r,t,z):
+            return (r*cos(a)-t*sin(a),r*sin(a)+t*cos(a),z)
+        rail=[]
+        for radius,z,w,d in [(.388,.172,.099,.074),(.432,.238,.097,.065),
+                             (.430,.320,.073,.046),(.357,.502,.044,.036),
+                             (.342,.610,.048,.037),(.361,.682,.066,.033),
+                             (.342,.700,.055,.020)]:
+            rail.append([jaw(radius+x,y,z) for x,y in [
+                (-d,-w*.76),(-d*.57,-w),(d*.63,-w),(d,-w*.65),
+                (d,w*.65),(d*.63,w),(-d*.57,w),(-d,w*.76)]])
+        s.loft(rail,ink,[body,steel,alloy,bronze,bronze,alloy])
+        # A recessed status window on each shoe stays visible between the claws.
+        theta=i*pi/2
+        def port(x,y,z):
+            return (x*cos(theta)-y*sin(theta),x*sin(theta)+y*cos(theta),z)
+        for r,z,w,mat in [(.475,.140,.106,ink),(.480,.149,.083,witness)]:
+            s.loft([[port(r+dx,y,z+h) for dx,y in
+                    [(-.038,-w),(.003,-w),(.017,-w+.022),(.017,w-.022),(.003,w),(-.038,w)]]
+                    for h in (0,.021)],mat)
 
 def filter_wheel(s):
     mount(s);yoke(s,"Y",.66)
@@ -259,6 +272,10 @@ from tools.blender.optical_specialties import add_specialties
 add_specialties(builders, mount, sleeve, section,
                 (ink,body,steel,alloy,porcelain,bronze,glass,violet))
 models=[]
+# Always save a complete editable bench. A named export only rewrites the
+# GLBs and portraits requested after Blender's '--'.
+requested=set(sys.argv[sys.argv.index("--")+1:]) if "--" in sys.argv else set()
+if requested-builders.keys():raise ValueError(f"Unknown bench models: {requested-builders.keys()}")
 for name,build in builders.items():
     sculpture=Sculpture();build(sculpture)
     model=sculpture.object(name)
@@ -276,9 +293,10 @@ for name,build in builders.items():
             depth=.13+.86*(.5+.5*face.normal.dot(light))**1.7
             for index in face.loop_indices:
                 values[index].color=(depth,depth,depth,1)
-    export_model(model,5500,folder)
-    view=(-1.3,1.48,1.0) if name in ("laser","logicGate","primaryLogicGate") else (-1.18,-1.45,1.23)
-    render(name,view,model=model,resolution=(160,160),transparent=True,folder=folder/"portraits")
+    if not requested or name in requested:
+        export_model(model,5500,folder)
+        view=(-1.3,1.48,1.0) if name in ("laser","logicGate","primaryLogicGate") else (-1.18,-1.45,1.23)
+        render(name,view,model=model,resolution=(160,160),transparent=True,folder=folder/"portraits")
     model.hide_render=True
     models.append(model)
 for i,model in enumerate(models):

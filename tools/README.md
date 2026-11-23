@@ -57,8 +57,12 @@ Gra korzysta z 22 modeli i portretów w `assets/models/optical-bench`.
 Edytowalne siatki znajdują się w `optical-bench.blend`, a receptury w
 `tools/blender/assets/orbital-instruments.py` i `tools/blender/optical_specialties.py`.
 Wszystkie głowice pracują w układzie z osią wiązki na wysokości 0,78 m.
-Barwę kryształu wyznacza wymaganie odbiornika, a podświetlenie podstawy
-oznacza zgodność odebranego widma. Promień przechodzi przez kryształ.
+Odbiornik ma kwadratowy szlif schodkowy ze ściętymi narożnikami i cztery metalowe
+łapy poniżej pasa wejścia wiązki. Barwę kamienia wyznacza wymaganie zagadki,
+a okienka w podstawie zapalają się przy zgodności odebranego widma.
+Materiał w `src/optic-model-loader.js` oblicza wewnętrzne odbicie od dolnych faset.
+Sam odbiornik i jego portret można odtworzyć poleceniem
+`blender -b -P tools/blender/assets/orbital-instruments.py -- target`.
 
 Lustro ma płaską srebrzoną powierzchnię, zakrzywiacz wklęsły profil, filtr dwuwypukłą
 soczewkę, a rozdzielacz dodatkowy boczny port. `src/optic-illumination.js` podświetla
@@ -81,6 +85,10 @@ w 72 s. Przy ograniczonym ruchu skrzydła i pierścień mają stałą pozycję.
 ```powershell
 node tools/review-kepler-dock.mjs screenshots/kepler-fotonika --optics
 ```
+
+Opcja `--optics` zapisuje siedem barw odbiornika na osobnym układzie testowym.
+Jeżeli pierwsza kampania jest dostępna lokalnie, zapisuje też ten sam kryształ
+na planszy przed doprowadzeniem światła i po nim.
 
 ## Próbki przebudowy wizualnej
 

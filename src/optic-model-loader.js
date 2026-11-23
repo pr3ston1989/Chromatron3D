@@ -25,31 +25,50 @@ function cutCrystal(shader){
   vec3 face=normalize(cross(dFdx(jewelPosition),dFdy(jewelPosition)));
   if(dot(incoming,face)>0.)face=-face;
   vec3 inside=refract(incoming,face,.625);
-  // Find the far pavilion facet seen through this surface. Its reflection
-  // changes across a single front facet when the player orbits the jewel.
+  // The pavilion opens from a narrow culet to the square, clipped girdle
+  // at Y=.78. Its eight supporting planes give the first interior bounce.
   float distanceToExit=8.;
   vec3 returnNormal=vec3(0.,-1.,0.);
   for(int i=0;i<8;i++){
-   float angle=(float(i)+.5)*.78539816;
-   vec3 plane=vec3(cos(angle),-.58,sin(angle));
+   float angle=float(i)*.78539816;
+   float support=mix(1.,1.0041,mod(float(i),2.));
+   vec3 plane=vec3(cos(angle),-.79*support,sin(angle));
    float rate=dot(plane,inside);
-   float distanceToPlane=(.367-dot(plane,jewelPosition))/max(.001,rate);
+   float distanceToPlane=(.398*support-dot(plane,jewelPosition))/max(.001,rate);
    if(rate>.001&&distanceToPlane>.004&&distanceToPlane<distanceToExit){
     distanceToExit=distanceToPlane;
     returnNormal=normalize(plane);
    }
   }
-  vec3 bounced=reflect(inside,returnNormal);
-  float caustic=smoothstep(-.22,.86,dot(bounced,normalize(vec3(-.44,.83,.34))));
-  float rim=pow(1.-clamp(dot(-incoming,face),0.,1.),3.);
+  vec3 back=jewelPosition+inside*distanceToExit;
+  vec3 bounce=reflect(inside,returnNormal);
+  // Trace back towards the table. Each crown terrace appears once more
+  // inside the stone; filter the image of its lip at subpixel sizes.
+  vec2 table=back.xz+bounce.xz*(.403-back.y)/max(.14,bounce.y);
+  vec2 q=abs(table);
+  float radius=max(max(q.x,q.y),(q.x+q.y)/1.42);
+  float spread=clamp(fwidth(radius),.006,.09);
+  float lip=min(abs(radius-.185),min(abs(radius-.292),abs(radius-.385)));
+  float stepImage=(1.-smoothstep(.009,.009+spread,lip))*
+                  (.009/(.009+spread)) * smoothstep(.10,.29,bounce.y);
+  float skylight=smoothstep(.04,.88,bounce.y);
+  float facet=smoothstep(.45,.94,dot(bounce,normalize(vec3(-.53,.72,.39))));
+  float path=clamp(distanceToExit,0.,.95);
+  float neutral=min(diffuse.r,min(diffuse.g,diffuse.b));
+  vec3 body=diffuseColor.rgb*(.065+.54*facet+.20*skylight)+
+            diffuse*diffuse*(.018+.22*facet+.32*neutral)*(1.-.65*path);
   vec3 reflected=reflect(incoming,face);
-  float softbox=smoothstep(.79,.97,dot(reflected,normalize(vec3(-.30,.84,.46))));
-  vec3 cut=diffuse*(.16+.67*caustic)+diffuseColor.rgb*.25;
-  // Most light reaching the eye has crossed coloured glass twice.
-  // Only the narrow first-surface glint is spectrally neutral.
-  vec3 returnTint=mix(diffuse,vec3(1.),.045);
-  outgoingLight=cut+min(outgoingLight,vec3(1.5))*.075+
-    returnTint*(.085*rim+.41*softbox+.19*pow(caustic,7.))+vec3(.12)*pow(softbox,9.);
+  float rim=pow(1.-clamp(dot(-incoming,face),0.,1.),3.);
+  float strip=smoothstep(.82,.985,dot(reflected,normalize(vec3(-.42,.84,.34))));
+  float fill=smoothstep(.90,.996,dot(reflected,normalize(vec3(.58,.55,-.6))));
+  float caustic=exp(-6.*abs(back.y+.20))*skylight;
+  // Light entering the girdle concentrates below the crown. The table keeps
+  // its own reflections even when the lower facets light up.
+  float girdleLight=exp(-8.*abs(jewelPosition.y+.026))*(.37+.63*facet);
+  vec3 flash=mix(diffuse,vec3(1.),.77);
+  outgoingLight=body+totalEmissiveRadiance*(.06+.65*caustic+.62*girdleLight)+
+    mix(diffuse,vec3(1.),.41)*stepImage*1.22+
+    flash*(.15*rim+.78*strip+.39*fill)+min(outgoingLight,vec3(1.))*.023;
   #include <opaque_fragment>`);
 }
 
@@ -129,7 +148,7 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
     }
     if(role==='Resonance crystal'){
      mat.color.copy(color);
-     mat.emissiveIntensity=energized?.36:.13;
+     mat.emissiveIntensity=energized?.94:.08;
      mat.envMapIntensity=.78;
      mat.onBeforeCompile=cutCrystal;
     }else if(role==='Filter doublet'){
