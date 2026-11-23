@@ -6,7 +6,7 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
-from tools.blender.style import Sculpture, make_material, plate, reset_scene, export_model
+from tools.blender.style import Sculpture, make_material, plate, reset_scene, export_model, export
 from tools.blender.orbital_finish import finish_surface
 
 reset_scene()
@@ -97,6 +97,55 @@ def annulus(s, a, b, slices, profile, materials):
     s.face(tuple(range(start,start+n)),materials[0])
     s.face(tuple(reversed(range(start+slices*n,start+(slices+1)*n))),materials[0])
 
+def solar_wings(s, copper):
+    """Two opposed wings share a torque tube. Local X is the actual hinge axis."""
+    cell = make_material("Blue silicon", "steel", .52, .23)
+    coating=cell.node_tree.nodes.get("Principled BSDF")
+    coating.inputs["Base Color"].default_value=(.035,.079,.171,1)
+    coating.inputs["Coat Weight"].default_value=.56
+    coating.inputs["Coat Roughness"].default_value=.17
+    bus = make_material("Solar busbars", "bronze", .70, .32, shade=1)
+    for side in (-1,1):
+        s.cable([(side*x,0,0,r) for x,r in [(1.12,.126),(1.45,.13),(1.57,.085),(5.46,.054)]],titanium,8)
+        for j in range(4):
+            cx=side*(2.02+j*1.06)
+            # Raised frames, paired cell strings and hinge gaps read across the full span.
+            half_span=(.69,.84,.84,.71)[j]
+            tip_cut=.17 if j in (0,3) else .08
+            plate(s,[(.485,half_span-.015,tip_cut,-.065),(.504,half_span,tip_cut,-.026),(.49,half_span-.014,tip_cut,.024)],
+                  ink,[steel,copper],center=(cx,0))
+            for k in (-1,1):
+                span=(half_span-.10)*.5
+                plate(s,[(.468,span,tip_cut*.69,.024),(.464,span-.005,tip_cut*.66,.045)],
+                      hull,[cell],center=(cx,k*(span+.041)))
+                for h in (-1,1):
+                    plate(s,[(.009,span-.015,.005,.045),(.008,span-.02,.004,.048)],
+                          bus,[bus],center=(cx+h*.196,k*(span+.041)))
+            # On the unlit face two diagonals tie each frame into the axle.
+            for k in (-1,1):
+                s.cable([(cx-side*.43,k*(half_span-.13),-.082,.033),
+                         (cx+side*.27,k*.12,-.125,.045)],steel,5)
+
+def finish_relay(hub, ring, wings, height):
+    core=hub.object("Relay core")
+    rotor=ring.object("Habitat rotor")
+    array=wings.object("Sun tracker")
+    array.location.z=height
+    assembly=bpy.data.objects.new("Relay crown",None)
+    bpy.context.collection.objects.link(assembly)
+    parts=[core,rotor,array]
+    triangles=0
+    for obj in parts:
+        obj.parent=assembly
+        finish_surface(obj,reach=.45)
+        obj.data.calc_loop_triangles()
+        triangles+=len(obj.data.loop_triangles)
+    if triangles>7800:
+        raise ValueError(f"relay-crown: {triangles}/7800 triangles")
+    export("relay-crown",[assembly,*parts],folder)
+    models.append(assembly)
+    print(f"ASSET relay-crown · {triangles}/7800 triangles")
+
 def relay():
     s=Sculpture()
     prof=[(4.13,3.42),(4.49,3.51),(4.60,3.69),(4.56,4.05),(4.34,4.16),(3.70,4.11),(3.63,3.72)]
@@ -119,6 +168,24 @@ def relay():
             for j in range(3):
                 offset=a+.095+j*.07
                 annulus(s,offset,offset+.028,2,[(4.57,3.91),(4.579,3.91),(4.579,3.96),(4.57,3.96)],[ice]*4)
+    if station_edition:
+        copper=make_material("Brushed copper coping","copper",.68,.31)
+        enamel=make_material("Pressure hull ceramic","ceramic",.34,.38)
+        # Asymmetric observation galleries break the repeating rim silhouette.
+        for a,span in [(1.20,.56),(3.92,.35),(5.37,.39)]:
+            annulus(s,a,a+span,8,[(3.90,4.07),(4.52,4.00),(4.83,4.17),(4.80,4.40),
+                                  (4.52,4.57),(4.04,4.49)],
+                    [ink,copper,hull,steel,enamel,titanium])
+            for i in range(4):
+                lo=a+.032+i*(span-.052)/4
+                annulus(s,lo,lo+(span-.052)/4-.018,2,
+                        [(4.813,4.23),(4.83,4.24),(4.814,4.354),(4.797,4.35)],[ink,ice,steel,hull])
+        # Bearings are coaxial with the four spokes and the lower support forks.
+        for z,r in [(1.91,1.57),(3.17,1.30)]:
+            annulus(s,0,tau,24,[(r-.13,z-.13),(r+.04,z-.11),(r+.04,z+.08),(r-.13,z+.13)],
+                    [ink,copper,titanium,hull])
+        ring=s
+        s=Sculpture()
     profile=[(0,.03),(.69,.18),(.95,1.19),(1.80,1.52),(2.95,1.30),(3.10,.87),(3.49,.99),
             (3.62,1.24),(3.86,1.24),(3.99,.91),(4.97,.70),(5.23,.44),(6.05,.34),(6.23,.16),(7.15,.053)]
     s.lathe([(0,0,z,r,r) for z,r in profile],hull,12,bands=[ink,hull,steel,hull,ink,steel,titanium,
@@ -134,27 +201,23 @@ def relay():
             if i%2==0:
                 s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in
                     [(.43,5.16,.112),(.53,5.68,.073),(.55,6.62,.030),(.55,6.78,.022)]],titanium,6)
-        # Two opposed tracking arrays deploy from the comms collar.
-        # Broad planar leaves contrast with the narrow aerials on the mast.
-        cells=make_material("Photovoltaic cells","navy",.48,.24)
-        for angle in (.14,pi+.14):
-            def wing(r,w,z):
-                return (r*cos(angle)-w*sin(angle),r*sin(angle)+w*cos(angle),z+w*.42)
-            s.cable([(*wing(r,0,z),w) for r,z,w in [(.72,4.91,.09),(1.05,5.10,.085),(2.99,5.10,.046)]],titanium,8)
-            for i in range(3):
-                r=1.14+i*.63
-                outline=[(r,-.35),(r+.46,-.35),(r+.58,-.23),(r+.58,.37),(r,.37)]
-                s.loft([[wing(x,w,z) for x,w in outline] for z in (5.10,5.15)],steel,[titanium])
-                for w in (-.15,.16):
-                    panel_outline=[(r+.04,w-.127),(r+.49,w-.127),(r+.52,w+.13),(r+.04,w+.13)]
-                    s.loft([[wing(x,y,z) for x,y in panel_outline] for z in (5.151,5.162)],cells)
+        hinge=5.50
+        for side in (-1,1):
+            s.cable([(side*x,0,z,r) for x,z,r in [(.43,4.99,.17),(.88,5.12,.13),(1.08,hinge,.14),
+                                                   (1.24,hinge,.14)]],steel,8)
+            s.cable([(side*1.09,0,hinge,.185),(side*1.18,0,hinge,.18)],copper,10)
+        wings=Sculpture()
+        solar_wings(wings,copper)
     for i in range(6):
         a=i*tau/6
         s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in [(1.03,1.57,.07),(1.03,2.62,.085),(.70,4.83,.047)]],amber,4)
     # Radiator sails flank the communications mast at three unequal heights.
     for i,(a,h) in enumerate([(.24,6.41),(2.48,5.64),(4.67,5.23)]):
         s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in [(.84,3.76,.20),(.80,4.75,.15),(.56,h,.045)]],hull,6)
-    finish(s,"relay-crown",7800)
+    if station_edition:
+        finish_relay(s,ring,wings,hinge)
+    else:
+        finish(s,"relay-crown",7800)
 
 def portal():
     s=Sculpture()

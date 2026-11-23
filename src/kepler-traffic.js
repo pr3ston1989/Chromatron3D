@@ -22,3 +22,17 @@ export function createDockPatrol(THREE,dock,belt){
   belt.rotation.y=.018*Math.sin(seconds*.043);
  };
 }
+
+// The mast is fixed to the orbital frame. Only the two bearing assemblies
+// turn, each about the local axis exported from Blender.
+export function createRelayMotion(station){
+ const rotor=station.getObjectByName('Habitat_rotor');
+ const tracker=station.getObjectByName('Sun_tracker');
+ for(const assembly of [rotor,tracker]){
+  assembly.traverse(node=>{if(node.isMesh)node.castShadow=false});
+ }
+ return function update(seconds){
+  rotor.rotation.y=(seconds%72)*Math.PI/36;
+  tracker.rotation.x=.40+.31*Math.sin(seconds*.14);
+ };
+}

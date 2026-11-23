@@ -28,7 +28,7 @@ try{
  await page.goto('http://127.0.0.1:'+server.httpServer.address().port+'/?benchmark=orbital&debug=1');
  await page.waitForFunction(()=>window.__debug?.getLevelState().pilotStatus==='ready');
  await page.waitForLoadState('networkidle');
- for(const model of ['kepler-service-dock.glb','transit-gate.glb'])assert.ok(loadedModels.has(model),model+' must load');
+ for(const model of ['kepler-service-dock.glb','transit-gate.glb','relay-crown.glb'])assert.ok(loadedModels.has(model),model+' must load');
  await page.evaluate(()=>window.__debug.freezeAnimations(true));
  const coach=page.locator('#coach-dismiss');
  if(await coach.isVisible())await coach.click();
@@ -84,6 +84,7 @@ try{
  if(process.argv.includes('--motion')){
   const state=()=>page.evaluate(()=>window.__debug.getAmbientMotion());
   const parked=await state();
+  assert.equal(parked.relay.angle,0);
   const layout=await page.evaluate(()=>window.chromatron.getState().pieces);
   await page.screencast.start({path:join(output,'06-oblot.webm'),size:{width:1280,height:720},fps:24});
   try{
@@ -94,7 +95,12 @@ try{
     return head?.intensity>.8&&head.x>innerWidth*.47;
    });
    await page.screenshot({path:join(output,'07-meteor.png'),scale:'css'});
-   assert.notDeepEqual((await state()).dish,parked.dish);
+   const moving=await state();
+   assert.notDeepEqual(moving.dish,parked.dish);
+   assert.ok(moving.relay.angle>.3&&moving.relay.tilt>parked.relay.tilt+.1);
+   await page.screenshot({path:join(output,'09-przekaznik.png'),clip:{
+    x:Math.max(0,Math.min(1672-384,Math.round(moving.relay.x)-192)),
+    y:Math.max(0,Math.min(941-232,Math.round(moving.relay.y)-88)),width:384,height:232}});
    await page.waitForFunction(home=>{
     const {tender,meteor}=window.__debug.getAmbientMotion();
     return !meteor&&Math.hypot(tender[0]-home[0],tender[2]-home[2])>8;

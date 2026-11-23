@@ -74,7 +74,9 @@ płaszczyzny pochłaniające w `src/collector-field.js` pobierają pozycję
 i kolor każdego trafienia z wyniku symulacji. Wariant stacji z galerią
 przekaźnika i pancerzem pokładu można odtworzyć przez uruchomienie
 `tools/blender/assets/orbital-benchmark.py` w Blenderze z argumentami
-`-- --station`.
+`-- --station`. W `assets/models/benchmark/station/relay-crown.glb` są
+osobne węzły masztu, pierścienia i skrzydeł. Pierścień wykonuje obrót
+w 72 s. Przy ograniczonym ruchu skrzydła i pierścień mają stałą pozycję.
 
 ```powershell
 node tools/review-kepler-dock.mjs screenshots/kepler-fotonika --optics

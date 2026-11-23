@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {createDockPatrol} from '../src/kepler-traffic.js';
+import {createDockPatrol,createRelayMotion} from '../src/kepler-traffic.js';
 import {createSkyMeteor} from '../src/sky-meteor.js';
 
 test('the Blender tender leaves its real berth, clears the board and lands on the same apron',async()=>{
@@ -32,6 +32,37 @@ test('the Blender tender leaves its real berth, clears the board and lands on th
  update(0);
  assert.ok(tender.position.distanceTo(berth)<1e-6&&tender.rotation.y===0);
  assert.equal(dish.quaternion.w,1);
+});
+
+test('relay bearings turn independently on the exported mast and park in the same pose',async()=>{
+ const bytes=await readFile(new URL('../assets/models/benchmark/station/relay-crown.glb',import.meta.url));
+ const {scene}=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.length),'');
+ const hub=scene.getObjectByName('Relay_core'),rotor=scene.getObjectByName('Habitat_rotor');
+ const tracker=scene.getObjectByName('Sun_tracker');
+ scene.position.set(25,-7,-5);scene.scale.setScalar(1.12);scene.rotation.y=.10;
+ scene.updateMatrixWorld(true);
+ const mast=hub.matrixWorld.clone();
+ const hinge=tracker.getWorldPosition(new THREE.Vector3());
+ const resources=new Set();
+ scene.traverse(node=>{if(node.isMesh)resources.add(node.geometry)});
+ const update=createRelayMotion(scene);
+ update(0);
+ const parkedAngle=tracker.rotation.x;
+ for(let t=0;t<=72;t+=2){
+  update(t);scene.updateMatrixWorld(true);
+  assert.ok(hub.matrixWorld.equals(mast));
+  assert.ok(tracker.getWorldPosition(new THREE.Vector3()).distanceTo(hinge)<1e-6);
+  assert.ok(tracker.rotation.x>=.09&&tracker.rotation.x<=.71);
+  assert.ok(new THREE.Box3().setFromObject(scene).min.x>9.75);
+ }
+ assert.equal(rotor.rotation.y,0);
+ update(12);
+ assert.ok(Math.abs(rotor.rotation.y-Math.PI/3)<1e-6);
+ assert.ok(tracker.rotation.x>parkedAngle+.25);
+ update(0);
+ assert.equal(tracker.rotation.x,parkedAngle);
+ assert.equal(rotor.rotation.y,0);
+ scene.traverse(node=>{if(node.isMesh)assert.ok(resources.has(node.geometry))});
 });
 
 for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){

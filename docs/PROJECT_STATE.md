@@ -1,8 +1,9 @@
 # Stan projektu
 
 Węzeł Keplera otwiera się przez `?benchmark=orbital`. Prom startuje z galerii
-serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację,
-a w oddali dryfuje pas odłamków. Na niebie stacji, stoczni i obserwatorium
+serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację.
+W oddali obraca się pierścień przekaźnika, skrzydła słoneczne zmieniają kąt
+na osi masztu, a za nimi dryfuje pas odłamków. Na niebie stacji, stoczni i obserwatorium
 pojawiają się meteory. Wszystkie kampanie korzystają z odświeżonych 22 modeli
 elementów i z tego samego sposobu rysowania światła. [Modele i odtworzenie ujęć](../tools/README.md).
 

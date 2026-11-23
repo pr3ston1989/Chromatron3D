@@ -1,5 +1,15 @@
 # QA
 
+## 23 listopada 2026 · przekaźnik Węzła Keplera
+
+Model ma 7300 trójkątów przy budżecie 7800. W pierwszym ujęciu skrzydła
+układały się w poziomy pasek. Po zmianie ustawienia masztu i ścieńczeniu
+ramek widać osobne ogniwa i zmianę refleksu podczas obrotu. Test GLB sprawdza
+nieruchomy maszt, oś skrzydeł, pełny obrót pierścienia i pozycję spoczynkową.
+Przegląd w Chromium obejmuje oba kąty kamery, rzut z góry i 225 pól
+na trzech rozmiarach laptopowych oraz na telefonie. Zbliżenie jest w
+`screenshots/kepler-przekaznik/09-przekaznik.png`.
+
 ## 22 listopada 2026 · oblot Węzła Keplera
 
 - Test odczytuje rzeczywisty GLB z Blendera i próbkuje pełną 57-sekundową

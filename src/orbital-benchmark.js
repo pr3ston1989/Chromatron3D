@@ -1,5 +1,5 @@
 import {applyOpticFinish} from './optic-textures.js';
-import {createDockPatrol} from './kepler-traffic.js';
+import {createDockPatrol,createRelayMotion} from './kepler-traffic.js';
 
 export const orbitalArt={
  id:'kepler',pl:'Stacja orbitalna',en:'Orbital Station',legacyId:'orbital',deck:'kepler',
@@ -85,7 +85,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  root.visible=false;world.add(root);
  const sky=orbitalSky(THREE);
  sky.visible=false;scene.add(sky);
- let wanted=false,status='idle',station,carriage,patrol,elapsed=0;
+ let wanted=false,status='idle',carriage,patrol,relayMotion,elapsed=0;
  const sync=()=>{root.visible=sky.visible=wanted&&status==='ready'};
  function setLevel(enabled){
   if(!enabled)elapsed=0;
@@ -117,7 +117,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
     const prop=source.clone();prop.position.set(x,y,z);prop.scale.setScalar(scale);prop.rotation.y=yaw;
     root.add(prop);return prop;
    }
-   station=place(relay,25,-7,-5,1.12,-.6);
+   const station=place(relay,25,-7,-5,1.12,.10);
    const gate=place(gantry,-10.1,-4.75,-12.6,1.02,.06);
    gate.userData.clearSight=true;
    carriage=gate.getObjectByName('Inspection_carriage');
@@ -155,6 +155,8 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
      applyOpticFinish(THREE,mesh.material,'polished');
    });
    station.userData.clearSight=true;
+   relayMotion=createRelayMotion(station);
+   relayMotion(0);
    // The benchmark caches its shadow map. Moving hardware already carries
    // baked cavity shading and must not leave a stationary shadow in its berth.
    for(const name of ['Survey_tender','Tracking_reflector'])
@@ -166,7 +168,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
   if(!root.visible)return;
   elapsed=still?0:elapsed+delta;
   patrol(elapsed);
-  station.rotation.y=-.6+Math.sin(elapsed*.09)*.085;
+  relayMotion(elapsed);
   if(carriage)carriage.rotation.z=Math.PI*(.61+.31*Math.sin(elapsed*.19));
   for(const prop of root.children)if(prop.userData.clearSight)
    prop.visible=prop.position.x*camera.x+prop.position.z*camera.z<30;
