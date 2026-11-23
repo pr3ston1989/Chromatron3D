@@ -1,5 +1,23 @@
 # QA
 
+## 23 listopada 2026 · pryzmat na planszy „Trzy barwy”
+
+W pierwszym ujęciu nowego modelu jasna korona szkła zlewała się z pokładem.
+Przyciemniliśmy dolne fasety, odsłoniliśmy ściany między uchwytami i dodaliśmy
+widoczny w szkle ślad przechodzącej wiązki. Końcowy model ma 2060 trójkątów.
+Na tym samym polu biały laser dał trzy wyjścia RGB, czerwony jedno czerwone
+wyjście, a rozdzielacz z białym wejściem dwa białe wyjścia.
+
+Test z eksportowanym GLB sprawdza prześwit do szkła dla ośmiu obrotów
+i obu tabel dyspersji. W Chromium test odczytał kolor czterech odcinków
+z klatki rozwiązanej planszy oraz wskazał pryzmat w 1366 × 768, 1280 × 720,
+1093 × 614 i 390 × 844. Porównanie z tej samej kamery jest w
+`screenshots/pryzmat-final/porownanie.png`, pełne ujęcie laptopowe w
+`screenshots/pryzmat-final/demo-007_1093x614.png`. Krótki pomiar na
+zintegrowanej grafice Radeon w profilu filmowym dał 43 kl./s w 1093 × 614
+i 14 kl./s w 2880 × 1620. W tym większym rozmiarze poprzedni model również
+osiągał 14 kl./s.
+
 ## 23 listopada 2026 · lustro i rozdzielacz
 
 Przy ukośnym padaniu turkusowej wiązki dawna płytka rozdzielacza była

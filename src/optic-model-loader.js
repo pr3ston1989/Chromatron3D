@@ -123,6 +123,12 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
     node.userData.catalogMesh=true;
     if(['Front silver','Silvered aperture','Optical coating'].includes(node.material.name))
      illumination?.apply(node.material);
+    // Composite the polished glass over the filaments crossing its volume.
+    // The optical contact is sampled from the same RGB paths as the lasers.
+    if(node.material.name==='Dispersive flint'){
+     illumination?.apply(node.material,{prism:true});
+     node.renderOrder=10;
+    }
     if(modelUrls[type]&&node.geometry.getAttribute('uv')&&['Brushed titanium','Anodized cobalt','Diamond cut edges'].includes(node.material.name)&&!node.material.normalMap)
      applyOpticFinish(THREE,node.material,node.material.name==='Diamond cut edges'?'polished':'brushed');
    });

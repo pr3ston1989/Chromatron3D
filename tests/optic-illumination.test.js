@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createOpticIllumination} from '../src/optic-illumination.js';
+import {createOpticModelLoader} from '../src/optic-model-loader.js';
 import {mountRealMirror} from '../src/mirror-reflections.js';
 import {DX,DY,trace} from '../src/optics.js';
 
@@ -83,4 +84,37 @@ test('the splitter glass and axial stops match the traced beam from every direct
    }
   }
  }
+});
+
+test('the prism has a clear, ray-lit window on each RGB path in both dispersion tables',async()=>{
+ const bytes=await readFile(new URL('../assets/models/optical-bench/prism.glb',import.meta.url));
+ const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.length),'');
+ const illumination=createOpticIllumination(THREE,15,1.3);
+ const catalog=createOpticModelLoader(THREE,{modelUrls:{prism:'prism'},illumination,
+  loader:{load:(_,ready)=>ready(gltf)}});
+ catalog.load('prism');
+ const model=catalog.cloneOptic('prism',new THREE.Color(0xffffff),{deck:'kepler'});
+ const origin=new THREE.Vector3(0,.78,0);
+ for(const sourceGame of [undefined,1]){
+  for(let rot=0;rot<8;rot++){
+   model.rotation.y=-rot*Math.PI/4;
+   model.updateMatrixWorld(true);
+   const dir=(rot+2)%8;
+   const laser={type:'laser',x:7-DX[dir],y:7-DY[dir],rot:dir,color:7,sourceGame};
+   const {segments,boundaryHits}=trace([laser,{type:'prism',x:7,y:7,rot,sourceGame}]);
+   illumination.update(segments,boundaryHits);
+   const rays=illumination.map.image.data.subarray((7*15+7)*8,(7*15+8)*8);
+   const ports=[[(dir+4)%8,7],[dir,sourceGame?1:4],[(rot+3)%8,2],[(rot+4)%8,sourceGame?4:1]];
+   for(const [port,mask] of ports){
+    assert.equal(rays[port],mask);
+    const outward=new THREE.Vector3(DX[port],0,DY[port]).normalize();
+    const ray=new THREE.Raycaster(origin.clone().add(outward),outward.negate(),0,1);
+    const first=ray.intersectObject(model,true)[0]?.object;
+    assert.equal(first?.material.name,'Dispersive flint');
+    assert.ok(first.material.transparent&&!first.material.depthWrite);
+    assert.ok(first.material.customProgramCacheKey().includes('optic-entry-exit'));
+   }
+  }
+ }
+ illumination.map.dispose();
 });

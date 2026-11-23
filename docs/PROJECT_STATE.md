@@ -9,6 +9,8 @@ elementów i z tego samego sposobu rysowania światła. [Modele i odtworzenie uj
 
 Rozdzielacz ma dwa szklane kliny z widoczną od góry linią podziału.
 Miniatura w zasobniku pokazuje obie połówki od strony miedzianego uchwytu.
+Pryzmat ma trójkątny przekrój widoczny także z góry. Przez jego szlifowane
+ścianki widać tory wejścia i wyjścia światła w kolorach aktualnej wiązki.
 
 ## Architektura
 

@@ -71,6 +71,14 @@ uchwyty oznaczają oś, wzdłuż której przyrząd zatrzymuje światło.
 `src/optic-illumination.js` podświetla powłoki w miejscu przejścia wiązki.
 Dla każdej strony filtra pobiera osobny kolor z toru promieni.
 
+Pryzmat ma pojedynczą, trójkątną bryłę szkła na stoliku z trzema śrubami
+poziomującymi. Szkło przesuwa widoczny ślad wiązki zgodnie z kątem patrzenia
+na fasetę. Kolory po obu stronach przyrządu pochodzą z symulacji. Przy zmianie
+obrysu szkła w funkcji `prism` trzeba także dopasować przekrój w
+`src/optic-illumination.js` na wysokości wiązki (0,78 m).
+Eksport modelu i portretu można powtórzyć z katalogu projektu poleceniem
+`blender -b -P tools/blender/assets/orbital-instruments.py -- prism`.
+
 Wiązkę rysują trzy warstwy. Rdzeń i poświata zwracają się do kamery,
 a rozproszone światło pada na płaszczyznę pokładu. Moduł
 `src/beam-profile.js` łączy kolejne odcinki o wspólnym kolorze

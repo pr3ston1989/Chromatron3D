@@ -290,19 +290,78 @@ def splitter(s):
                [ink,steel,bronze,ink,body],12)
 
 def prism(s):
+    flint=make_material("Dispersive flint","steel",.17,.12,shade=1)
+    edge=make_material("Ground flint bevel","titanium",.63,.16)
+    flint.surface_render_method="BLENDED"
+    flint.use_backface_culling=True
+    bsdf=flint.node_tree.nodes.get("Principled BSDF")
+    bsdf.inputs["Alpha"].default_value=.69
+    bsdf.inputs["Coat Weight"].default_value=.72
+    bsdf.inputs["Coat Roughness"].default_value=.12
+    # Three large polished windows around the horizontal beam plane. The
+    # clipped apex points along +X and remains visible in the overhead camera.
+    outline=[(-.329,-.374),(-.269,-.437),(.474,-.052),
+             (.474,.052),(-.269,.437),(-.329,.374)]
+    def rim(scale,z,pitch=0):
+        return [(x*scale,y*scale,z+pitch*x) for x,y in outline]
+    s.loft([rim(scale,z,pitch) for scale,z,pitch in [
+        (.84,.426,0),(1,.516,0),(1,.995,.27),(.959,1.041,.27),
+        (.806,1.111,.27),(.786,1.117,.27)]],flint,[edge,flint,edge,flint,edge])
+    s.finishes[-1]=s.palette.index(flint)
+    # Three floating seating pads sit on a levelling stage. Recess the
+    # dark backing under the glass so the cut edges stand out over pale decks.
     mount(s,True)
-    s.lathe([(0,0,.21,.34,.34),(0,0,.29,.37,.37),(0,0,.34,.34,.34)],
-            ink,3,bands=[body,bronze],phase=pi/6)
-    # A triangular optical wedge sitting lengthwise in its saddle. All three
-    # longitudinal edges have a bevel; the broad faces remain unobstructed.
-    wedge=[(-.331,-.227),(.331,-.227),(.353,-.185),(.029,.325),(-.029,.325),(-.353,-.185)]
-    section(s,wedge,[(-.323,.91),(-.297,1),(.285,1),(.32,.90)],"Y",.665,[glass,glass,silver])
-    for i in range(3):
-        a=i*tau/3+pi/6
-        s.cable([(r*cos(a),r*sin(a),z,w) for r,z,w in [(.39,.19,.047),(.34,.33,.04),(.30,.49,.028)]],bronze,6)
+    s.loft([rim(.75,.226),rim(.92,.268),rim(.92,.310),rim(.78,.334)],
+           steel,[body,steel,alloy])
+    s.loft([rim(.83,.373),rim(1.04,.404),rim(1.04,.431),rim(.91,.445)],
+           body,[steel,bronze,ink])
+    # Two sprung rear corner clips. They follow the short ground corners,
+    # between compass rays, and leave the pointed end completely exposed.
     for side in (-1,1):
-        s.cable([(-.298,side*.31,.481,.027),(-.025,side*.31,.976,.023),
-                 (.025,side*.31,.976,.023),(.298,side*.31,.481,.027)],porcelain,6)
+        strap=[]
+        for z,x,y,w,d in [(.404,-.256,.401,.063,.031),(.489,-.295,.424,.060,.033),
+                          (.642,-.300,.426,.039,.025),(.882,-.301,.423,.032,.022),
+                          (.933,-.307,.415,.041,.028),(.972,-.297,.405,.048,.029),
+                          (.989,-.282,.391,.039,.025)]:
+            strap.append([(x+(u*d+v*w)*.7071,side*(y+(v*w-u*d)*.7071),z)
+                          for u,v in [(-1,-.7),(-.6,-1),(.65,-1),(1,-.65),
+                                      (1,.65),(.65,1),(-.6,1),(-1,.7)]])
+        s.loft(strap,body,[steel,bronze,body,bronze,alloy,steel])
+    for angle in (0,2.15,-2.15):
+        c,t=cos(angle),sin(angle)
+        def radial(r,w,z):return (c*r-t*w,t*r+c*w,z)
+        foot=[]
+        for r,z,w,d in [(.332,.168,.117,.075),(.409,.221,.121,.077),
+                        (.447,.290,.094,.055),(.430,.390,.078,.047),
+                        (.446,.458,.065,.040),(.461,.522,.067,.033),
+                        (.452,.549,.053,.025)]:
+            foot.append([radial(r+u*d,v*w,z) for u,v in [
+                (-1,-.64),(-.63,-1),(.65,-1),(1,-.66),(1,.66),(.65,1),(-.63,1),(-1,.64)]])
+        s.loft(foot,ink,[body,steel,body,bronze,bronze,alloy])
+        # Knurled levelling head in each shoe.
+        cx,cy,_=radial(.337,0,0)
+        s.lathe([(cx,cy,z,r,r) for z,r in [(.319,.056),(.339,.068),(.371,.068),(.388,.051)]],
+                bronze,12,bands=[ink,bronze,steel])
+    # A tangent screw projects from the entrance side of the turntable.
+    sleeve(s,"X",(-.401,0,.299),[
+        (.040,.069),(-.019,.069),(-.027,.099),(-.093,.099),(-.108,.078),
+        (-.108,.036),(.036,.036)],[body,alloy,bronze,steel,alloy,ink,body],18)
+    for i in range(10):
+        a=tau*i/10
+        s.cable([(-.434,.099*cos(a),.299+.099*sin(a),.008),
+                 (-.482,.099*cos(a+.10),.299+.099*sin(a+.10),.008)],ink,5)
+    # Pockets at the three corners hold the flint from above its windows.
+    # Their toes follow the crown facet and leave the wide top table open.
+    for i,j in [(0,1),(2,3),(4,5)]:
+        clip=[]
+        for lift in (-.003,.014):
+            ring=[]
+            for corner,r in [(i,.815),(j,.815),(j,.955),(i,.955)]:
+                x,y=outline[corner]
+                z=1.041+(.959-r)*(.070/.153)+.27*x
+                ring.append((x*r,y*r,z+lift))
+            clip.append(ring)
+        s.loft(clip,bronze,[alloy])
 
 builders={"laser":emitter,"target":receiver,
           "filter":filter_wheel,"mirror":reflector,"bender":lambda s:reflector(s,True),
