@@ -64,9 +64,12 @@ Materiał w `src/optic-model-loader.js` oblicza wewnętrzne odbicie od dolnych f
 Sam odbiornik i jego portret można odtworzyć poleceniem
 `blender -b -P tools/blender/assets/orbital-instruments.py -- target`.
 
-Lustro ma płaską srebrzoną powierzchnię, zakrzywiacz wklęsły profil, filtr dwuwypukłą
-soczewkę, a rozdzielacz dodatkowy boczny port. `src/optic-illumination.js` podświetla
-powłoki w miejscu przejścia wiązki. Dla każdej strony filtra pobiera osobny kolor z toru promieni.
+Lustro ma płaską srebrzoną powierzchnię, zakrzywiacz wklęsły profil, a filtr
+dwuwypukłą soczewkę. Rozdzielacz ma dwa szklane kliny, których zewnętrzne
+krawędzie unoszą się ponad wspólną płytkę półprzepuszczalną. Dwa miedziane
+uchwyty oznaczają oś, wzdłuż której przyrząd zatrzymuje światło.
+`src/optic-illumination.js` podświetla powłoki w miejscu przejścia wiązki.
+Dla każdej strony filtra pobiera osobny kolor z toru promieni.
 
 Wiązkę rysują trzy warstwy. Rdzeń i poświata zwracają się do kamery,
 a rozproszone światło pada na płaszczyznę pokładu. Moduł
@@ -87,6 +90,8 @@ node tools/review-kepler-dock.mjs screenshots/kepler-fotonika --optics
 ```
 
 Opcja `--optics` zapisuje siedem barw odbiornika na osobnym układzie testowym.
+Porównuje również lustro i rozdzielacz przy tym samym kącie padania i sprawdza
+wybieranie rozdzielacza w widoku laptopowym i telefonicznym.
 Jeżeli pierwsza kampania jest dostępna lokalnie, zapisuje też ten sam kryształ
 na planszy przed doprowadzeniem światła i po nim.
 

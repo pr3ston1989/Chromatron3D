@@ -171,6 +171,52 @@ try{
                height:Math.ceil(Math.max(...bounds.map(p=>p.y)))-y+8};
   },row);
   await page.screenshot({path:join(output,'11-siedem-kolorow.png'),clip});
+  // At the same incidence angle a mirror only reflects, while the splitter
+  // also transmits. Both are visible at once, on an independent public layout.
+  await page.evaluate(()=>{
+   window.chromatron.loadLevels([{pieces:[
+    ['laser',2,6,2,6],['mirror',5,6,1,0],['target',5,2,0,6],
+    ['laser',6,8,2,6],['splitter',9,8,1,0],['target',9,4,0,6],
+    ['target',12,8,0,6],['target',1,12,0,1]
+   ]}]);
+   window.__debug.freezeAnimations(true);
+  });
+  await page.waitForLoadState('networkidle');
+  const splitFixture=await page.evaluate(()=>{
+   const {pieces,result}=window.chromatron.getState();
+   const received=new Map(result.received);
+   return {lit:pieces.filter(p=>p.type==='target'&&received.get(p.id)===p.color).length,
+    centers:[[5,6],[9,8]].map(([x,y])=>window.chromatron.projectCell(x,y,.67))};
+  });
+  assert.equal(splitFixture.lit,3,'both paths of the splitter reach a target');
+  const [mirror,splitter]=splitFixture.centers;
+  const left=Math.floor(Math.min(mirror.x,splitter.x))-88;
+  const top=Math.floor(Math.min(mirror.y,splitter.y))-86;
+  await page.screenshot({path:join(output,'13-lustro-i-rozdzielacz.png'),clip:{
+   x:left,y:top,width:Math.ceil(Math.max(mirror.x,splitter.x))-left+88,
+   height:Math.ceil(Math.max(mirror.y,splitter.y))-top+82}});
+  await page.screenshot({path:join(output,'14-dwa-tory.png'),scale:'css'});
+  await page.mouse.move(836,470);
+  await page.mouse.wheel(0,1000);
+  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
+   await page.setViewportSize({width,height});
+   await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+   const head=await page.evaluate(()=>{
+    const p=window.chromatron.projectCell(9,8,.78);
+    return {...p,kind:window.chromatron.inspectPointer(p.x,p.y).hit?.pieceType,
+     onBoard:document.elementFromPoint(p.x,p.y)===document.querySelector('#scene canvas')};
+   });
+   assert.equal(head.kind,'splitter',width+'px: glass must be selectable');
+   assert.ok(head.onBoard,width+'px: canvas must receive the click');
+   if(width===1093){
+    await page.screenshot({path:join(output,'15-laptop.png'),scale:'css'});
+    await page.mouse.click(head.x,head.y,{button:'right'});
+    assert.equal(await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='splitter').rot),2);
+    await page.keyboard.press('Control+z');
+    assert.equal(await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='splitter').rot),1);
+    await page.keyboard.press('Escape');
+   }
+  }
  }
  assert.deepEqual(errors,[],'Browser errors');
 }finally{

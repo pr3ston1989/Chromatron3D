@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createOpticIllumination} from '../src/optic-illumination.js';
 import {mountRealMirror} from '../src/mirror-reflections.js';
+import {DX,DY,trace} from '../src/optics.js';
 
 test('a coated surface sees the incident and filtered colours on their respective sides',()=>{
  const light=createOpticIllumination(THREE,15,1.3);
@@ -52,4 +53,34 @@ test('the mirror reflection follows the front coating exported by Blender after 
  assert.ok(next.position.distanceTo(first.position)<1e-6);
  assert.ok(next.quaternion.angleTo(first.quaternion)<1e-6);
  for(const m of [first,next]){m.geometry.dispose();m.dispose()}
+});
+
+test('the splitter glass and axial stops match the traced beam from every direction after rotation',async()=>{
+ const buffer=await readFile(new URL('../assets/models/optical-bench/splitter.glb',import.meta.url));
+ const {scene}=await new GLTFLoader().parseAsync(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+buffer.length),'');
+ scene.scale.set(1.05,1,1.05);
+ const center=new THREE.Vector3(0,.78,0);
+ for(let rot=0;rot<8;rot++){
+  scene.rotation.y=-rot*Math.PI/4;
+  scene.updateMatrixWorld(true);
+  for(let dir=0;dir<8;dir++){
+   const laser={type:'laser',x:7-DX[dir],y:7-DY[dir],rot:dir,color:6};
+   const splitter={type:'splitter',x:7,y:7,rot};
+   const {segments}=trace([laser,splitter]);
+   const carriesLight=segments.some(s=>s.x===7&&s.y===7);
+   const heading=new THREE.Vector3(DX[dir],0,DY[dir]).normalize();
+   const ray=new THREE.Raycaster(center.clone().addScaledVector(heading,-1),heading,0,1);
+   const hits=ray.intersectObject(scene,true);
+   const first=hits[0]?.object.material;
+   assert.ok(first,`empty head at rotation ${rot}, direction ${dir}`);
+   if(carriesLight){
+    assert.equal(first.name,'Splitter crown glass');
+    assert.ok(first.transparent&&first.opacity>0&&first.opacity<1);
+    assert.ok(hits.some(hit=>hit.object.material.name==='Optical coating'));
+   }else{
+    assert.equal(first.transparent,false);
+    assert.ok(first.name!=='Optical coating','axial incidence must meet a stop first');
+   }
+  }
+ }
 });

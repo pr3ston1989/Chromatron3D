@@ -7,6 +7,9 @@ na osi masztu, a za nimi dryfuje pas odłamków. Na niebie stacji, stoczni i obs
 pojawiają się meteory. Wszystkie kampanie korzystają z odświeżonych 22 modeli
 elementów i z tego samego sposobu rysowania światła. [Modele i odtworzenie ujęć](../tools/README.md).
 
+Rozdzielacz ma dwa szklane kliny z widoczną od góry linią podziału.
+Miniatura w zasobniku pokazuje obie połówki od strony miedzianego uchwytu.
+
 ## Architektura
 
 | Obszar | Aktualny stan |

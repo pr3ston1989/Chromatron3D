@@ -1,5 +1,19 @@
 # QA
 
+## 23 listopada 2026 · lustro i rozdzielacz
+
+Przy ukośnym padaniu turkusowej wiązki dawna płytka rozdzielacza była
+widoczna niemal wyłącznie z boku. Pierwsze dwa szklane kliny zlewały się
+z jasnym pokładem. W końcowym modelu podniesiono ich zewnętrzne krawędzie,
+przyciemniono szkło i odsłonięto szczelinę nad powłoką dzielącą wiązkę.
+Model z oprawą ma 1712 trójkątów. Test GLB sprawdza pierwszy kontakt
+promienia przy ośmiu obrotach i ośmiu kierunkach padania. W Chromium
+lustro zasiliło jeden odbiornik, a rozdzielacz dwa. Wskazanie nowego modelu
+sprawdzono w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844, a na najmniejszym
+laptopie również obrót prawym kliknięciem i cofnięcie. Ujęcie porównawcze
+jest w `screenshots/rozdzielacz-final/13-lustro-i-rozdzielacz.png`, a pełny
+kadr laptopowy w `screenshots/rozdzielacz-final/15-laptop.png`.
+
 ## 23 listopada 2026 · szlif odbiornika
 
 W pierwszej próbie jasnozielone fasety zlewały się na ekranie. Podniesienie

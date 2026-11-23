@@ -26,6 +26,15 @@ signal=make_material("glow","cyan",.16,.19,1.10)
 gem=make_material("Resonance crystal","cyan",.12,.17,.27)
 witness=make_material("Receiver lock","cyan",.18,.27,.28)
 violet=make_material("Dielectric violet","amethyst",.41,.22)
+# The splitter shell is one front-face alpha pass; the internal film remains
+# solid and picks up the actual ray at the point where it branches.
+split_glass=make_material("Splitter crown glass","cyan",.23,.15,shade=-1)
+split_glass.surface_render_method="BLENDED"
+split_glass.use_backface_culling=True
+split_bsdf=split_glass.node_tree.nodes.get("Principled BSDF")
+split_bsdf.inputs["Alpha"].default_value=.74
+split_bsdf.inputs["Coat Weight"].default_value=.65
+split_bsdf.inputs["Coat Roughness"].default_value=.12
 for mat in (porcelain,glass,gem,meniscus,aperture):
     bsdf=mat.node_tree.nodes.get("Principled BSDF")
     bsdf.inputs["Coat Weight"].default_value=.46
@@ -232,23 +241,53 @@ def reflector(s,curved=False):
                (.104,.052),(0,.052)],[steel,alloy,bronze,porcelain,ink,steel],10)
 
 def splitter(s):
-    mount(s)
-    # Two open jaws support different edges of a dichroic wafer.
-    for sign in (-1,1):
-        path=[(-.13,.185),(.12,.185),(.19,.37),(.42,.64),(.428,.86),
-              (.35,.902),(.29,.834),(.29,.697),(.065,.48),(-.11,.41)]
-        section(s,[(u*sign,z) for u,z in path],[(-.11,.97),(-.076,1),(.09,1),(.13,.95)],
-                "X",0,[alloy,body,bronze])
-    diamond=[(-.32,0),(0,-.225),(.32,0),(0,.225)]
-    section(s,diamond,[(-.053,.81),(-.027,1),(.027,1),(.055,.81)],"X",.78,[glass,alloy,glass])
-    # An exposed secondary exit barrel sits at right angles to the wafer.
-    sleeve(s,"X",(.235,0,.78),[(-.107,.074),(-.052,.109),(.121,.114),
-           (.147,.089),(.146,.062),(-.102,.057)],[alloy,bronze,steel,alloy,ink,body],16)
-    for y in (-.34,.34):
-        sleeve(s,"Y",(0,y,.74),[(-.023,.095),(.023,.095),(.027,.052),(-.023,.052)],
-               [bronze,alloy,ink,steel],8)
-        s.blade([(.134,y*.29,.32,.047,.028),(.137,y*.65,.47,.059,.033),
-                 (.132,y,.61,.044,.029),(.125,y*1.02,.72,.03,.019)],porcelain,alloy)
+    mount(s,True)
+    # Opposed right-angle prisms share a splitter plane along Blender Y.
+    # Clip the three corners and polish the sloping crown of each half.
+    footprint=[(.049,-.375),(.089,-.403),(.462,-.067),(.462,.067),
+               (.089,.403),(.049,.375)]
+    for side in (-1,1):
+        rings=[]
+        for scale,z,slope in [(.86,.518,0),(1,.553,.04),(1,.893,.58),(.89,.936,.58)]:
+            rings.append([(side*(.17+(x-.17)*scale),y*scale,z+x*slope) for x,y in footprint])
+        # A polished bevel follows each rising shoulder. Only the narrow
+        # chamfer is opaque; both sloping tables remain optical glass.
+        s.loft(rings,split_glass,[split_glass,split_glass,steel])
+        s.finishes[-1]=s.palette.index(split_glass)
+        # Each prism beds on a separate gasket. The open gap continues
+        # through the two crowns so the split is also readable from above.
+        s.loft([[(side*(.17+(x-.17)*scale),y*scale,z) for x,y in footprint]
+                for scale,z in [(.78,.447),(.93,.480),(.91,.509),(.84,.522)]],
+               body,[steel,bronze,ink])
+        # Forked shoes cradle the outer tips below the optical centreline.
+        # Their capped nibs stay outside the polished entrance faces.
+        for end in (-1,1):
+            shoe=[]
+            for x,y,z,w,d in [(.220,.131,.424,.066,.030),(.320,.139,.458,.060,.033),
+                              (.425,.089,.518,.047,.031),(.452,.060,.557,.042,.022),
+                              (.453,.060,.630,.036,.018)]:
+                shoe.append([(side*(x+u*d),end*(y+v*w),z) for u,v in
+                    [(-1,-.66),(-.6,-1),(.7,-1),(1,-.62),(1,.62),(.7,1),(-.6,1),(-1,.66)]])
+            s.loft(shoe,body,[body,steel,bronze,alloy])
+    film=[(-.407,-.214),(-.351,-.263),(.351,-.263),(.407,-.214),
+          (.407,.110),(.349,.161),(-.349,.161),(-.407,.110)]
+    section(s,film,[(-.013,.97),(-.008,1),(.008,1),(.013,.97)],"X",.78,
+            [glass,violet,glass])
+    # A rigid saddle rises below the glass. Only the axial stops extend to
+    # beam height, where the puzzles absorb rays travelling along the film.
+    plate(s,[(.189,.278,.070,.214),(.209,.318,.074,.251),(.152,.364,.069,.374),
+             (.194,.381,.066,.453),(.188,.370,.066,.479)],body,[steel,body,steel,alloy])
+    for end in (-1,1):
+        jaws=[]
+        for z,y,w,d in [(.195,.242,.151,.083),(.262,.322,.155,.086),(.427,.386,.102,.069),
+                        (.535,.417,.085,.060),(.853,.443,.062,.055),
+                        (.942,.413,.081,.064),(.974,.392,.064,.050)]:
+            jaws.append([(w*u,end*(y+d*v),z) for u,v in
+                [(-.70,-1),(.70,-1),(1,-.65),(1,.60),(.67,1),(-.67,1),(-1,.60),(-1,-.65)]])
+        s.loft(jaws,body,[steel,body,alloy,bronze,alloy,bronze])
+        sleeve(s,"Y",(0,end*.465,.779),[(end*depth,r) for depth,r in
+               [(0,.069),(.020,.081),(.039,.068),(.039,.033),(0,.033)]],
+               [ink,steel,bronze,ink,body],12)
 
 def prism(s):
     mount(s,True)
@@ -296,6 +335,7 @@ for name,build in builders.items():
     if not requested or name in requested:
         export_model(model,5500,folder)
         view=(-1.3,1.48,1.0) if name in ("laser","logicGate","primaryLogicGate") else (-1.18,-1.45,1.23)
+        if name=="splitter":view=(-.28,-1.85,1.10)
         render(name,view,model=model,resolution=(160,160),transparent=True,folder=folder/"portraits")
     model.hide_render=True
     models.append(model)
