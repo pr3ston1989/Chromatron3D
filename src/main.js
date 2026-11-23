@@ -453,6 +453,9 @@ try{
 }catch{}
 let nextId=0;
 const vec=(x,y,height=.3)=>new THREE.Vector3((x-HALF)*T,height,(y-HALF)*T);
+function pieceColor({type,color}){
+ return new THREE.Color(COLORS[type==='target'||type==='filter'?color:color||7]);
+}
 // Original premium optic meshes: luminous emitters, crystal targets and readable reflective mirrors.
 function rebuildPieces(){
  opticShadows.update(pieces);
@@ -481,7 +484,7 @@ function rebuildPieces(){
   if(p.inTray)continue;
   if(wallBatch&&p.type==='wall')continue;
   const g=new THREE.Group();g.position.copy(vec(p.x,p.y,.24));g.userData.piece=p;componentGroup.add(g);
-  const color=new THREE.Color(COLORS[p.type==='target'?p.color:(p.color||7)]);
+  const color=pieceColor(p);
   const energized=p.type==='target'&&(currentResult?.received.get(p.id)||0)===p.color;
   const model=opticModels.cloneOptic(p.type,color,{energized,deck});
   if(model){
@@ -497,7 +500,7 @@ function rebuildPieces(){
   }else{
    // Keep the exact silhouette visible and selectable while the mesh arrives.
    // Slow or interrupted downloads use the matching Blender portrait.
-   const portrait=opticModels.portrait(p.type);
+   const portrait=opticModels.portrait(p.type,p.color);
    portrait.position.y=.49;g.add(portrait);
    portrait.userData.piece=p;hitObjects.push(portrait);
   }
@@ -1176,7 +1179,7 @@ function renderInventory(){
   }
   const icon=document.createElement('span');icon.className='component-icon';
   const portrait=document.createElement('img');
-  portrait.src=opticModels.portraitPath(type);
+  portrait.src=opticModels.portraitPath(type,color);
   portrait.alt='';portrait.draggable=false;icon.append(portrait);
   const name=document.createElement('span');
   if(movableType)name.className='equipment-name';
@@ -1686,7 +1689,7 @@ function previewInstrument(piece){
  if(previewPiece!==piece||!previewModel){
   if(previewModel)placementPreview.remove(previewModel);
   previewPiece=piece;
-  previewModel=opticModels.cloneOptic(piece.type,new THREE.Color(COLORS[piece.color||7]),{deck:activeEnvironment?.deck});
+  previewModel=opticModels.cloneOptic(piece.type,pieceColor(piece),{deck:activeEnvironment?.deck});
   if(previewModel){
    previewModel.position.y=0;
    placementPreview.add(previewModel);
@@ -1993,7 +1996,7 @@ window.addEventListener('pointermove',e=>{
   if(!drag.piece?.inTray){trayGesture=null;return}
   drag.active=true;
   $('inventory').setPointerCapture(e.pointerId);
-  carriedPortrait.src=opticModels.portraitPath(drag.piece.type);
+  carriedPortrait.src=opticModels.portraitPath(drag.piece.type,drag.piece.color);
   hideOpticTooltip();selectFromTray(drag.piece);
   document.body.classList.add('carrying-optic');
  }

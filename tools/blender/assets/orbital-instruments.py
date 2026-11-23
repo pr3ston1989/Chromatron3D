@@ -22,6 +22,7 @@ glass=make_material("Optical coating","cyan",.50,.14)
 silver=make_material("Front silver","titanium",.83,.13,shade=2)
 aperture=make_material("Silvered aperture","titanium",.91,.095,shade=2)
 meniscus=make_material("Filter doublet","cyan",.18,.12)
+filter_index=make_material("Filter index glass","cyan",.20,.23,.21)
 signal=make_material("glow","cyan",.16,.19,1.10)
 gem=make_material("Resonance crystal","cyan",.12,.17,.27)
 witness=make_material("Receiver lock","cyan",.18,.27,.28)
@@ -168,27 +169,57 @@ def receiver(s):
                     for h in (0,.021)],mat)
 
 def filter_wheel(s):
-    mount(s);yoke(s,"Y",.66)
-    loop=[(-.11,.282),(-.114,.369),(-.068,.406),(.03,.412),(.096,.378),(.106,.306),(.068,.284)]
-    sleeve(s,"X",(0,0,.734),loop,[ink,alloy,body,bronze,alloy,ink,glass],28)
-    # Two convex optical faces meet in a silvered gasket. The dome and
-    # stepped retaining ring catch a highlight even nearly edge-on.
-    rings=[[(x,r*cos(i*tau/32),.734+r*sin(i*tau/32)) for i in range(32)] for x,r in [
-        (-.106,.045),(-.100,.123),(-.081,.203),(-.044,.273),(-.022,.280),
-        (.022,.280),(.044,.273),(.081,.203),(.100,.123),(.106,.045)]]
-    s.loft(rings,meniscus,[meniscus]*4+[ink]+[meniscus]*4)
+    mount(s)
+    # A removable cell slides into two forked guides. The heel and the
+    # relieved shoulders are narrower than the front and back optical openings.
     for side in (-1,1):
-        sleeve(s,"X",(0,0,.734),[(side*x,r) for x,r in [
-            (.050,.275),(.073,.281),(.075,.292),(.052,.302)]],[alloy,bronze,steel,ink],32)
-    # A keyed latch on the high rim is visible from either face.
-    s.cable([(-.087,-.145,1.074,.033),(.058,-.145,1.086,.035),(.09,-.132,1.049,.028)],bronze,6)
-    for i in range(4):
-        a=i*pi/2+.37
-        s.cable([(.115,r*cos(a),.734+r*sin(a),.019) for r in (.307,.367)],porcelain,5)
-    # Twin milled thumb grips rise above the bezel; keep the glass open.
-    for a in (pi*.25,pi*.75):
-        s.cable([(x,r*cos(a),.734+r*sin(a),w) for x,r,w in
-                 [(-.073,.386,.039),(-.049,.42,.047),(.047,.42,.047),(.075,.386,.039)]],bronze,8)
+        sections=[]
+        for z,y,w,d in [(.197,.213,.121,.200),(.238,.254,.126,.190),
+                        (.302,.294,.098,.138),(.414,.338,.068,.108),
+                        (.625,.376,.047,.100),(.879,.377,.049,.102),
+                        (.992,.365,.057,.104),(1.025,.350,.046,.090)]:
+            sections.append([(u*d,side*(y+v*w),z) for u,v in [
+                (-1,-.65),(-.70,-1),(.66,-1),(1,-.65),(1,.64),(.63,1),(-.67,1),(-1,.63)]])
+        s.loft(sections,steel,[body,alloy,body,steel,body,bronze,alloy])
+        # Thumb screws are milled around a recessed central socket.
+        sleeve(s,"Y",(0,side*.41,.571),[(side*x,r) for x,r in [
+            (-.023,.066),(.011,.077),(.031,.071),(.035,.037),(.012,.032),(-.023,.034)]],
+            [ink,bronze,alloy,steel,ink,body],12)
+    # A wide, stepped glass doublet on the beam axis. Short retaining arcs
+    # interrupt the silver rim, leaving both optical faces readable.
+    axis=(0,0,.78)
+    sleeve(s,"X",axis,[(-.067,.323),(-.087,.350),(-.075,.375),(-.043,.390),
+                        (.043,.390),(.075,.375),(.087,.350),(.067,.323)],
+           [ink,alloy,bronze,body,bronze,alloy,ink,steel],32)
+    rings=[[(x,r*cos(i*tau/32),axis[2]+r*sin(i*tau/32)) for i in range(32)] for x,r in [
+        (-.104,.048),(-.100,.134),(-.083,.234),(-.050,.311),(-.031,.335),
+        (.031,.335),(.050,.311),(.083,.234),(.100,.134),(.104,.048)]]
+    s.loft(rings,meniscus,[meniscus]*4+[steel]+[meniscus]*4)
+    for side in (-1,1):
+        for quadrant in range(4):
+            arc=[]
+            for i in range(6):
+                a=quadrant*pi/2+.23+i*.164
+                arc.append([(side*x,r*cos(a),axis[2]+r*sin(a)) for x,r in [
+                    (.070,.325),(.085,.324),(.096,.330),(.092,.342),(.075,.346)]])
+            s.loft(arc,steel,[alloy]*5)
+    # Open bridge above the round cell. Inclined enamel edges carry the
+    # spectral ID around to the face and side views; even edge-on it has area.
+    for side in (-1,1):
+        sections=[]
+        for z,y,w,d in [(.945,.330,.052,.068),(1.041,.338,.045,.078),
+                        (1.146,.308,.045,.090),(1.239,.260,.051,.101),(1.282,.225,.057,.103)]:
+            sections.append([(u*d,side*(y+v*w),z) for u,v in [
+                (-1,-.65),(-.64,-1),(.64,-1),(1,-.65),(1,.65),(.64,1),(-.64,1),(-1,.65)]])
+        s.loft(sections,steel,[body,bronze,steel,alloy])
+    plate(s,[(.096,.239,.040,1.239),(.150,.270,.054,1.261),
+             (.150,.270,.054,1.286),(.095,.248,.048,1.326)],ink,[steel,body,alloy])
+    plate(s,[(.148,.211,.038,1.283),(.151,.205,.039,1.295),
+             (.087,.186,.036,1.343)],filter_index)
+    # Captive end caps guard the index glass without covering its top face.
+    for side in (-1,1):
+        plate(s,[(.140,.034,.020,1.282),(.142,.034,.020,1.293),
+                 (.090,.028,.015,1.339)],steel,[bronze,body],center=(0,side*.232))
 
 def reflector(s,curved=False):
     mount(s);yoke(s,"Y",.65)
@@ -363,6 +394,27 @@ def prism(s):
             clip.append(ring)
         s.loft(clip,bronze,[alloy])
 
+def filter_portraits(model,view):
+    # Only tint the two pieces of optical glass. Rendering the original mesh
+    # preserves the copper, neutral reflections and the transparent silhouette.
+    sockets=[material.node_tree.nodes["Principled BSDF"].inputs[name]
+             for material in (meniscus,filter_index) for name in ("Base Color","Emission Color")]
+    original=[tuple(socket.default_value) for socket in sockets]
+    lens_emission=meniscus.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"]
+    previous_emission=lens_emission.default_value
+    try:
+        lens_emission.default_value=.28
+        for mask in range(8):
+            rgb=tuple(.82 if mask & bit else .009 for bit in (1,2,4))
+            for socket in sockets:
+                socket.default_value=(*rgb,1)
+            render(f"filter-{mask}",view,model=model,resolution=(160,160),
+                   transparent=True,folder=folder/"portraits")
+    finally:
+        lens_emission.default_value=previous_emission
+        for socket,color in zip(sockets,original):
+            socket.default_value=color
+
 builders={"laser":emitter,"target":receiver,
           "filter":filter_wheel,"mirror":reflector,"bender":lambda s:reflector(s,True),
           "splitter":splitter,"prism":prism}
@@ -395,7 +447,9 @@ for name,build in builders.items():
         export_model(model,5500,folder)
         view=(-1.3,1.48,1.0) if name in ("laser","logicGate","primaryLogicGate") else (-1.18,-1.45,1.23)
         if name=="splitter":view=(-.28,-1.85,1.10)
+        if name=="filter":view=(-1.85,-.76,1.08)
         render(name,view,model=model,resolution=(160,160),transparent=True,folder=folder/"portraits")
+        if name=="filter":filter_portraits(model,view)
     model.hide_render=True
     models.append(model)
 for i,model in enumerate(models):

@@ -11,6 +11,8 @@ Rozdzielacz ma dwa szklane kliny z widoczną od góry linią podziału.
 Miniatura w zasobniku pokazuje obie połówki od strony miedzianego uchwytu.
 Pryzmat ma trójkątny przekrój widoczny także z góry. Przez jego szlifowane
 ścianki widać tory wejścia i wyjścia światła w kolorach aktualnej wiązki.
+Filtr ma wsuwaną kasetę. Jej górny uchwyt pokazuje barwę szkła także w rzucie
+z góry. Miniatura w zasobniku i pod kursorem odpowiada kolorowi wybranego filtra.
 
 ## Architektura
 

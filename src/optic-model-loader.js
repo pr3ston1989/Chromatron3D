@@ -75,14 +75,23 @@ function cutCrystal(shader){
 // A coated doublet returns a bright grazing reflection and a coloured band
 // through the thicker centre, including when a filter is seen from behind.
 function coatedFilter(shader){
- shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`
+ shader.vertexShader='varying vec2 filterFace;\n'+shader.vertexShader
+  .replace('#include <begin_vertex>','#include <begin_vertex>\n filterFace=vec2(position.z,position.y-.78)/.335;');
+ shader.fragmentShader='varying vec2 filterFace;\n'+shader.fragmentShader.replace('#include <opaque_fragment>',`
   vec3 eye=normalize(vViewPosition);
-  float facing=abs(dot(normal,eye));
-  float edge=pow(1.-facing,2.);
+  float facing=clamp(abs(dot(normal,eye)),0.,1.);
+  float radius=length(filterFace);
+  float rolloff=smoothstep(.48,1.,radius);
+  // The path through the coloured doublet is longest at its crown.
+  // The polished bevel returns a thin highlight inside the retaining ring.
+  float depth=sqrt(max(0.,1.-min(1.,radius*radius)))/max(.47,facing);
+  vec3 transmission=exp(-depth*(vec3(1.)-diffuse)*2.4);
   vec3 reflected=reflect(-eye,normal);
-  float strip=smoothstep(.84,.975,dot(reflected,normalize(vec3(-.38,.74,.56))));
-  outgoingLight=diffuse*(.19+.39*facing)+outgoingLight*.28+
-   mix(diffuse,vec3(1.),.28)*(.34*edge+.68*strip);
+  float strip=smoothstep(.81,.975,dot(reflected,normalize(vec3(-.38,.74,.56))));
+  float bevel=1.-smoothstep(.025,.025+max(.025,fwidth(radius)),abs(radius-.91));
+  outgoingLight=diffuse*transmission*(.31+.27*facing)*(1.-.69*rolloff)
+   +totalEmissiveRadiance*.17+outgoingLight*.095
+   +mix(diffuse,vec3(1.),.56)*(.50*strip+.12*bevel+.11*pow(1.-facing,3.));
   #include <opaque_fragment>`);
 }
 
@@ -103,13 +112,14 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
   }
   return variants.get(deck);
  }
- function portrait(type){
-  if(!portraits.has(type)){
-   const tex=new THREE.TextureLoader().load(portraitPath(type));
+ function portrait(type,mask){
+  const path=portraitPath(type,mask);
+  if(!portraits.has(path)){
+   const tex=new THREE.TextureLoader().load(path);
    tex.colorSpace=THREE.SRGBColorSpace;
-   portraits.set(type,new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+   portraits.set(path,new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
   }
-  const sprite=new THREE.Sprite(portraits.get(type));
+  const sprite=new THREE.Sprite(portraits.get(path));
   sprite.userData.catalogMesh=true;sprite.scale.setScalar(1.12);
   return sprite;
  }
@@ -141,7 +151,7 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
   model.traverse(node=>{
    if(!node.isMesh)return;
    const role=node.material.name;
-   if(!['glow','Filter doublet','Resonance crystal','Receiver lock'].includes(role))return;
+   if(!['glow','Filter doublet','Filter index glass','Resonance crystal','Receiver lock'].includes(role))return;
    const key=role+':'+color.getHex()+':'+energized+':'+(isSignal?type:'optic');
    if(!lenses.has(key)){
     const mat=isSignal&&role==='glow'
@@ -161,6 +171,11 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
      mat.onBeforeCompile=coatedFilter;
      mat.emissiveIntensity=.28;
      illumination?.apply(mat);
+    }else if(role==='Filter index glass'){
+     // The grip identifies the loaded filter even when its lens is edge-on.
+     // It keeps that colour while another wavelength hits the working glass.
+     mat.color.multiplyScalar(.66);
+     mat.emissiveIntensity=.16;
     }else if(role==='Receiver lock'){
      mat.color.setHex(energized?0xdbffef:0x263849);
      mat.emissive.setHex(energized?0x96ffe5:0x000000);
@@ -197,6 +212,9 @@ export function createOpticModelLoader(THREE,{baseUrl,portraitUrl,modelUrls={},p
   });
   return group;
  }
- function portraitPath(type){return portraitUrls[type]??portraitUrl+type+'.png'}
+ function portraitPath(type,mask){
+  if(type==='filter'&&portraitUrls['filter-'+mask])return portraitUrls['filter-'+mask];
+  return portraitUrls[type]??portraitUrl+type+'.png';
+ }
  return {load,portrait,portraitPath,cloneOptic,tint,instanceWalls};
 }

@@ -71,6 +71,12 @@ uchwyty oznaczają oś, wzdłuż której przyrząd zatrzymuje światło.
 `src/optic-illumination.js` podświetla powłoki w miejscu przejścia wiązki.
 Dla każdej strony filtra pobiera osobny kolor z toru promieni.
 
+Kaseta filtra ma dwie odsłonięte powierzchnie soczewki. Kolorowa wstawka
+w uchwycie pozwala rozpoznać filtr także od góry. Polecenie
+`blender -b -P tools/blender/assets/orbital-instruments.py -- filter`
+zapisuje model oraz miniatury `portraits/filter-0.png` do `filter-7.png`
+w katalogu `assets/models/optical-bench`. Numer oznacza maskę RGB planszy.
+
 Pryzmat ma pojedynczą, trójkątną bryłę szkła na stoliku z trzema śrubami
 poziomującymi. Szkło przesuwa widoczny ślad wiązki zgodnie z kątem patrzenia
 na fasetę. Kolory po obu stronach przyrządu pochodzą z symulacji. Przy zmianie

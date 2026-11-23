@@ -110,3 +110,60 @@ test('the prism separates white into visible RGB branches on the Three Wavelengt
   expect(outputs).toEqual(expected);
  }
 });
+
+test('filter colour follows the cartridge from stock through drag to the overhead view',async({page})=>{
+ test.setTimeout(120000);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/?debug=1');
+ await page.waitForFunction(()=>Boolean(window.__debug));
+ await page.evaluate(()=>{
+  const filters=Array.from({length:7},(_,i)=>['filter',i+1,4,0,i+1]);
+  window.chromatron.loadLevels([{startMovablesInTray:true,pieces:[
+   ['laser',2,7,2,7],['target',12,7,0,1],...filters]}]);
+  window.__debug.freezeAnimations(true);
+ });
+ await page.waitForLoadState('networkidle');
+ // Read the glass in each actual Blender portrait, including the secondary
+ // colours. A different URL alone could still point to the same cyan artwork.
+ const portraits=await page.locator('[data-optic-type="filter"] img').evaluateAll(async images=>{
+  const canvas=new OffscreenCanvas(160,160);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const result=[];
+  for(const img of images){
+   await img.decode();
+   ctx.clearRect(0,0,160,160);ctx.drawImage(img,0,0);
+   const mask=Number(img.closest('[data-slot]').dataset.slot.split(':')[1]);
+   const rgb=Array.from(ctx.getImageData(77,72,1,1).data).slice(0,3);
+   const peak=Math.max(...rgb);
+   const visible=rgb.reduce((bits,value,i)=>value>peak*.58?bits|(1<<i):bits,0);
+   result.push({mask,visible});
+  }
+  return result;
+ });
+ expect(portraits).toHaveLength(7);
+ for(const {mask,visible} of portraits)expect(visible).toBe(mask);
+
+ const green=page.locator('[data-slot="filter:2"]');
+ await green.scrollIntoViewIfNeeded();
+ const box=await green.boundingBox();
+ const dest=await page.evaluate(()=>window.chromatron.projectCell(7,7));
+ await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
+ await page.mouse.down();
+ await page.mouse.move(dest.x,dest.y,{steps:8});
+ await expect(page.locator('.carried-portrait')).toHaveAttribute('src',await green.locator('img').getAttribute('src'));
+ await page.mouse.up();
+ await expect.poll(()=>page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='filter'&&!p.inTray)))
+  .toMatchObject({color:2,x:7,y:7});
+ await page.keyboard.press('Escape');
+ await page.locator('#camera-preset').click();
+ await page.mouse.move(1,1);
+ for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
+  await page.setViewportSize({width,height});
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+  const points=await page.evaluate(()=>[[7,1.34,2],[5.5,.78,7],[8.5,.78,2]].map(([x,h,mask])=>
+   ({...window.chromatron.projectCell(x,7,h),mask})));
+  const scores=await colourScores(page,points);
+  for(const [i,threshold] of [30,145,38].entries())
+   expect.soft(scores[i],width+'px · '+['index glass','white input','green output'][i]).toBeGreaterThan(threshold);
+ }
+});

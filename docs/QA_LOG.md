@@ -1,5 +1,25 @@
 # QA
 
+## 23 listopada 2026 · kaseta filtra na planszy „Spektrum”
+
+Z góry metalowy pierścień dawnego filtra zasłaniał soczewkę. W zasobniku
+filtry o różnych barwach miały identyczne turkusowe miniatury. Na tej samej
+planszy i przy tej samej kamerze porównano stary pierścień z nową kasetą.
+W drugiej wersji pogłębiono kolor przy krawędzi szkła, a uchwyt dostał skos
+widoczny od góry i z boku. W miniaturach rozjaśniono szkło. Model ma 3036
+trójkątów przy budżecie 5500.
+
+Na planszy czerwone światło kończy się na zielonym filtrze. Na układzie
+kontrolnym biała wiązka wychodzi z tej samej kasety jako zielona. Test GLB
+sprawdza obie powierzchnie soczewki i górny uchwyt we wszystkich ośmiu
+obrotach. Test Chromium rozpoznaje barwy z pikseli siedmiu miniatur,
+przeciąga zieloną kasetę z zasobnika i odczytuje kolor uchwytu oraz wiązek
+w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844.
+Zrzuty porównawcze są w `screenshots/filtr/final`. Pełny kadr z poziomu 3
+jest w `screenshots/filtr/laptop/demo-003_1366x768.png`. Na zintegrowanym
+Radeonie ta plansza osiągnęła 59,8 kl./s w czterosekundowym pomiarze po
+rozgrzaniu, w profilu zrównoważonym.
+
 ## 23 listopada 2026 · pryzmat na planszy „Trzy barwy”
 
 W pierwszym ujęciu nowego modelu jasna korona szkła zlewała się z pokładem.

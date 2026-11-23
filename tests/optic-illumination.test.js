@@ -6,7 +6,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createOpticIllumination} from '../src/optic-illumination.js';
 import {createOpticModelLoader} from '../src/optic-model-loader.js';
 import {mountRealMirror} from '../src/mirror-reflections.js';
-import {DX,DY,trace} from '../src/optics.js';
+import {COLORS,DX,DY,trace} from '../src/optics.js';
 
 test('a coated surface sees the incident and filtered colours on their respective sides',()=>{
  const light=createOpticIllumination(THREE,15,1.3);
@@ -113,6 +113,37 @@ test('the prism has a clear, ray-lit window on each RGB path in both dispersion 
     assert.equal(first?.material.name,'Dispersive flint');
     assert.ok(first.material.transparent&&!first.material.depthWrite);
     assert.ok(first.material.customProgramCacheKey().includes('optic-entry-exit'));
+   }
+  }
+ }
+ illumination.map.dispose();
+});
+
+test('the filter exposes both lens faces and a separate colour index from overhead',async()=>{
+ const bytes=await readFile(new URL('../assets/models/optical-bench/filter.glb',import.meta.url));
+ const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.length),'');
+ const illumination=createOpticIllumination(THREE,15,1.3);
+ const catalog=createOpticModelLoader(THREE,{modelUrls:{filter:'filter'},illumination,
+  loader:{load:(_,ready)=>ready(gltf)}});
+ catalog.load('filter');
+ for(let mask=0;mask<8;mask++){
+  const tint=new THREE.Color(COLORS[mask]);
+  const model=catalog.cloneOptic('filter',tint,{deck:'kepler'});
+  for(let rot=0;rot<8;rot++){
+   model.rotation.y=-rot*Math.PI/4;
+   model.updateMatrixWorld(true);
+   const fromTop=new THREE.Raycaster(new THREE.Vector3(0,2,0),new THREE.Vector3(0,-1,0));
+   const index=fromTop.intersectObject(model,true)[0].object.material;
+   assert.equal(index.name,'Filter index glass');
+   assert.ok(index.emissive.equals(tint));
+   assert.ok(!index.customProgramCacheKey().includes('optic-entry-exit'));
+   for(const dir of [(rot+2)%8,(rot+6)%8]){
+    const outward=new THREE.Vector3(DX[dir],0,DY[dir]).normalize();
+    const origin=new THREE.Vector3(0,.78,0).add(outward);
+    const first=new THREE.Raycaster(origin,outward.negate()).intersectObject(model,true)[0];
+    assert.equal(first.object.material.name,'Filter doublet');
+    assert.ok(first.object.material.emissive.equals(tint));
+    assert.ok(first.object.material.customProgramCacheKey().includes('optic-entry-exit'));
    }
   }
  }
