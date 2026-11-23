@@ -15,6 +15,7 @@
 
 - Wiązka i miejsce kontaktu mają najwyższą jasność punktową. Kontrast pokładu z obrysem przewyższa kontrast tła. Sprawdzamy pełne spektrum na wybranych pokładach w 1920 × 1080 i 390 × 844.
 - Pokład równy w całej siatce 15 × 15, odstęp środków pól 1,30 m. Krawędzie płyt i rowki mają niższy kontrast od przyrządów. Zmiana wyglądu poszczególnych pól wyraża stan mechaniki.
+- Materiał płyty widać wewnątrz pola. W grocie i sanktuarium są to żyłki łupku, w ogrodzie pory wapienia, w laboratorium polarnym szron, w stoczni i kuźni ślad szczotkowania stopu. Obserwatorium i głębiny mają spiekaną ceramikę. Przy oddaleniu kamery drobny relief słabnie. Fuga musi pozostać czytelniejsza od faktury.
 - W rzucie z góry linie granic pól zachowują szerokość co najmniej jednego piksela renderera, także przy zmniejszonym renderze. Siatka leży tuż nad podłogą i pozostaje pod wiązkami oraz przyrządami.
 - Przyrząd odróżnia się kształtem, rozkładem trzech wartości jasności i geometrią kierunkową. Lustro ma płaską powierzchnię odbijającą, rozdzielacz wyraźne otwarte rozwidlenie. Kolor emisji dopełnia sylwetkę.
 - W widoku z góry małe symbole o wysokim kontraście pomagają rozpoznać przyrządy także przy małym rozmiarze siatki. Są odsunięte od środka pola. Kształt identyfikuje mechanizm, a kolor obwódki wybranych przyrządów uzupełnia informację o widmie.

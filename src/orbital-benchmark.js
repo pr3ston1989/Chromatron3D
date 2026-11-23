@@ -1,4 +1,5 @@
 import {applyOpticFinish} from './optic-textures.js';
+import {applyPanelSurface} from './panel-surface.js';
 import {createDockPatrol,createRelayMotion} from './kepler-traffic.js';
 
 export const orbitalArt={
@@ -103,14 +104,12 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
       #include <color_fragment>
       vec2 seam=abs(fract(deckXZ/1.30)-.5)*1.30/max(fwidth(deckXZ),vec2(.0001));
       float d=min(seam.x,seam.y);
-      vec2 tile=floor(deckXZ/1.30+.5);
-      float temper=fract(sin(dot(tile,vec2(29.17,73.53)))*3712.17);
-      diffuseColor.rgb*=mix(.96,1.04,temper)*mix(.38,1.,smoothstep(.12,1.06,d));
+      diffuseColor.rgb*=mix(.38,1.,smoothstep(.12,1.06,d));
       diffuseColor.rgb+=vec3(.016,.023,.031)*(1.-smoothstep(.36,1.18,abs(d-1.38)));`);
     };
     mesh.material.color.setHex(0x9baac0);
     mesh.material.roughness=.51;
-    mesh.material.metalness=.34;
+    applyPanelSurface(THREE,mesh.material,'kepler',0);
    });
    deck.position.y=-3.53;root.add(deck);
    function place(source,x,y,z,scale,yaw){
@@ -149,8 +148,8 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
     mesh.receiveShadow=true;mesh.castShadow=!mesh.isInstancedMesh;
     if(finished.has(mesh.material)||!mesh.geometry.getAttribute('uv'))return;
     finished.add(mesh.material);
-    if(['Machined rim','Satellite blue','Midnight hull','Satin deck'].includes(mesh.material.name))
-     applyOpticFinish(THREE,mesh.material,mesh.material.name==='Satin deck'?'polished':'brushed');
+    if(['Machined rim','Satellite blue','Midnight hull'].includes(mesh.material.name))
+     applyOpticFinish(THREE,mesh.material,'brushed');
     if(['Dock | Cut titanium','Dock | Ceramic enamel','Dock | Blue grey alloy'].includes(mesh.material.name))
      applyOpticFinish(THREE,mesh.material,'polished');
    });

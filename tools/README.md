@@ -111,6 +111,23 @@ na planszy przed doprowadzeniem światła i po nim.
 
 ## Próbki przebudowy wizualnej
 
+### Materiały powierzchni planszy
+
+Plik `assets/materials/deck/deck-surfaces.blend` zawiera pięć próbek z edytowalnymi
+węzłami materiałów. Aby przebudować próbki i mapy z receptur, uruchom z katalogu projektu
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b -t 4 --python-exit-code 2 -P tools/blender/materials/panel-surfaces.py
+```
+
+Każdy PNG 256 × 256 zawiera liniowe dane. R opisuje odcień, G szorstkość,
+a B i A nachylenie powierzchni w dwóch osiach. Gra wczytuje jedną mapę
+dla danego wykończenia i wybiera z niej fragment dla każdej płyty.
+`src/panel-surface.js` dopasowuje skalę do rozstawu pól i osłabia detal
+przy oddaleniu kamery.
+
+### Modele platform
+
 Wspólny moduł `tools/blender/style.py` używa zatwierdzonej [palety czterech światów](../docs/DESIGN_BIBLE.md) i eksportuje płasko cieniowane GLB Y-up. Renderujemy skrypt z czystej sceny. Z katalogu projektu uruchom:
 
 ```powershell

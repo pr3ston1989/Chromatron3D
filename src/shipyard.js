@@ -1,4 +1,5 @@
 import {scenerySeed} from './campaign-worlds.js';
+import {applyPanelSurface} from './panel-surface.js';
 
 function createSky(THREE){
  const sky=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.ShaderMaterial({
@@ -68,6 +69,7 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
     if(material.name==='Uniform playing surface'||material.name==='Machined upper bevel')
      material.color.multiplyScalar(.59);
     if(material.name==='Inlay seam')material.color.multiplyScalar(.70);
+    if(material.name==='Uniform playing surface')applyPanelSurface(THREE,material,'shipyard',.037);
    });
    rib.position.set(-13.4,-9.8,-17.9);
    rib.rotation.y=-.67;

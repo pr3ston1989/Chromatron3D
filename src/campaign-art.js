@@ -1,4 +1,5 @@
 import {scenerySeed} from './campaign-worlds.js';
+import {applyPanelSurface} from './panel-surface.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -91,6 +92,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
      if(definition.deckTint)paint.color.multiply(tint.setHex(definition.deckTint));
     }
     if(material.name==='Inlay seam')paint.color.multiplyScalar(definition.groove);
+    if(material.name==='Uniform playing surface')applyPanelSurface(THREE,paint,definition.id);
     materials.set(material,paint);
    }
    node.material=materials.get(material);

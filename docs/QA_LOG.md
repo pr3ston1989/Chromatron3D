@@ -1,5 +1,26 @@
 # QA
 
+## 23 listopada 2026 · faktura pokładów
+
+Na „Spektrum” porównano identyczny kadr przed dodaniem materiału, po pierwszym
+wypaleniu i po korekcie. Pierwszy łupek miał zbyt wąskie, ostro oświetlone
+pasma. W drugiej wersji poszerzono użylenie i spłycono relief. Test sprawdza
+na zrzucie kontrast wewnątrz 15 pustych pól i porównuje go z kontrastem fug
+w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844. W ukośnym ujęciu
+telefonicznym wąska spoina obejmuje także skraj płyty, kiedy jej fizyczna
+szerokość spada poniżej piksela renderera. Osobne testy sprawdzają
+linie siatki z góry, widoczność pól i siedem kolorów wiązek.
+
+W Chrome na zintegrowanym Radeonie wykonano zrzuty ośmiu biomów w profilu
+zrównoważonym przy 1366 × 768. W czterech porównanych scenach liczby
+wywołań rysowania i trójkątów przed zmianą i po niej były
+identyczne. Węzeł Keplera przeszedł oddzielną kontrolę widoczności 225 pól.
+Na „Spektrum”, po zakończeniu równoległych testów przeglądarkowych,
+cztery naprzemienne pomiary po 3 s dały po 60 kl./s w wariancie z fakturą
+i bez niej (91 wywołań rysowania, 22 902 trójkąty).
+Porównanie jest w `screenshots/poklad/porownanie.png`, pełne kadry kampanii
+w `screenshots/poklad/final`, a ujęcia stacji w `screenshots/poklad/kepler`.
+
 ## 23 listopada 2026 · kaseta filtra na planszy „Spektrum”
 
 Z góry metalowy pierścień dawnego filtra zasłaniał soczewkę. W zasobniku

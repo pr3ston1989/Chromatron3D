@@ -43,7 +43,7 @@ import {createOpticIllumination} from './optic-illumination.js';
 import {createCollectorField} from './collector-field.js';
 import {createVictoryFX} from './victory-vfx.js';
 import {mountRealMirror,disposeReflectionTargets} from './mirror-reflections.js';
-import {applyOpticFinish} from './optic-textures.js';
+import {applyPanelSurface} from './panel-surface.js';
 import {createOpticModelLoader} from './optic-model-loader.js';
 import {createCinematicPass} from './cinematic-pass.js';
 import {createBoardEdgeGlow} from './board-edge-glow.js';
@@ -166,7 +166,6 @@ const setOverheadGrid=createOverheadGrid(THREE,world,{cells:GRID,tileSize:T});
 // Two instanced draw calls replace 450 independent tile/line meshes.
 // This preserves every logical cell and its coloring while keeping GPU headroom.
 const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
-applyOpticFinish(THREE,tileMaterial,'brushed');
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const sceneryLoader=new GLTFLoader();
 const orbitalScene=orbitalPilot?createOrbitalBenchmark(THREE,scene,world,sceneryLoader,syncBoardPresentation):null;
@@ -338,6 +337,7 @@ function applyLevelEnvironment(){
  const finish=deckSurfaceProfile(theme.decor);
  tileMaterial.metalness=finish.tileMetalness;
  tileMaterial.roughness=finish.tileRoughness;
+ if(!art)applyPanelSurface(THREE,tileMaterial,theme.decor,.03);
  if(!modeledScenery.chassis){
   deck.material.color.setHex(theme.tileB);
   deck.material.metalness=finish.deckMetalness;
