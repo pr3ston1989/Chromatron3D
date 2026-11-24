@@ -6,7 +6,7 @@ export const CAMPAIGN_WORLDS=Object.freeze([
  world('observatory','Obserwatorium pryzmatyczne','Prism Observatory','orbital',
   0x101a32,0x395272,0x192e4f,0xe4eeff,0x82d7ff,'kepler',{scene:'kepler'}),
  world('heliostat','Ogród heliostatów','Heliostat Garden','verdant',
-  0x18212d,0x9b7460,0x565663,0xffe4be,0xd3b471,'garden',{
+  0x212a30,0xa37856,0x515d60,0xffdfb3,0xd3b471,'garden',{
    face:.48,groove:.65,dust:0xc5ac82,air:'sunset',masonry:true,surface:'limestone',footing:{body:0x766044,bevel:0x9a8059,substructure:0x554940},
    models:[
     ['garden-heliostat-authored',[-9.9,-7.75,-13.0],1.43,-.41,'left'],
@@ -14,9 +14,11 @@ export const CAMPAIGN_WORLDS=Object.freeze([
     ['heliostat-aqueduct',[20.5,-8.95,4.9],1.17,-.60,'right'],
     ['heliostat-orchard',[20.8,-14.6,6.0],[1.4,1.2,1.32],-.55],
     ['heliostat-aqueduct',[15.1,-15.6,-27.8],1.28,-.56,'horizon'],
-    ['heliostat-orchard',[-11.6,-12.5,12.5],[1.14,1.07,1.20],-.22],
-    ['skyline-ridge',[32,-19,-43],[2.5,2.05,2.3],-.57],
-    ['skyline-ridge',[44,-29,-57],[3.1,3.10,2.7],-.45]
+    ['heliostat-orchard',[-16.4,-10.6,3.1],[1.04,1.02,1.10],-.38],
+    ['heliostat-garden-spring',[9.7,-9.65,15.8],1.27,-.68],
+    ['heliostat-orchard',[26,-18.8,-25],[1.62,1.02,1.48],-.22,'horizon'],
+    ['heliostat-orchard',[29,-20,-43],[2.62,1.45,2.82],-.57,'horizon'],
+    ['heliostat-orchard',[44,-23,-57],[3.16,1.79,2.85],-.35,'horizon']
    ]
   }),
  world('grotto','Kryształowa grota','Crystal Grotto','nebula',
@@ -73,15 +75,17 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    ]
   }),
  world('sanctuary','Sanktuarium soczewek','Lens Sanctuary','polar',
-  0x161628,0x5d587f,0x3d405c,0xf1deea,0xc1b7eb,'grotto',{
-   face:.56,groove:.60,dust:0xb6afd7,deckTint:0xe5dbef,air:'twilight',masonry:true,footing:{body:0x57506d,bevel:0x837899},
+  0x101528,0x4d6988,0x333e58,0xf5ded0,0xc1b7eb,'grotto',{
+   face:.53,groove:.60,dust:0xb6afd7,deckTint:0xe1d4eb,air:'twilight',masonry:true,footing:{body:0x424359,bevel:0x6a677b},
    models:[
     ['sanctuary-gate',[-10.8,-8.73,-17.4],1.31,-.52,'left'],
-    ['sanctuary-reliquary',[18.1,-7.6,7.4],1.44,-.39,'right'],
-    ['sanctuary-terrace',[18.3,-11.8,7.8],1.37,-.38,'cliff'],
+    ['sanctuary-collimator',[18.7,-7.8,7.1],1.28,-.54,'right'],
+    ['sanctuary-terrace',[18.7,-12.1,7.1],1.32,-.54,'cliff'],
     ['sanctuary-terrace',[-11.1,-12.7,-17.8],1.35,-.52,'cliff'],
-    ['sanctuary-gate',[21,-16.4,-29],1.52,-.75,'horizon'],
-    ['grotto-escarpment',[34,-40,-50],[2.1,1.62,2.05],-.54,'horizon']
+    ['sanctuary-broken-span',[17,-12.6,-24.4],1.45,-.53],
+    ['sanctuary-broken-span',[34,-17.8,-41],1.91,-.72,'horizon'],
+    ['sanctuary-terrace',[-12.0,-9.4,12.8],1.08,-.30],
+    ['grotto-escarpment',[36,-46,-54],[1.82,1.64,2.00],-.54,'horizon']
    ]
   })
 ]);

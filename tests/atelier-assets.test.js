@@ -11,6 +11,24 @@ function gltf(path){
  return JSON.parse(data.toString('utf8',20,20+data.readUInt32LE(12)));
 }
 
+test('garden waterworks and sanctuary ruins use detailed Blender meshes and surface materials',()=>{
+ const models=[
+  ['heliostat-garden-spring',1,'Garden running water'],
+  ['sanctuary-collimator',6,'Sanctuary active lens'],
+  ['sanctuary-broken-span',6,'Broken processional span body']
+ ];
+ for(const [id,level,material] of models){
+  assert.ok(campaignWorld('demo',level).models.some(([name])=>name===id),id);
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const doc=JSON.parse(file.toString('utf8',20,20+file.readUInt32LE(12)));
+  assert.ok(doc.materials.some(entry=>entry.name===material),id+' retains its authored finish');
+  const triangles=doc.meshes.flatMap(mesh=>mesh.primitives)
+   .reduce((count,primitive)=>count+doc.accessors[primitive.indices].count/3,0);
+  assert.ok(triangles>=1500&&triangles<=4900,id+' stays within its module budget');
+  assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0,id+' has an editable source');
+ }
+});
+
 test('the playable Blender models have matching, distinct transparent equipment portraits',()=>{
  const portraits=new Set();
  for(const kind of CLASSIC_TYPE_NAMES.slice(1)){

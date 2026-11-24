@@ -7,13 +7,13 @@ na przypisanej części lokalnej kampanii.
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
 | --- | --- | --- | --- |
 | 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
-| 2 | Ogród heliostatów | Ciepły wapień i jadeit, mglista dolina. | Heliostat nad sadem, zielone tarasy i segmentowy akwedukt. |
+| 2 | Ogród heliostatów | Ciepły wapień i jadeit, złote światło nad doliną. | Heliostat nad sadem, akwedukt, trzy tarasy z kaskadą i zbiornikami oraz wijący się nurt w dolinie. |
 | 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, warstwy skalne, skupiska ametystu i ruch wody. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Dwie kratownicowe galerie serwisowe i przelot pojazdu. |
 | 5 | Laboratorium polarne | Oszroniony stop, niebieski lód i zorza. | Ściany lodowca, przewężenia skalne i modułowy pojazd stacji. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Segmentowy piec, kolumny bazaltu, suwnica i strumień lawy pod planszą. |
 | 7 | Optyka głębinowa | Morski granat, zielonoszary pokład i ruchome refleksy. | Kopułowa stacja ciśnieniowa, porośnięta rafa i prądy poza planszą. |
-| 8 | Sanktuarium soczewek | Liliowy kamień i cyjanowe sygnały. | Rozczłonkowana brama, relikwiarz optyczny i niski taras z cokołami. |
+| 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Kolimator z wypukłym szkłem na dwóch przyporach, zerwany most i niski taras z cokołami. |
 
 Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,
 układy i zapisy kampanii są niezależne od scenografii.

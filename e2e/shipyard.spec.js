@@ -45,28 +45,39 @@ test.describe('touch scenery',()=>{
  });
 });
 
-test('grotto cliff faces stay clear when orbiting the board at a low angle',async({page})=>{
+for(const [level,world] of [[2,'garden'],[3,'grotto'],[7,'sanctuary']])
+test(`${world} scenery stays clear when orbiting the board at a low angle`,async({page})=>{
  test.setTimeout(90000);
  await page.setViewportSize({width:1280,height:720});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>Boolean(window.__debug));
- await page.evaluate(()=>{
+ await page.evaluate(level=>{
   window.__debug.switchCampaign('demo');
-  window.__debug.loadLevel(3);
-  window.__debug.freezeAnimations(true);
- });
+  window.__debug.loadLevel(level);
+  window.__debug.freezeAnimations(true,{onDemand:true});
+ },level);
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ await page.evaluate(()=>window.__debug.renderStill());
  const corner=()=>page.evaluate(()=>window.chromatron.projectCell(0,0));
  for(let turn=0;turn<4;turn++){
   const before=await corner();
-  const start=await page.evaluate(()=>window.chromatron.projectCell(7,9));
+  const start=await page.evaluate(()=>{
+   const api=window.chromatron,canvas=document.querySelector('#scene canvas');
+   for(const x of [7,6,8,5,9])for(const y of [9,8,10,7,11]){
+    const point=api.projectCell(x,y);
+    if(point.y>90&&point.x<innerWidth-355&&document.elementFromPoint(point.x,point.y)===canvas&&
+       api.inspectPointer(point.x,point.y).intent==='clear')return point;
+   }
+   return null;
+  });
+  expect(start).not.toBeNull();
   await page.mouse.move(start.x,start.y);
   await page.mouse.down();
   await page.mouse.move(start.x+349,start.y-(turn===0?78:0),{steps:5});
   await page.mouse.up();
   await expect.poll(corner).not.toEqual(before);
-  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await page.evaluate(()=>window.__debug.renderStill());
   expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),'quarter turn '+(turn+1)).toEqual([]);
  }
 });

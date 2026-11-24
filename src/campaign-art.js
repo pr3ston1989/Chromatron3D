@@ -3,6 +3,7 @@ import {applyPanelSurface} from './panel-surface.js';
 import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
 import {createBiomeBasin} from './biome-basin.js';
 import {applyOpticFinish} from './optic-textures.js';
+import {applyLandmarkFinish} from './landmark-surfaces.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -58,7 +59,7 @@ function gradientSky(THREE){
     float clouds=veil(uv*vec2(3.,12.)+vec2(time*.012,0.));
     vec3 color=mix(dark,glow,atmosphere*(.63+.37*clouds));
     if(kind==1.){
-     float facing=dot(ray,normalize(vec3(.54,-.17,-.82)));
+     float facing=dot(ray,normalize(vec3(.76,-.40,-.60)));
      float sunset=exp(-(1.-facing)*16.)*.54+exp(-(1.-facing)*102.)*.37;
      float disk=smoothstep(.99955,.99982,facing);
      color+=vec3(.85,.39,.17)*(sunset+disk*1.29)*(1.-.31*clouds);
@@ -122,6 +123,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
  function setup(record,base,scatter,fixtures,foundation){
   const {definition,root}=record;
   const plantings=definition.scatter?.[3];
+  record.scenicTime={value:0};
   record.platform=base.clone(true);
   record.platform.position.y=-3.768;
   const materials=new Map();
@@ -169,10 +171,12 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
      if(!node.isMesh)return;
      if(!materials.has(node.material)){
       const finish=node.material.clone();
-      if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
-       finishGrottoRock(THREE,finish,definition.surface);
-      }else if(node.geometry.getAttribute('uv')&&/ (body|bevel)$/.test(finish.name)){
-       applyOpticFinish(THREE,finish,'brushed');
+      if(!applyLandmarkFinish(THREE,finish,record.scenicTime)){
+       if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
+        finishGrottoRock(THREE,finish,definition.surface);
+       }else if(node.geometry.getAttribute('uv')&&/ (body|bevel)$/.test(finish.name)){
+        applyOpticFinish(THREE,finish,'brushed');
+       }
       }
       materials.set(node.material,finish);
      }
@@ -301,6 +305,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
  function update(seconds,still,camera){
   if(!active)return;
   const t=still?0:seconds;
+  active.scenicTime.value=t;
   sky.material.uniforms.time.value=t;
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);

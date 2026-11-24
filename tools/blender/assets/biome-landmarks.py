@@ -9,6 +9,7 @@ import bpy
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.blender.style import MODELS, Sculpture, export_model, make_material, plate, render, reset_scene
 from tools.blender.orbital_finish import finish_surface
+from blender_sculpt import paint
 
 
 class Landmark:
@@ -123,6 +124,72 @@ def orchard():
                        (x+.27,y,z+h*(.42+.18*j),r,r*.86),
                        (x+.42,y,z+h*(.73+.16*j),.12,.12)],m.stone,9,
                       ribs=3,relief=.13,bands=[m.stone,leaf],phase=i*.8+j*.48)
+    return m
+
+
+def garden_spring():
+    m = Landmark("Spring terraces", "limestone", "bronze", "jade", "olive", masonry=True)
+    water = paint("Garden running water", (.017,.158,.121), .22,.25)
+    soil = paint("Moss over earth", (.062,.097,.026), .02,.89)
+    leaf = paint("Olive crown sunward", (.127,.225,.037), .03,.68)
+    leaf_dark = paint("Olive crown shade", (.023,.081,.028), .01,.83)
+    blossom = paint("Ocher wildflowers", (.54,.22,.051), 0,.57)
+    bark = make_material("Twisted olive bark","bronze",.03,.75,shade=-2)
+    rng = Random(83)
+    # A string of low retaining walls carries the water toward the ravine.
+    for i,(x,y,z,rx,ry) in enumerate([(-3.1,.44,1.2,2.95,3.02),(.33,.22,.72,2.8,2.8),(3.2,-.32,.14,2.46,2.56)]):
+        m.rock((x,y,0),(rx*1.22,ry*1.18),z+1.44,310+i,cap=soil)
+        m.slab((x,y),rx,ry,z+.75,.49,.79,m.body)
+        m.slab((x,y+.18),rx*.87,ry*.82,z+1.23,.13,.48,soil)
+        rim = [(rx*.70,.78,1.35),(rx*.76,.91,1.49),(rx*.65,.74,1.57),(rx*.59,.66,1.45)]
+        start = len(m.s.vertices)
+        sides = 12
+        m.s.vertices.extend((x+wx*cos(j*tau/sides),y-1.03+wy*sin(j*tau/sides),z+height)
+                            for wx,wy,height in rim for j in range(sides))
+        for row,material in enumerate((m.body,m.edge,m.dark)):
+            for j in range(sides):
+                a = start+row*sides+j
+                b = start+row*sides+(j+1)%sides
+                m.s.face((a,b,b+sides,a+sides),material)
+        water_edge = start+3*sides
+        m.s.face(tuple(range(water_edge,water_edge+sides)),water)
+        for j in range(5):
+            pos = x+rx*(j/3.3-.57)
+            m.slab((pos,y-2.38),.27,.40,z+1.16,.22,.15,m.stone)
+    # The cascade crests and then drops into the next, lower basin.
+    for x,y,z in [(-1.47,-.68,2.73),(1.70,-.93,2.25),(4.22,-1.35,1.67)]:
+        cross = [(x-.41,y,z),(x-.33,y+.28,z+.02),(x+.31,y+.24,z+.02),(x+.46,y,z)]
+        sheet = [[(px+dx,py+dy,pz+dz) for px,py,pz in cross]
+                 for dx,dy,dz in [(0,0,0),(.51,-.17,-.10),(.87,-.30,-.38),(1.01,-.35,-.67)]]
+        base = len(m.s.vertices)
+        m.s.vertices.extend(point for row in sheet for point in row)
+        for i in range(3):
+            for j in range(3):
+                v = base+4*i+j
+                m.s.face((v,v+1,v+5,v+4),water)
+    for x,y,z,h in [(-4.55,1.74,2.53,2.64),(-2.26,1.62,2.57,3.03),(.41,1.69,2.08,2.75),(3.35,.89,1.58,2.17)]:
+        m.s.cable([(x,y,z,.25),(x-.18,y+.16,z+h*.37,.19),(x+.18,y+.19,z+h*.70,.13)],bark,7)
+        for i in range(4):
+            a = i*tau/4+rng.uniform(-.4,.4)
+            dx,dy = cos(a)*h*.45,sin(a)*h*.34
+            m.s.cable([(x-.12,y+.13,z+h*.43,.12),(x+dx*.51,y+dy*.53,z+h*.71,.074),
+                       (x+dx,y+dy,z+h*.84,.024)],bark,5)
+            cx,cy,cz = x+dx,y+dy,z+h*(.78+.15*rng.random())
+            radius = h*rng.uniform(.29,.39)
+            m.s.lathe([(cx,cy,cz-.34,radius*.51,radius*.43),
+                       (cx,cy,cz-.13,radius,radius*.73),(cx+.13,cy,cz+.29,radius*.76,radius*.61),
+                       (cx+.21,cy+.10,cz+.49,.18,.17)],leaf_dark,9,ribs=3,relief=.16,
+                      bands=[leaf_dark,leaf,leaf],phase=a)
+    for i in range(14):
+        x,y = rng.uniform(-5.5,4.4), rng.uniform(-2.14,-1.85)
+        z = 2.54 if x<-1.7 else 2.03 if x<1.64 else 1.45
+        for j in range(3):
+            a = i*.68+j*tau/3
+            m.s.blade([(x,y,z,.032,.02),(x+.12*cos(a),y+.12*sin(a),z+.27,.068,.043),
+                       (x+.33*cos(a),y+.33*sin(a),z+.35,.014,.013)],leaf,leaf_dark)
+        if i%3==0:
+            m.s.lathe([(x,y,z+.25,.025,.025),(x,y,z+.37,.081,.072),(x+.018,y,z+.40,.045,.034)],
+                      leaf,5,bands=[blossom,blossom])
     return m
 
 
@@ -252,6 +319,62 @@ def sanctuary_terrace():
     return m
 
 
+def sanctuary_collimator():
+    m = Landmark("Sanctuary collimator", "navy", "amethyst", "cyan", "plum", masonry=True)
+    bronze = paint("Dark engraved bronze", (.23,.107,.060), .61,.38)
+    glyph = paint("Etched copper inlay", (.39,.175,.068), .54,.31)
+    lens_body = paint("Sanctuary active lens", (.022,.200,.269), .51,.11,.12)
+    deep_glass = paint("Smoked edge glass", (.011,.055,.098), .32,.14)
+    m.slab((0,0),4.3,2.72,0,.57,.68,m.stone)
+    m.slab((0,0),3.81,2.34,.57,.60,.54,m.body)
+    m.slab((0,0),3.19,1.90,1.16,.26,.42,m.dark)
+    center = 4.09
+    # Two tapering, counterweighted buttresses carry the cradles and lens.
+    for side in (-1,1):
+        for lane in (-.59,.66):
+            outlines = [
+                [(side*x,lane+y,z) for x,y,z in [(2.10,-.56,1.39),(3.49,-.46,1.39),(3.39,.53,1.39),(2.09,.64,1.39)]],
+                [(side*x,lane+y,z) for x,y,z in [(2.53,-.48,2.33),(3.23,-.40,2.33),(3.18,.50,2.33),(2.50,.50,2.33)]],
+                [(side*x,lane+y,z) for x,y,z in [(2.30,-.44,4.32),(2.85,-.37,4.32),(2.86,.40,4.32),(2.31,.43,4.32)]],
+                [(side*x,lane+y,z) for x,y,z in [(1.97,-.36,5.28),(2.45,-.23,5.28),(2.42,.28,5.28),(1.94,.32,5.28)]]
+            ]
+            m.s.loft(outlines,m.dark,[m.stone,m.body,m.edge])
+        m.pipe([(side*3.13,-1.08,1.65),(side*2.95,-1.06,2.82),(side*2.59,-1.01,4.12)],.063,glyph,5)
+        m.pipe([(side*2.70,-1.05,2.04),(side*2.60,-1.032,2.91),(side*2.41,-1.0,4.16)],.042,m.signal,4)
+    m.ring((0,.09,center),2.00,2.44,.44,m.body,segments=18,lights=True)
+    m.ring((0,-.44,center),1.88,2.07,.17,bronze,segments=20)
+    m.ring((0,-.635,center),1.83,1.88,.047,glyph,segments=20)
+    radii = [(.33,1.70),(.08,1.86),(-.27,1.90),(-.54,1.80),(-.76,1.43),(-.86,.75),(-.90,.20)]
+    face = [[(cos(i*tau/24)*r,y+r*sin(i*tau/24)*.19,center+r*sin(i*tau/24))
+             for i in range(24)] for y,r in radii]
+    m.s.loft(face,deep_glass,[deep_glass,bronze,deep_glass,lens_body,lens_body,lens_body])
+    for i in range(12):
+        a = i*tau/12
+        m.pipe([(cos(a)*2.23,-.375,center+sin(a)*2.23),
+                (cos(a)*2.32,-.418,center+sin(a)*2.32)],.034,glyph,4)
+    for x in (-2.97,2.97):
+        m.slab((x,-1.44),.45,.34,1.43,.34,.11,bronze)
+        for z in (1.48,1.56,1.64):
+            m.pipe([(x-.31,-1.77,z),(x+.32,-1.77,z)],.022,m.dark,4)
+    return m
+
+
+def sanctuary_broken_span():
+    m = Landmark("Broken processional span", "plum", "titanium", "cyan", "obsidian", masonry=True)
+    for i,(x,y,scale) in enumerate([(-4,.11,1),(-.73,.38,.93),(3.18,.22,.76)]):
+        m.rock((x,y,0),(1.93,2.15),2.24*scale,138+i)
+        m.slab((x,y),1.18,1.24,1.52*scale,.55,.28,m.body)
+        for z in (2.03,2.70,3.36,4.02):
+            m.slab((x,y),.79,.90,z*scale,.66*scale,.13,m.body)
+        m.slab((x,y),1.01,1.12,4.65*scale,.30,.25,m.edge)
+    m.ring((-2.36,.26,4.85),1.32,1.98,.68,m.body,segments=9,start=.02,span=pi-.11)
+    m.ring((1.20,.24,4.47),1.45,2.12,.67,m.body,segments=3,start=.12,span=.91)
+    m.ring((1.20,.24,4.47),1.45,2.12,.67,m.body,segments=2,start=2.42,span=.68)
+    for i in range(4):
+        m.rock((3.2+i*.52,.84+i*.38,0),(.91,1.07),1.64+i*.11,180+i)
+    return m
+
+
 def crystal_seam():
     m = Landmark("Amethyst seam", "plum", "amethyst", "lilac", "obsidian", masonry=True)
     quartz = make_material("Quartz tips", "lilac", .24, .24, .14, shade=1)
@@ -326,11 +449,13 @@ def stone_support():
 
 BUILDERS = {
     "heliostat-aqueduct": aqueduct, "heliostat-orchard": orchard,
+    "heliostat-garden-spring": garden_spring,
     "frost-escarpment": glacier, "frost-traverser": polar_station,
     "forge-smelter": smelter, "forge-basalt": basalt_basin,
     "abyss-habitat": bathysphere, "abyss-reef": reef,
     "sanctuary-gate": sanctuary_gate, "sanctuary-reliquary": reliquary,
     "sanctuary-terrace": sanctuary_terrace,
+    "sanctuary-collimator": sanctuary_collimator, "sanctuary-broken-span": sanctuary_broken_span,
     "grotto-crystal-seam": crystal_seam, "shipyard-graving-dock": graving_dock,
     "biome-deck-truss": alloy_support, "biome-deck-arcade": stone_support,
 }

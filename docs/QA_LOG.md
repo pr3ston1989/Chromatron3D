@@ -1,5 +1,11 @@
 # QA
 
+## 24 listopada 2026 · Ogród heliostatów i Sanktuarium soczewek
+
+- Zrzuty z gry w 1672 × 941 i 390 × 844 potwierdziły widoczność 225 pól w obu scenach. Kadry i porównanie przed i po są w `screenshots/ogrod-sanktuarium`.
+- Test Playwright w 1280 × 720 sprawdził cztery ćwierćobroty kamery w Ogrodzie, Grocie i Sanktuarium. Osobny test dotykowy sprawdził wszystkie osiem plansz w widoku z góry.
+- Test zasobów sprawdza źródła Blendera, materiały i budżety trzech modeli. Kaskada ma 4696 trójkątów, kolimator 2392, a zerwany most 1962.
+
 ## 24 listopada 2026 · scenografia ośmiu światów
 
 - Zrzuty 1672 × 941 i 390 × 844 pokazują osiem publicznych zagadek. Pierwsze ujęcia ujawniły kolizję tarasu Sanktuarium, zbyt jasne tło Kuźni i fragment bazaltu nad narożnikiem planszy na telefonie. Po korektach wszystkie środki pól pozostały widoczne.
