@@ -30,6 +30,13 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 
 ## Controls
 
+On a portrait touch phone the board opens directly overhead. Tap **Enlarge tiles**
+for a working view with roughly 48 CSS pixels per cell. Drag empty space to pan
+or pinch with two fingers. **Full board** restores the overview. Tap an available
+instrument and then its destination. Tap an instrument already on the board to
+rotate it, return it to stock or choose **Move** and tap another tile. The **3D
+view** button switches back to the orbital camera.
+
 - **Click** a movable optic on the board to select it. Clicking the same optic again does not rotate it.
 - **Click a tray optic**, then click an empty tile to place it. After placement it remains selected for rotation, but no longer follows empty-board clicks.
 - **Q / E** or the visible **↶ / ↷ buttons** rotate the selected optic 45° in opposite directions.

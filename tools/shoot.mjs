@@ -13,6 +13,7 @@ const {values: options} = parseArgs({options:{
   quality:{type:'string',default:'performance'},
   themes:{type:'string'},
   'pilot-off':{type:'boolean',default:false},
+  'phone-detail':{type:'boolean',default:false},
   'solved-demo':{type:'boolean',default:false},
   'sample-ms':{type:'string',default:'4000'},
   'warmup-ms':{type:'string',default:'0'},
@@ -32,6 +33,7 @@ if(!/^(demo|classic[1-4])$/.test(options.campaign)||
    options['solved-demo']&&(options.campaign!=='demo'||levels.some(n=>!DEMO_SOLUTIONS[n-1]))||
    !['auto','performance','balanced','cinematic'].includes(options.quality)||
    levels.some(n=>!Number.isInteger(n)||n<1)||
+   options['phone-detail']&&viewports.some(v=>v.width>600||v.width>=v.height)||
    viewports.some(v=>Object.values(v).some(n=>!Number.isInteger(n)||n<240||n>5000))||
    themes&&themes.length!==levels.length||
    !Number.isFinite(millis)||millis<2000||millis>30000||
@@ -89,6 +91,11 @@ try{
       },{},{timeout:30000});
       if(await page.evaluate(()=>window.__debug.getLevelState().pilotStatus==='error'))
         throw Error('Could not load the pilot models');
+      if(options['phone-detail']){
+        await page.locator('#phone-magnify').tap();
+        if(await page.locator('#phone-magnify').getAttribute('aria-pressed')!=='true')
+          throw Error('Phone working view did not open');
+      }
       if(options['solved-demo']){
         const solved=await page.evaluate(moves=>{
           const api=window.__debug;
@@ -121,7 +128,7 @@ try{
       }),millis);
       await page.evaluate(()=>window.__debug.freezeAnimations(true));
       const {theme}=await page.evaluate(()=>window.__debug.getLevelState());
-      const file=`${options.campaign}-${String(level).padStart(3,'0')}_${viewport.width}x${viewport.height}.png`;
+      const file=`${options.campaign}-${String(level).padStart(3,'0')}_${viewport.width}x${viewport.height}${options['phone-detail']?'-detail':''}.png`;
       await page.screenshot({path:join(output,file),timeout:40000,animations:'disabled'});
       entries.push({file,campaign:options.campaign,level,theme,viewport,startupMs,...measurement,
         messages:messages.slice(messageStart)});

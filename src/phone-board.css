@@ -1,0 +1,58 @@
+#phone-tools,#phone-magnify,#phone-instruction,.phone-tool-label {display:none}
+
+@media (pointer:coarse) and (max-width:680px) and (orientation:portrait) {
+ #app,#app.orbital-pilot {--inset:12px;--dock-raised:var(--phone-dock-height,145px);--dock-bottom:0px}
+ #app .header {inset:0 0 auto;height:calc(50px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;gap:8px;background:#0c1524e8;border-bottom:1px solid #96bdd32b}
+ #app .header .brand,#app .header #levels-button,#app .header #help {min-height:44px}
+ #app .header .brand strong {font:650 13px/1.1 system-ui,sans-serif;letter-spacing:.04em}
+ #app .header #levels-button {margin-inline:auto;font:650 12px/1 system-ui,sans-serif;background:transparent;border:0;box-shadow:none;color:#f5d59a}
+ #app .header .header-right {margin-left:auto;gap:4px}
+ #app .header #language,#app .header #audio,#app .header #fullscreen,#app .header #board-focus {display:none}
+ #app .header #help,#phone-tools summary {width:44px;min-height:44px;display:grid;place-items:center}
+ #phone-tools {display:block;position:relative}
+ #phone-tools summary {cursor:pointer;list-style:none;border-radius:8px;color:#d3ddeb;letter-spacing:.13em}
+ #phone-tools summary::-webkit-details-marker {display:none}
+ #phone-tools[open] summary {background:#243348;color:white}
+ #phone-tools .phone-tools-menu {position:absolute;z-index:10;top:100%;right:0;min-width:155px;padding:5px;background:#122031;border:1px solid #536478;border-radius:9px;box-shadow:0 10px 22px #0007}
+ #app #phone-tools button {display:flex!important;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:44px;padding:0 10px;border:0;background:transparent;color:#e6eef6;text-align:left}
+ .phone-tool-label {display:inline;font:600 13px system-ui,sans-serif}
+ #app .mission {inset:calc(62px + env(safe-area-inset-top)) 12px auto;gap:10px}
+ #app .mission h1 {font:700 clamp(20px,5.5vw,28px)/1.04 system-ui,sans-serif;letter-spacing:-.035em;margin:3px 0 5px}
+ #app .mission p {font:500 12px/1.35 system-ui,sans-serif;max-width:37ch}
+ #app .mission-location {font:650 9px/1.15 system-ui,sans-serif;letter-spacing:.11em}
+ #app .mission-location #level-pack-label {display:none}
+ #app .mission-objective {width:132px}
+ #app .stage-arrow {width:44px;height:44px;flex:none}
+ #app .mission-number {font-size:20px}
+ #app .mission-progress {font-size:9px;letter-spacing:0}
+ #app .game-dock {left:0;right:0;bottom:0;width:auto;transform:none;display:grid;isolation:isolate;grid-template-columns:44px 44px 48px minmax(80px,1fr) minmax(50px,.65fr);gap:7px 5px;padding:9px 10px max(10px,env(safe-area-inset-bottom));border:0;border-top:1px solid #7793ad80;border-radius:15px 15px 0 0;background:linear-gradient(160deg,#1a283a,#0b1420 75%);box-shadow:0 -8px 25px #070d171f}
+ #app .game-dock::before,#app .game-dock::after {display:none}
+ #app .game-dock .dock-actions,#app .game-dock .dock-history,#app .game-dock .hud-bottom,#app .game-dock .dock-view {display:contents}
+ #app .game-dock .tool-panel {grid-area:1 / 1 / 2 / -1;align-self:stretch;margin:0;padding:0;border:0}
+ #app .equipment-heading,#app .quality-widget,#app .dock-credits,#app #keyboard-board-button {display:none}
+ #app #inventory,.equipment-slots {margin:0}
+ #app #inventory .equipment-slots {display:flex;gap:6px;min-height:0;padding:0 0 1px;scrollbar-width:none}
+ #app #inventory .equipment-slots:empty {display:none}
+ #app #inventory button.inventory-item {display:grid;grid-template-columns:36px auto;grid-template-rows:1fr;align-items:center;gap:3px;position:relative;min-height:48px;min-width:85px;width:auto;flex:0 0 auto;padding:4px 10px 4px 4px;border-radius:7px;background:#1c3043;border:1px solid #52728a}
+ #app #inventory .equipment-slots button.inventory-item .component-icon {width:36px;height:36px}
+ #app #inventory .equipment-name {max-width:95px;padding-right:9px;font:600 12px/1.06 system-ui,sans-serif}
+ #app #inventory button.inventory-item strong {font-size:10px;top:1px;right:3px}
+ #phone-instruction {display:block;margin:4px 0 2px;font:500 12px/1.35 system-ui,sans-serif;color:#bdd1e2}
+ #app .game-dock #undo,#app .game-dock #redo,#app .game-dock .hint-button,#app .game-dock #camera-preset,#phone-magnify {grid-row:2;min-width:0;min-height:44px;width:100%;margin:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 4px;border:1px solid #4a617a;border-radius:7px;background:#19273a;box-shadow:none;color:#e5edf8}
+ #app .game-dock #undo {grid-column:1}
+ #app .game-dock #redo {grid-column:2}
+ #app .game-dock .hint-button {grid-column:3;color:#ffce7e}
+ #app .game-dock .hint-button[hidden],#app .game-dock .hint-button [data-i18n],#app .game-dock #hint-badge {display:none}
+ #app .game-dock #camera-preset {grid-column:5;font:650 12px/1 system-ui,sans-serif}
+ #phone-magnify {grid-column:4;font:650 12px/1 system-ui,sans-serif;border-color:#5d8b9f;color:#c5f4ff}
+ #phone-magnify span:first-child {position:relative;font-size:0;width:12px;height:12px;border:1.5px solid currentColor;border-radius:50%;margin-right:3px}
+ #phone-magnify span:first-child::after {content:'';position:absolute;width:6px;height:2px;background:currentColor;right:-4px;bottom:-2px;transform:rotate(48deg)}
+ #phone-magnify[aria-pressed=true] {background:#1e4250}
+ #app .optic-workbench {left:8px;right:8px;width:auto;bottom:calc(var(--dock-raised) + 4px)}
+ #app .transform-controls button {min-height:44px;min-width:44px;border-radius:7px}
+ #app .transform-controls kbd {display:none}
+ #app .optic-info {max-height:35px}
+ #app .coach {bottom:calc(var(--dock-raised) + var(--workbench-height,0px) + 8px)}
+ #app .coach-dismiss {min-width:44px;min-height:44px}
+ #app .header:has(#phone-tools[open]) {z-index:8}
+}

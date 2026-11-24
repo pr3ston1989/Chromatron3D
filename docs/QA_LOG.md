@@ -1,5 +1,24 @@
 # QA
 
+## 24 listopada 2026 · plansza dotykowa i Kryształowa Grota
+
+W Chrome z emulacją dotyku na 320 × 568 i 390 × 844 rozegrano „Pierwsze światło”.
+Test otwiera mapę z góry, powiększa pola, przesuwa obraz jednym palcem, wraca do
+widoku całej planszy i wybiera lustro z zasobnika. Następnie powiększa widok
+ponownie, stawia lustro, obraca je i sprawdza zwycięstwo. Osobne scenariusze
+obejmują anulowanie przeciągania, gest dwoma palcami i próbę postawienia
+przyrządu na zajętym polu. Fizyczny ekran telefonu wymaga osobnej próby.
+
+W grocie test zasobów wczytuje modele z GLB, mierzy budżet geometrii i sprawdza
+trafienie trzech kotew pomostu w półkę skalną. Podglądy modeli są w
+`assets/previews/overhaul/scenery`. Zdjęcia z faktycznej rozgrywki można
+odtworzyć następującymi poleceniami.
+
+```powershell
+node tools/shoot.mjs --levels 3 --sizes 1366x768,390x844 --backend native --quality balanced
+node tools/shoot.mjs --levels 3 --sizes 390x844 --backend native --quality balanced --phone-detail
+```
+
 ## 23 listopada 2026 · faktura pokładów
 
 Na „Spektrum” porównano identyczny kadr przed dodaniem materiału, po pierwszym

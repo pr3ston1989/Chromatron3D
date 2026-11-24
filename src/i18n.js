@@ -1,6 +1,8 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    phoneTools:'Narzędzia planszy',phoneAnalysis:'Analiza',phoneReset:'Od początku',phoneCamera3D:'Widok 3D',phoneCameraMap:'Mapa',
+    phoneEnlarge:'Powiększ pola',phoneFit:'Cała plansza',phoneBoard:'Dotknij przyrządu na planszy.',phonePick:'Wybierz przyrząd, potem dotknij pola.',phonePlace:'Dotknij pola, na którym chcesz ustawić przyrząd.',phonePan:'Przesuwaj widok po pustym polu.',
     orbitalPilot:'STACJA ORBITALNA',orbitalDemo:'Poziom wzorcowy',receiverInfo:'Sprawdź rezonator',nextReceiver:'Następny rezonator',closeInfo:'Zamknij informacje',
     winBackToBoard:'Wróć do planszy',winReview:'WYNIK',
     hintShowMove:'POKAŻ NA PLANSZY',hintGuideTitle:'NASTĘPNY RUCH',hintDismissGuide:'Schowaj wskazówkę na planszy',
@@ -61,6 +63,8 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    phoneTools:'Board tools',phoneAnalysis:'Analysis',phoneReset:'Restart',phoneCamera3D:'3D view',phoneCameraMap:'Map',
+    phoneEnlarge:'Enlarge tiles',phoneFit:'Full board',phoneBoard:'Tap an instrument on the board.',phonePick:'Choose an instrument, then tap a tile.',phonePlace:'Tap the tile where you want to place the instrument.',phonePan:'Drag an empty tile to pan.',
     orbitalPilot:'ORBITAL STATION',orbitalDemo:'Showcase level',receiverInfo:'Inspect receiver',nextReceiver:'Next receiver',closeInfo:'Close information',
     winBackToBoard:'Back to the board',winReview:'RESULT',
     hintShowMove:'SHOW ON THE BOARD',hintGuideTitle:'NEXT MOVE',hintDismissGuide:'Hide the guide on the board',

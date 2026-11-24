@@ -65,6 +65,8 @@ import './stage-arrival.css';
 import './game-interface.css';
 import './main-menu.css';
 import './orbital-benchmark.css';
+import './phone-board.css';
+import {mountPhoneControls} from './phone-controls.js';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const searchParams=new URLSearchParams(location.search);
@@ -97,6 +99,8 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
 const compactBoard=window.matchMedia('(max-width:680px), (max-width:960px) and (orientation:portrait)');
+const phonePortrait=window.matchMedia('(pointer:coarse) and (max-width:680px) and (orientation:portrait)');
+mountPhoneControls(phonePortrait);
 const defaultZoom=44;
 let yaw=orbitalPilot?-.56:-.80,pitch=.86,zoomLastFrame=0;
 const orbitZoom={current:defaultZoom,target:defaultZoom};
@@ -1002,6 +1006,7 @@ function load(i,{silentIntro=false,allowLocked=false}={}){
   return false;
  }
  cancelBoardGesture();finishTrayGesture(null,false);
+ if(phonePortrait.matches)resetPhoneFraming();
  cancelSolutionSearch();
  guidedSolution=offeredGuide=null;
  if(victoryFX){victoryFX.dispose();victoryFX=null}
@@ -1143,7 +1148,7 @@ function renderInventory(){
   const label=type==='filter'?typeLabel+' · '+colorName(color,language):typeLabel;
   const tray=candidates.filter(p=>p.inTray);
   const movableType=movable.has(type);
-  if(orbitalPilot&&(!movableType||!tray.length))continue;
+  if((orbitalPilot||phonePortrait.matches)&&(!movableType||!tray.length))continue;
   const item=document.createElement(movableType?'button':'div');
   item.className='inventory-item'+(movableType?' selectable':'');
   if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
@@ -1194,6 +1199,7 @@ function renderInventory(){
   item.append(icon,name,count);(movableType?slots:fixtureItems).appendChild(item);
  }
  if(fixtureItems.children.length)el.append(fixtures);
+ syncPhoneInstruction();
  el.closest('.game-dock').style.setProperty('--stock-types',slots.childElementCount);
  slots.scrollLeft=scrollAcross;
  el.scrollTop=scroll;
@@ -1458,7 +1464,9 @@ let toastTimeout;
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2600)}
 const beep=soundscape.effect;
 
-let cameraTween=null,cameraTop=false,overheadBlend=0,overheadFrame=null;
+let cameraTween=null,cameraTop=phonePortrait.matches,overheadBlend=Number(cameraTop),overheadFrame=null;
+const phonePan={x:0,z:0};
+let manualCamera=false;
 const symbolPoint=new THREE.Vector3();
 const boardSymbols=createBoardSymbols($('board-symbols'),(x,y)=>{
  symbolPoint.set((x-HALF)*T,0,(y-HALF)*T).project(camera);
@@ -1466,11 +1474,34 @@ const boardSymbols=createBoardSymbols($('board-symbols'),(x,y)=>{
 });
 function syncBoardSymbols(){boardSymbols.update(showBoardSymbols&&overheadBlend===1,pieces,selected)}
 let orbitAngles={yaw,pitch};
+if(cameraTop){yaw=0;pitch=Math.PI/2}
 const activeZoom=()=>cameraTop?overheadZoom:orbitZoom;
+function resetPhoneFraming(){
+ phonePan.x=phonePan.z=0;
+ overheadZoom.current=overheadZoom.target=defaultZoom;
+ syncPhoneZoomLabel();
+}
+function syncPhoneZoomLabel(){
+ const button=$('phone-magnify');
+ const enlarged=cameraTop&&overheadZoom.target<defaultZoom-.1;
+ button.setAttribute('aria-pressed',String(enlarged));
+ button.lastElementChild.textContent=t(language,enlarged?'phoneFit':'phoneEnlarge');
+ syncPhoneInstruction();
+}
+function syncPhoneInstruction(){
+ if(!phonePortrait.matches)return;
+ const placing=selected&&(placementMode||relocation);
+ const enlarged=cameraTop&&overheadZoom.target<defaultZoom-.1;
+ const hasStock=$('equipment-slots')?.childElementCount;
+ const copy=t(language,placing?'phonePlace':enlarged?'phonePan':hasStock?'phonePick':'phoneBoard');
+ if($('phone-instruction').textContent!==copy)$('phone-instruction').textContent=copy;
+}
 function syncCameraLabel(){
  $('app').classList.toggle('board-overhead',cameraTop);
  $('camera-preset').setAttribute('aria-pressed',String(cameraTop));
- $('camera-preset-label').textContent=t(language,cameraTop?'analysisCameraIso':'analysisCameraTop');
+ const label=phonePortrait.matches?(cameraTop?'phoneCamera3D':'phoneCameraMap'):(cameraTop?'analysisCameraIso':'analysisCameraTop');
+ $('camera-preset-label').textContent=t(language,label);
+ syncPhoneZoomLabel();
 }
 const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#spectral-inspector,#coach')];
 const overheadHeader=document.querySelector('.header'),overheadMission=document.querySelector('.mission');
@@ -1491,17 +1522,25 @@ function measureOverheadFrame(){
  }
  const height=Math.max(32,bottom-top);
  const size=Math.max(32,Math.min(height,halfWidth*2));
- overheadFrame={distance:GRID*T*innerHeight/(2*size*Math.tan(camera.fov*Math.PI/360)),
+ if(phonePortrait.matches&&overheadFrame&&overheadZoom.target<defaultZoom-.1){
+  // Keep the physical touch target stable when selection tools occupy a row.
+  const target=Math.min(defaultZoom,overheadZoom.target*size/overheadFrame.size);
+  overheadZoom.current=overheadZoom.target=target;
+  syncPhoneZoomLabel();
+ }
+ overheadFrame={size,distance:GRID*T*innerHeight/(2*size*Math.tan(camera.fov*Math.PI/360)),
   offset:innerHeight/2-top-height/2};
 }
-function toggleCameraPreset(){
+function toggleCameraPreset(manual=true){
+ if(manual)manualCamera=true;
  if(!cameraTop&&!cameraTween)orbitAngles={yaw,pitch};
  cameraTop=!cameraTop;
  syncCameraLabel();
- if(cameraTop){overheadZoom.current=overheadZoom.target=defaultZoom;measureOverheadFrame()}
+ if(cameraTop){resetPhoneFraming();measureOverheadFrame()}
+ else phonePan.x=phonePan.z=0;
  const nextYaw=cameraTop?0:orbitAngles.yaw,nextPitch=cameraTop?Math.PI/2:orbitAngles.pitch;
  const endBlend=cameraTop?1:0;
- if(reducedMotion.matches){
+ if(reducedMotion.matches||phonePortrait.matches){
   cameraTween=null;yaw=nextYaw;pitch=nextPitch;overheadBlend=endBlend;updateCamera();
  }else cameraTween={yaw0:yaw,pitch0:pitch,yaw1:nextYaw,pitch1:nextPitch,
   blend0:overheadBlend,blend1:endBlend,time:performance.now()};
@@ -1523,9 +1562,14 @@ function updateCamera(){
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
  const viewPitch=Math.max(.27,pitch-(mobile?.22:shipyard.isVisible()?.32:.25)*framing-.08*closeup*framing);
  const viewYaw=yaw+.23*framing*(1-closeup);
+ const panLimit=phonePortrait.matches&&cameraTop?Math.max(0,(1-overheadZoom.current/defaultZoom)*GRID*T/2):0;
+ phonePan.x=THREE.MathUtils.clamp(phonePan.x,-panLimit,panLimit);
+ phonePan.z=THREE.MathUtils.clamp(phonePan.z,-panLimit,panLimit);
+ cameraTarget.x=phonePan.x;cameraTarget.z=phonePan.z;
  cameraTarget.y=(pilot?(mobile?1.15:-.65):0)*(1-overheadBlend);
  camera.up.set(0,overheadBlend===1?0:1,overheadBlend===1?-1:0);
  camera.position.set(Math.sin(viewYaw)*Math.cos(viewPitch)*cameraDistance,Math.sin(viewPitch)*cameraDistance,Math.cos(viewYaw)*Math.cos(viewPitch)*cameraDistance);
+ camera.position.x+=phonePan.x;camera.position.z+=phonePan.z;
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
  const portraitOffset=pilot&&viewportWidth<innerHeight?Math.min(88,Math.max(0,(innerHeight-600)*.35)):0;
@@ -1542,6 +1586,7 @@ function refreshOverheadLayout(){
  if(compactBoard.matches){
   const height=document.querySelector('.optic-workbench').getBoundingClientRect().height;
   $('app').style.setProperty('--workbench-height',height+'px');
+  if(phonePortrait.matches)$('app').style.setProperty('--phone-dock-height',overheadDock.offsetHeight+'px');
  }
  // Selecting a piece can open controls under a drag. Keep its projected
  // start position stable until the gesture ends.
@@ -1767,7 +1812,9 @@ function touchSpan(){
 }
 function beginTouchPinch(){
  resetBoardPointer();
- touchPinch={span:touchSpan(),zoom:activeZoom().target};
+ const [a,b]=boardTouches.values();
+ touchPinch={span:touchSpan(),zoom:activeZoom().target,
+  anchor:phonePortrait.matches&&cameraTop?boardPoint((a.x+b.x)/2,(a.y+b.y)/2):null};
 }
 function endBoardTouch(e){
  if(!boardTouches.delete(e.pointerId)||!touchPinch)return false;
@@ -1778,8 +1825,17 @@ function endBoardTouch(e){
 }
 function setBoardZoom(value){
  const zoom=activeZoom();
- zoom.target=Math.max(22,Math.min(60,value));
- if(reducedMotion.matches){zoom.current=zoom.target;updateCamera()}
+ const phoneMap=cameraTop&&phonePortrait.matches;
+ const minZoom=phoneMap?Math.min(14,defaultZoom*(overheadFrame?.size??innerWidth)/(GRID*48)):22;
+ zoom.target=THREE.MathUtils.clamp(value,minZoom,phoneMap?defaultZoom:60);
+ if(phoneMap||reducedMotion.matches){zoom.current=zoom.target;updateCamera()}
+ if(phoneMap)syncPhoneZoomLabel();
+}
+function panToAnchor(anchor,x,y){
+ const point=boardPoint(x,y);
+ if(!point||!anchor)return;
+ phonePan.x+=anchor.x-point.x;phonePan.z+=anchor.z-point.z;
+ updateCamera();
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
  if(cameraTween)return;
@@ -1807,7 +1863,8 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  const draggingCandidate=e.button===0&&origin?.piece&&movable.has(origin.piece.type);
  const offset=draggingCandidate?boardPoint(e.clientX,e.clientY)?.sub(vec(origin.piece.x,origin.piece.y,0)):null;
  down={id:e.pointerId,x:e.clientX,y:e.clientY,yaw,pitch,button:e.button,moved:false,offset,
-       mode:commitOnRelease?'place-cell':draggingCandidate?'piece':'orbit',origin};
+       mode:commitOnRelease?'place-cell':draggingCandidate?'piece':'orbit',origin,
+       panAnchor:touch&&cameraTop&&phonePortrait.matches?boardPoint(e.clientX,e.clientY):null};
  if(draggingCandidate&&!touch)select(origin.piece);
  if(commitOnRelease)updatePlacementPreview(e);
  if(!touch)renderer.domElement.setPointerCapture(e.pointerId);
@@ -1879,7 +1936,13 @@ renderer.domElement.addEventListener('pointermove',e=>{
  if(boardTouches.has(e.pointerId)){
   boardTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(touchPinch){
-   if(boardTouches.size>=2)setBoardZoom(touchPinch.zoom*touchPinch.span/touchSpan());
+   if(boardTouches.size>=2){
+    setBoardZoom(touchPinch.zoom*touchPinch.span/touchSpan());
+    if(touchPinch.anchor){
+     const [a,b]=boardTouches.values();
+     panToAnchor(touchPinch.anchor,(a.x+b.x)/2,(a.y+b.y)/2);
+    }
+   }
    return;
   }
  }
@@ -1903,6 +1966,11 @@ renderer.domElement.addEventListener('pointermove',e=>{
   draggedPiece=down.origin.piece;
   renderer.domElement.style.cursor='grabbing';
   updatePlacementPreview(e);
+  return;
+ }
+ if(down.panAnchor&&overheadZoom.target<defaultZoom-.1){
+  placementPreview.visible=false;
+  panToAnchor(down.panAnchor,e.clientX,e.clientY);
   return;
  }
  // Orbiting requires a drag on the empty board, not on an optic.
@@ -2165,6 +2233,21 @@ $('cancel-selection').onclick=clearSelection;
 $('analysis-toggle').onclick=toggleAnalyzer;
 $('analysis-close').onclick=toggleAnalyzer;
 $('camera-preset').onclick=toggleCameraPreset;
+$('phone-magnify').onclick=()=>{
+ if(!cameraTop)toggleCameraPreset();
+ if(overheadZoom.target<defaultZoom-.1){resetPhoneFraming();updateCamera()}
+ else{
+  if(selected&&!selected.inTray){
+   phonePan.x=(selected.x-HALF)*T;phonePan.z=(selected.y-HALF)*T;
+  }
+  setBoardZoom(defaultZoom*overheadFrame.size/(GRID*48));
+ }
+ renderInventory();
+};
+phonePortrait.addEventListener('change',()=>{
+ if(!manualCamera&&phonePortrait.matches!==cameraTop)toggleCameraPreset(false);
+ renderInventory();resize();
+});
 $('keyboard-board-button').onclick=focusKeyboardBoard;
 $('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>{

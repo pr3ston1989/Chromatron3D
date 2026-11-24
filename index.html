@@ -34,6 +34,7 @@
   <button id="main-menu-toggle" class="brand" type="button" data-i18n-aria="mainMenu" data-i18n-title="mainMenu"><img src="%BASE_URL%portraits/prism.png" alt=""><strong data-i18n="mainMenu">MENU GRY</strong><kbd aria-hidden="true">Esc</kbd></button>
   <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
   <div class="header-right">
+    <details id="phone-tools"><summary data-i18n-aria="phoneTools" aria-label="Narzędzia planszy">•••</summary><div class="phone-tools-menu"></div></details>
     <button id="orbital-settings" class="icon-btn pilot-control" type="button" data-i18n-aria="menuSettings" data-i18n-title="menuSettings">⚙</button>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
     <button id="audio" aria-pressed="false" data-i18n-aria="soundAria" class="icon-btn" type="button" data-i18n-title="soundAria" aria-label="Dźwięk">♪</button>
@@ -66,6 +67,7 @@
   </div>
  </aside>
  <div class="game-dock">
+  <button type="button" id="phone-magnify" aria-pressed="false"><span aria-hidden="true">⌕</span><span data-i18n="phoneEnlarge">Powiększ pola</span></button>
   <div class="dock-actions">
    <button id="hint" class="hint-button" type="button" data-i18n-aria="hintAria"><span aria-hidden="true">✦</span><span data-i18n="hintButton">PODPOWIEDŹ</span><span id="hint-badge">0/3</span></button>
    <button id="review-result" class="hint-button review-result" type="button" hidden><span aria-hidden="true">✓</span><span data-i18n="winReview">WYNIK</span><span aria-hidden="true">›</span></button>
@@ -88,6 +90,7 @@
      <button id="spectral-toggle" class="spectrum-toggle" type="button" data-i18n="spectralShort" aria-expanded="false">WIDMO</button>
     </div>
     <div id="inventory"></div>
+    <p id="phone-instruction" role="status"></p>
    </div>
    <div id="spectral-inspector" class="spectral-inspector hidden" aria-live="polite"></div>
   </aside>
