@@ -45,9 +45,13 @@ test.describe('touch scenery',()=>{
  });
 });
 
-for(const [level,world] of [[2,'garden'],[3,'grotto'],[7,'sanctuary']])
+for(const [level,world] of [[2,'garden'],[3,'grotto'],[6,'abyss'],[7,'sanctuary']])
 test(`${world} scenery stays clear when orbiting the board at a low angle`,async({page})=>{
  test.setTimeout(90000);
+ const failedShaders=[];
+ page.on('console',message=>{
+  if(message.type()==='error'&&/WebGLProgram|WebGLShader/.test(message.text()))failedShaders.push(message.text());
+ });
  await page.setViewportSize({width:1280,height:720});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/?debug=1');
@@ -80,6 +84,7 @@ test(`${world} scenery stays clear when orbiting the board at a low angle`,async
   await page.evaluate(()=>window.__debug.renderStill());
   expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),'quarter turn '+(turn+1)).toEqual([]);
  }
+ expect(failedShaders).toEqual([]);
 });
 
 test('compact overhead framing retains all 14 inner grid lines on each axis',async({page})=>{

@@ -6,6 +6,11 @@ charakterystyczne budowle wymodelowane w Blenderze. Kamienne arkady i metalowe k
 podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
 atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
 
+W Optyce głębinowej można obserwować patrol pojazdu badawczego między rafą
+hydrotermalną a stacją pomiarową. Stacja, rafa i pojazd mają edytowalne źródła
+Blendera, a smugi w toni i refleksy w iluminatorach poruszają się w normalnym
+trybie gry. [Pracownia modeli](../tools/README.md)
+
 Węzeł Keplera otwiera się przez `?benchmark=orbital`. Prom startuje z galerii
 serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację.
 W oddali obraca się pierścień przekaźnika, skrzydła słoneczne zmieniają kąt

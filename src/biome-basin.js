@@ -2,7 +2,7 @@ const BASINS={
  heliostat:{height:-17.5,base:0x1b3328,tint:0x527974,fog:0x937357,mode:4},
  frost:{height:-18,base:0x172f43,tint:0x608fa5,fog:0x486077,mode:1},
  forge:{height:-14,base:0x271722,tint:0xff6c1f,fog:0x552b2a,mode:2},
- abyss:{height:-17,base:0x142e42,tint:0x559a9f,fog:0x215666,mode:3},
+ abyss:{height:-20.5,base:0x122b35,tint:0x31737e,fog:0x17354b,mode:3},
  sanctuary:{height:-20,base:0x1d263c,tint:0x394e69,fog:0x526787,mode:5}
 };
 
@@ -10,7 +10,7 @@ export function createBiomeBasin(THREE,id){
  const spec=BASINS[id];
  if(!spec)return null;
  const material=new THREE.ShaderMaterial({
-  transparent:spec.mode>=4,depthWrite:spec.mode<4,
+  transparent:spec.mode>=3,depthWrite:spec.mode<3,
   uniforms:{
    seconds:{value:0},base:{value:new THREE.Color(spec.base)},
    tint:{value:new THREE.Color(spec.tint)},mist:{value:new THREE.Color(spec.fog)},mode:{value:spec.mode}
@@ -43,9 +43,13 @@ export function createBiomeBasin(THREE,id){
      float crust=smoothstep(.31,.67,strata(p*.83+vec2(-seconds*.14,seconds*.24)));
      color=base*(.58+.29*ridges)+tint*bank*(.39+.91*crust);
     }else if(mode==3.){
-     vec2 q=p+vec2(seconds*.23,-seconds*.18);
-     float caustic=pow(max(0.,1.-abs(strata(q*.73))*3.8),5.);
-     color+=tint*.26*caustic;
+     vec2 q=p+vec2(seconds*.21,-seconds*.14);
+     float light=strata(q*.73+vec2(1.8*broad,-1.2*broad));
+     float caustic=pow(max(0.,1.-abs(light)*2.27),3.);
+     float rift=p.x+.52*p.y-7.8-5.*sin(p.y*.066);
+     float ledge=smoothstep(1.4,9.3,abs(rift));
+     color*=.56+.47*ledge;
+     color+=tint*caustic*(.09+.18*ledge);
     }else if(mode==1.){
      float ice=exp(-27.*abs(ridges-.13));
      color+=tint*.14*ice;
@@ -61,7 +65,7 @@ export function createBiomeBasin(THREE,id){
     float distanceToEye=length(cameraPosition-ground);
     float fog=1.-exp(-.00018*distanceToEye*distanceToEye);
     color=mix(color,mist,fog*.91);
-    float fade=mode>=4.?1.-smoothstep(58.,125.,distanceToEye):1.;
+    float fade=mode>=3.?1.-smoothstep(58.,125.,distanceToEye):1.;
     gl_FragColor=vec4(color,fade);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

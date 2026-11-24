@@ -1,4 +1,10 @@
 const finishes={
+ 'Bathyal coated glass':`
+  vec2 face=landmarkPoint.xy;
+  float diagonal=face.y-.36*face.x-3.04;
+  float reflected=exp(-9.*abs(diagonal-.07*sin(landmarkTime*.48)));
+  diffuseColor.rgb+=vec3(.063,.139,.165)*reflected;
+ `,
  'Garden running water':`
   vec2 water=landmarkPoint.xz;
   float wave=sin(water.x*7.2-landmarkTime*1.12+1.4*sin(water.y*8.5));
@@ -36,4 +42,60 @@ export function applyLandmarkFinish(THREE,material,time){
    '#include <color_fragment>','#include <color_fragment>\n'+finish);
  };
  return true;
+}
+
+// Origins correspond to the two high chimneys in the Blender reef, in Y-up.
+const ventMouths=[[-1.67,5.00,-.71],[2.14,4.52,-1.52]];
+
+export function createVentPlumes(THREE,time){
+ const origins=[],phases=[];
+ for(const [i,origin] of ventMouths.entries()){
+  for(let j=0;j<10;j++){
+   origins.push(...origin);
+   phases.push(j/10,((j*7+i*3)%11)/11);
+  }
+ }
+ const geometry=new THREE.InstancedBufferGeometry();
+ geometry.setIndex([0,1,2,0,2,3]);
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute([
+  -.5,-.5,0,.5,-.5,0,.5,.5,0,-.5,.5,0
+ ],3));
+ geometry.setAttribute('vent',new THREE.InstancedBufferAttribute(new Float32Array(origins),3));
+ geometry.setAttribute('phase',new THREE.InstancedBufferAttribute(new Float32Array(phases),2));
+ geometry.instanceCount=phases.length/2;
+ const material=new THREE.ShaderMaterial({
+  transparent:true,depthWrite:false,uniforms:{seconds:time},
+  vertexShader:`
+   attribute vec3 vent;
+   attribute vec2 phase;
+   uniform float seconds;
+   varying vec2 sprite;
+   varying float fade,pattern;
+   void main(){
+    float age=fract(phase.x+seconds*(.22+.08*phase.y));
+    float drift=sin(19.*phase.y+2.7*age);
+    vec3 point=vent+vec3(.35*age+.17*drift*age,.11+1.04*age,(phase.y-.5)*.43*age);
+    vec4 center=modelViewMatrix*vec4(point,1.);
+    float size=(.27+.64*age)*length(modelMatrix[0].xyz);
+    center.xy+=position.xy*vec2(size,size*1.16);
+    sprite=position.xy*2.;
+    fade=smoothstep(0.,.18,age)*(1.-smoothstep(.35,1.,age));
+    pattern=phase.y;
+    gl_Position=projectionMatrix*center;
+   }`,
+  fragmentShader:`
+   varying vec2 sprite;
+   varying float fade,pattern;
+   void main(){
+    float fringe=length(sprite)+.09*sin(7.3*sprite.x+4.2*sprite.y+pattern*18.);
+    float veil=1.-smoothstep(.18,.98,fringe);
+    gl_FragColor=vec4(.20,.38,.39,.22*veil*fade);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+   }`
+ });
+ const plumes=new THREE.Mesh(geometry,material);
+ plumes.name='Hydrothermal plumes';
+ plumes.frustumCulled=false;
+ return plumes;
 }

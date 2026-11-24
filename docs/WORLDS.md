@@ -12,7 +12,7 @@ na przypisanej części lokalnej kampanii.
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Dwie kratownicowe galerie serwisowe i przelot pojazdu. |
 | 5 | Laboratorium polarne | Oszroniony stop, niebieski lód i zorza. | Ściany lodowca, przewężenia skalne i modułowy pojazd stacji. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Segmentowy piec, kolumny bazaltu, suwnica i strumień lawy pod planszą. |
-| 7 | Optyka głębinowa | Morski granat, zielonoszary pokład i ruchome refleksy. | Kopułowa stacja ciśnieniowa, porośnięta rafa i prądy poza planszą. |
+| 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa z wypukłymi iluminatorami, rafa kominów hydrotermalnych i patrol pojazdu badawczego. |
 | 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Kolimator z wypukłym szkłem na dwóch przyporach, zerwany most i niski taras z cokołami. |
 
 Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,

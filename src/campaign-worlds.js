@@ -63,15 +63,18 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    ]
   }),
  world('abyss','Optyka głębinowa','Abyssal Optics','verdant',
-  0x071a2e,0x327984,0x214957,0xbaecf2,0x7de0d3,'garden',{
-   face:.53,groove:.60,dust:0xa3d1c9,deckTint:0xbce7e9,air:'current',footing:{body:0x2b4a52,bevel:0x5a8a8b},
+  0x041322,0x215974,0x183a4d,0xbde0f2,0x73c9c4,'deck',{
+   face:.50,groove:.59,dust:0x88bebc,deckTint:0xaeced2,air:'current',footing:{body:0x223941,bevel:0x487176},
    models:[
-    ['abyss-habitat',[-11.9,-7.45,-14.1],1.37,-.52,'left'],
-    ['abyss-reef',[-13.2,-11.95,-14.4],[1.34,1.28,1.33],-.57,'cliff'],
-    ['abyss-reef',[16,-9.47,5.2],[1.42,1.31,1.49],-.49,'cliff'],
-    ['abyss-reef',[-17.1,-9.2,12.6],[1.65,1.58,1.4],-.24,'cliff'],
-    ['abyss-habitat',[26,-13.0,-26],1.42,-.73,'horizon'],
-    ['abyss-reef',[27,-17,-33],[2.55,1.42,1.82],-.53,'horizon']
+    ['abyss-observatory',[-9.7,-7.85,-13.4],1.27,-.36,'left'],
+    ['abyss-reef',[-9.7,-12.2,-13.4],[1.35,1.26,1.27],-.55,'cliff'],
+    ['abyss-vent-reef',[18.7,-11.75,5.0],[1.42,1.39,1.48],-.46],
+    ['abyss-vent-reef',[9.3,-8.65,16.4],1.31,-.33,'vent'],
+    ['abyss-vent-reef',[-17.7,-9.65,10.8],[1.37,1.17,1.42],.61],
+    ['abyss-survey-rov',[15.7,-4.45,9.2],1.46,-.57,'survey'],
+    ['abyss-reef',[18,-11.4,-18],[1.74,1.35,1.58],-.36,'horizon'],
+    ['abyss-observatory',[28,-18.0,-30],1.53,-.58,'horizon'],
+    ['abyss-vent-reef',[41,-22.1,-45],[2.26,1.71,1.83],-.62,'horizon']
    ]
   }),
  world('sanctuary','Sanktuarium soczewek','Lens Sanctuary','polar',

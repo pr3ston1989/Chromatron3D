@@ -29,6 +29,40 @@ test('garden waterworks and sanctuary ruins use detailed Blender meshes and surf
  }
 });
 
+test('the deepwater landmarks use authored meshes below the playing surface',async()=>{
+ const {models}=campaignWorld('demo',5);
+ const landmarks={
+  'abyss-observatory':{budget:3700,material:'Bathyal coated glass'},
+  'abyss-vent-reef':{budget:3000,material:'Sulfide chimney rim'},
+  'abyss-survey-rov':{budget:1200,material:'Inspection camera glass'}
+ };
+ const loader=new GLTFLoader();
+ for(const [id,{budget,material}] of Object.entries(landmarks)){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  let triangles=0,finished=false;
+  scene.traverse(node=>{
+   if(!node.isMesh)return;
+   assert.ok(node.geometry.attributes.color,id+' retains Blender cavity shading');
+   triangles+=node.geometry.index.count/3;
+   finished||=node.material.name===material;
+  });
+  assert.ok(triangles>0&&triangles<=budget,id);
+  assert.ok(finished,id+' retains its named finish');
+  assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
+  const bounds=new Box3().setFromObject(scene);
+  assert.ok(Math.abs(bounds.min.y)<1e-5,id+' has a Y-up base');
+  const placements=models.filter(([name])=>name===id);
+  assert.ok(placements.length>0,id+' is placed in the Abyss');
+  for(const [,anchor,scale,,role] of placements){
+   const motionMargin=role==='survey'?.70:0;
+   assert.ok(anchor[1]+bounds.max.y*(Array.isArray(scale)?scale[1]:scale)+motionMargin<0,
+    id+' remains below the play surface');
+  }
+ }
+});
+
 test('the playable Blender models have matching, distinct transparent equipment portraits',()=>{
  const portraits=new Set();
  for(const kind of CLASSIC_TYPE_NAMES.slice(1)){

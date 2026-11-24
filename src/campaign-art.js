@@ -3,7 +3,7 @@ import {applyPanelSurface} from './panel-surface.js';
 import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
 import {createBiomeBasin} from './biome-basin.js';
 import {applyOpticFinish} from './optic-textures.js';
-import {applyLandmarkFinish} from './landmark-surfaces.js';
+import {applyLandmarkFinish,createVentPlumes} from './landmark-surfaces.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -81,9 +81,18 @@ function gradientSky(THREE){
      float heat=pow(clouds,2.65)*exp(-9.*abs(ray.y+.40));
      color+=vec3(.16,.039,.010)*heat;
     }else if(kind==5.){
-     float current=exp(-20.*abs(uv.y+.24+.08*sin(uv.x*4.8)));
-     float rays=pow(.5+.5*cos(uv.x*22.+4.*clouds+.19*time+ray.y*8.),5.);
-     color+=vec3(.016,.089,.111)*(current*.45+rays*current*.55);
+     float longitude=ray.x*.81+ray.z*.58;
+     float surface=smoothstep(-.77,.05,ray.y);
+     float openWater=longitude-.38;
+     float water=surface*exp(-2.8*openWater*openWater);
+     float drift=longitude-.57*ray.y-.011*sin(time*.38);
+     float shaftA=drift-.33,shaftB=drift-.59;
+     float shafts=.69*exp(-73.*shaftA*shaftA)+.47*exp(-171.*shaftB*shaftB);
+     float filaments=pow(.5+.5*cos(31.*drift+2.5*clouds),5.);
+     float wavefront=smoothstep(.42,.87,veil(vec2(13.*longitude,11.*ray.y+time*.053)));
+     color=mix(dark,glow,.11+.30*surface*clouds);
+     color+=vec3(.024,.112,.142)*water*(.63+.64*shafts+.18*filaments);
+     color+=vec3(.009,.053,.075)*water*wavefront;
     }else if(kind==6.){
      color+=vec3(.06,.052,.12)*horizon*clouds;
     }
@@ -199,6 +208,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
     });
    }
    mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&!terrain}});
+   if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    root.add(mesh);
    return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role,id};
   });
@@ -309,8 +319,15 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   sky.material.uniforms.time.value=t;
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);
-  for(const {mesh,yaw,role} of active.props){
+  for(const {mesh,yaw,role,anchor} of active.props){
    if(role==='iris'||role==='turn'||role==='pulse')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
+   if(role==='survey'){
+    // Local patrol outside the playable deck, with a fixed pose at t = 0.
+    mesh.position.y=anchor[1]+.42*Math.sin(t*.58);
+    mesh.position.z=anchor[2]+2.60*Math.sin(t*.17);
+    mesh.rotation.y=yaw+.44*Math.sin(t*.17);
+    mesh.rotation.z=.10*Math.sin(t*.50);
+   }
    if(role==='left'||role==='right'||role==='turn'||role==='iris')
     mesh.visible=mesh.position.x*camera.x+mesh.position.z*camera.z<8;
    if(role==='cliff'){

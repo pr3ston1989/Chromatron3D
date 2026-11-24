@@ -1,5 +1,11 @@
 # QA
 
+## 24 listopada 2026 · Optyka głębinowa
+
+- Porównanie z gry w `screenshots/glebiny` obejmuje monitor i emulację dotyku. Po pierwszej próbie przesunięto kominy do przedniego planu, zmieniono pokład na chłodną ceramikę i odsunięto tor pojazdu od ikony informacji.
+- Test Playwright sprawdza widoczność 225 pól przy obrocie kamery, na trzech typowych rozdzielczościach laptopa i w widoku dotykowym. Dwie klatki fragmentu rafy porównano z animacją oraz z preferencją ograniczonego ruchu.
+- Trzy modele przechodzą sprawdzenie materiałów, podstawy Y-up i położenia pod poziomem gry. Obserwatorium ma 3584 trójkąty, rafa 2904, a pojazd 1090.
+
 ## 24 listopada 2026 · Ogród heliostatów i Sanktuarium soczewek
 
 - Zrzuty z gry w 1672 × 941 i 390 × 844 potwierdziły widoczność 225 pól w obu scenach. Kadry i porównanie przed i po są w `screenshots/ogrod-sanktuarium`.

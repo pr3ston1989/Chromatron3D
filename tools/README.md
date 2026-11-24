@@ -29,7 +29,7 @@ Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami
 
 Edytowalne formacje i stanowisko pomiarowe znajdują się w `assets/models/scenery/grotto-*.blend`. Gra ładuje odpowiadające im pliki GLB. Pigment skały i cienie kontaktowe są zapisane w kolorach wierzchołków. Rysunek łupku pochodzi ze wspólnej próbki materiału pokładu.
 
-Zestaw budowli kampanii obejmuje 18 modeli z geometrią, materiałami
+Zestaw budowli kampanii obejmuje 21 modeli z geometrią, materiałami
 PBR i wypalonym cieniowaniem wnęk w kolorach wierzchołków. Pliki `.blend`
 i `.glb` są w `assets/models/scenery`, a podglądy w
 `assets/previews/overhaul/scenery`. Moduły zajmują 618–4696 trójkątów.
@@ -39,6 +39,11 @@ można też podać poszczególne nazwy modeli.
 ```powershell
 & 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/biome-landmarks.py -- --preview
 ```
+
+Modele Optyki głębinowej z tego zestawu to `abyss-observatory` (limit 3700
+trójkątów), `abyss-vent-reef` (3000) i `abyss-survey-rov` (1200). Pierwszy
+model wykorzystuje materiał `Bathyal coated glass` z refleksem nakładanym
+w grze. Materiały i wypalone cienie pozostają zapisane w GLB.
 
 ```powershell
 & 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/scenery_catalog.py -- grotto-buttress grotto-fault-shelf grotto-escarpment
