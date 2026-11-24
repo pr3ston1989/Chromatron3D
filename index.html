@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body><div id="app">
+<body><div id="app" class="game-hud">
  <main id="main-menu" class="main-menu" aria-labelledby="game-title">
   <div class="menu-art" aria-hidden="true"></div>
   <div class="menu-content">
@@ -32,8 +32,14 @@
  </div>
  <header class="header">
   <button id="main-menu-toggle" class="brand" type="button" data-i18n-aria="mainMenu" data-i18n-title="mainMenu"><img src="%BASE_URL%portraits/prism.png" alt=""><strong data-i18n="mainMenu">MENU GRY</strong><kbd aria-hidden="true">Esc</kbd></button>
+  <span id="mission-world" class="pilot-sector"></span>
   <button id="levels-button" class="level-atlas-toggle" type="button" data-i18n-title="atlasOpenAria" data-i18n-aria="atlasOpenAria" aria-haspopup="dialog"><span class="atlas-glyph" aria-hidden="true">◈</span><span data-i18n="atlasTop">KAMPANIA</span><kbd aria-hidden="true">M</kbd></button>
   <div class="header-right">
+   <div class="stage-navigation">
+    <button id="prev" class="stage-arrow" type="button" aria-label="Poprzednia zagadka">‹</button>
+    <span class="mission-number"><span id="level-index">001</span><span class="mission-total">/<span id="total-levels">008</span></span></span>
+    <button id="next" class="stage-arrow" type="button" aria-label="Następna zagadka">›</button>
+   </div>
     <details id="phone-tools"><summary data-i18n-aria="phoneTools" aria-label="Narzędzia planszy">•••</summary><div class="phone-tools-menu"></div></details>
     <button id="orbital-settings" class="icon-btn pilot-control" type="button" data-i18n-aria="menuSettings" data-i18n-title="menuSettings">⚙</button>
     <button id="language" class="icon-btn lang-btn" type="button" data-i18n-aria="languageAria" title="Language / Język">PL</button>
@@ -51,16 +57,11 @@
  </aside>
  <aside class="mission"><button id="mission-drawer" class="drawer-handle mission-handle" type="button" aria-expanded="false" aria-label="Rozwiń panel zagadki">☰ <span>INFO</span></button>
   <div class="mission-copy">
-   <div class="mission-location"><span id="mission-world"></span><span id="level-pack-label" data-i18n="prototype">PROTOTYP</span></div>
+   <div class="mission-location"><span id="level-pack-label" data-i18n="prototype">PROTOTYP</span></div>
    <h1 id="level-title">PIERWSZE ŚWIATŁO</h1><p id="level-desc"></p>
   </div>
   <div class="mission-objective">
    <button type="button" id="phone-overview" data-i18n-aria="phoneOverview" aria-label="Mapa zagadki. Dotknij, aby wycentrować widok."><canvas width="150" height="150" aria-hidden="true"></canvas></button>
-   <div class="stage-navigation">
-    <button id="prev" class="stage-arrow" type="button" aria-label="Poprzednia zagadka">‹</button>
-    <span class="mission-number"><span id="level-index">001</span><span class="mission-total">/<span id="total-levels">008</span></span></span>
-    <button id="next" class="stage-arrow" type="button" aria-label="Następna zagadka">›</button>
-   </div>
    <div class="mission-progress"><span data-i18n="resonators">AKTYWNE REZONATORY</span><strong id="counter">0 / 1</strong></div>
    <div class="progress-track"><div id="progress"></div></div>
    <div id="level-status" class="level-status" aria-live="polite"></div>

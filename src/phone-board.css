@@ -1,4 +1,14 @@
-#phone-tools,#phone-magnify,#phone-instruction,#phone-overview,#phone-optic-note,.phone-tool-label,#return-tray .phone-stow {display:none}
+#phone-magnify,#phone-instruction,#phone-overview,#phone-optic-note,.phone-tool-label,#return-tray .phone-stow {display:none}
+#phone-tools {position:relative;display:block;order:3}
+#phone-tools summary {display:grid;place-items:center;width:40px;height:40px;cursor:pointer;list-style:none;border-radius:5px;font-size:0}
+#phone-tools summary::before {content:'⚙';font:18px/1 system-ui;color:#bdd4e7}
+#phone-tools summary::-webkit-details-marker {display:none}
+#phone-tools[open] summary,#phone-tools summary:hover {background:#21364b}
+#phone-tools .phone-tools-menu {position:absolute;z-index:10;top:100%;right:0;width:min(225px,82vw);max-height:62dvh;overflow:auto;padding:5px;border:1px solid #536478;border-radius:8px;box-shadow:0 10px 22px #0007;background:#122031}
+#phone-tools .utility-caption::after {content:attr(aria-label);text-transform:none}
+#phone-tools .phone-tool-label {display:inline;font:600 13px system-ui,sans-serif}
+#app .header:has(#phone-tools[open]) {z-index:8}
+#app .header #help {order:4}
 #return-tray span {font:inherit;letter-spacing:inherit;opacity:1}
 
 @media (pointer:coarse) and (max-width:680px) and (orientation:portrait) {
@@ -6,6 +16,10 @@
  #app .header {inset:0 0 auto;height:calc(50px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;gap:8px;background:#0c1524e8;border-bottom:1px solid #96bdd32b}
  #app .header .brand,#app .header #levels-button,#app .header #help {min-height:44px}
  #app .header .brand strong {font:650 13px/1.1 system-ui,sans-serif;letter-spacing:.04em}
+ #app .header .brand {display:flex;gap:6px;align-items:center}
+ #app .header .brand::before {content:'C';width:23px;height:26px;display:grid;place-items:center;clip-path:polygon(50% 0,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);background:#60cee7;color:#102638;font:700 16px/1 system-ui}
+ #app .header .brand::after {content:'CHROMATRON';font:700 11px/1 system-ui;letter-spacing:.12em;color:#e1f3ff}
+ #app .header .pilot-sector,#app .header .stage-navigation {display:none}
  #app .header #levels-button {margin-inline:auto;font:650 12px/1 system-ui,sans-serif;background:transparent;border:0;box-shadow:none;color:#f5d59a}
  #app .header .header-right {margin-left:auto;gap:4px}
  #app .header #language,#app .header #audio,#app .header #fullscreen,#app .header #board-focus {display:none}
@@ -15,6 +29,9 @@
  #phone-tools summary::-webkit-details-marker {display:none}
  #phone-tools[open] summary {background:#243348;color:white}
  #phone-tools .phone-tools-menu {position:absolute;z-index:10;top:100%;right:0;min-width:155px;padding:5px;background:#122031;border:1px solid #536478;border-radius:9px;box-shadow:0 10px 22px #0007}
+ #app #phone-tools #receiver-toggle {position:static}
+ #app #phone-tools #receiver-toggle::after {content:attr(aria-label)}
+ #app #phone-tools #keyboard-board-button,#app #phone-tools #board-focus {display:none!important}
  #app #phone-tools button {display:flex!important;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:44px;padding:0 10px;border:0;background:transparent;color:#e6eef6;text-align:left}
  .phone-tool-label {display:inline;font:600 13px system-ui,sans-serif}
  #app .mission {inset:calc(62px + env(safe-area-inset-top)) 12px auto;gap:10px}
@@ -82,4 +99,7 @@
  #app.phone-working #draft-status {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
  #app.phone-working #phone-overview {grid-area:1 / 2 / 3 / 3;display:block;margin-left:auto;pointer-events:auto;cursor:crosshair;width:64px;height:64px;max-width:100%;padding:2px;border:1px solid #7098af;border-radius:5px;background:#0d1a2c}
  #phone-overview canvas {width:100%;height:100%;display:block;border-radius:3px}
+}
+@media (pointer:coarse) and (max-width:375px) and (orientation:portrait) {
+ #app .header .brand::after {font-size:10px;letter-spacing:.05em}
 }

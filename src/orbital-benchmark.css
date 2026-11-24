@@ -1,89 +1,89 @@
 .pilot-control {display:none}
 #receiver-card[hidden] {display:none}
 
-#app.orbital-pilot {
+#app.game-hud {
  --inset:clamp(14px,3.3vw,66px);--dock-raised:78px;
  --pilot-line:#7197bc52;--pilot-panel:#0a1526ef;
  --pilot-font:"Space Grotesk","Segoe UI",sans-serif;
 }
-.orbital-pilot #play-surface::before,.orbital-pilot .grain,
-.orbital-pilot .game-dock::before,.orbital-pilot .game-dock::after,
-.orbital-pilot .header kbd,.orbital-pilot #levels-button,.orbital-pilot #audio,
-.orbital-pilot #board-focus,.orbital-pilot #fullscreen,.orbital-pilot #language,
-.orbital-pilot .mission .stage-navigation,.orbital-pilot .mission .progress-track,
-.orbital-pilot #level-status,.orbital-pilot #draft-status,.orbital-pilot .drawer-handle,
-.orbital-pilot .equipment-heading,.orbital-pilot .dock-credits,.orbital-pilot .quality-widget,
-.orbital-pilot #analysis-toggle,.orbital-pilot #keyboard-board-button,.orbital-pilot #hint-badge,
-.orbital-pilot #spectral-inspector,.orbital-pilot .brand img,.orbital-pilot .brand strong {display:none!important}
-#app.orbital-pilot .header {
+.game-hud #play-surface::before,.game-hud .grain,.game-hud .game-dock::before,.game-hud .game-dock::after,
+.game-hud .header kbd,.game-hud .progress-track,.game-hud .dock-credits,.game-hud #hint-badge,
+.game-hud .brand img,.game-hud .brand strong,.game-hud .equipment-heading h2 {display:none}
+.game-hud #level-status,.game-hud #draft-status {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.orbital-pilot #levels-button,.orbital-pilot .stage-navigation,.orbital-pilot .quality-widget,.orbital-pilot #spectral-inspector,
+.orbital-pilot .equipment-heading,.orbital-pilot .dock-view,.orbital-pilot #audio,.orbital-pilot #board-focus,.orbital-pilot #fullscreen,
+.orbital-pilot #language,.orbital-pilot .drawer-handle {display:none!important}
+@media (pointer:fine), (min-width:681px), (orientation:landscape), (pointer:none) {
+#app.game-hud .header {
  inset:0 0 auto;height:52px;padding:0 var(--inset);display:flex;gap:20px;
  align-items:center;background:linear-gradient(100deg,#091322f5,#0c1a2bdc);
  border-bottom:1px solid var(--pilot-line);
 }
-.orbital-pilot .brand {display:flex;align-items:center;gap:10px;color:#e2f5ff}
-.orbital-pilot .brand::before {
+.game-hud .brand {display:flex;align-items:center;gap:10px;color:#e2f5ff}
+.game-hud .brand::before {
  content:"C";width:28px;height:31px;display:grid;place-items:center;
  clip-path:polygon(50% 0,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
  background:linear-gradient(135deg,#64e8ff,#2572a4);color:#0b2339;font:700 20px/1 var(--pilot-font);
 }
-.orbital-pilot .brand::after {content:"CHROMATRON";font:700 15px/1 var(--pilot-font);letter-spacing:.24em}
-.orbital-pilot .pilot-sector {padding-left:19px;border-left:1px solid var(--pilot-line);font:600 11px var(--pilot-font);letter-spacing:.14em;color:#add4ec;text-transform:uppercase}
-.orbital-pilot .header-right {margin-left:auto;display:flex;align-items:center;gap:8px}
-.orbital-pilot .header .icon-btn,.orbital-pilot #camera-preset {
+.game-hud .brand::after {content:"CHROMATRON";font:700 15px/1 var(--pilot-font);letter-spacing:.24em}
+.game-hud .pilot-sector {padding-left:19px;border-left:1px solid var(--pilot-line);font:600 11px var(--pilot-font);letter-spacing:.14em;color:#add4ec;text-transform:uppercase}
+.game-hud .header-right {margin-left:auto;display:flex;align-items:center;gap:8px}
+.game-hud .header .icon-btn,.game-hud #camera-preset {
  display:inline-grid;place-items:center;flex:none;min-width:40px;height:40px;margin:0;padding:4px 9px;
  border:0;background:transparent;box-shadow:none;color:#bbd3e7;border-radius:5px;font:600 17px var(--pilot-font);
 }
-.orbital-pilot #camera-preset {font-size:10px;letter-spacing:.08em;max-width:100px}
-.orbital-pilot .header .icon-btn:hover,.orbital-pilot #camera-preset:hover {color:white;background:#74c8ff15}
-#app.orbital-pilot .mission {
+.game-hud #camera-preset {font-size:10px;letter-spacing:.08em;max-width:100px}
+.game-hud .header .icon-btn:hover,.game-hud #camera-preset:hover {color:white;background:#74c8ff15}
+#app.game-hud .mission {
  display:flex;inset:76px var(--inset) auto;padding:0;align-items:flex-start;max-width:none;width:auto;
  border:0;background:none;visibility:visible;overflow:visible;
 }
-#app.orbital-pilot .mission-copy {visibility:visible;display:block;width:min(26vw,320px);flex:none}
-.orbital-pilot .mission-location {font:600 10px/1.3 var(--pilot-font);letter-spacing:.15em;color:#aad6ef}
-.orbital-pilot .mission-location #level-pack-label {padding:0;border:0;color:#b2d8ee}
-#app.orbital-pilot .mission h1 {font:600 clamp(23px,2.55vw,44px)/1.13 var(--pilot-font);letter-spacing:-.045em;color:#f2f6ff;margin:6px 0 9px}
-.orbital-pilot .mission h1::after {content:"";display:block;width:41px;height:2px;margin-top:10px;background:#efb66d}
-#app.orbital-pilot .mission p {font:500 clamp(12px,.89vw,16px)/1.5 var(--pilot-font);color:#d4e0ec;max-width:26ch}
-#app.orbital-pilot .mission-objective {margin:0;visibility:visible;width:auto}
-.orbital-pilot .mission-progress {display:flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--pilot-line);border-radius:22px;background:#0b192cbb;font:600 10px var(--pilot-font);letter-spacing:.05em}
-.orbital-pilot .mission-progress::before {content:"";width:6px;height:6px;border-radius:50%;background:#77d9ec}
-.orbital-pilot .mission-progress strong {color:#deefff;font:700 13px var(--pilot-font)}
-#app.orbital-pilot .game-dock {
+#app.game-hud .mission-copy {visibility:visible;display:block;width:min(26vw,320px);flex:none}
+.game-hud .mission-location {font:600 10px/1.3 var(--pilot-font);letter-spacing:.15em;color:#aad6ef}
+.game-hud .mission-location #level-pack-label {padding:0;border:0;color:#b2d8ee}
+#app.game-hud .mission h1 {font:600 clamp(23px,2.55vw,44px)/1.13 var(--pilot-font);letter-spacing:-.045em;color:#f2f6ff;margin:6px 0 9px}
+.game-hud .mission h1::after {content:"";display:block;width:41px;height:2px;margin-top:10px;background:#efb66d}
+#app.game-hud .mission p {font:500 clamp(12px,.89vw,16px)/1.5 var(--pilot-font);color:#d4e0ec;max-width:26ch}
+#app.game-hud .mission-objective {margin:0;visibility:visible;width:auto}
+.game-hud .mission-progress {display:flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--pilot-line);border-radius:22px;background:#0b192cbb;font:600 10px var(--pilot-font);letter-spacing:.05em}
+.game-hud .mission-progress::before {content:"";width:6px;height:6px;border-radius:50%;background:#77d9ec}
+.game-hud .mission-progress strong {color:#deefff;font:700 13px var(--pilot-font)}
+#app.game-hud .game-dock {
  inset:auto 0 0;transform:none;width:100%;padding:7px var(--inset) max(8px,env(safe-area-inset-bottom));
  display:grid;grid-template-columns:1fr minmax(0,auto) 1fr;align-items:center;gap:12px;
  border-top:1px solid var(--pilot-line);background:linear-gradient(100deg,#091524f7,#14243af5 50%,#091524f7);
 }
-#app.orbital-pilot .dock-actions,.orbital-pilot .hud-bottom,.orbital-pilot .dock-history {
+#app.game-hud .dock-actions,.game-hud .hud-bottom,.game-hud .dock-history {
  display:flex;position:static;inset:auto;flex-direction:row;align-items:center;gap:6px;justify-content:flex-start;width:auto;
 }
-.orbital-pilot .hud-bottom {justify-self:end}
-#app.orbital-pilot .tool-panel,#app.orbital-pilot .equipment-bay {
+.game-hud .hud-bottom {justify-self:end}
+#app.game-hud .tool-panel,#app.game-hud .equipment-bay {
  position:static;display:block;grid-column:auto;grid-row:auto;visibility:visible;width:auto;height:auto;min-height:0;padding:0;border:0;overflow:visible;background:none;
 }
-.orbital-pilot #inventory {justify-content:center}
-.orbital-pilot .equipment-slots {gap:7px;padding:1px;justify-content:safe center}
-.orbital-pilot .equipment-slots:empty {min-height:50px}
-#app.orbital-pilot #inventory .inventory-item {
+.game-hud #inventory {justify-content:center}
+.game-hud .equipment-slots {gap:7px;padding:1px;justify-content:safe center}
+.game-hud .equipment-slots:empty {min-height:50px}
+#app.game-hud #inventory .inventory-item {
  width:88px;flex:0 0 88px;min-height:55px;grid-template-rows:34px auto;
  border:1px solid #7395bc7a;background:linear-gradient(155deg,#243a51,#111f32);border-radius:7px;
  color:#e3edf8;font:600 10px/1.2 var(--pilot-font);text-transform:none;box-shadow:none;
 }
-#app.orbital-pilot #inventory .component-icon {width:42px;height:34px}
-#app.orbital-pilot #inventory .inventory-item:is(:hover,.selected) {border-color:#7de2ef;background:linear-gradient(155deg,#285473,#163545)}
-#app.orbital-pilot #inventory .inventory-item strong {border-radius:4px;background:#0c1928;color:#c4d7e8;font:600 10px var(--pilot-font)}
-.orbital-pilot .dock-history .action-key,.orbital-pilot .hud-bottom .hint-button {
+#app.game-hud #inventory .component-icon {width:42px;height:34px}
+#app.game-hud #inventory .inventory-item:is(:hover,.selected) {border-color:#7de2ef;background:linear-gradient(155deg,#285473,#163545)}
+#app.game-hud #inventory .inventory-item strong {border-radius:4px;background:#0c1928;color:#c4d7e8;font:600 10px var(--pilot-font)}
+.game-hud .dock-history .action-key,.game-hud .hud-bottom .hint-button {
  flex:none;width:44px;min-height:42px;background:#142438;border:1px solid var(--pilot-line);border-radius:7px;box-shadow:none;color:#d4e5f6;
 }
-.orbital-pilot .hud-bottom .hint-button {display:flex;width:auto;padding:0 13px;gap:8px;font:600 11px var(--pilot-font);letter-spacing:.05em}
-.orbital-pilot .hud-bottom .hint-button[hidden] {display:none}
-.orbital-pilot .optic-workbench {bottom:calc(var(--dock-raised) + 5px)}
-.orbital-pilot #receiver-toggle {
+.game-hud .hud-bottom .hint-button {display:flex;width:auto;padding:0 13px;gap:8px;font:600 11px var(--pilot-font);letter-spacing:.05em}
+.game-hud .hud-bottom .hint-button[hidden] {display:none}
+.game-hud .optic-workbench {bottom:calc(var(--dock-raised) + 5px)}
+}
+.game-hud #receiver-toggle {
  position:absolute;z-index:3;right:var(--inset);top:43%;display:grid;place-items:center;
  width:44px;height:44px;border:1px solid #76bad1b0;border-radius:9px;background:#0b1e32da;color:#c9efff;
  font:bold 21px Georgia,serif;
 }
-.orbital-pilot #receiver-toggle:is(:hover,[aria-expanded=true]) {background:#1c3a51;border-color:#8de6f5}
+.game-hud #receiver-toggle:is(:hover,[aria-expanded=true]) {background:#1c3a51;border-color:#8de6f5}
 #receiver-card {
  position:absolute;z-index:4;right:var(--inset);top:calc(43% + 51px);width:min(220px,75vw);
  padding:11px 14px;border:1px solid #6387a9;border-radius:9px;background:#0c1b2bf5;color:#ebf4ff;
@@ -96,31 +96,69 @@
 #receiver-card dd {display:flex;align-items:center;gap:6px;margin:0}
 #receiver-card dd::before {content:"";width:9px;height:9px;border-radius:50%;background:var(--signal)}
 #receiver-card button {color:#d1e3f3;background:#182e43;border:1px solid #3d5971;border-radius:4px;padding:5px 9px}
-.orbital-pilot .pilot-control:focus-visible,#receiver-card button:focus-visible {outline:2px solid #a4e9ff}
-@media(max-width:700px){
- #app.orbital-pilot {--dock-raised:77px}
- #app.orbital-pilot .header {height:49px;gap:8px}
- .orbital-pilot .brand::after {font-size:12px;letter-spacing:.16em}
- .orbital-pilot .pilot-sector {display:none}
- #app.orbital-pilot .mission {top:65px;gap:8px}
- #app.orbital-pilot .mission-copy {width:58%;align-self:start}
- #app.orbital-pilot .mission h1 {font-size:23px}
- #app.orbital-pilot .mission p {font-size:12px}
- .orbital-pilot .mission-progress span {display:none}
- .orbital-pilot .mission-progress {min-height:30px}
- #app.orbital-pilot .game-dock {gap:5px;grid-template-columns:auto minmax(0,1fr) auto;padding:6px 8px max(8px,env(safe-area-inset-bottom))}
- #app.orbital-pilot #inventory .inventory-item {flex-basis:67px;width:67px}
- .orbital-pilot .dock-history .action-key {width:40px;min-width:40px}
- .orbital-pilot .hud-bottom .hint-button {min-width:42px;padding:0 12px}
- .orbital-pilot .hud-bottom .hint-button span[data-i18n] {display:none}
- .orbital-pilot #receiver-toggle {top:auto;bottom:calc(var(--dock-raised) + 6px)}
+.game-hud .pilot-control:focus-visible,#receiver-card button:focus-visible {outline:2px solid #a4e9ff}
+@media (max-width:700px) and (pointer:fine), (max-width:700px) and (orientation:landscape){
+ #app.game-hud {--dock-raised:77px}
+ #app.game-hud .header {height:49px;gap:8px}
+ .game-hud .brand::after {font-size:12px;letter-spacing:.16em}
+ .game-hud .pilot-sector {display:none}
+ #app.game-hud .mission {top:65px;gap:8px}
+ #app.game-hud .mission-copy {width:58%;align-self:start}
+ #app.game-hud .mission h1 {font-size:23px}
+ #app.game-hud .mission p {font-size:12px}
+ .game-hud .mission-progress span {display:none}
+ .game-hud .mission-progress {min-height:30px}
+ #app.game-hud .game-dock {gap:5px;grid-template-columns:auto minmax(0,1fr) auto;padding:6px 8px max(8px,env(safe-area-inset-bottom))}
+ #app.game-hud #inventory .inventory-item {flex-basis:67px;width:67px}
+ .game-hud .dock-history .action-key {width:40px;min-width:40px}
+ .game-hud .hud-bottom .hint-button {min-width:42px;padding:0 12px}
+ .game-hud .hud-bottom .hint-button span[data-i18n] {display:none}
+ .game-hud #receiver-toggle {top:auto;bottom:calc(var(--dock-raised) + 6px)}
  #receiver-card {top:auto;bottom:calc(var(--dock-raised) + 56px)}
 }
 @media (max-height:500px) and (orientation:landscape){
- #app.orbital-pilot .header {height:40px}
- #app.orbital-pilot .mission {top:49px}
- #app.orbital-pilot .mission p {display:none}
- #app.orbital-pilot .mission h1 {font-size:20px}
- #app.orbital-pilot .game-dock {padding-block:3px}
+ #app.game-hud .header {height:40px}
+ #app.game-hud .mission {top:49px}
+ #app.game-hud .mission p {display:none}
+ #app.game-hud .mission h1 {font-size:20px}
+ #app.game-hud .game-dock {padding-block:3px}
  #receiver-card {top:60px;right:calc(var(--inset) + 48px)}
+}
+
+/* The Kepler header and rail are also the campaign's gameplay chrome. */
+.game-hud .header #levels-button {position:static;inset:auto;transform:none;margin:0;padding:4px 8px;min-height:36px;border:0;border-radius:4px;background:transparent;box-shadow:none;color:#afd1e8;text-align:left;font:600 11px var(--pilot-font);letter-spacing:.10em}
+.game-hud .header #levels-button:hover {background:#264159}
+.game-hud .header #levels-button .atlas-glyph {display:none}
+.game-hud .header .stage-navigation {display:flex;flex:none;align-items:center;gap:3px;margin:0}
+.game-hud .header .stage-arrow {width:30px;height:34px;min-height:0;border:0;background:transparent;font:500 21px/1 var(--pilot-font)}
+.game-hud .header .mission-number {min-width:0;font:650 16px/1 var(--pilot-font);letter-spacing:.02em}
+.game-hud .header .mission-total {font-size:.72em;color:#a9bdd4}
+.game-hud .equipment-heading {display:contents}
+.game-hud .tool-panel {position:relative}
+.game-hud #equipment-scroll:not([hidden]) {position:absolute;bottom:100%;right:0;gap:3px;padding-bottom:3px}
+.game-hud #equipment-scroll button {border-color:var(--pilot-line);background:#0e2034}
+.game-hud .equipment-name {line-height:1.2}
+#app.game-hud #phone-tools button {display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:40px;width:100%;max-width:none;text-align:left;margin:0;padding:5px 10px;border:0;background:transparent;color:#e5edf8;font:600 13px var(--pilot-font)}
+#app.game-hud #phone-tools button:hover {background:#23394c}
+#phone-tools .quality-widget {display:flex;align-items:center;margin:4px 0;padding:5px 8px;gap:6px}
+#phone-tools .quality-widget select {min-height:36px}
+.game-hud .dock-view:empty {display:none}
+@media (pointer:fine), (min-width:681px), (orientation:landscape), (pointer:none) {
+ #app.game-hud .game-dock {grid-template-columns:minmax(108px,1fr) minmax(0,max-content) minmax(108px,1fr);border-inline:0;border-bottom:0;border-radius:0;clip-path:none;box-shadow:none}
+ .game-hud .game-dock .equipment-slots {max-width:min(54vw,860px)}
+ .game-hud .equipment-slots:empty {height:50px}
+ .game-hud .game-dock .tool-panel:has(.equipment-slots:empty) {min-width:60px}
+ .game-hud .header-right #camera-preset {font-size:10px}
+ #app.game-hud:not(.board-focus) .equipment-bay {min-width:0}
+ #app.game-hud .game-dock .tool-panel {position:relative}
+ #app.game-hud.board-focus :is(.mission,.tool-panel) .drawer-handle {height:36px;min-height:36px;flex-direction:row;white-space:nowrap}
+ .game-hud.orbital-pilot #phone-tools {display:none}
+}
+@media(max-width:700px) {
+ .game-hud .header .mission-number,.game-hud .header .stage-arrow {font-size:14px}
+ .game-hud .header .stage-arrow {width:24px}
+ #app.game-hud .game-dock {column-gap:4px}
+}
+@media (min-width:701px) and (min-height:501px) {
+ #app.game-hud .game-dock {min-height:73px}
 }

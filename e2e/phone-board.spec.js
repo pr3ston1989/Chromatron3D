@@ -8,6 +8,7 @@ test('the Kepler phone map keeps the contextual receiver inspector reachable',as
  await expect(page.locator('#camera-preset')).toHaveAttribute('aria-pressed','true');
  await page.locator('#phone-magnify').tap();
  await expect(page.locator('#phone-overview')).toBeVisible();
+ await page.locator('#phone-tools summary').tap();
  await page.locator('#receiver-toggle').tap();
  await expect(page.locator('#receiver-card')).toBeVisible();
  await page.locator('#receiver-close').tap();

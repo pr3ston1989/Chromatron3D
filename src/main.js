@@ -74,13 +74,8 @@ const debugEnabled=searchParams.get('debug')==='1';
 const orbitalPilot=searchParams.get('benchmark')==='orbital';
 const startsInGame=orbitalPilot||debugEnabled||searchParams.get('play')==='1';
 $('app').classList.toggle('orbital-pilot',orbitalPilot);
-if(orbitalPilot){
- const header=document.querySelector('.header');
- const sector=$('mission-world');
- sector.className='pilot-sector';header.insertBefore(sector,header.querySelector('.header-right'));
- header.querySelector('.header-right').prepend($('camera-preset'));
- document.querySelector('.hud-bottom').append($('hint'),$('review-result'));
-}
+document.querySelector('.header-right').append($('camera-preset'),$('orbital-settings'),$('help'));
+document.querySelector('.hud-bottom').append($('hint'),$('review-result'));
 const baselineScenery=debugEnabled&&searchParams.get('pilot')==='0';
 const debugData=debugEnabled?new Map():null;
 const transientStorage=debugData&&{
@@ -940,7 +935,8 @@ function updateLocalizedLevel(){
  const l=levels[levelIndex];if(!l)return;
  $('level-title').textContent=loc(l.title,language);
  $('level-desc').textContent=loc(l.description,language);
- if(orbitalPilot&&l.sourceGame===1&&language==='pl')
+ // The retail record shown as Chromatron I–15 is also the Kepler puzzle.
+ if(l.sourceGame===1&&l.sourceIndex===5&&language==='pl')
   $('level-desc').textContent='Filtr przepuszcza jedną składową białego światła. Doprowadź właściwy kolor do każdego rezonatora.';
  const packLabel=$('level-pack-label');
  packLabel.removeAttribute('data-i18n');
@@ -1122,7 +1118,6 @@ const compactTrayLabels={multiFilter:'trayMultiFilter',dualReflector:'trayDualRe
 function renderInventory(){
  const el=$('inventory'),scroll=el.scrollTop;
  const scrollAcross=el.querySelector('.equipment-slots')?.scrollLeft??0;
- const expanded=Boolean(el.querySelector('details')?.open);
  const active=document.activeElement;
  const focused=active?.matches(':focus-visible')&&el.contains(active)?active.dataset.slot:null;
  el.replaceChildren();
@@ -1130,75 +1125,56 @@ function renderInventory(){
  slots.id='equipment-slots';slots.className='equipment-slots';
  slots.addEventListener('scroll',syncEquipmentScroll,{passive:true});
  el.append(slots);
- const fixtures=document.createElement('details');
- fixtures.className='tray-fixtures';fixtures.open=expanded;
- const summary=document.createElement('summary');
- summary.textContent=t(language,'fixedOptics');
- const fixtureItems=document.createElement('div');fixtureItems.className='fixture-items';
- fixtures.append(summary,fixtureItems);
  const groups=new Map();
  for(const piece of pieces){
+  if(!piece.inTray||!movable.has(piece.type))continue;
   const key=piece.type==='filter'?'filter:'+piece.color:piece.type;
   if(!groups.has(key))groups.set(key,[]);
   groups.get(key).push(piece);
  }
- for(const candidates of [...groups.values()].sort((a,b)=>Number(b.some(p=>p.inTray))-Number(a.some(p=>p.inTray)))){
+ for(const candidates of groups.values()){
   const {type,color}=candidates[0];
   const typeLabel=t(language,'type'+type[0].toUpperCase()+type.slice(1));
   const label=type==='filter'?typeLabel+' · '+colorName(color,language):typeLabel;
-  const tray=candidates.filter(p=>p.inTray);
-  const movableType=movable.has(type);
-  if((orbitalPilot||phonePortrait.matches)&&(!movableType||!tray.length))continue;
-  const item=document.createElement(movableType?'button':'div');
-  item.className='inventory-item'+(movableType?' selectable':'');
-  if(currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!selected&&type==='mirror'&&levels[0]?.startMovablesInTray)item.classList.add('coach-focus');
-  item.type=movableType?'button':undefined;
+  const item=document.createElement('button');
+  item.className='inventory-item selectable';
+  if(isMirrorTutorial()&&!selected&&type==='mirror')item.classList.add('coach-focus');
+  item.type='button';
   item.dataset.opticType=type;
   item.dataset.slot=type==='filter'?'filter:'+color:type;
   item.title=label+' — '+opticDescription(type,language);
   item.setAttribute('aria-description',opticDescription(type,language));
-  if(!movableType)item.tabIndex=0;
   item.addEventListener('mouseenter',e=>showInventoryMechanics(type,e.clientX,e.clientY));
   item.addEventListener('mouseleave',hideOpticTooltip);
   item.addEventListener('focus',()=>{const b=item.getBoundingClientRect();showInventoryMechanics(type,b.left,b.top+b.height/2)});
   item.addEventListener('blur',hideOpticTooltip);
-  if(movableType){
-   item.setAttribute('aria-label',label);
-   if(selected?.inTray && candidates.includes(selected))item.classList.add('selected');
-   // Keep exhausted equipment focusable so its explanation is still
-   // available with the mouse and keyboard.
-   item.setAttribute('aria-disabled',String(tray.length===0));
-   item.addEventListener('click',()=>{
-    const first=nextTrayPiece(candidates,type);
-    if(first)selectFromTray(first);
-    else toast(t(language,'emptyTray'));
-   });
-   item.setAttribute('aria-pressed',String(selected?.inTray&&candidates.includes(selected)||false));
-   item.addEventListener('contextmenu',e=>e.preventDefault());
-   item.addEventListener('auxclick',e=>{
-    if(e.button!==2||e.pointerType==='touch'||!tray.length)return;
-    const part=tray.includes(selected)?selected:nextTrayPiece(candidates,type);
-    if(!part?.inTray)return;
-    if(part!==selected)selectFromTray(part);
-    rotate(1);
-   });
-   if(tray.length)item.addEventListener('pointerdown',e=>{
-    if(e.isPrimary&&e.button===0)trayGesture={id:e.pointerId,x:e.clientX,y:e.clientY,
-     piece:nextTrayPiece(candidates,type),active:false};
-   });
-  }
+  item.setAttribute('aria-label',label);
+  if(selected?.inTray&&candidates.includes(selected))item.classList.add('selected');
+  item.addEventListener('click',()=>selectFromTray(nextTrayPiece(candidates,type)));
+  item.setAttribute('aria-pressed',String(selected?.inTray&&candidates.includes(selected)||false));
+  item.addEventListener('contextmenu',e=>e.preventDefault());
+  item.addEventListener('auxclick',e=>{
+   if(e.button!==2||e.pointerType==='touch')return;
+   const part=candidates.includes(selected)?selected:nextTrayPiece(candidates,type);
+   if(!part?.inTray)return;
+   if(part!==selected)selectFromTray(part);
+   rotate(1);
+  });
+  item.addEventListener('pointerdown',e=>{
+   if(e.isPrimary&&e.button===0)trayGesture={id:e.pointerId,x:e.clientX,y:e.clientY,
+    piece:nextTrayPiece(candidates,type),active:false};
+  });
   const icon=document.createElement('span');icon.className='component-icon';
   const portrait=document.createElement('img');
   portrait.src=opticModels.portraitPath(type,color);
   portrait.alt='';portrait.draggable=false;icon.append(portrait);
   const name=document.createElement('span');
-  if(movableType)name.className='equipment-name';
-  name.textContent=movableType&&compactTrayLabels[type]?t(language,compactTrayLabels[type]):label;
+  name.className='equipment-name';
+  name.textContent=compactTrayLabels[type]?t(language,compactTrayLabels[type]):label;
   const count=document.createElement('strong');
-  count.textContent='×'+(movableType?tray.length:candidates.length);
-  item.append(icon,name,count);(movableType?slots:fixtureItems).appendChild(item);
+  count.textContent='×'+candidates.length;
+  item.append(icon,name,count);slots.appendChild(item);
  }
- if(fixtureItems.children.length)el.append(fixtures);
  syncPhoneInstruction();
  el.closest('.game-dock').style.setProperty('--stock-types',slots.childElementCount);
  slots.scrollLeft=scrollAcross;
@@ -1226,7 +1202,10 @@ function closeReceiver(restoreFocus=false){
  inspectedReceiver=null;
  $('receiver-card').hidden=true;
  $('receiver-toggle').setAttribute('aria-expanded','false');
- if(restoreFocus)$('receiver-toggle').focus();
+ if(restoreFocus){
+  const button=$('receiver-toggle');
+  (button.closest('details:not([open])')?.querySelector('summary')??button).focus();
+ }
 }
 function refreshReceiver(){
  if(!inspectedReceiver)return;
@@ -1322,9 +1301,12 @@ function renderAnalyzer(){
  const warning=$('analysis-warning');warning.classList.toggle('hidden',!data.unsupported.length&&!data.truncated);
  warning.textContent=t(language,'analysisWarning');
 }
+function isMirrorTutorial(){
+ return !orbitalPilot&&levels===demoLevels&&levelIndex===0&&!coachDismissed;
+}
 function updateCoach(){
  const coach=$('coach');
- const show=currentPackId===demoPackId&&levelIndex===0&&!coachDismissed&&!currentResult?.won&&Boolean(levels[0]?.startMovablesInTray);
+ const show=isMirrorTutorial()&&!currentResult?.won;
  coach.classList.toggle('hidden',!show);
  if(!show)return;
  // A single clear next action, rather than a wall of controls.
@@ -1382,7 +1364,7 @@ function redo(){
  update();syncUndoButtons();beep(580,.045);
 }
 function select(p){
- if(orbitalPilot&&p.type==='target'){inspectReceiver(p);return}
+ if(p.type==='target'){inspectReceiver(p);return}
  closeReceiver();
  if(!movable.has(p.type)){toast(t(language,'selectLocked'));return}
  // Clicking the same optic again is intentionally inert: rotation is explicit.
@@ -1519,7 +1501,7 @@ function syncCameraLabel(){
  $('camera-preset-label').textContent=t(language,label);
  syncPhoneZoomLabel();
 }
-const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#spectral-inspector,#coach')];
+const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#spectral-inspector,#coach,#receiver-toggle')];
 const overheadHeader=document.querySelector('.header'),overheadMission=document.querySelector('.mission');
 const overheadDock=document.querySelector('.game-dock');
 function measureOverheadFrame(){
@@ -1531,6 +1513,7 @@ function measureOverheadFrame(){
  const center=innerWidth/2;
  let halfWidth=center-10;
  for(const element of overheadObstacles){
+  if(overheadHeader.contains(element))continue;
   const bounds=element.getBoundingClientRect();
   if(!bounds.height||getComputedStyle(element).visibility==='hidden')continue;
   if(bounds.left<=center&&bounds.right>=center)bottom=Math.min(bottom,bounds.top-8);
@@ -2036,7 +2019,7 @@ renderer.domElement.addEventListener('pointerup',e=>{
  // Clicking an optic only selects it. Clicking elsewhere only places a
  // tray optic, otherwise it cancels selection (never warps an existing optic).
  const intent=classifyClick(state.origin,selected,placementMode);
- if(orbitalPilot&&intent.piece?.type!=='target')closeReceiver();
+ if(intent.piece?.type!=='target')closeReceiver();
  if(intent.action==='select')select(intent.piece);
  else if(intent.action==='place')move(intent.x,intent.y);
  else if(selected)clearSelection();
@@ -2157,7 +2140,10 @@ $('levels-from-win').onclick=()=>openLevelAtlas($('levels-from-win'));
 $('levels-close').onclick=closeLevelAtlas;
 $('main-menu-toggle').onclick=openMainMenu;
 $('menu-orbital').onclick=()=>location.assign('?benchmark=orbital');
-$('orbital-settings').onclick=()=>showScreen('settings-overlay','menu-language',$('orbital-settings'));
+$('orbital-settings').onclick=()=>{
+ const button=$('orbital-settings');
+ showScreen('settings-overlay','menu-language',button.closest('details')?.querySelector('summary')??button);
+};
 $('receiver-toggle').onclick=()=>{
   if(inspectedReceiver){closeReceiver(true);return}
   inspectReceiver(pieces.find(p=>p.type==='target'&&currentResult?.received.get(p.id)!==p.color)??pieces.find(p=>p.type==='target'));

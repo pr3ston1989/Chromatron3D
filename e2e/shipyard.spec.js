@@ -1,3 +1,4 @@
+import {selectQuality} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 import {captureFrame,luminance,projectCells} from './frame.js';
 
@@ -7,7 +8,7 @@ test('concept scenery keeps all playable cells visible in the four reference wor
  await page.setViewportSize({width:1366,height:768});
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>Boolean(window.__debug));
- await page.locator('#graphics-quality').selectOption('performance');
+ await selectQuality(page,'performance');
  await page.evaluate(()=>window.__debug.switchCampaign('demo'));
  for(const level of [1,2,3,8]){
   await page.evaluate(n=>{window.__debug.loadLevel(n);window.__debug.freezeAnimations(true)},level);
@@ -64,7 +65,7 @@ test('compact overhead framing retains all 14 inner grid lines on each axis',asy
  const setups=[[640,360,'balanced'],[1093,614,'performance'],[390,844,'performance'],[1280,720,'cinematic'],[1366,768,'balanced']];
  for(const [width,height,profile] of setups){
   await page.setViewportSize({width,height});
-  await page.locator('#graphics-quality').selectOption(profile);
+  await selectQuality(page,profile);
   const frame=await captureFrame(page);
   for(const axis of ['vertical','horizontal']){
    const vertical=axis==='vertical',cells=[];

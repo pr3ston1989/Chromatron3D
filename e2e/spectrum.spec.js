@@ -1,3 +1,4 @@
+import {selectQuality} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 import {DEMO_SOLUTIONS,PROTOTYPE_LEVELS} from '../src/levels.js';
 import {captureFrame} from './frame.js';
@@ -42,7 +43,7 @@ test('beam cores and receiver lenses keep distinct hues at playable screen sizes
 
  for(const [width,height,quality] of [[1366,768,'cinematic'],[1280,720,'balanced'],[1093,614,'performance'],[390,844,'performance']]){
   await page.setViewportSize({width,height});
-  await page.locator('#graphics-quality').selectOption(quality);
+  await selectQuality(page,quality);
   const frame=await captureFrame(page);
   const points=await page.evaluate(masks=>masks.flatMap((mask,index)=>{
    const y=1+index*2;

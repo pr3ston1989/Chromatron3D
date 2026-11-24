@@ -1,3 +1,4 @@
+import {openTools,selectQuality,useTool} from './hud-tools.js';
 import {test,expect} from '@playwright/test';
 
 // SwiftShader in CI renders real Three.js postprocessing on the CPU. Reserve
@@ -28,10 +29,10 @@ test('3D gameplay loads, switches languages and exposes optical diagnostics',asy
  await expect(page.locator('#total-levels')).toHaveText('008');
  await expect(page.locator('#counter')).toHaveText(/\d+\s*\/\s*\d+/);
  await expect(page.locator('#language')).toHaveText('PL');
- await page.locator('#language').click();
+ await useTool(page,'language');
  await expect(page.locator('#language')).toHaveText('EN');
  await expect(page.locator('#hint')).toContainText('HINT');
- await page.locator('#analysis-toggle').click();
+ await useTool(page,'analysis-toggle');
  await expect(page.locator('#analysis-panel')).toBeVisible();
  await expect(page.locator('#analysis-targets .analysis-target')).not.toHaveCount(0);
  await page.locator('#camera-preset').click();
@@ -53,7 +54,7 @@ test('hints are progressive and non-destructive; narrow layout stays interactive
  await expect(page.locator('#skip-level')).toBeHidden();
  await page.locator('#close-hint').click();
  await expect(page.locator('#hint-overlay')).toBeHidden();
- await page.locator('#analysis-toggle').click();
+ await useTool(page,'analysis-toggle');
  await expect(page.locator('#analysis-panel')).toBeVisible();
  await page.locator('#analysis-close').click();
  await page.screenshot({path:'test-results/chromatron-mobile.png'});
@@ -106,9 +107,9 @@ test('an unlocked verified guide follows the next unfinished move without chargi
   }),`${width} × ${height} guided board`).toBe(true);
  }
  await page.screenshot({path:testInfo.outputPath('guide-390x844.png')});
- await page.locator('#language').click();
+ await useTool(page,'language');
  await expect(copy).toContainText(/Move.*\(5, 4\).*225°/);
- await page.locator('#language').click();
+ await useTool(page,'language');
  await page.locator('#undo').click();
  await expect(copy).toContainText(/Obróć.*\(5, 9\).*45°/);
  await page.locator('#hint-dismiss-guide').click();
@@ -246,7 +247,7 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
 test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/?debug=1');
- await page.locator('#graphics-quality').selectOption('balanced');
+ await selectQuality(page,'balanced');
  // A late scenery mesh used to move both mirrors by several cells on screen.
  let garden;
  await page.route('**/garden-heliostat-authored.glb',route=>{garden=route});
@@ -290,7 +291,7 @@ test('spectrum FX and mirror light-direction guides are rendered in WebGL',async
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/?play=1');
  const icons=page.locator('#inventory .component-icon img');
- await expect(icons).toHaveCount(3);
+ await expect(icons).toHaveCount(1);
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.photonSystems).toBeGreaterThan(0);
  expect(stats.beamSegments).toBeGreaterThan(1);
@@ -417,16 +418,16 @@ test('real planar mirror reflections and GPU quality presets are switchable',asy
  await expect(page.locator('#graphics-quality')).toHaveValue('auto');
  // Auto legitimately lowers GPU cost after sustained low FPS. A SwiftShader
  // runner would otherwise switch away from real mirrors during this test.
- await page.locator('#graphics-quality').selectOption('balanced');
+ await selectQuality(page,'balanced');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(point.x,point.y);
  await expect.poll(async()=>page.evaluate(()=>window.chromatron.getVisualStats().planarReflections)).toBe(1);
- await page.locator('#graphics-quality').selectOption('performance');
+ await selectQuality(page,'performance');
  let stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.planarReflections).toBe(0);
  expect(stats.pixelRatio).toBeLessThanOrEqual(1);
- await page.locator('#graphics-quality').selectOption('cinematic');
+ await selectQuality(page,'cinematic');
  stats=await page.evaluate(()=>window.chromatron.getVisualStats());
  expect(stats.planarReflections).toBe(1);
  expect(stats.effectiveQuality).toBe('cinematic');
@@ -458,7 +459,7 @@ test('wheel and trackpad rotate continuously without recreating mirror geometry'
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.goto('/?play=1');
  // Pin a fixed profile so automatic GPU downgrades cannot invalidate counts.
- await page.locator('#graphics-quality').selectOption('balanced');
+ await selectQuality(page,'balanced');
  const point=await page.evaluate(()=>window.chromatron.projectCell(7,7));
  await page.locator('#inventory button').filter({hasText:/LUSTRO|MIRROR/}).click();
  await page.mouse.click(point.x,point.y);
@@ -515,7 +516,7 @@ test('small laptop layouts keep essential controls on screen without horizontal 
   {width:1024,height:640}
  ]){
   await page.setViewportSize(size);
-  for(const selector of ['.header','.mission','.tool-panel','#reset','#hint','#graphics-quality','#camera-preset']){
+  for(const selector of ['.header','.mission','.tool-panel','#reset','#hint','#phone-tools summary','#camera-preset']){
    const el=page.locator(selector);
    await expect(el).toBeVisible();
    const b=await el.boundingBox();
@@ -576,13 +577,14 @@ test('mobile equipment shelf keeps spectrum and keyboard selection within reach'
  const shelf=page.locator('.tool-panel');
  const spectrum=page.locator('#spectral-toggle');
  const mirror=page.locator('.equipment-slots button[data-optic-type="mirror"]');
+ await openTools(page);
  await expect(spectrum).toBeInViewport({ratio:1});
  await expect(mirror).toBeInViewport({ratio:1});
  await spectrum.click();
  await expect(spectrum).toHaveAttribute('aria-expanded','true');
- await spectrum.click();
- await spectrum.focus();
- await page.keyboard.press('Tab');
+ await useTool(page,'spectral-toggle');
+ await page.locator('#phone-tools summary').focus();
+ for(let i=0;i<18&&!await mirror.evaluate(el=>el===document.activeElement);i++)await page.keyboard.press('Tab');
  await expect(mirror).toBeFocused();
  await page.keyboard.press('Enter');
  await expect(mirror).toBeFocused();
@@ -597,9 +599,10 @@ test('fullscreen button and F shortcut adapt the game without hiding controls',a
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1280,height:720});
  await page.goto('/?play=1');
+ await openTools(page);
  await expect(page.locator('#fullscreen')).toBeVisible();
  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
- await page.locator('#fullscreen').click();
+ await useTool(page,'fullscreen');
  await expect.poll(async()=>page.evaluate(()=>Boolean(document.fullscreenElement))).toBe(true);
  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#scene canvas')).toBeVisible();
@@ -615,8 +618,9 @@ test('board focus mode expands usable puzzle space without losing equipment acce
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:1093,height:614});
  await page.goto('/?play=1');
+ await openTools(page);
  await expect(page.locator('#board-focus')).toBeVisible();
- await page.locator('#board-focus').click();
+ await useTool(page,'board-focus');
  await expect(page.locator('#app')).toHaveClass(/board-focus/);
  expect((await page.evaluate(()=>window.chromatron.getLayoutState())).boardFocus).toBe(true);
  for(const id of ['mission-drawer','tool-drawer']){
@@ -637,7 +641,7 @@ test('board focus mode expands usable puzzle space without losing equipment acce
  await page.screenshot({path:'test-results/chromatron-laptop-focus.png'});
  await page.keyboard.press('b');
  await expect(page.locator('#app')).not.toHaveClass(/board-focus/);
- await page.locator('#board-focus').click();
+ await useTool(page,'board-focus');
  await expect(page.locator('#app')).toHaveClass(/board-focus/);
  expect(errors).toEqual([]);
 });
@@ -701,7 +705,7 @@ test('level atlas is accessible on laptop and mobile, localized, and never block
  await page.screenshot({path:'test-results/chromatron-level-map-laptop.png',animations:'disabled'});
  await page.keyboard.press('Escape');
  await expect(page.locator('#level-menu')).toBeHidden();
- await page.locator('#language').click();
+ await useTool(page,'language');
  await page.keyboard.press('m');
  await expect(page.locator('#level-menu-title')).toHaveText('LEVEL MAP');
  await expect(page.locator('#level-grid [data-level-index="1"]')).toHaveAttribute('data-status','locked');

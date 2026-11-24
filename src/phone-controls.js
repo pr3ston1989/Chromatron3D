@@ -3,10 +3,21 @@ export function mountPhoneControls(portrait){
  const tools=document.querySelector('#phone-tools');
  const menu=tools.querySelector('.phone-tools-menu');
  const dock=document.querySelector('.game-dock');
- const diagnostics=document.querySelector('#app').classList.contains('orbital-pilot')
-  ?[]:[['analysis-toggle',menu,'phoneAnalysis'],['spectral-toggle',menu]];
+ const pilot=document.querySelector('#app').classList.contains('orbital-pilot');
+ const utilities=pilot?[]:[
+  ['analysis-toggle','phoneAnalysis'],['spectral-toggle'],['keyboard-board-button'],
+  ['board-focus'],['fullscreen'],['audio'],['language']
+ ];
+ for(const [id,label] of utilities){
+  const button=document.getElementById(id);
+  if(label)button.dataset.i18n=label;
+  else if(!button.dataset.i18n)button.classList.add('utility-caption');
+  menu.append(button);
+ }
+ if(!pilot)menu.append(document.querySelector('.quality-widget'));
  const placements=[
-  ...diagnostics,['reset',menu,'phoneReset'],['camera-preset',dock]
+  ['reset',menu,'phoneReset'],['camera-preset',dock],['receiver-toggle',menu],
+  ['orbital-settings',menu,'menuSettings']
  ].map(([id,host,label])=>{
   const button=document.getElementById(id);
   const placeholder=document.createComment(id);
@@ -21,12 +32,15 @@ export function mountPhoneControls(portrait){
  function layout(){
   tools.open=false;
   for(const {button,placeholder,host} of placements){
-   if(portrait.matches)host.append(button);
+   if(portrait.matches||(!pilot&&button.id==='orbital-settings'))host.append(button);
    else placeholder.after(button);
   }
  }
  menu.addEventListener('click',event=>{
-  if(event.target.closest('button'))tools.open=false;
+  const button=event.target.closest('button');
+  if(!button)return;
+  tools.open=false;
+  if(menu.contains(document.activeElement))tools.querySelector('summary').focus();
  });
  tools.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&tools.open){

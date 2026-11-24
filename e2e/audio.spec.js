@@ -1,3 +1,4 @@
+import {useTool} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 
 test('sound starts from the player gesture, plays the motif and pauses when muted',async({page})=>{
@@ -18,7 +19,7 @@ test('sound starts from the player gesture, plays the motif and pauses when mute
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>Boolean(window.__debug));
  const audio=page.locator('#audio');
- await audio.click();
+ await useTool(page,'audio');
  await expect(audio).toHaveAttribute('aria-pressed','true');
  const readProbe=()=>page.evaluate(()=>({
   state:window.__soundProbe.context?.state,notes:window.__soundProbe.oscillators
@@ -26,7 +27,7 @@ test('sound starts from the player gesture, plays the motif and pauses when mute
  await expect.poll(async()=>(await readProbe()).state).toBe('running');
  const initial=(await readProbe()).notes;
  await expect.poll(async()=>(await readProbe()).notes).toBeGreaterThan(initial);
- await audio.click();
+ await useTool(page,'audio');
  await expect(audio).toHaveAttribute('aria-pressed','false');
  await expect.poll(async()=>(await readProbe()).state).toBe('suspended');
 });

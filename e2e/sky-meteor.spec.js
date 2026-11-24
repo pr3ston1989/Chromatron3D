@@ -1,3 +1,4 @@
+import {selectQuality} from './hud-tools.js';
 import {test,expect} from '@playwright/test';
 
 test('shooting stars appear in outdoor campaign skies and respect the reduced-motion setting',async({page})=>{
@@ -8,7 +9,7 @@ test('shooting stars appear in outdoor campaign skies and respect the reduced-mo
  await page.emulateMedia({reducedMotion:'no-preference'});
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>window.__debug);
- await page.locator('#graphics-quality').selectOption('performance');
+ await selectQuality(page,'performance');
  for(const [name,width,height] of [['shipyard',1366,768],['observatory',1280,720]]){
   await page.setViewportSize({width,height});
   await page.evaluate(name=>window.__debug.setTheme(name),name);

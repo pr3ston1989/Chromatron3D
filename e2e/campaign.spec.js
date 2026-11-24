@@ -1,3 +1,4 @@
+import {selectQuality} from './hud-tools.js';
 import {test,expect} from '@playwright/test';
 
 test.describe('touch gestures',()=>{
@@ -289,7 +290,7 @@ test('orbital scenery loads all three GLBs on a laptop layout',async({page})=>{
  await page.setViewportSize({width:1366,height:768});
  await page.goto('/?debug=1&pilot=0');
  await page.waitForFunction(()=>Boolean(window.__debug));
- await page.locator('#graphics-quality').selectOption('performance');
+ await selectQuality(page,'performance');
  await page.evaluate(()=>{
   window.__debug.switchCampaign('demo');
   window.__debug.setTheme('orbital');

@@ -28,6 +28,10 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 **Campaigns** screen to switch worlds or revisit puzzles. A bookmark with
 `?play=1` opens the current board directly.
 
+Campaign boards and the Kepler benchmark share the same gameplay header and
+equipment rail. Campaign navigation sits in the header. Select a receiver or
+open its information button to inspect the required and incoming colours.
+
 ## Controls
 
 On a portrait touch phone the board opens directly overhead. Tap **Enlarge tiles**
@@ -47,11 +51,11 @@ view** button switches back to the orbital camera.
 - With a placed optic selected, choose **Move** and then an empty tile to reposition it with two taps. The move can be undone.
 - **V** toggles the advanced beam analyzer: exact required/received colors, absorbed rays and RGB channel labels.
 - **C** opens a straight overhead view fitted between the controls. Press **C** again to return to the previous angle and zoom. Shift+wheel or a two-finger pinch still zooms in either view.
-- The component tray also has a compact **RGB spectrum** inspector, independent from the detailed analyzer.
+- Open the gear menu for the **RGB spectrum** inspector, beam analyzer and graphics controls.
 - **Ctrl+Z** undo, **Ctrl+Y / Ctrl+Shift+Z** redo, **Escape** closes the active dialog or deselects an optic. With the board idle, **Escape** opens the game menu.
 - **Reset** restores the starting layout. Use **Undo** to recover the layout before reset during the current session. The draft follows the restored layout.
 - **H** opens progressive hints. After revealing a verified move, **Show on the board** marks its tile and keeps the next instruction visible as you play. The final clue also offers a skip without awarding a solve badge.
-- **PL / EN** header button changes interface and level guidance; language preference saves automatically.
+- **PL / EN** in the gear menu changes the interface and level guidance. The language preference saves automatically.
 - Click a movable optic in the inventory to select it. For classic-style levels, place it on an empty tile, or use **Backspace/Delete** to return to the tray.
 - **M** opens the campaign atlas. Use the arrow keys to browse the map and **Enter** to play the focused puzzle. Progress saves locally.
 - After solving a puzzle, close the results to inspect your layout. **Result** in the bottom console reopens the summary.
