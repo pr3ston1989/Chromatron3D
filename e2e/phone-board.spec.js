@@ -25,6 +25,9 @@ for(const [width,height] of [[320,568],[390,844]]){
    localStorage.setItem('chromatron-coach-dismissed','yes');
   });
   await page.goto('/?play=1');
+  const brand=page.locator('#main-menu-toggle');
+  await expect(brand).toBeInViewport({ratio:1});
+  expect(await brand.evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(95);
   const camera=page.locator('#camera-preset'),zoom=page.locator('#phone-magnify');
   await expect(camera).toHaveAttribute('aria-pressed','true');
   const project=(x,y)=>page.evaluate(([x,y])=>window.chromatron.projectCell(x,y),[x,y]);

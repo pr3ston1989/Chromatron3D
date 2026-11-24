@@ -16,12 +16,12 @@
  #app .header {inset:0 0 auto;height:calc(50px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;gap:8px;background:#0c1524e8;border-bottom:1px solid #96bdd32b}
  #app .header .brand,#app .header #levels-button,#app .header #help {min-height:44px}
  #app .header .brand strong {font:650 13px/1.1 system-ui,sans-serif;letter-spacing:.04em}
- #app .header .brand {display:flex;gap:6px;align-items:center}
- #app .header .brand::before {content:'C';width:23px;height:26px;display:grid;place-items:center;clip-path:polygon(50% 0,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);background:#60cee7;color:#102638;font:700 16px/1 system-ui}
+ #app .header .brand {display:flex;gap:6px;align-items:center;min-width:max-content;padding-inline:0}
+ #app .header .brand::before {content:'C';flex:0 0 23px;width:23px;height:26px;display:grid;place-items:center;clip-path:polygon(50% 0,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);background:#60cee7;color:#102638;font:700 16px/1 system-ui}
  #app .header .brand::after {content:'CHROMATRON';font:700 11px/1 system-ui;letter-spacing:.12em;color:#e1f3ff}
  #app .header .pilot-sector,#app .header .stage-navigation {display:none}
  #app .header #levels-button {margin-inline:auto;font:650 12px/1 system-ui,sans-serif;background:transparent;border:0;box-shadow:none;color:#f5d59a}
- #app .header .header-right {margin-left:auto;gap:4px}
+ #app .header .header-right {margin-left:auto;align-items:center;gap:4px}
  #app .header #language,#app .header #audio,#app .header #fullscreen,#app .header #board-focus {display:none}
  #app .header #help,#phone-tools summary {width:44px;min-height:44px;display:grid;place-items:center}
  #phone-tools {display:block;position:relative}
