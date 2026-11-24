@@ -200,6 +200,7 @@ karty lub odświeżenia strony.
 | `loadLevel(n)`, `getLevelCount()`, `getLevelState()` | Wczytanie wskazanej planszy i odczyt kopii stanu. |
 | `setTheme(name)` | ID z `src/campaign-worlds.js`, wcześniejsze `orbital`, `verdant`, `polar`, `nebula` lub `null` dla motywu kampanii. |
 | `freezeAnimations(bool)` | Unieruchomienie warstwy dekoracyjnej do zrzutu przy działającym renderowaniu. |
+| `freezeAnimations(true,{onDemand:true})`, `renderStill()` | W testach obrazu rysuje pełną klatkę gry na żądanie, po zmianie kamery lub rozmiaru okna. `freezeAnimations(false)` wznawia animację. |
 | `applyMove({index,x,y,rot})` | Ustawienie ruchomego elementu na wolnym polu albo obrót. `index`, `x`, `y` i `rot` są liczone od 0. |
 | `applyMove({index,inTray:true})` | Odkłada ustawiony ruchomy element do zasobnika. |
 | `isSolved()`, `resetLevel()`, `undo()`, `redo()` | Odczyt wyniku i sterowanie przez zwykłą historię ruchów. |

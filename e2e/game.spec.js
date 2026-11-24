@@ -245,16 +245,25 @@ test('select, place, rotate both ways and never teleport a placed mirror',async(
 
 test('different board mirrors remain distinct; dragging one does not move the other',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- // The mirror regression needs level 2, unlocked by prior level 1 completion.
- await page.addInitScript(()=>localStorage.setItem('chromatron-reborn-solved',JSON.stringify([0])));
- await page.goto('/?play=1');
+ await page.goto('/?debug=1');
  await page.locator('#graphics-quality').selectOption('balanced');
- await page.locator('#next').click();
+ // A late scenery mesh used to move both mirrors by several cells on screen.
+ let garden;
+ await page.route('**/garden-heliostat-authored.glb',route=>{garden=route});
+ await page.evaluate(()=>{window.__debug.switchCampaign('demo');window.__debug.loadLevel(2)});
+ await expect.poll(()=>Boolean(garden)).toBe(true);
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});
  const state=()=>page.evaluate(()=>window.chromatron.getState());
  const start=(await state()).pieces.filter(p=>p.type==='mirror');
  expect(start).toHaveLength(2);
  const m1=await point(5,11),m2=await point(9,11);
+ await page.mouse.move(m1.x,m1.y);
+ await garden.continue();
+ await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ await page.waitForLoadState('networkidle');
+ await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+ expect(await point(5,11)).toEqual(m1);
+ expect(await point(9,11)).toEqual(m2);
  const previousRebuilds=await page.evaluate(()=>window.chromatron.getVisualStats().componentRebuilds);
  const hit1=await page.evaluate(({x,y})=>window.chromatron.inspectPointer(x,y),m1);
  expect(hit1).toMatchObject({intent:'select',hit:{pieceType:'mirror'}});

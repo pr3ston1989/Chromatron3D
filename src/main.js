@@ -94,7 +94,7 @@ const pilotStorage={
  removeItem:key=>localStorage.removeItem('kepler:'+key)
 };
 const gameStorage=()=>transientStorage||(orbitalPilot?pilotStorage:window.localStorage);
-let debugFrozen=false,debugTheme=null;
+let debugFrozen=false,manualFrames=false,debugTheme=null;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1b2c');scene.fog=new THREE.FogExp2('#0d1b2c',0.008);
 const camera=new THREE.PerspectiveCamera(40,1,.1,200);
 const cameraTarget=new THREE.Vector3(0,0,0);
@@ -1206,9 +1206,14 @@ function renderInventory(){
  if(focused)el.querySelector(`[data-slot="${focused}"]`)?.focus({preventScroll:true});
  syncEquipmentScroll();
  const details=$('optic-info');
+ const note=$('phone-optic-note');
+ const selectedId=String(selected?.id??'');
+ if(note.dataset.piece!==selectedId){note.dataset.piece=selectedId;note.setAttribute('aria-expanded','false')}
  details.classList.toggle('hidden',!selected);
  if(selected){
   const heading=t(language,'type'+selected.type[0].toUpperCase()+selected.type.slice(1));
+  note.textContent=selected.type==='filter'?heading+' · '+colorName(selected.color,language):heading;
+  note.setAttribute('aria-label',t(language,'phoneOpticInfo',{name:note.textContent}));
   details.textContent=heading+' — '+opticDescription(selected.type,language)+
    (opticExample(selected.type,language)?' '+opticExample(selected.type,language):'');
  }
@@ -1504,7 +1509,7 @@ function syncPhoneInstruction(){
  const placing=selected&&(placementMode||relocation);
  const enlarged=cameraTop&&overheadZoom.target<defaultZoom-.1;
  const hasStock=$('equipment-slots')?.childElementCount;
- const copy=t(language,placing?'phonePlace':enlarged?'phonePan':hasStock?'phonePick':'phoneBoard');
+ const copy=selected&&!placing?'':t(language,placing?'phonePlace':enlarged?'phonePan':hasStock?'phonePick':'phoneBoard');
  if($('phone-instruction').textContent!==copy)$('phone-instruction').textContent=copy;
 }
 function syncCameraLabel(){
@@ -1562,7 +1567,9 @@ function toggleCameraPreset(manual=true){
 }
 function updateCamera(){
  const viewportWidth=innerWidth;
- const pilot=usesNewArt();
+ // Frame the selected level immediately. Scenery streams in behind the playable
+ // board and must never move a tile out from under a press or an active drag.
+ const pilot=activeEnvironment!==baseEnvironment;
  const mobile=compactBoard.matches;
  const closeup=pilot&&!mobile?Math.max(0,Math.min(1,(viewportWidth-1040)/300,(innerHeight-575)/160)):0;
  $('app').classList.toggle('stage-closeup',closeup>.4);
@@ -1575,7 +1582,7 @@ function updateCamera(){
  const overheadDistance=overheadFrame?overheadFrame.distance*overheadZoom.current/defaultZoom:orbitDistance;
  const cameraDistance=THREE.MathUtils.lerp(orbitDistance,overheadDistance,overheadBlend);
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
- const viewPitch=Math.max(.27,pitch-(mobile?.22:shipyard.isVisible()?.32:.25)*framing-.08*closeup*framing);
+ const viewPitch=Math.max(.27,pitch-(mobile?.22:activeEnvironment?.id==='shipyard'?.32:.25)*framing-.08*closeup*framing);
  const viewYaw=yaw+.23*framing*(1-closeup);
  const panLimit=phonePortrait.matches&&cameraTop?Math.max(0,(1-overheadZoom.current/defaultZoom)*GRID*T/2):0;
  phonePan.x=THREE.MathUtils.clamp(phonePan.x,-panLimit,panLimit);
@@ -2241,8 +2248,13 @@ function toggleRelocation(){
  relocation=!relocation;
  placementPreview.visible=false;
  syncTransformTools();
+ syncPhoneInstruction();
 }
 $('relocate').onclick=toggleRelocation;
+$('phone-optic-note').onclick=event=>{
+ const button=event.currentTarget;
+ button.setAttribute('aria-expanded',String(button.getAttribute('aria-expanded')!=='true'));
+};
 $('turn-left').onclick=()=>rotate(-1);
 $('turn-right').onclick=()=>rotate(1);
 $('cancel-selection').onclick=clearSelection;
@@ -2451,8 +2463,11 @@ function trackFrameRate(time){
 let lastSceneryFrame;
 function animate(time){
  requestAnimationFrame(animate);
+ if(!manualFrames)renderFrame(time);
+}
+function renderFrame(time){
  if(screenVisible('main-menu')||document.hidden){lastSceneryFrame=undefined;fpsMark=fpsFrames=0;return}
- trackFrameRate(time);
+ if(!manualFrames)trackFrameRate(time);
  const still=debugFrozen||reducedMotion.matches;
  const animationTime=debugFrozen?0:time;
  const sceneryDelta=Math.min(.25,Math.max(0,(time-(lastSceneryFrame??time))*.001));
@@ -2646,7 +2661,12 @@ if(debugEnabled){
    applyLevelEnvironment();
    return true;
   },
-  freezeAnimations(freeze){debugFrozen=Boolean(freeze);if(debugFrozen)hideLevelIntro();},
+  freezeAnimations(freeze,{onDemand=false}={}){
+   debugFrozen=Boolean(freeze);
+   manualFrames=debugFrozen&&onDemand;
+   if(debugFrozen)hideLevelIntro();
+  },
+  renderStill(){if(manualFrames)renderFrame(performance.now())},
   applyMove({index,x,y,rot,inTray=false}={}){
    const part=pieces[index];
    if(!Number.isInteger(index)||!part||!movable.has(part.type))return false;

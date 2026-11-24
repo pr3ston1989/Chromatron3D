@@ -52,7 +52,9 @@ const surfaceSample=`
  float detail=1.-.55*smoothstep(.052,.135,max(footprint.x,footprint.y));
  vec2 relief=strength*(slope*detail+sign(local)*bevel*.37);
  float lip=max(bevel.x,bevel.y);
- diffuseColor.rgb*=1.+strength*((sheet.r-.5)*panelContrast*detail+(seed.z-.5)*.10+.085*lip);
+ // Mipmaps already average the stone pigment. Attenuate its subpixel relief
+ // separately so the broad mineral pattern survives in the full-board view.
+ diffuseColor.rgb*=1.+strength*((sheet.r-.5)*panelContrast+(seed.z-.5)*.10+.085*lip);
  // When the cut in the Blender mesh projects to less than one render pixel,
  // carry its remaining coverage onto the tile lip. The station already draws
  // its own antialiased joint (zero inset).

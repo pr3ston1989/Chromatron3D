@@ -1,20 +1,13 @@
 import {expect,test} from '@playwright/test';
 import {DEMO_SOLUTIONS,PROTOTYPE_LEVELS} from '../src/levels.js';
+import {captureFrame} from './frame.js';
 
-async function colourScores(page,points){
- const png=await page.screenshot();
- return page.evaluate(async({png,points})=>{
-  const blob=await (await fetch('data:image/png;base64,'+png)).blob();
-  const image=await createImageBitmap(blob);
-  const canvas=new OffscreenCanvas(image.width,image.height);
-  const pixels=canvas.getContext('2d');
-  pixels.drawImage(image,0,0);
-  image.close();
-  return points.map(({x,y,mask})=>{
-   const rgba=pixels.getImageData(Math.round(x)-2,Math.round(y)-2,5,5).data;
+function colourScores(frame,points){
+ return points.map(({x,y,mask})=>{
    let best=-255;
-   for(let i=0;i<rgba.length;i+=4){
-    const rgb=[rgba[i],rgba[i+1],rgba[i+2]];
+   for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+    const index=((Math.round(y)+dy)*frame.width+Math.round(x)+dx)*4;
+    const rgb=[frame.data[index],frame.data[index+1],frame.data[index+2]];
     const low=Math.min(...rgb),high=Math.max(...rgb);
     const wanted=rgb.filter((_,channel)=>mask&(1<<channel));
     const other=rgb.filter((_,channel)=>!(mask&(1<<channel)));
@@ -22,8 +15,7 @@ async function colourScores(page,points){
     best=Math.max(best,score);
    }
    return best;
-  });
- },{png:png.toString('base64'),points});
+ });
 }
 
 test('beam cores and receiver lenses keep distinct hues at playable screen sizes',async({page})=>{
@@ -43,7 +35,7 @@ test('beam cores and receiver lenses keep distinct hues at playable screen sizes
  await page.evaluate(pieces=>{
   window.__debug.setTheme('heliostat');
   window.chromatron.loadLevels([{pieces}]);
-  window.__debug.freezeAnimations(true);
+  window.__debug.freezeAnimations(true,{onDemand:true});
  },pieces);
  await page.waitForLoadState('networkidle');
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
@@ -51,7 +43,7 @@ test('beam cores and receiver lenses keep distinct hues at playable screen sizes
  for(const [width,height,quality] of [[1366,768,'cinematic'],[1280,720,'balanced'],[1093,614,'performance'],[390,844,'performance']]){
   await page.setViewportSize({width,height});
   await page.locator('#graphics-quality').selectOption(quality);
-  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+  const frame=await captureFrame(page);
   const points=await page.evaluate(masks=>masks.flatMap((mask,index)=>{
    const y=1+index*2;
    const sample=(kind,x,mask,height)=>({kind,mask,...window.chromatron.projectCell(x,y,height)});
@@ -61,7 +53,7 @@ test('beam cores and receiver lenses keep distinct hues at playable screen sizes
     mask===6?sample('blue lens hit by cyan',12,4,.79):sample('idle lens',13,mask,.79)
    ];
   }),masks);
-  const scores=await colourScores(page,points);
+  const scores=colourScores(frame,points);
   for(const [index,{kind,mask}] of points.entries()){
    const threshold=mask===7?145:kind==='active lens'?27:38;
    expect.soft(scores[index],`${width} × ${height} · ${kind} · RGB mask ${mask}`).toBeGreaterThan(threshold);
@@ -77,7 +69,7 @@ test('the prism separates white into visible RGB branches on the Three Wavelengt
  await page.evaluate(moves=>{
   window.__debug.switchCampaign('demo');
   window.__debug.loadLevel(7);
-  window.__debug.freezeAnimations(true);
+  window.__debug.freezeAnimations(true,{onDemand:true});
   moves.forEach(move=>window.__debug.applyMove(move));
  },DEMO_SOLUTIONS[6]);
  await page.locator('#win-close').click();
@@ -85,7 +77,7 @@ test('the prism separates white into visible RGB branches on the Three Wavelengt
  expect(await page.evaluate(()=>window.__debug.isSolved())).toBe(true);
  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
   await page.setViewportSize({width,height});
-  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+  const frame=await captureFrame(page);
   const {hit,points}=await page.evaluate(()=>{
    const api=window.chromatron;
    const center=api.projectCell(7,7,.78);
@@ -94,7 +86,7 @@ test('the prism separates white into visible RGB branches on the Three Wavelengt
    return {hit:api.inspectPointer(center.x,center.y).hit?.pieceType,points};
   });
   expect(hit).toBe('prism');
-  const scores=await colourScores(page,points);
+  const scores=colourScores(frame,points);
   for(const [i,{mask}] of points.entries())
    expect.soft(scores[i],`${width}px · prism path ${mask}`).toBeGreaterThan(mask===7?145:38);
  }
@@ -120,7 +112,7 @@ test('filter colour follows the cartridge from stock through drag to the overhea
   const filters=Array.from({length:7},(_,i)=>['filter',i+1,4,0,i+1]);
   window.chromatron.loadLevels([{startMovablesInTray:true,pieces:[
    ['laser',2,7,2,7],['target',12,7,0,1],...filters]}]);
-  window.__debug.freezeAnimations(true);
+  window.__debug.freezeAnimations(true,{onDemand:true});
  });
  await page.waitForLoadState('networkidle');
  // Read the glass in each actual Blender portrait, including the secondary
@@ -159,10 +151,10 @@ test('filter colour follows the cartridge from stock through drag to the overhea
  await page.mouse.move(1,1);
  for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
   await page.setViewportSize({width,height});
-  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+  const frame=await captureFrame(page);
   const points=await page.evaluate(()=>[[7,1.34,2],[5.5,.78,7],[8.5,.78,2]].map(([x,h,mask])=>
    ({...window.chromatron.projectCell(x,7,h),mask})));
-  const scores=await colourScores(page,points);
+  const scores=colourScores(frame,points);
   for(const [i,threshold] of [30,145,38].entries())
    expect.soft(scores[i],width+'px · '+['index glass','white input','green output'][i]).toBeGreaterThan(threshold);
  }

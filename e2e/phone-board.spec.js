@@ -60,7 +60,24 @@ for(const [width,height] of [[320,568],[390,844]]){
    .toMatchObject({x:7,y:7,inTray:false});
   for(const id of ['turn-left','turn-right','relocate','return-tray','cancel-selection'])
    await expect(page.locator('#'+id)).toBeInViewport({ratio:1});
+  const actions=await page.locator('.transform-controls button:visible').evaluateAll(buttons=>
+   buttons.map(b=>{const {y,width,height}=b.getBoundingClientRect();return {y,width,height}}));
+  expect(new Set(actions.map(b=>Math.round(b.y))).size).toBe(1);
+  expect(actions.every(b=>b.width>=44&&b.height>=44)).toBe(true);
+  const note=page.locator('#phone-optic-note');
+  await expect(note).toHaveAccessibleName(/lustro/i);
+  await expect(page.locator('#optic-info')).toBeHidden();
+  await note.tap();
+  await expect(page.locator('#optic-info')).toBeVisible();
+  await expect(note).toHaveAttribute('aria-expanded','true');
+  await note.tap();
+  await expect(page.locator('#optic-info')).toBeHidden();
   await expect.poll(tileWidth).toBeGreaterThan(45);
+  const boardHeight=()=>page.evaluate(()=>{
+   const style=getComputedStyle(document.querySelector('#app'));
+   return innerHeight-parseFloat(style.getPropertyValue('--phone-map-top'))-parseFloat(style.getPropertyValue('--phone-map-bottom'));
+  });
+  await expect.poll(boardHeight).toBeGreaterThanOrEqual(height*.42);
   await page.screenshot({path:`test-results/phone-selected-mirror-${width}x${height}.png`});
   await page.locator('#turn-right').tap();
   await expect(page.locator('#win')).toBeVisible();

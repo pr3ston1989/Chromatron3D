@@ -48,6 +48,12 @@ export function createGrottoPool(THREE){
   fragmentShader:`
    varying vec3 surface;
    uniform float seconds;
+   float drip(vec2 offset,float age){
+    float radius=length(offset);
+    float wave=radius-age*2.3;
+    float band=1.-smoothstep(.018,.09+fwidth(radius),abs(wave));
+    return band*smoothstep(0.,.18,age)*(1.-smoothstep(.38,1.,age));
+   }
    void main(){
     vec2 p=surface.xz;float t=seconds*.23;
     vec3 eye=normalize(cameraPosition-surface);
@@ -62,10 +68,9 @@ export function createGrottoPool(THREE){
     float shimmer=smoothstep(.89,.99,ripple)*smoothstep(.18,.98,opening);
     water+=vec3(.013,.026,.032)*shimmer;
     // Drips from the rock shelves disturb only small patches of the surface.
-    vec2 basin=p-vec2(-8.,4.);
-    float r=length(basin);
-    float ring=fract(r*.69-t*.35);
-    water+=vec3(.018,.037,.047)*(1.-smoothstep(.012,.085+fwidth(r),abs(ring-.5)))*exp(-r*.16);
+    float rings=drip(p-vec2(-8.,4.),fract(seconds*.48+.37))
+               +drip(p-vec2(6.,-5.),fract(seconds*.31+.76));
+    water+=vec3(.012,.022,.028)*rings;
     float mist=smoothstep(32.,100.,length(p));
     water=mix(water,vec3(.049,.045,.079),mist);
     gl_FragColor=vec4(water,1.-smoothstep(78.,100.,length(p)));

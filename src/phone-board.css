@@ -1,4 +1,5 @@
-#phone-tools,#phone-magnify,#phone-instruction,#phone-overview,.phone-tool-label {display:none}
+#phone-tools,#phone-magnify,#phone-instruction,#phone-overview,#phone-optic-note,.phone-tool-label,#return-tray .phone-stow {display:none}
+#return-tray span {font:inherit;letter-spacing:inherit;opacity:1}
 
 @media (pointer:coarse) and (max-width:680px) and (orientation:portrait) {
  #app,#app.orbital-pilot {--inset:12px;--dock-raised:var(--phone-dock-height,145px);--dock-bottom:0px}
@@ -38,6 +39,7 @@
  #app #inventory .equipment-name {max-width:95px;padding-right:9px;font:600 12px/1.06 system-ui,sans-serif}
  #app #inventory button.inventory-item strong {font-size:10px;top:1px;right:3px}
  #phone-instruction {display:block;margin:4px 0 2px;font:500 12px/1.35 system-ui,sans-serif;color:#bdd1e2}
+ #phone-instruction:empty {display:none}
  #app .game-dock #undo,#app .game-dock #redo,#app .game-dock .hint-button,#app .game-dock #camera-preset,#phone-magnify {grid-row:2;min-width:0;min-height:44px;width:100%;margin:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 4px;border:1px solid #4a617a;border-radius:7px;background:#19273a;box-shadow:none;color:#e5edf8}
  #app .game-dock #undo {grid-column:1}
  #app .game-dock #redo {grid-column:2}
@@ -50,25 +52,34 @@
  #phone-magnify[aria-pressed=true] {background:#1e4250}
  #app .optic-workbench {left:8px;right:8px;width:auto;transform:none;bottom:calc(var(--dock-raised) + 4px)}
  #app .optic-workbench .transform-tools {padding:4px 5px;border-radius:8px}
- #app .transform-heading {margin:0 0 3px;min-height:15px}
- #app .transform-controls {display:flex;flex-flow:row nowrap;align-items:center;gap:4px}
+ #app .transform-heading {margin:0;align-items:center;border-bottom:1px solid #57708950}
+ #app .transform-caption {display:none}
+ #phone-optic-note {display:flex;align-items:center;gap:8px;flex:1;min-width:0;min-height:44px;padding:0 6px;background:transparent;border:0;color:#d4e8f6;text-align:left;font:650 13px/1.1 system-ui,sans-serif}
+ #phone-optic-note::after {content:'';width:6px;height:6px;border:solid #8eb4ce;border-width:0 1.5px 1.5px 0;transform:translateY(-2px) rotate(45deg)}
+ #phone-optic-note[aria-expanded=true]::after {transform:translateY(2px) rotate(225deg)}
+ #app .optic-workbench .transform-controls {display:flex;flex-flow:row nowrap;align-items:center;gap:4px;padding-top:4px}
  #app .transform-controls button {min-height:44px;min-width:44px;border-radius:7px}
  #app .transform-controls #turn-left,#app .transform-controls #turn-right,#app .transform-controls #cancel-selection {flex:0 0 44px;width:44px;padding:0}
  #app .transform-controls #relocate,#app .transform-controls #return-tray {flex:1;min-width:0;margin:0;padding:2px;font:650 11px/1.1 system-ui,sans-serif;white-space:normal}
  #app .transform-controls #relocate[hidden],#app .transform-controls #return-tray:disabled {display:none}
+ #return-tray span:first-child {display:none}
+ #return-tray .phone-stow {display:inline}
  #app .optic-workbench .beam-guide-legend {display:none}
  #app .transform-controls kbd {display:none}
- #app .optic-info {max-height:35px}
+ #app .optic-workbench .optic-info {display:none}
+ #app .optic-workbench:has(#phone-optic-note[aria-expanded=true]) .optic-info:not(.hidden) {display:block;margin:3px 0 0;max-height:min(125px,22dvh);padding:8px;font:500 13px/1.35 system-ui,sans-serif}
  #app .coach {bottom:calc(var(--dock-raised) + var(--workbench-height,0px) + 8px)}
  #app .coach-dismiss {min-width:44px;min-height:44px}
  #app .header:has(#phone-tools[open]) {z-index:8}
  #app.phone-working #scene,#app.phone-working #board-symbols {clip-path:inset(var(--phone-map-top,120px) 0 var(--phone-map-bottom,120px))}
  #app.phone-working #play-surface {background:linear-gradient(155deg,#111e31,#0c1726 64%,#132432)}
  #app.phone-working .stage-navigation,#app.phone-working .mission p,#app.phone-working .progress-track {display:none}
- #app.phone-working .mission-copy {align-self:center}
- #app.phone-working .mission-objective {width:86px;align-items:flex-end}
- #app.phone-working .mission-progress {justify-content:flex-end;gap:5px}
+ #app.phone-working .mission {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 8px}
+ #app.phone-working .mission-copy {grid-area:1 / 1;width:auto;align-self:end}
+ #app.phone-working .mission-objective {display:contents}
+ #app.phone-working .mission-progress {grid-area:2 / 1;justify-content:flex-start;align-self:start;justify-self:start;gap:5px}
+ #app.phone-working .mission #level-status:empty {display:none}
  #app.phone-working #draft-status {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
- #app.phone-working #phone-overview {display:block;margin-left:auto;pointer-events:auto;cursor:crosshair;width:64px;height:64px;max-width:100%;padding:2px;border:1px solid #7098af;border-radius:5px;background:#0d1a2c}
+ #app.phone-working #phone-overview {grid-area:1 / 2 / 3 / 3;display:block;margin-left:auto;pointer-events:auto;cursor:crosshair;width:64px;height:64px;max-width:100%;padding:2px;border:1px solid #7098af;border-radius:5px;background:#0d1a2c}
  #phone-overview canvas {width:100%;height:100%;display:block;border-radius:3px}
 }

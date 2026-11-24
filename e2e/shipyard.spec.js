@@ -1,4 +1,5 @@
 import {expect,test} from '@playwright/test';
+import {captureFrame,luminance,projectCells} from './frame.js';
 
 test('concept scenery keeps all playable cells visible in the four reference worlds',async({page})=>{
  test.setTimeout(120000);
@@ -55,7 +56,7 @@ test('compact overhead framing retains all 14 inner grid lines on each axis',asy
   const quality=document.querySelector('#graphics-quality');
   quality.value='balanced';quality.dispatchEvent(new Event('change'));
   window.__debug.switchCampaign('demo');window.__debug.loadLevel(8);
-  window.__debug.freezeAnimations(true);
+  window.__debug.freezeAnimations(true,{onDemand:true});
  });
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
  await page.locator('#camera-preset').click();
@@ -64,36 +65,23 @@ test('compact overhead framing retains all 14 inner grid lines on each axis',asy
  for(const [width,height,profile] of setups){
   await page.setViewportSize({width,height});
   await page.locator('#graphics-quality').selectOption(profile);
-  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-  const image=await page.screenshot({scale:'css'});
-  const contrast=await page.evaluate(async source=>{
-   const bitmap=await createImageBitmap(await (await fetch('data:image/png;base64,'+source)).blob());
-   const canvas=new OffscreenCanvas(bitmap.width,bitmap.height);
-   const context=canvas.getContext('2d');
-   context.drawImage(bitmap,0,0);
-   const {data,width}=context.getImageData(0,0,bitmap.width,bitmap.height);
-   bitmap.close();
-   const luminance=(x,y)=>{
-    const index=(Math.round(y)*width+Math.round(x))*4;
-    return data[index]*.2126+data[index+1]*.7152+data[index+2]*.0722;
-   };
-   const project=window.chromatron.projectCell;
-   function axisContrast(vertical){
-    return Array.from({length:14},(_,line)=>{
-     // Sample ordinary cells, away from the bright horizontal beam and the board rim.
-     const samples=[1,5,10,12,13].map(cell=>{
-      const {x,y}=vertical?project(line+.5,cell):project(cell,line+.5);
-      const sample=offset=>vertical?luminance(x+offset,y):luminance(x,y+offset);
-      const surface=(sample(-3)+sample(3))/2;
-      return surface-Math.min(sample(-1),sample(0),sample(1));
-     }).sort((a,b)=>a-b);
-     return Math.round(samples[2]);
-    });
+  const frame=await captureFrame(page);
+  for(const axis of ['vertical','horizontal']){
+   const vertical=axis==='vertical',cells=[];
+   // Sample ordinary cells, away from the bright horizontal beam and the board rim.
+   for(let line=0;line<14;line++)for(const cell of [1,5,10,12,13])
+    cells.push(vertical?[line+.5,cell]:[cell,line+.5]);
+   const points=await projectCells(page,cells);
+   const lines=[];
+   for(let i=0;i<points.length;i+=5){
+    const samples=points.slice(i,i+5).map(({x,y})=>{
+     const sample=offset=>vertical?luminance(frame,x+offset,y):luminance(frame,x,y+offset);
+     return (sample(-3)+sample(3))/2-Math.min(sample(-1),sample(0),sample(1));
+    }).sort((a,b)=>a-b);
+    lines.push(Math.round(samples[2]));
    }
-   return {vertical:axisContrast(true),horizontal:axisContrast(false)};
-  },image.toString('base64'));
-  for(const [axis,lines] of Object.entries(contrast))
    expect(lines.filter(delta=>delta>=12),`${width} × ${height} ${axis} luminance deltas: ${lines.join(', ')}`).toHaveLength(14);
+  }
  }
 });
 

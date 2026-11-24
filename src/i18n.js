@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    phoneStow:'Odłóż',phoneOpticInfo:'{name}. Opis działania',
     phoneOverview:'Mapa zagadki. Dotknij miejsca, aby przesunąć tam widok.',
     phoneTools:'Narzędzia planszy',phoneAnalysis:'Analiza',phoneReset:'Od początku',phoneCamera3D:'Widok 3D',phoneCameraMap:'Mapa',
     phoneEnlarge:'Powiększ pola',phoneFit:'Cała plansza',phoneBoard:'Dotknij przyrządu na planszy.',phonePick:'Wybierz przyrząd, potem dotknij pola.',phonePlace:'Dotknij pola, na którym chcesz ustawić przyrząd.',phonePan:'Przesuwaj widok po pustym polu.',
@@ -64,6 +65,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    phoneStow:'Stow',phoneOpticInfo:'{name}. How it works',
     phoneOverview:'Puzzle map. Tap a location to centre the view there.',
     phoneTools:'Board tools',phoneAnalysis:'Analysis',phoneReset:'Restart',phoneCamera3D:'3D view',phoneCameraMap:'Map',
     phoneEnlarge:'Enlarge tiles',phoneFit:'Full board',phoneBoard:'Tap an instrument on the board.',phonePick:'Choose an instrument, then tap a tile.',phonePlace:'Tap the tile where you want to place the instrument.',phonePan:'Drag an empty tile to pan.',
