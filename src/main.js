@@ -97,7 +97,7 @@ const compactBoard=window.matchMedia('(max-width:680px), (max-width:960px) and (
 const phonePortrait=window.matchMedia('(pointer:coarse) and (max-width:680px) and (orientation:portrait)');
 mountPhoneControls(phonePortrait);
 const defaultZoom=44;
-let yaw=orbitalPilot?-.56:-.80,pitch=.86,zoomLastFrame=0;
+let yaw=-.80,pitch=.86,zoomLastFrame=0;
 const orbitZoom={current:defaultZoom,target:defaultZoom};
 const overheadZoom={current:defaultZoom,target:defaultZoom};
 let boardFocus=false;
@@ -112,8 +112,6 @@ catch(error){
  throw error;
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio,graphicsProfile.pixelRatio));renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=orbitalPilot?THREE.NeutralToneMapping:THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=orbitalPilot?1.06:1.23;
 // Physically based studio reflections: low-roughness metals and mirror fronts
 // need environment radiance to look like metal instead of unlit gray plastic.
 const studioEnvironment=new RoomEnvironment();
@@ -147,12 +145,10 @@ renderer.domElement.setAttribute('aria-describedby','board-keyboard-help');
 renderer.domElement.setAttribute('aria-keyshortcuts','G');
 const ambient=new THREE.AmbientLight(0xc8d6e1,.70);scene.add(ambient);
 const key=new THREE.DirectionalLight(0xffebce,1.67);key.position.set(-8,16,12);scene.add(key);
-if(orbitalPilot){
- renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
- key.castShadow=true;key.shadow.mapSize.set(1536,1536);
- Object.assign(key.shadow.camera,{left:-23,right:23,top:23,bottom:-23,near:.5,far:68});
- key.shadow.camera.updateProjectionMatrix();key.shadow.normalBias=.028;key.shadow.bias=-.00018;
-}
+renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
+key.castShadow=true;key.shadow.mapSize.set(1536,1536);
+Object.assign(key.shadow.camera,{left:-23,right:23,top:23,bottom:-23,near:.5,far:68});
+key.shadow.camera.updateProjectionMatrix();key.shadow.normalBias=.028;key.shadow.bias=-.00018;
 const fill=new THREE.PointLight(0x2c6bff,25,35);fill.position.set(9,9,-9);scene.add(fill);
 const world=new THREE.Group();scene.add(world);
 const legacyScenery=new THREE.Group();world.add(legacyScenery);
@@ -167,14 +163,13 @@ const setOverheadGrid=createOverheadGrid(THREE,world,{cells:GRID,tileSize:T});
 const tileMaterial=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.48,roughness:.48});
 const boardTiles=new THREE.InstancedMesh(tileGeo,tileMaterial,GRID*GRID);
 const sceneryLoader=new GLTFLoader();
-const orbitalScene=orbitalPilot?createOrbitalBenchmark(THREE,scene,world,sceneryLoader,syncBoardPresentation):null;
+const orbitalScene=createOrbitalBenchmark(THREE,scene,world,sceneryLoader,syncBoardPresentation);
 const campaignArt=createCampaignArt(THREE,scene,world,{loader:sceneryLoader,onReady:syncBoardPresentation});
 const shipyard=createShipyard(THREE,scene,world,{
  loader:sceneryLoader,
  assets:{
   platform:new URL('../assets/models/overhaul-platform-shipyard.glb',import.meta.url).href,
-  rib:new URL('../assets/models/scenery/shipyard-rib.glb',import.meta.url).href,
-  berth:new URL('../assets/models/scenery/shipyard-platform.glb',import.meta.url).href,
+  dock:new URL('../assets/models/scenery/shipyard-graving-dock.glb',import.meta.url).href,
   craft:new URL('../assets/models/overhaul-service-skiff.glb',import.meta.url).href
  },
  onReady:syncBoardPresentation
@@ -284,7 +279,13 @@ function artForLevel(index,campaign=currentCampaign()){
  if(baselineScenery)return null;
  return debugTheme?getCampaignWorld(debugTheme):campaignWorld(campaign,index);
 }
-function usesNewArt(){return orbitalScene?.isVisible()||shipyard.isVisible()||campaignArt.isVisible()}
+const isKepler=()=>activeEnvironment?.scene==='kepler';
+function usesNewArt(){return orbitalScene.isVisible()||shipyard.isVisible()||campaignArt.isVisible()}
+function syncSceneShadows(){
+ renderer.shadowMap.enabled=Boolean(activeEnvironment&&activeEnvironment!==baseEnvironment)&&
+  (graphicsMode==='auto'?autoLevel:graphicsMode)!=='performance';
+ renderer.shadowMap.needsUpdate=renderer.shadowMap.enabled;
+}
 function syncBoardPresentation(){
  const preview=usesNewArt();
  legacyScenery.visible=legacyAtmosphere.visible=!preview;
@@ -303,7 +304,7 @@ function syncBoardPresentation(){
   key.position.set(-15,11,-9);key.intensity=1.94;
   ambient.intensity=.49;fill.intensity=13;
  }
- if(orbitalScene?.isVisible()){
+ if(orbitalScene.isVisible()){
   // Grazing morning light across the panels, with cool fill from the planet.
   key.position.set(-18,16,-12);key.color.setHex(0xffead2);
   key.intensity=2.48;ambient.intensity=.33;
@@ -314,6 +315,7 @@ function syncBoardPresentation(){
   scene.fog.density=grotto?.013:.007;
   if(levelTransition)levelTransition.fogTo=scene.fog.density;
  }
+ if(renderer.shadowMap.enabled)renderer.shadowMap.needsUpdate=true;
  updateCamera();
 }
 function applyLevelEnvironment(){
@@ -322,9 +324,12 @@ function applyLevelEnvironment(){
  const theme=spaceEnvironments.setLevel(currentPackId,levelIndex,{seed:environmentSessionSeed,themeId:art?.legacyId??debugTheme});
  baseEnvironment=theme;
  activeEnvironment=art??theme;
- orbitalScene?.setLevel(art===orbitalArt);
+ renderer.toneMapping=isKepler()?THREE.NeutralToneMapping:THREE.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=isKepler()?1.06:1.23;
+ syncSceneShadows();
+ orbitalScene.setLevel(isKepler());
  shipyard.setLevel(art?.id==='shipyard',currentCampaign(),levelIndex);
- campaignArt.setLevel(art?.id==='shipyard'||art===orbitalArt?null:art,currentPackId,levelIndex);
+ campaignArt.setLevel(isKepler()||art?.id==='shipyard'?null:art,currentPackId,levelIndex);
  if(theme.id==='orbital')loadOrbitalChassis();
  syncBoardPresentation();
  soundscape.setBiome(activeEnvironment.id);
@@ -336,7 +341,7 @@ function applyLevelEnvironment(){
  boardEdgeGlow.setTheme(theme);
  atmosphereParticles.setBiome(theme.id);
  atmosphereParticles.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
- cinematic.setBiome(activeEnvironment.id);
+ cinematic.setBiome(isKepler()?orbitalArt.id:activeEnvironment.id);
  laboratory.userData.setTheme(theme,{packId:currentPackId,index:levelIndex,seed:environmentSessionSeed});
  const finish=deckSurfaceProfile(theme.decor);
  tileMaterial.metalness=finish.tileMetalness;
@@ -500,7 +505,7 @@ function rebuildPieces(){
    head.add(model);g.add(head);
    if(reflectingIds.has(p.id))mountRealMirror(THREE,head,graphicsProfile.reflectionSize,opticIllumination);
    if(p.type==='target')g.userData.modelActive=energized;
-   model.traverse(c=>{if(c.isMesh){c.castShadow=orbitalPilot;c.userData.piece=p;hitObjects.push(c)}});
+   model.traverse(c=>{if(c.isMesh){c.castShadow=true;c.userData.piece=p;hitObjects.push(c)}});
   }else{
    // Keep the exact silhouette visible and selectable while the mesh arrives.
    // Slow or interrupted downloads use the matching Blender portrait.
@@ -541,7 +546,7 @@ function rebuildPieces(){
  // Input may arrive between loading/rebuilding a mesh and the next draw.
  // Raycasters must already see the new board positions in that interval.
  componentGroup.updateWorldMatrix(true,true);
- if(orbitalPilot)renderer.shadowMap.needsUpdate=true;
+ if(renderer.shadowMap.enabled)renderer.shadowMap.needsUpdate=true;
 }
 let laserVisuals=null,victoryFX=null,victorySince=0;
 let levelTransition=null;
@@ -1561,12 +1566,13 @@ function updateCamera(){
  const portraitScale=mobile?Math.max(1.55,720/Math.max(380,viewportWidth),pilotMargin):Math.max(1,pilotMargin);
  // With both HUD drawers folded away the board can occupy more of the viewport.
  const focusScale=boardFocus&&!mobile?(innerHeight<650 ? .93 : .86):1;
- const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94-.19*closeup:1)*(orbitalPilot&&!mobile?.94:1);
+ const kepler=isKepler();
+ const orbitDistance=orbitZoom.current*portraitScale*focusScale*(pilot&&!mobile?.94-.19*closeup:1)*(kepler&&!mobile?.94:1);
  const overheadDistance=overheadFrame?overheadFrame.distance*overheadZoom.current/defaultZoom:orbitDistance;
  const cameraDistance=THREE.MathUtils.lerp(orbitDistance,overheadDistance,overheadBlend);
  const framing=pilot?Math.min(1,Math.max(0,(1.49-pitch)/.63)):0;
  const viewPitch=Math.max(.27,pitch-(mobile?.22:activeEnvironment?.id==='shipyard'?.32:.25)*framing-.08*closeup*framing);
- const viewYaw=yaw+.23*framing*(1-closeup);
+ const viewYaw=yaw+.23*framing*(1-closeup)+(kepler?.24*(1-overheadBlend):0);
  const panLimit=phonePortrait.matches&&cameraTop?Math.max(0,(1-overheadZoom.current/defaultZoom)*GRID*T/2):0;
  phonePan.x=THREE.MathUtils.clamp(phonePan.x,-panLimit,panLimit);
  phonePan.z=THREE.MathUtils.clamp(phonePan.z,-panLimit,panLimit);
@@ -1578,7 +1584,7 @@ function updateCamera(){
  camera.lookAt(cameraTarget);
  camera.updateMatrixWorld();
  const portraitOffset=pilot&&viewportWidth<innerHeight?Math.min(88,Math.max(0,(innerHeight-600)*.35)):0;
- const orbitOffset=mobile?portraitOffset:innerHeight<470?42:30+innerHeight*(orbitalPilot?.045:.075)*closeup;
+ const orbitOffset=mobile?portraitOffset:innerHeight<470?42:30+innerHeight*(kepler?.045:.075)*closeup;
  const offset=THREE.MathUtils.lerp(orbitOffset,overheadFrame?.offset??orbitOffset,overheadBlend);
  if(camera.view?.fullWidth!==innerWidth||camera.view?.fullHeight!==innerHeight||camera.view?.offsetY!==offset)
   camera.setViewOffset(innerWidth,innerHeight,0,offset,innerWidth,innerHeight);
@@ -1671,10 +1677,7 @@ function resize(){
  measureOverheadFrame();updateCamera();
 }
 function applyGraphicsQuality(){
- if(orbitalPilot){
-  renderer.shadowMap.enabled=(graphicsMode==='auto'?autoLevel:graphicsMode)!=='performance';
-  renderer.shadowMap.needsUpdate=true;
- }
+ syncSceneShadows();
  graphicsProfile=profileFor(graphicsMode,autoLevel);
  spaceEnvironments.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
  heroScenery.setQuality(graphicsMode==='auto'?autoLevel:graphicsMode);
@@ -2458,10 +2461,10 @@ function renderFrame(time){
  const animationTime=debugFrozen?0:time;
  const sceneryDelta=Math.min(.25,Math.max(0,(time-(lastSceneryFrame??time))*.001));
  lastSceneryFrame=time;
- const openSky=activeEnvironment===orbitalArt||activeEnvironment?.id==='observatory'||activeEnvironment?.id==='shipyard';
+ const openSky=isKepler()||activeEnvironment?.id==='shipyard';
  skyMeteor.update(sceneryDelta,openSky&&!still&&usesNewArt()&&!cameraTop,camera);
  if(usesNewArt()){
-  orbitalScene?.update(sceneryDelta,still,camera.position);
+  orbitalScene.update(sceneryDelta,still,camera.position);
   shipyard.update(animationTime*.001,still,camera.position);
   campaignArt.update(animationTime*.001,still,camera.position);
  }else{
@@ -2488,7 +2491,10 @@ function renderFrame(time){
   const fraction=Math.min(1,Math.max(0,(time-a.start)/a.duration));
   const e=easeOutCubic(fraction);
   applyOpticTween(a,debugFrozen?1:e);
-  if(debugFrozen||fraction===1)opticTweens.splice(i,1);
+  if(debugFrozen||fraction===1){
+   opticTweens.splice(i,1);
+   if(renderer.shadowMap.enabled)renderer.shadowMap.needsUpdate=true;
+  }
  }
  if(cameraTween){
   const f=debugFrozen?1:Math.max(0,Math.min(1,(time-cameraTween.time)/520)),ease=f*f*(3-2*f);
@@ -2637,7 +2643,8 @@ if(debugEnabled){
   },
   getLevelCount:()=>levels.length,
   getLevelState:()=>({...window.chromatron.getState(),number:levelIndex+1,campaign:currentCampaign(),
-   theme:activeEnvironment.id,pilotStatus:activeEnvironment===orbitalArt?orbitalScene.getStatus():activeEnvironment.id==='shipyard'?shipyard.getStatus():campaignArt.getStatus(),
+   theme:activeEnvironment.id,artScene:activeEnvironment.scene??activeEnvironment.id,
+   pilotStatus:isKepler()?orbitalScene.getStatus():activeEnvironment.id==='shipyard'?shipyard.getStatus():campaignArt.getStatus(),
    completed:solved.includes(levelIndex)}),
   setTheme(name){
    if(name!==null&&!getCampaignWorld(name)&&!SPACE_BIOMES.some(theme=>theme.id===name))return false;
@@ -2645,6 +2652,7 @@ if(debugEnabled){
    levelTransition=null;
    cinematic.pass.uniforms.uExposure.value=1;
    applyLevelEnvironment();
+   rebuildPieces();
    return true;
   },
   freezeAnimations(freeze,{onDemand=false}={}){
@@ -2686,7 +2694,8 @@ if(debugEnabled){
      intensity:meteor.material.uniforms.intensity.value}:null};
   },
   getSceneryOcclusion(){
-   const scenery=world.children.find(node=>node.visible&&node.name===activeEnvironment?.en);
+   const name=isKepler()?orbitalArt.en:activeEnvironment?.en;
+   const scenery=world.children.find(node=>node.visible&&node.name===name);
    if(!scenery)return [];
    scene.updateMatrixWorld(true);
    const meshes=[];

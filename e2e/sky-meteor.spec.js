@@ -6,6 +6,11 @@ test('shooting stars appear in outdoor campaign skies and respect the reduced-mo
  const errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});
+ if(process.env.CI)await page.addInitScript(()=>{
+  // Keep the same viewport and real sky shader while giving SwiftShader
+  // enough frame time to observe the meteor's timed flight.
+  Object.defineProperty(window,'devicePixelRatio',{configurable:true,get:()=>.7});
+ });
  await page.emulateMedia({reducedMotion:'no-preference'});
  await page.goto('/?debug=1');
  await page.waitForFunction(()=>window.__debug);

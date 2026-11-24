@@ -6,14 +6,14 @@ na przypisanej części lokalnej kampanii.
 
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
 | --- | --- | --- | --- |
-| 1 | Obserwatorium pryzmatyczne | Ceramika i miedź, ciepły klucz i granatowy zmierzch. | Segmentowy łuk, soczewka w ruchomym przegubie, latający serwis. |
-| 2 | Ogród heliostatów | Wapień i jadeit, rozproszone światło poranka. | Duży heliostat i kamienna arkada na warstwowych tarasach, wolny ruch turbiny. |
-| 3 | Kryształowa grota | Liliowa płyta, śliwkowe cienie, przygaszone kryształy. | Duży kryształowy filar i dwie grupy odłamów, drobiny pyłu w głębi. |
-| 4 | Stocznia orbitalna | Tytan i grafit, chłodne światło planetarne oraz bursztynowe sygnały. | Żebro doku, maszt przekaźnika i szersze lądowisko; powolny przelot pojazdu. |
-| 5 | Laboratorium polarne | Chłodny tytan, długa miękka poświata na stalowym horyzoncie. | Rozłamane iglice i odległa antena śledząca; rzadkie płatki poza planszą. |
-| 6 | Kuźnia widmowa | Przydymiona ceramika, miedź na grafitowej podstawie, boczny ciepły klucz. | Zagłębiony reaktor i odsunięta suwnica; powolne wychylenia chwytaka i punktowe żarzenie. |
-| 7 | Optyka głębinowa | Jadeit i morski granat, kierunkowy niebieskozłoty snop. | Maszty obserwacyjne i niskie podwodne tarasy; powolne prądy drobin za planszą. |
-| 8 | Sanktuarium soczewek | Jasny liliowy pokład, chłodna mgła i pojedyncze ciepłe krawędzie. | Dwa łuki nad zagłębionym polem i przeciwległa komora soczewki; powolny ruch przysłony. |
+| 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
+| 2 | Ogród heliostatów | Ciepły wapień i jadeit, mglista dolina. | Heliostat nad sadem, zielone tarasy i segmentowy akwedukt. |
+| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, warstwy skalne, skupiska ametystu i ruch wody. |
+| 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Dwie kratownicowe galerie serwisowe i przelot pojazdu. |
+| 5 | Laboratorium polarne | Oszroniony stop, niebieski lód i zorza. | Ściany lodowca, przewężenia skalne i modułowy pojazd stacji. |
+| 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Segmentowy piec, kolumny bazaltu, suwnica i strumień lawy pod planszą. |
+| 7 | Optyka głębinowa | Morski granat, zielonoszary pokład i ruchome refleksy. | Kopułowa stacja ciśnieniowa, porośnięta rafa i prądy poza planszą. |
+| 8 | Sanktuarium soczewek | Liliowy kamień i cyjanowe sygnały. | Rozczłonkowana brama, relikwiarz optyczny i niski taras z cokołami. |
 
 Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,
 układy i zapisy kampanii są niezależne od scenografii.

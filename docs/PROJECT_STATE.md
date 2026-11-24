@@ -1,5 +1,11 @@
 # Stan projektu
 
+Obserwatorium pryzmatyczne w kampanii korzysta z tej samej sceny i tych
+samych ustawień obrazu co Węzeł Keplera. Pozostałe siedem światów ma własne
+charakterystyczne budowle wymodelowane w Blenderze. Kamienne arkady i metalowe kratownice
+podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
+atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
+
 Węzeł Keplera otwiera się przez `?benchmark=orbital`. Prom startuje z galerii
 serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację.
 W oddali obraca się pierścień przekaźnika, skrzydła słoneczne zmieniają kąt

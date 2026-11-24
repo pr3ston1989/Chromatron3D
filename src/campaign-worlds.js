@@ -4,102 +4,85 @@ const world=(id,pl,en,legacyId,sky,haze,fog,key,edge,deck,art)=>Object.freeze({
 
 export const CAMPAIGN_WORLDS=Object.freeze([
  world('observatory','Obserwatorium pryzmatyczne','Prism Observatory','orbital',
-  0x101a32,0x395272,0x242f48,0xffe5c8,0x75d3e1,'deck',{
-   face:.49,groove:.58,dust:0x7b9ab5,
-   models:[
-    ['observatory-arc',[-14.2,-5.5,-18.5],1.91,-.64,'left'],
-    ['observatory-landing',[-14.2,-8.84,-18.5],[1.86,2.74,1.6],-.64],
-    ['observatory-lens',[18,-8.1,12.4],1.47,-.72],
-    ['observatory-iris',[18,-7.58,12.4],1.47,-.72],
-    ['observatory-landing',[18,-11,12.4],[.79,2.32,1.7],-.72],
-    ['observatory-landing',[26,-14,-11],[1.8,2.1,2.7],-.72],
-    ['skyline-ridge',[23,-13,-34],[2.15,2.6,2.54],-.57],
-    ['skyline-ridge',[42,-19,-51],[2.9,3.12,2.5],-.57]
-   ],scatter:['survey-mast',.62,0x5c7184]
-  }),
+  0x101a32,0x395272,0x192e4f,0xe4eeff,0x82d7ff,'kepler',{scene:'kepler'}),
  world('heliostat','Ogród heliostatów','Heliostat Garden','verdant',
-  0x14252d,0x567976,0x3b534e,0xffe4b2,0xd3b471,'garden',{
-   face:.48,groove:.65,dust:0x889c73,
+  0x18212d,0x9b7460,0x565663,0xffe4be,0xd3b471,'garden',{
+   face:.48,groove:.65,dust:0xc5ac82,air:'sunset',masonry:true,surface:'limestone',footing:{body:0x766044,bevel:0x9a8059,substructure:0x554940},
    models:[
-    ['garden-heliostat-authored',[-9.8,-7.55,-13.1],1.79,-.33,'left'],
-    ['garden-terrace',[-12,-13.8,-13.8],[.98,1.56,2.15],-.67],
-    ['garden-arcade',[19,-6.2,7.9],1.68,-.69,'right'],
-    ['garden-terrace',[19,-13.5,7.9],[.86,1.88,2.14],-.69],
-    ['garden-arcade',[27.3,-9.5,-13.5],1.18,-.63,'right'],
-    ['garden-arcade',[34.3,-10.3,-16.8],1.07,-.63,'right'],
-    ['garden-terrace',[31,-13.5,-15],[1.42,1.56,2.05],-.63],
-    ['skyline-ridge',[31,-23,-42],[2.5,2.05,2.3],-.62],
-    ['skyline-ridge',[43,-31,-57],[3.1,3.10,2.7],-.45],
-    ['wind-turbine',[22,-5.6,-16],.65,-.70,'turn']
-   ],scatter:['garden-terrace-shrub',1,0x9eaa78,[
-    [-18,-16,1.3],[-16,-12.5,1.16],[-13.2,-11.4,.94],[-20,-17,.8],
-    [-14.5,-15.3,.86],[-12.8,-16,1.05],[-7.8,-16.5,.96],[-7.6,-10.1,.92],
-    [16,4.7,1.06],[18.9,5,1.21],[20.4,9.9,1.3],[23.7,12.7,1.15],
-    [21.2,14.5,.9],[14.6,8.1,1.13],[16.8,10.2,.79],[23,9.3,1.18],
-    [24,-18,.88],[29,-16.8,1.29],[33,-11,1.11],[35,-14,.83]
-   ]]
+    ['garden-heliostat-authored',[-9.9,-7.75,-13.0],1.43,-.41,'left'],
+    ['heliostat-orchard',[-11.8,-12.9,-13.2],[1.22,1.27,1.21],-.42,'cliff'],
+    ['heliostat-aqueduct',[20.5,-8.95,4.9],1.17,-.60,'right'],
+    ['heliostat-orchard',[20.8,-14.6,6.0],[1.4,1.2,1.32],-.55],
+    ['heliostat-aqueduct',[15.1,-15.6,-27.8],1.28,-.56,'horizon'],
+    ['heliostat-orchard',[-11.6,-12.5,12.5],[1.14,1.07,1.20],-.22],
+    ['skyline-ridge',[32,-19,-43],[2.5,2.05,2.3],-.57],
+    ['skyline-ridge',[44,-29,-57],[3.1,3.10,2.7],-.45]
+   ]
   }),
  world('grotto','Kryształowa grota','Crystal Grotto','nebula',
-  0x121522,0x645778,0x373449,0xffe8dc,0xb49cd2,'grotto',{
-   face:.54,groove:.61,dust:0x9c82b3,
+  0x0f1428,0x4e6582,0x313a54,0xffefe2,0xbb9ee1,'grotto',{
+   face:.54,groove:.61,dust:0xaba4db,air:'cavern',masonry:true,footing:{body:0x493a5b,bevel:0x6b5985},
    models:[
     ['grotto-buttress',[-13.3,-24.0,-10.4],1.47,-.32,'cliff'],
     ['grotto-fault-shelf',[12.8,-23.8,10.5],1.47,-.54,'cliff'],
     ['grotto-survey',[12.8,-8.4,10.5],1.47,-.54,'cliff'],
+    ['grotto-crystal-seam',[-13.8,-8.7,-15.7],1.17,-.41,'cliff'],
+    ['grotto-crystal-seam',[21,-13.1,-10.9],1.53,-.47,'cliff'],
     ['grotto-fault-shelf',[24,-25.0,-22],1.12,.62,'cliff'],
-    ['grotto-escarpment',[24,-41,-31],[2.36,1.77,1.46],-.77],
-    ['grotto-escarpment',[41,-52,-48],[3.18,1.98,2.35],-.46]
+    ['grotto-escarpment',[19,-34,-24],[2.15,1.94,2.55],-.77],
+    ['grotto-escarpment',[38,-46,-40],[3.18,1.98,2.35],-.46]
    ]
   }),
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',
   0x0d2039,0x203f62,0x233c57,0xdbebff,0x65c6ce,'shipyard',{face:.59,glow:.31}),
  world('frost','Laboratorium polarne','Polar Laboratory','polar',
-  0x16293b,0x627d92,0x496279,0xcfeaff,0x9acdde,'shipyard',{
-   face:.59,groove:.73,dust:0xc0d8e4,deckTint:0xc7dcff,
+  0x162b41,0x528093,0x435d76,0xdaefff,0x94e6ff,'shipyard',{
+   face:.59,groove:.73,dust:0xc0d8e4,deckTint:0xc7dcff,air:'aurora',surface:'frost',
    models:[
-    ['frost-spires',[-8,-4.9,-18],1.45,-.65,'left'],
-    ['tracking-dish',[19,-3.6,-5],1.42,-.62,'turn'],
-    ['observatory-landing',[19,-4.9,-5],[.58,1,.93],-.62],
-    ['skyline-ridge',[21,-9,-31],[1.65,2.22,1.42],-.59],
-    ['frost-spires',[33,-12.6,-34],[2.0,2.25,1.7],-.50],
-    ['skyline-ridge',[39,-13,-49],[2.9,3.31,2.5],-.61]
-   ],scatter:['ice-shard',1.25,0xc5d5e9]
+    ['frost-escarpment',[-12.2,-9.4,-13.8],[1.13,1.28,1.39],-.39,'cliff'],
+    ['frost-traverser',[17.5,-5.88,6.2],1.19,-.47,'right'],
+    ['frost-escarpment',[20,-13.3,8.3],[1.18,1.19,1.38],-.67,'cliff'],
+    ['frost-escarpment',[14.3,-18,-34],[1.94,1.6,1.40],.21,'horizon'],
+    ['frost-escarpment',[38,-20,-49],[2.16,1.82,2.03],-.45,'horizon'],
+    ['frost-traverser',[25,-9,-19],.9,-.28,'horizon']
+   ]
   }),
  world('forge','Kuźnia widmowa','Spectral Forge','nebula',
-  0x1d1521,0x674655,0x503249,0xffc795,0xe7a570,'deck',{
-   face:.48,groove:.59,dust:0xde9b60,deckTint:0xddc8ba,
+  0x251622,0x8c412c,0x613235,0xffc99b,0xf3a85d,'deck',{
+   face:.48,groove:.59,dust:0xd9a172,deckTint:0xd8c5b4,air:'embers',surface:'alloy',footing:{body:0x453337,bevel:0x835f45},
    models:[
-    ['ring-reactor',[-6.8,-3.55,-17.5],1.41,-.66,'left'],
-    ['maintenance-crane',[20,-3.95,-5],1.67,-.56,'right'],
-    ['dock-landing',[20,-5.10,-5],[1.35,.95,1.45],-.56],
-    ['grotto-ridge',[18,-13.2,-32],[1.64,2.8,2.2],-.48],
-    ['grotto-ridge',[35,-18,-41],[2.90,3.12,2.28],-.61],
-    ['survey-mast',[21,-3.6,-16],1.43,-.73,'pulse']
-   ],scatter:['reclaimed-metal',1.14,0x957a76]
+    ['forge-smelter',[-11.5,-7.9,-14.9],1.56,-.42,'left'],
+    ['forge-basalt',[-13.2,-12.1,-13.8],[1.41,1.2,1.5],-.38,'cliff'],
+    ['maintenance-crane',[16.9,-8.1,5.5],1.51,-.55,'right'],
+    ['forge-basalt',[17.5,-12.7,6.5],[1.38,1.54,1.44],-.50,'cliff'],
+    ['forge-basalt',[-17.5,-10.9,13.6],[1.28,1.33,1.5],-.25,'cliff'],
+    ['forge-smelter',[27,-13.1,-26.2],1.27,-.65,'horizon'],
+    ['forge-basalt',[32,-18.5,-36],[2.3,1.65,1.52],-.61,'horizon']
+   ]
   }),
  world('abyss','Optyka głębinowa','Abyssal Optics','verdant',
-  0x081e29,0x326171,0x245160,0xc8efe9,0x79c5b7,'garden',{
-   face:.53,groove:.60,dust:0x88c3bb,deckTint:0xb4e3e5,
+  0x071a2e,0x327984,0x214957,0xbaecf2,0x7de0d3,'garden',{
+   face:.53,groove:.60,dust:0xa3d1c9,deckTint:0xbce7e9,air:'current',footing:{body:0x2b4a52,bevel:0x5a8a8b},
    models:[
-    ['dock-relay',[-8,-6,-18],1.55,-.61,'left'],
-    ['garden-heliostat',[18,-4.1,-4],1.12,-.56,'turn'],
-    ['garden-terrace',[20,-8.6,-6],[.84,1.46,1.63],-.50],
-    ['greenhouse-habitat',[24,-4.7,-26],1.03,-.54],
-    ['garden-terrace',[25,-13,-34],[2.1,1.7,2.1],-.49],
-    ['garden-terrace',[41,-20,-51],[2.9,2.05,2.1],-.63]
-   ],scatter:['garden-fern',1.19,0x668f8c]
+    ['abyss-habitat',[-11.9,-7.45,-14.1],1.37,-.52,'left'],
+    ['abyss-reef',[-13.2,-11.95,-14.4],[1.34,1.28,1.33],-.57,'cliff'],
+    ['abyss-reef',[16,-9.47,5.2],[1.42,1.31,1.49],-.49,'cliff'],
+    ['abyss-reef',[-17.1,-9.2,12.6],[1.65,1.58,1.4],-.24,'cliff'],
+    ['abyss-habitat',[26,-13.0,-26],1.42,-.73,'horizon'],
+    ['abyss-reef',[27,-17,-33],[2.55,1.42,1.82],-.53,'horizon']
+   ]
   }),
  world('sanctuary','Sanktuarium soczewek','Lens Sanctuary','polar',
-  0x17162c,0x514873,0x383553,0xefddff,0xc2b8e3,'grotto',{
-   face:.56,groove:.60,dust:0xba9acb,deckTint:0xe1d8ef,
+  0x161628,0x5d587f,0x3d405c,0xf1deea,0xc1b7eb,'grotto',{
+   face:.56,groove:.60,dust:0xb6afd7,deckTint:0xe5dbef,air:'twilight',masonry:true,footing:{body:0x57506d,bevel:0x837899},
    models:[
-    ['garden-arcade',[-8,-4.9,-17.5],1.29,-.57,'left'],
-    ['garden-arcade',[16,-5.5,-15],1.17,-.58],
-    ['observatory-lens',[18,-4.25,-3],1.0,-.59,'right'],
-    ['observatory-iris',[18,-3.91,-3],1.0,-.59,'iris'],
-    ['grotto-ridge',[19,-13,-32],[1.98,2.5,2.29],-.52],
-    ['grotto-ridge',[38,-21,-46],[3.0,3.0,2.5],-.63]
-   ],scatter:['amethyst-shard',.94,0x9f83af]
+    ['sanctuary-gate',[-10.8,-8.73,-17.4],1.31,-.52,'left'],
+    ['sanctuary-reliquary',[18.1,-7.6,7.4],1.44,-.39,'right'],
+    ['sanctuary-terrace',[18.3,-11.8,7.8],1.37,-.38,'cliff'],
+    ['sanctuary-terrace',[-11.1,-12.7,-17.8],1.35,-.52,'cliff'],
+    ['sanctuary-gate',[21,-16.4,-29],1.52,-.75,'horizon'],
+    ['grotto-escarpment',[34,-40,-50],[2.1,1.62,2.05],-.54,'horizon']
+   ]
   })
 ]);
 

@@ -2,13 +2,13 @@ import {loadSurfaceSample} from './panel-surface.js';
 
 // Slopes and mineral flecks come from the Blender slate sheet already used by
 // the deck. The cliff uses continuous metre-scale projections across its beds.
-export function finishGrottoRock(THREE,material){
+export function finishGrottoRock(THREE,material,surface='slate'){
  const gemstone=material.name==='Amethyst growth faces';
  const sample={value:null},ready={value:0};
- loadSurfaceSample(THREE,'slate').then(texture=>{
+ loadSurfaceSample(THREE,surface).then(texture=>{
   if(texture){sample.value=texture;ready.value=1}
  });
- material.customProgramCacheKey=()=>gemstone?'cavern-quartz':'cavern-rock';
+ material.customProgramCacheKey=()=>gemstone?'stratified-quartz':'stratified-rock';
  material.onBeforeCompile=shader=>{
   shader.uniforms.rockSample=sample;shader.uniforms.rockReady=ready;
   shader.vertexShader='varying vec3 mineralPoint; varying vec3 mineralNormal;\n'+shader.vertexShader

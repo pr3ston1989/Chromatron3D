@@ -71,12 +71,12 @@ try{
     const startupMs=Math.round(performance.now()-startup);
     await page.evaluate(({campaign,quality})=>{
       const api=window.__debug;
-      if(api.getLevelState().campaign!==campaign&&!api.switchCampaign(campaign))
+      if(api.getLevelState().campaign!==campaign&&api.switchCampaign(campaign)!==campaign)
         throw Error('Campaign unavailable: '+campaign);
       const control=document.querySelector('#graphics-quality');
       control.value=quality;
       control.dispatchEvent(new Event('change'));
-    },options);
+    },{campaign:options.campaign,quality:options.quality});
     for(const [i,level] of levels.entries()){
       const messageStart=i===0?0:messages.length;
       await page.evaluate(({level,theme})=>{
@@ -127,12 +127,15 @@ try{
         requestAnimationFrame(sample);
       }),millis);
       await page.evaluate(()=>window.__debug.freezeAnimations(true));
-      const {theme}=await page.evaluate(()=>window.__debug.getLevelState());
+      const {theme,campaign,number,artScene}=await page.evaluate(()=>window.__debug.getLevelState());
+      if(campaign!==options.campaign||number!==level)
+        throw Error(`Expected ${options.campaign} level ${level}, got ${campaign} level ${number}`);
       const file=`${options.campaign}-${String(level).padStart(3,'0')}_${viewport.width}x${viewport.height}${options['phone-detail']?'-detail':''}.png`;
+      const blockedCells=await page.evaluate(()=>window.__debug.getSceneryOcclusion().length);
       await page.screenshot({path:join(output,file),timeout:40000,animations:'disabled'});
-      entries.push({file,campaign:options.campaign,level,theme,viewport,startupMs,...measurement,
+      entries.push({file,campaign,level,theme,artScene,viewport,startupMs,blockedCells,...measurement,
         messages:messages.slice(messageStart)});
-      console.log(`${file}  ${theme}  ${measurement.sample.fps} FPS  ${measurement.stats.backend}`);
+      console.log(`${file}  ${theme}/${artScene}  ${measurement.sample.fps} FPS  ${blockedCells} blocked cells`);
     }
     await context.close();
   }
@@ -143,5 +146,5 @@ try{
     headed:options.headed,pilotDisabled:options['pilot-off'],solvedDemo:options['solved-demo'],
     requestedQuality:options.quality,warmupMs:warmup,entries,browserMessages},null,2)+'\n');
 }
-if(entries.some(entry=>entry.messages.some(msg=>msg.type==='error'||msg.type==='pageerror')))
+if(entries.some(entry=>entry.blockedCells||entry.messages.some(msg=>msg.type==='error'||msg.type==='pageerror')))
   process.exitCode=1;

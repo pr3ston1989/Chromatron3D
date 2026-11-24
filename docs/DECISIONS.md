@@ -107,3 +107,13 @@ załamują światło na ośmiu wewnętrznych ściankach kryształu.
 
 Prom stoi przy lewej galerii, a czasza anteny po przeciwnej stronie.
 Rozstaw wybrano po porównaniu zrzutów z podstawowego ujęcia kamery.
+
+## 24 listopada 2026 · przebudowa krajobrazów biomów
+
+Obserwatorium ma identyfikator `observatory` dla postępu, mapy i lokalizacji.
+Pole `scene` wskazuje `kepler`, więc kampania i poziom wzorcowy korzystają
+z jednego zestawu modeli, kamery i oświetlenia. Stocznia używa wspólnego
+nieba orbitalnego z własnym kadrem planety i dokami. W światach naziemnych
+wysokie sylwetki stoją za polem gry, a niski pierwszy plan mieści się poniżej
+powierzchni podłogi. Mapa cieni aktualizuje się po ustawieniu urządzeń.
+W trybie płynności pracują wypalone cienie wnęk i cienie kontaktowe.

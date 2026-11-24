@@ -21,3 +21,14 @@ test('a return to a stage provides the same placement seed',()=>{
  assert.notEqual(scenerySeed('classic2',23),scenerySeed('classic2',24));
  assert.notEqual(scenerySeed('classic2',23),scenerySeed('classic3',23));
 });
+
+test('the Prism Observatory campaign sector selects the Kepler scene and matching instrument finishes',()=>{
+ for(let index=0;index<25;index++){
+  const world=campaignWorld('classic1',index);
+  assert.equal(world.id,'observatory');
+  assert.equal(world.scene,'kepler');
+  assert.equal(world.deck,'kepler');
+ }
+ assert.equal(campaignWorld('demo',0).scene,'kepler');
+ assert.equal(campaignWorld('demo',7).id,'shipyard');
+});

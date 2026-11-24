@@ -1,5 +1,11 @@
 # QA
 
+## 24 listopada 2026 · scenografia ośmiu światów
+
+- Zrzuty 1672 × 941 i 390 × 844 pokazują osiem publicznych zagadek. Pierwsze ujęcia ujawniły kolizję tarasu Sanktuarium, zbyt jasne tło Kuźni i fragment bazaltu nad narożnikiem planszy na telefonie. Po korektach wszystkie środki pól pozostały widoczne.
+- Chromium w 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844 sprawdziło widoczność 225 pól każdej planszy. Osobny przebieg sprawdził osiem plansz w dotykowym widoku z góry. Przeszły też próby obrotu kamery przy małej elewacji, meteorów, czytelności łupku i rozwiązania Stoczni.
+- Zrzuty i wyniki renderowania zapisano w `screenshots/biomy/final`. Ilustracje mapy kampanii pochodzą z rozwiązanych zagadek demonstracyjnych. Każdy z 15 nowych modeli ma podgląd, źródło Blendera oraz plik GLB.
+
 ## 24 listopada 2026 · plansza dotykowa i Kryształowa Grota
 
 W Chrome z emulacją dotyku na 320 × 568 i 390 × 844 rozegrano „Pierwsze światło”.

@@ -3,13 +3,15 @@ import {applyPanelSurface} from './panel-surface.js';
 import {createDockPatrol,createRelayMotion} from './kepler-traffic.js';
 
 export const orbitalArt={
- id:'kepler',pl:'Stacja orbitalna',en:'Orbital Station',legacyId:'orbital',deck:'kepler',
+ id:'kepler',scene:'kepler',pl:'Stacja orbitalna',en:'Orbital Station',legacyId:'orbital',deck:'kepler',
  key:0xe4eeff,fog:0x192e4f,accent:0x82d7ff,edge:0x82d7ff,glow:.18
 };
 
-function orbitalSky(THREE){
+export function createOrbitalSky(THREE,{planet=[-.12,-.88,-1.01],sun=[.27,-.36,-.89]}={}){
  const material=new THREE.ShaderMaterial({
   side:THREE.BackSide,depthWrite:false,
+  uniforms:{planet:{value:new THREE.Vector3(...planet).normalize()},
+   sun:{value:new THREE.Vector3(...sun).normalize()}},
   vertexShader:`
    varying vec3 direction;
    void main(){
@@ -19,6 +21,7 @@ function orbitalSky(THREE){
    }`,
   fragmentShader:`
    varying vec3 direction;
+   uniform vec3 planet,sun;
    float hash(vec3 p){
     p=fract(p*.1031);p+=dot(p,p.yzx+33.33);
     return fract((p.x+p.y)*p.z);
@@ -43,7 +46,7 @@ function orbitalSky(THREE){
     float band=exp(-10.*abs(ray.y+.39+.13*ray.x));
     vec3 sky=mix(vec3(.002,.006,.019),vec3(.022,.052,.115),band*(.29+.71*noise3(ray*12.)));
     sky+=mix(vec3(.17,.27,.42),vec3(.35,.30,.29),hash(cell+1.))*stars;
-    vec3 center=normalize(vec3(-.12,-.88,-1.01));
+    vec3 center=planet;
     float facing=dot(ray,center),limb=.883;
     float haze=exp(-abs(facing-limb)*115.);
     vec3 light=normalize(vec3(.77,.29,-.50));
@@ -66,9 +69,8 @@ function orbitalSky(THREE){
      sky+=vec3(.032,.080,.14)*pow(1.-max(0.,dot(normal,-ray)),3.)*(.15+.85*day);
     }
     sky+=haze*vec3(.045,.17,.43)+exp(-abs(facing-limb)*660.)*vec3(.07,.22,.48);
-    vec3 dawn=normalize(vec3(.27,-.36,-.89));
-    float sun=max(0.,1.-dot(ray,dawn));
-    sky+=vec3(.26,.13,.071)*exp(-sun*360.)+vec3(1.4,.84,.52)*exp(-sun*11500.);
+    float dawn=max(0.,1.-dot(ray,sun));
+    sky+=vec3(.26,.13,.071)*exp(-dawn*360.)+vec3(1.4,.84,.52)*exp(-dawn*11500.);
     gl_FragColor=vec4(sky,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -84,7 +86,7 @@ export function createOrbitalBenchmark(THREE,scene,world,loader,onReady){
  const root=new THREE.Group();
  root.name=orbitalArt.en;
  root.visible=false;world.add(root);
- const sky=orbitalSky(THREE);
+ const sky=createOrbitalSky(THREE);
  sky.visible=false;scene.add(sky);
  let wanted=false,status='idle',carriage,patrol,relayMotion,elapsed=0;
  const sync=()=>{root.visible=sky.visible=wanted&&status==='ready'};

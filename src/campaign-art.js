@@ -1,10 +1,13 @@
 import {scenerySeed} from './campaign-worlds.js';
 import {applyPanelSurface} from './panel-surface.js';
 import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
+import {createBiomeBasin} from './biome-basin.js';
+import {applyOpticFinish} from './optic-textures.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
 const urlFor=(base,id)=>base['../assets/models/'+id+'.glb'];
+const atmosphereKinds={sunset:1,cavern:2,aurora:3,embers:4,current:5,twilight:6};
 
 function sequence(seed){
  let state=seed;
@@ -17,7 +20,7 @@ function sequence(seed){
 function gradientSky(THREE){
  const uniforms={
   dark:{value:new THREE.Color()}, glow:{value:new THREE.Color()},
-  shaft:{value:0}, sun:{value:0}, cavern:{value:0}
+  kind:{value:0}, time:{value:0}
  };
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.ShaderMaterial({
   uniforms,depthWrite:false,side:THREE.BackSide,
@@ -31,27 +34,57 @@ function gradientSky(THREE){
   fragmentShader:`
    varying vec3 direction;
    uniform vec3 dark, glow;
-   uniform float shaft, sun, cavern;
+   uniform float kind,time;
+   float hash2(vec2 cell){
+    vec3 p=fract(cell.xyx*.1031);
+    p+=dot(p,p.yzx+33.33);
+    return fract((p.x+p.y)*p.z);
+   }
+   float noise2(vec2 p){
+    vec2 i=floor(p),f=fract(p);
+    f=f*f*(3.-2.*f);
+    return mix(mix(hash2(i),hash2(i+vec2(1.,0.)),f.x),
+               mix(hash2(i+vec2(0.,1.)),hash2(i+vec2(1.,1.)),f.x),f.y);
+   }
+   float veil(vec2 p){
+    return .58*noise2(p)+.28*noise2(p*2.04+7.)+.14*noise2(p*5.17-2.);
+   }
    void main(){
     vec3 ray=normalize(direction);
     float elevation=(ray.y+.38)*2.45;
     float horizon=exp(-elevation*elevation);
     float atmosphere=horizon*(.29+.31*smoothstep(-.8,.9,ray.x));
-    float columns=pow(max(0.,sin(ray.x*16.+ray.z*6.)),8.)*.19*shaft;
-    float facing=dot(ray,normalize(vec3(.87,-.32,-.37)));
-    float sunset=exp(-(1.-facing)*25.)*.57+exp(-(1.-facing)*108.)*.23;
-    float disk=smoothstep(.99983,.99990,facing);
-    vec3 color=mix(dark,glow,atmosphere+columns*horizon);
-    color+=vec3(1.,.48,.19)*sun*(sunset+disk*1.35);
-    if(cavern>.5){
+    vec2 uv=vec2(atan(ray.x,ray.z),ray.y);
+    float clouds=veil(uv*vec2(3.,12.)+vec2(time*.012,0.));
+    vec3 color=mix(dark,glow,atmosphere*(.63+.37*clouds));
+    if(kind==1.){
+     float facing=dot(ray,normalize(vec3(.54,-.17,-.82)));
+     float sunset=exp(-(1.-facing)*16.)*.54+exp(-(1.-facing)*102.)*.37;
+     float disk=smoothstep(.99955,.99982,facing);
+     color+=vec3(.85,.39,.17)*(sunset+disk*1.29)*(1.-.31*clouds);
+     color+=vec3(.16,.076,.034)*smoothstep(.34,.8,clouds)*horizon;
+    }else if(kind==2.){
      // Skylight enters through a fissure high beyond the playable deck.
      float across=ray.x*.73+ray.z*.68;
      float upwell=exp(-6.*(ray.y+.57)*(ray.y+.57));
      float cleft=across-.48*ray.y-.49;
      float spill=exp(-5.*cleft*cleft);
      float shafts=exp(-75.*cleft*cleft)+.50*exp(-180.*(cleft+.28)*(cleft+.28));
-     color=mix(dark,glow,.10+.43*upwell)+upwell*spill*vec3(.036,.057,.086);
-     color+=vec3(.016,.022,.031)*upwell*shafts;
+     color=mix(dark,glow,.05+.29*upwell*clouds)+upwell*spill*vec3(.034,.058,.114);
+     color+=vec3(.017,.031,.056)*upwell*shafts*(.49+.61*clouds);
+    }else if(kind==3.){
+     float arc=uv.y+.28+.073*sin(uv.x*3.4)+.035*sin(uv.x*8.+.14*time);
+     float curtain=exp(-38.*abs(arc))*smoothstep(.25,.7,noise2(vec2(uv.x*13.,time*.025)));
+     color+=vec3(.024,.18,.157)*curtain+vec3(.047,.048,.12)*exp(-86.*abs(arc+.044));
+    }else if(kind==4.){
+     float heat=pow(clouds,2.65)*exp(-9.*abs(ray.y+.40));
+     color+=vec3(.16,.039,.010)*heat;
+    }else if(kind==5.){
+     float current=exp(-20.*abs(uv.y+.24+.08*sin(uv.x*4.8)));
+     float rays=pow(.5+.5*cos(uv.x*22.+4.*clouds+.19*time+ray.y*8.),5.);
+     color+=vec3(.016,.089,.111)*(current*.45+rays*current*.55);
+    }else if(kind==6.){
+     color+=vec3(.06,.052,.12)*horizon*clouds;
     }
     gl_FragColor=vec4(color,1.);
     #include <tonemapping_fragment>
@@ -81,14 +114,12 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(!active)return;
   const {definition,root}=active;
   root.visible=true;
-  const {dark,glow,shaft,sun}=sky.material.uniforms;
+  const {dark,glow,kind}=sky.material.uniforms;
   dark.value.setHex(definition.sky);
   glow.value.setHex(definition.haze);
-  shaft.value=definition.id==='abyss'?1:0;
-  sun.value=definition.id==='heliostat'?1:0;
-  sky.material.uniforms.cavern.value=definition.id==='grotto'?1:0;
+  kind.value=atmosphereKinds[definition.air]??0;
  }
- function setup(record,base,scatter,fixtures){
+ function setup(record,base,scatter,fixtures,foundation){
   const {definition,root}=record;
   const plantings=definition.scatter?.[3];
   record.platform=base.clone(true);
@@ -96,6 +127,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   const materials=new Map();
   record.platform.traverse(node=>{
    if(!node.isMesh)return;
+   node.receiveShadow=true;
    const material=node.material;
    if(!materials.has(material)){
     const paint=material.clone();
@@ -110,18 +142,39 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    node.material=materials.get(material);
   });
   root.add(record.platform);
-  if(definition.id==='grotto'){
-   record.pool=createGrottoPool(THREE);root.add(record.pool);
+  if(foundation){
+   const supports=foundation.clone(true),colors=definition.footing;
+   supports.position.y=-8.88;
+   supports.traverse(node=>{
+    if(!node.isMesh)return;
+    if(colors){
+     const suffix=node.material.name.split(' ').at(-1);
+     const color=colors[suffix];
+     if(color!==undefined){
+      node.material=node.material.clone();node.material.color.setHex(color);
+     }
+    }
+    node.receiveShadow=true;
+   });
+   root.add(supports);
   }
+  record.pool=definition.id==='grotto'?createGrottoPool(THREE):createBiomeBasin(THREE,definition.id);
+  if(record.pool)root.add(record.pool);
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
-   if(definition.id==='grotto'&&id!=='grotto-survey'){
+   const terrain=/(basalt|reef|escarpment|orchard|buttress|fault-shelf)$/.test(id);
+   if(role!=='horizon'){
     mesh.traverse(node=>{
      if(!node.isMesh)return;
      if(!materials.has(node.material)){
-      const rock=node.material.clone();
-      finishGrottoRock(THREE,rock);materials.set(node.material,rock);
+      const finish=node.material.clone();
+      if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
+       finishGrottoRock(THREE,finish,definition.surface);
+      }else if(node.geometry.getAttribute('uv')&&/ (body|bevel)$/.test(finish.name)){
+       applyOpticFinish(THREE,finish,'brushed');
+      }
+      materials.set(node.material,finish);
      }
      node.material=materials.get(node.material);
     });
@@ -130,19 +183,18 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.rotation.y=yaw;
    if(Array.isArray(scale))mesh.scale.fromArray(scale);
    else mesh.scale.setScalar(scale);
-   if(Math.hypot(anchor[0],anchor[2])>29&&/(ridge|terrace)/.test(id)){
-    mesh.position.y-=anchor[1]>-10?5:2;
+   if(role==='horizon'||(Math.hypot(anchor[0],anchor[2])>29&&/(ridge|terrace)/.test(id))){
     const horizon=new Map();
     mesh.traverse(node=>{
      if(!node.isMesh)return;
      if(!horizon.has(node.material)){
-      const mist=definition.id==='heliostat'?definition.haze:definition.sky;
-      const color=node.material.color.clone().lerp(tint.setHex(mist),.62);
+      const color=node.material.color.clone().lerp(tint.setHex(definition.fog),.91);
       horizon.set(node.material,new THREE.MeshBasicMaterial({color}));
      }
      node.material=horizon.get(node.material);
     });
    }
+   mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&!terrain}});
    root.add(mesh);
    return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role,id};
   });
@@ -231,8 +283,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
     const deck=load(urlFor(platforms,'overhaul-platform-'+definition.deck));
     const scatter=definition.scatter?load(urlFor(scenery,'scenery/'+definition.scatter[0])):null;
     const props=definition.models.map(([id])=>load(urlFor(scenery,'scenery/'+id)));
-    Promise.all([deck,scatter,...props]).then(([base,detail,...models])=>{
-     setup(record,base,detail,models);
+    const foundation=load(urlFor(scenery,'scenery/biome-deck-'+(definition.masonry?'arcade':'truss')));
+    Promise.all([deck,scatter,foundation,...props]).then(([base,detail,supports,...models])=>{
+     setup(record,base,detail,models,supports);
      record.status='ready';
      if(requested===record)layout(record,record.seed);
     }).catch(()=>{record.status='error'}).then(()=>{
@@ -248,6 +301,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
  function update(seconds,still,camera){
   if(!active)return;
   const t=still?0:seconds;
+  sky.material.uniforms.time.value=t;
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);
   for(const {mesh,yaw,role} of active.props){

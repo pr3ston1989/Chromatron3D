@@ -2,7 +2,8 @@ import {selectQuality} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 import {captureFrame,luminance,projectCells} from './frame.js';
 
-test('concept scenery keeps all playable cells visible in the four reference worlds',async({page})=>{
+for(const levels of [[1,2,3,8],[4,5,6,7]])
+test(`scenery keeps all playable cells visible in worlds ${levels.join(', ')}`,async({page})=>{
  test.setTimeout(120000);
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.setViewportSize({width:1366,height:768});
@@ -10,15 +11,38 @@ test('concept scenery keeps all playable cells visible in the four reference wor
  await page.waitForFunction(()=>Boolean(window.__debug));
  await selectQuality(page,'performance');
  await page.evaluate(()=>window.__debug.switchCampaign('demo'));
- for(const level of [1,2,3,8]){
-  await page.evaluate(n=>{window.__debug.loadLevel(n);window.__debug.freezeAnimations(true)},level);
+ for(const level of levels){
+  await page.evaluate(n=>{window.__debug.loadLevel(n);window.__debug.freezeAnimations(true,{onDemand:true})},level);
   await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+  if(level===1)expect(await page.evaluate(()=>window.__debug.getLevelState().artScene)).toBe('kepler');
   for(const [width,height] of [[1366,768],[1280,720],[1093,614],[390,844]]){
    await page.setViewportSize({width,height});
-   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    window.__debug.renderStill();resolve();
+   }))));
    expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),`Demo ${level} · ${width} × ${height}`).toEqual([]);
   }
  }
+});
+
+test.describe('touch scenery',()=>{
+ test.use({hasTouch:true,isMobile:true,reducedMotion:'reduce',viewport:{width:390,height:844}});
+ test('all eight overhead boards keep the 225 cell centers clear',async({page})=>{
+  test.setTimeout(90000);
+  await page.goto('/?debug=1');
+  const status=()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus);
+  for(let level=1;level<=8;level++){
+   await page.evaluate(n=>{
+    const api=window.__debug;
+    if(n===1)api.switchCampaign('demo');
+    api.freezeAnimations(true,{onDemand:true});
+    api.loadLevel(n);
+   },level);
+   await expect.poll(status).toBe('ready');
+   await page.evaluate(()=>window.__debug.renderStill());
+   expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),`phone level ${level}`).toEqual([]);
+  }
+ });
 });
 
 test('grotto cliff faces stay clear when orbiting the board at a low angle',async({page})=>{
