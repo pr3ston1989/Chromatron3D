@@ -2,6 +2,20 @@ import {expect,test} from '@playwright/test';
 
 test.use({hasTouch:true,isMobile:true,reducedMotion:'reduce'});
 
+test('the Kepler phone map keeps the contextual receiver inspector reachable',async({page})=>{
+ await page.setViewportSize({width:360,height:740});
+ await page.goto('/?benchmark=orbital&debug=1');
+ await expect(page.locator('#camera-preset')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#phone-magnify').tap();
+ await expect(page.locator('#phone-overview')).toBeVisible();
+ await page.locator('#receiver-toggle').tap();
+ await expect(page.locator('#receiver-card')).toBeVisible();
+ await page.locator('#receiver-close').tap();
+ await page.locator('#phone-tools summary').tap();
+ await expect(page.locator('#phone-tools #reset')).toBeVisible();
+ await expect(page.locator('#phone-tools #spectral-toggle')).toHaveCount(0);
+});
+
 for(const [width,height] of [[320,568],[390,844]]){
  test(`phone map at ${width} × ${height}: zoom, pan, place and solve by touch`,async({page})=>{
   await page.setViewportSize({width,height});
@@ -27,7 +41,14 @@ for(const [width,height] of [[320,568],[390,844]]){
   const after=await project(7,7);
   expect(after.x-before.x).toBeCloseTo(60,0);
   expect(after.y-before.y).toBeCloseTo(42,0);
+  const overview=page.locator('#phone-overview');
+  await expect(overview).toBeVisible();
+  await overview.tap({position:{x:60,y:32}});
+  const far=await project(14,7);
+  expect(far.x).toBeGreaterThan(0);expect(far.x).toBeLessThan(width);
+  expect(await page.evaluate(()=>document.elementFromPoint(innerWidth/2,55)?.closest('#scene')===null)).toBe(true);
   await zoom.tap();
+  await expect(overview).toBeHidden();
   await expect.poll(tileWidth).toBeCloseTo(initial,0);
   await page.locator('#inventory [data-slot=mirror]').tap();
   await zoom.tap();
@@ -35,7 +56,12 @@ for(const [width,height] of [[320,568],[390,844]]){
   const destination=await project(7,7);
   await page.touchscreen.tap(destination.x,destination.y);
   await expect(page.locator('#inventory [data-slot=mirror]')).toHaveCount(0);
+  expect(await page.evaluate(()=>window.chromatron.getState().pieces.find(p=>p.type==='mirror')))
+   .toMatchObject({x:7,y:7,inTray:false});
+  for(const id of ['turn-left','turn-right','relocate','return-tray','cancel-selection'])
+   await expect(page.locator('#'+id)).toBeInViewport({ratio:1});
   await expect.poll(tileWidth).toBeGreaterThan(45);
+  await page.screenshot({path:`test-results/phone-selected-mirror-${width}x${height}.png`});
   await page.locator('#turn-right').tap();
   await expect(page.locator('#win')).toBeVisible();
  });

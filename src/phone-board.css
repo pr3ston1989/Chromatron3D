@@ -1,4 +1,4 @@
-#phone-tools,#phone-magnify,#phone-instruction,.phone-tool-label {display:none}
+#phone-tools,#phone-magnify,#phone-instruction,#phone-overview,.phone-tool-label {display:none}
 
 @media (pointer:coarse) and (max-width:680px) and (orientation:portrait) {
  #app,#app.orbital-pilot {--inset:12px;--dock-raised:var(--phone-dock-height,145px);--dock-bottom:0px}
@@ -48,11 +48,27 @@
  #phone-magnify span:first-child {position:relative;font-size:0;width:12px;height:12px;border:1.5px solid currentColor;border-radius:50%;margin-right:3px}
  #phone-magnify span:first-child::after {content:'';position:absolute;width:6px;height:2px;background:currentColor;right:-4px;bottom:-2px;transform:rotate(48deg)}
  #phone-magnify[aria-pressed=true] {background:#1e4250}
- #app .optic-workbench {left:8px;right:8px;width:auto;bottom:calc(var(--dock-raised) + 4px)}
+ #app .optic-workbench {left:8px;right:8px;width:auto;transform:none;bottom:calc(var(--dock-raised) + 4px)}
+ #app .optic-workbench .transform-tools {padding:4px 5px;border-radius:8px}
+ #app .transform-heading {margin:0 0 3px;min-height:15px}
+ #app .transform-controls {display:flex;flex-flow:row nowrap;align-items:center;gap:4px}
  #app .transform-controls button {min-height:44px;min-width:44px;border-radius:7px}
+ #app .transform-controls #turn-left,#app .transform-controls #turn-right,#app .transform-controls #cancel-selection {flex:0 0 44px;width:44px;padding:0}
+ #app .transform-controls #relocate,#app .transform-controls #return-tray {flex:1;min-width:0;margin:0;padding:2px;font:650 11px/1.1 system-ui,sans-serif;white-space:normal}
+ #app .transform-controls #relocate[hidden],#app .transform-controls #return-tray:disabled {display:none}
+ #app .optic-workbench .beam-guide-legend {display:none}
  #app .transform-controls kbd {display:none}
  #app .optic-info {max-height:35px}
  #app .coach {bottom:calc(var(--dock-raised) + var(--workbench-height,0px) + 8px)}
  #app .coach-dismiss {min-width:44px;min-height:44px}
  #app .header:has(#phone-tools[open]) {z-index:8}
+ #app.phone-working #scene,#app.phone-working #board-symbols {clip-path:inset(var(--phone-map-top,120px) 0 var(--phone-map-bottom,120px))}
+ #app.phone-working #play-surface {background:linear-gradient(155deg,#111e31,#0c1726 64%,#132432)}
+ #app.phone-working .stage-navigation,#app.phone-working .mission p,#app.phone-working .progress-track {display:none}
+ #app.phone-working .mission-copy {align-self:center}
+ #app.phone-working .mission-objective {width:86px;align-items:flex-end}
+ #app.phone-working .mission-progress {justify-content:flex-end;gap:5px}
+ #app.phone-working #draft-status {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ #app.phone-working #phone-overview {display:block;margin-left:auto;pointer-events:auto;cursor:crosshair;width:64px;height:64px;max-width:100%;padding:2px;border:1px solid #7098af;border-radius:5px;background:#0d1a2c}
+ #phone-overview canvas {width:100%;height:100%;display:block;border-radius:3px}
 }

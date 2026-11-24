@@ -1,6 +1,7 @@
 export const LANGUAGES = ['pl', 'en'];
 const strings = {
   pl:{
+    phoneOverview:'Mapa zagadki. Dotknij miejsca, aby przesunąć tam widok.',
     phoneTools:'Narzędzia planszy',phoneAnalysis:'Analiza',phoneReset:'Od początku',phoneCamera3D:'Widok 3D',phoneCameraMap:'Mapa',
     phoneEnlarge:'Powiększ pola',phoneFit:'Cała plansza',phoneBoard:'Dotknij przyrządu na planszy.',phonePick:'Wybierz przyrząd, potem dotknij pola.',phonePlace:'Dotknij pola, na którym chcesz ustawić przyrząd.',phonePan:'Przesuwaj widok po pustym polu.',
     orbitalPilot:'STACJA ORBITALNA',orbitalDemo:'Poziom wzorcowy',receiverInfo:'Sprawdź rezonator',nextReceiver:'Następny rezonator',closeInfo:'Zamknij informacje',
@@ -63,6 +64,7 @@ const strings = {
     typeLaser:'LASER',typeMirror:'LUSTRO',typeFilter:'FILTR',typeSplitter:'ROZDZIELACZ',typePrism:'PRYZMAT',typeTarget:'REZONATOR',typeBender:'ZAKRZYWIACZ',typeDoppler:'DOPPLER',typeTangler:'SPLĄTYWACZ',typeWall:'BARIERA',typeConduit:'KANAŁ',typeTeleporter:'TELEPORTER'
   },
   en:{
+    phoneOverview:'Puzzle map. Tap a location to centre the view there.',
     phoneTools:'Board tools',phoneAnalysis:'Analysis',phoneReset:'Restart',phoneCamera3D:'3D view',phoneCameraMap:'Map',
     phoneEnlarge:'Enlarge tiles',phoneFit:'Full board',phoneBoard:'Tap an instrument on the board.',phonePick:'Choose an instrument, then tap a tile.',phonePlace:'Tap the tile where you want to place the instrument.',phonePan:'Drag an empty tile to pan.',
     orbitalPilot:'ORBITAL STATION',orbitalDemo:'Showcase level',receiverInfo:'Inspect receiver',nextReceiver:'Next receiver',closeInfo:'Close information',

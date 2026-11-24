@@ -7,7 +7,10 @@ Test otwiera mapę z góry, powiększa pola, przesuwa obraz jednym palcem, wraca
 widoku całej planszy i wybiera lustro z zasobnika. Następnie powiększa widok
 ponownie, stawia lustro, obraca je i sprawdza zwycięstwo. Osobne scenariusze
 obejmują anulowanie przeciągania, gest dwoma palcami i próbę postawienia
-przyrządu na zajętym polu. Fizyczny ekran telefonu wymaga osobnej próby.
+przyrządu na zajętym polu. W przybliżeniu minimapa pokazuje trasę światła
+i widoczny wycinek. Test dotyka jej prawego brzegu, wraca do pełnej planszy
+i sprawdza współrzędne postawionego lustra. Fizyczny ekran telefonu wymaga
+osobnej próby.
 
 W grocie test zasobów wczytuje modele z GLB, mierzy budżet geometrii i sprawdza
 trafienie trzech kotew pomostu w półkę skalną. Podglądy modeli są w

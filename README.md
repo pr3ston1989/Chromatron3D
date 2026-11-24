@@ -31,8 +31,9 @@ The game opens on the title screen. **Play** starts the selected campaign, and
 ## Controls
 
 On a portrait touch phone the board opens directly overhead. Tap **Enlarge tiles**
-for a working view with roughly 48 CSS pixels per cell. Drag empty space to pan
-or pinch with two fingers. **Full board** restores the overview. Tap an available
+for a working view with roughly 48 CSS pixels per cell. Drag empty space to pan,
+pinch with two fingers or tap the miniature map to jump to a distant instrument.
+**Full board** restores the overview. Tap an available
 instrument and then its destination. Tap an instrument already on the board to
 rotate it, return it to stock or choose **Move** and tap another tile. The **3D
 view** button switches back to the orbital camera.

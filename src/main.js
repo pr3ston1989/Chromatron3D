@@ -66,7 +66,7 @@ import './game-interface.css';
 import './main-menu.css';
 import './orbital-benchmark.css';
 import './phone-board.css';
-import {mountPhoneControls} from './phone-controls.js';
+import {createPhoneOverview,mountPhoneControls} from './phone-controls.js';
 const $=id=>document.getElementById(id);
 const GRID=15, HALF=7, T=1.3;
 const searchParams=new URLSearchParams(location.search);
@@ -1472,7 +1472,17 @@ const boardSymbols=createBoardSymbols($('board-symbols'),(x,y)=>{
  symbolPoint.set((x-HALF)*T,0,(y-HALF)*T).project(camera);
  return {x:(symbolPoint.x+1)*innerWidth/2,y:(1-symbolPoint.y)*innerHeight/2};
 });
-function syncBoardSymbols(){boardSymbols.update(showBoardSymbols&&overheadBlend===1,pieces,selected)}
+const drawPhoneOverview=createPhoneOverview($('phone-overview'),GRID,COLORS,(x,z)=>{
+ phonePan.x=x*T;phonePan.z=z*T;updateCamera();
+});
+function syncBoardSymbols(){
+ boardSymbols.update(showBoardSymbols&&overheadBlend===1,pieces,selected);
+ if(phonePortrait.matches&&cameraTop&&overheadFrame&&overheadZoom.current<defaultZoom-.1){
+  const tile=overheadFrame.size*defaultZoom/(GRID*overheadZoom.current);
+  drawPhoneOverview(pieces,currentResult?.segments??[],GRID/2+phonePan.x/T,GRID/2+phonePan.z/T,
+                    innerWidth/tile,overheadFrame.height/tile);
+ }
+}
 let orbitAngles={yaw,pitch};
 if(cameraTop){yaw=0;pitch=Math.PI/2}
 const activeZoom=()=>cameraTop?overheadZoom:orbitZoom;
@@ -1484,6 +1494,7 @@ function resetPhoneFraming(){
 function syncPhoneZoomLabel(){
  const button=$('phone-magnify');
  const enlarged=cameraTop&&overheadZoom.target<defaultZoom-.1;
+ $('app').classList.toggle('phone-working',phonePortrait.matches&&enlarged);
  button.setAttribute('aria-pressed',String(enlarged));
  button.lastElementChild.textContent=t(language,enlarged?'phoneFit':'phoneEnlarge');
  syncPhoneInstruction();
@@ -1528,7 +1539,11 @@ function measureOverheadFrame(){
   overheadZoom.current=overheadZoom.target=target;
   syncPhoneZoomLabel();
  }
- overheadFrame={size,distance:GRID*T*innerHeight/(2*size*Math.tan(camera.fov*Math.PI/360)),
+ if(phonePortrait.matches){
+  $('app').style.setProperty('--phone-map-top',Math.ceil(top)+'px');
+  $('app').style.setProperty('--phone-map-bottom',Math.ceil(innerHeight-bottom)+'px');
+ }
+ overheadFrame={size,height,distance:GRID*T*innerHeight/(2*size*Math.tan(camera.fov*Math.PI/360)),
   offset:innerHeight/2-top-height/2};
 }
 function toggleCameraPreset(manual=true){
@@ -1821,6 +1836,7 @@ function endBoardTouch(e){
  // After a pinch, suppress the remaining finger until it also lifts.
  if(boardTouches.size===0)touchPinch=null;
  else if(boardTouches.size>=2)beginTouchPinch();
+ if(!touchPinch&&phonePortrait.matches)refreshOverheadLayout();
  return true;
 }
 function setBoardZoom(value){
@@ -2243,6 +2259,7 @@ $('phone-magnify').onclick=()=>{
   setBoardZoom(defaultZoom*overheadFrame.size/(GRID*48));
  }
  renderInventory();
+ refreshOverheadLayout();
 };
 phonePortrait.addEventListener('change',()=>{
  if(!manualCamera&&phonePortrait.matches!==cameraTop)toggleCameraPreset(false);
