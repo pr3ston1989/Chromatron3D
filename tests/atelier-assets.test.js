@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {Box3} from 'three';
+import {Box3,Raycaster,Vector3} from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
+import {campaignWorld} from '../src/campaign-worlds.js';
 
 function gltf(path){
  const data=readFileSync(new URL('../public/models/'+path+'.glb',import.meta.url));
@@ -150,5 +151,68 @@ test('the garden meshes from Blender fit their scenery budgets and stand on a Y-
   const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
   const {scene}=await loader.parseAsync(bytes,'');
   assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-6,name+' stands on Y=0');
+ }
+});
+
+test('grotto cliffs preserve vertex pigment, opaque facets and the per-module triangle budget',async()=>{
+ const loader=new GLTFLoader();
+ const ids=new Set(campaignWorld('demo',2).models.map(([id])=>id).filter(id=>id!=='grotto-survey'));
+ for(const id of ids){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  const bounds=new Box3().setFromObject(scene);
+  assert.ok(Math.abs(bounds.min.y)<1e-5,id+' starts at its base');
+  let triangles=0,passes=0;
+  scene.traverse(node=>{
+   if(!node.isMesh)return;
+   passes++;
+   const {color,position}=node.geometry.attributes;
+   assert.equal(color?.count,position.count,id+' has pigment on every vertex');
+   const tones=new Set();
+   for(let i=0;i<color.count;i++)tones.add(Math.round(1000*color.getZ(i)));
+   assert.ok(tones.size>3,id+' retains the variation between rock faces');
+   assert.equal(node.material.vertexColors,true);
+   assert.equal(node.material.transparent,false);
+   assert.equal(node.material.map,null);
+   triangles+=node.geometry.index.count/3;
+  });
+  assert.ok(triangles>0&&triangles<=1500,id+' exceeds its geometry budget');
+  assert.ok(passes<=3,id+' exceeds its material budget');
+ }
+});
+
+test('the three survey anchors penetrate the fault shelf under the gallery',async()=>{
+ const fixtures=campaignWorld('demo',2).models;
+ const [,shelf,scale,yaw]=fixtures.find(([id])=>id==='grotto-fault-shelf');
+ const [,station,stationScale,stationYaw]=fixtures.find(([id])=>id==='grotto-survey');
+ assert.deepEqual([station[0],station[2],stationScale,stationYaw],[shelf[0],shelf[2],scale,yaw]);
+ const loader=new GLTFLoader();
+ const load=async id=>{
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  return (await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'')).scene;
+ };
+ const [cliff,rig]=await Promise.all(['grotto-fault-shelf','grotto-survey'].map(load));
+ const rock=[];
+ cliff.traverse(node=>{if(node.material?.name==='Fractured slate')rock.push(node)});
+ cliff.updateMatrixWorld(true);rig.updateMatrixWorld(true);
+ const anchors=[];
+ rig.traverse(node=>{
+  if(!node.isMesh)return;
+  const pos=node.geometry.attributes.position;
+  const pt=new Vector3();
+  for(let i=0;i<pos.count;i++){
+   pt.fromBufferAttribute(pos,i).applyMatrix4(node.matrixWorld);
+   if(Math.abs(pt.y)>1e-5)continue;
+   const group=anchors.find(g=>Math.hypot(pt.x-g.x,pt.z-g.z)<.96);
+   if(!group)anchors.push(pt.clone());
+  }
+ });
+ assert.equal(anchors.length,3);
+ const foot=(station[1]-shelf[1])/scale;
+ for(const anchor of anchors){
+  const ray=new Raycaster(new Vector3(anchor.x,40,anchor.z),new Vector3(0,-1,0));
+  const contact=ray.intersectObjects(rock)[0];
+  assert.ok(contact&&contact.point.y>=foot,'anchor reaches bedrock');
  }
 });

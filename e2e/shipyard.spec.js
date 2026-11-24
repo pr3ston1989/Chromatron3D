@@ -19,6 +19,32 @@ test('concept scenery keeps all playable cells visible in the four reference wor
  }
 });
 
+test('grotto cliff faces stay clear when orbiting the board at a low angle',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1280,height:720});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/?debug=1');
+ await page.waitForFunction(()=>Boolean(window.__debug));
+ await page.evaluate(()=>{
+  window.__debug.switchCampaign('demo');
+  window.__debug.loadLevel(3);
+  window.__debug.freezeAnimations(true);
+ });
+ await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ const corner=()=>page.evaluate(()=>window.chromatron.projectCell(0,0));
+ for(let turn=0;turn<4;turn++){
+  const before=await corner();
+  const start=await page.evaluate(()=>window.chromatron.projectCell(7,9));
+  await page.mouse.move(start.x,start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x+349,start.y-(turn===0?78:0),{steps:5});
+  await page.mouse.up();
+  await expect.poll(corner).not.toEqual(before);
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion()),'quarter turn '+(turn+1)).toEqual([]);
+ }
+});
+
 test('compact overhead framing retains all 14 inner grid lines on each axis',async({page})=>{
  test.setTimeout(120000);
  await page.setViewportSize({width:640,height:360});

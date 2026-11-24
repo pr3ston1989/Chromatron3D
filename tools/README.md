@@ -25,6 +25,15 @@ akcenty biomów.
 
 Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami, kratownicą i czterema napędami. Kontrolowany test w Chrome pokazuje modele w widoku 1366 × 768.
 
+## Kryształowa grota
+
+Edytowalne formacje i stanowisko pomiarowe znajdują się w `assets/models/scenery/grotto-*.blend`. Gra ładuje odpowiadające im pliki GLB. Pigment skały i cienie kontaktowe są zapisane w kolorach wierzchołków. Rysunek łupku pochodzi ze wspólnej próbki materiału pokładu.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/scenery_catalog.py -- grotto-buttress grotto-fault-shelf grotto-escarpment
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/grotto-survey.py
+```
+
 ## Dok serwisowy Węzła Keplera
 
 Poziom wzorcowy otwiera się z parametrem `?benchmark=orbital`. Przy dostępnej

@@ -299,6 +299,11 @@ function syncBoardPresentation(){
  key.intensity=sunset?2.04:preview?1.61:1.67;
  fill.intensity=sunset?9:preview?16:25;
  ambient.intensity=preview?.43:.70;
+ const grotto=preview&&activeEnvironment.id==='grotto';
+ if(grotto){
+  key.position.set(-15,11,-9);key.intensity=1.94;
+  ambient.intensity=.49;fill.intensity=13;
+ }
  if(orbitalScene?.isVisible()){
   // Grazing morning light across the panels, with cool fill from the planet.
   key.position.set(-18,16,-12);key.color.setHex(0xffead2);
@@ -307,7 +312,7 @@ function syncBoardPresentation(){
  }
  if(preview){
   scene.fog.color.setHex(activeEnvironment.fog);
-  scene.fog.density=.007;
+  scene.fog.density=grotto?.013:.007;
   if(levelTransition)levelTransition.fogTo=scene.fog.density;
  }
  updateCamera();

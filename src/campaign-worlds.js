@@ -40,17 +40,16 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    ]]
   }),
  world('grotto','Kryształowa grota','Crystal Grotto','nebula',
-  0x22102f,0x703985,0x4b235f,0xece2ff,0xa889ca,'grotto',{
+  0x121522,0x645778,0x373449,0xffe8dc,0xb49cd2,'grotto',{
    face:.54,groove:.61,dust:0x9c82b3,
    models:[
-    ['grotto-buttress',[-14.8,-7.3,-17.8],[1.64,1.74,1.45],-.73,'left'],
-    ['grotto-buttress',[18.8,-7.7,8],[1.38,1.89,1.26],.23,'right'],
-    ['grotto-buttress',[25,-11.6,-22],[1.34,1.38,1.35],-.38,'right'],
-    ['grotto-ridge',[-14.8,-14,-17.8],[1.12,1.95,1.93],-.62],
-    ['grotto-ridge',[18.8,-15,8],[1.12,2.27,2.1],.23],
-    ['grotto-ridge',[27,-18,-29],[1.65,2.76,2.18],-.56],
-    ['grotto-ridge',[40,-22,-47],[2.74,4.19,2.75],-.65]
-   ],scatter:['amethyst-shard',1.31,0x8e6f9f]
+    ['grotto-buttress',[-13.3,-24.0,-10.4],1.47,-.32,'cliff'],
+    ['grotto-fault-shelf',[12.8,-23.8,10.5],1.47,-.54,'cliff'],
+    ['grotto-survey',[12.8,-8.4,10.5],1.47,-.54,'cliff'],
+    ['grotto-fault-shelf',[24,-25.0,-22],1.12,.62,'cliff'],
+    ['grotto-escarpment',[24,-41,-31],[2.36,1.77,1.46],-.77],
+    ['grotto-escarpment',[41,-52,-48],[3.18,1.98,2.35],-.46]
+   ]
   }),
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',
   0x0d2039,0x203f62,0x233c57,0xdbebff,0x65c6ce,'shipyard',{face:.59,glow:.31}),

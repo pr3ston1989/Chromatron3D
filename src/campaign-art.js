@@ -1,5 +1,6 @@
 import {scenerySeed} from './campaign-worlds.js';
 import {applyPanelSurface} from './panel-surface.js';
+import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -16,7 +17,7 @@ function sequence(seed){
 function gradientSky(THREE){
  const uniforms={
   dark:{value:new THREE.Color()}, glow:{value:new THREE.Color()},
-  shaft:{value:0}, sun:{value:0}
+  shaft:{value:0}, sun:{value:0}, cavern:{value:0}
  };
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.ShaderMaterial({
   uniforms,depthWrite:false,side:THREE.BackSide,
@@ -30,7 +31,7 @@ function gradientSky(THREE){
   fragmentShader:`
    varying vec3 direction;
    uniform vec3 dark, glow;
-   uniform float shaft, sun;
+   uniform float shaft, sun, cavern;
    void main(){
     vec3 ray=normalize(direction);
     float elevation=(ray.y+.38)*2.45;
@@ -42,6 +43,16 @@ function gradientSky(THREE){
     float disk=smoothstep(.99983,.99990,facing);
     vec3 color=mix(dark,glow,atmosphere+columns*horizon);
     color+=vec3(1.,.48,.19)*sun*(sunset+disk*1.35);
+    if(cavern>.5){
+     // Skylight enters through a fissure high beyond the playable deck.
+     float across=ray.x*.73+ray.z*.68;
+     float upwell=exp(-6.*(ray.y+.57)*(ray.y+.57));
+     float cleft=across-.48*ray.y-.49;
+     float spill=exp(-5.*cleft*cleft);
+     float shafts=exp(-75.*cleft*cleft)+.50*exp(-180.*(cleft+.28)*(cleft+.28));
+     color=mix(dark,glow,.10+.43*upwell)+upwell*spill*vec3(.036,.057,.086);
+     color+=vec3(.016,.022,.031)*upwell*shafts;
+    }
     gl_FragColor=vec4(color,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -75,10 +86,11 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   glow.value.setHex(definition.haze);
   shaft.value=definition.id==='abyss'?1:0;
   sun.value=definition.id==='heliostat'?1:0;
+  sky.material.uniforms.cavern.value=definition.id==='grotto'?1:0;
  }
  function setup(record,base,scatter,fixtures){
   const {definition,root}=record;
-  const plantings=definition.scatter[3];
+  const plantings=definition.scatter?.[3];
   record.platform=base.clone(true);
   record.platform.position.y=-3.768;
   const materials=new Map();
@@ -98,9 +110,22 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    node.material=materials.get(material);
   });
   root.add(record.platform);
+  if(definition.id==='grotto'){
+   record.pool=createGrottoPool(THREE);root.add(record.pool);
+  }
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
+   if(definition.id==='grotto'&&id!=='grotto-survey'){
+    mesh.traverse(node=>{
+     if(!node.isMesh)return;
+     if(!materials.has(node.material)){
+      const rock=node.material.clone();
+      finishGrottoRock(THREE,rock);materials.set(node.material,rock);
+     }
+     node.material=materials.get(node.material);
+    });
+   }
    mesh.position.fromArray(anchor);
    mesh.rotation.y=yaw;
    if(Array.isArray(scale))mesh.scale.fromArray(scale);
@@ -124,8 +149,8 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
 
   record.plantingSurfaces=plantings?record.props.filter(prop=>prop.id==='garden-terrace').map(prop=>prop.mesh):[];
   record.instances=[];
-  scatter.updateMatrixWorld(true);
-  scatter.traverse(node=>{
+  scatter?.updateMatrixWorld(true);
+  scatter?.traverse(node=>{
    if(!node.isMesh)return;
    const mesh=new THREE.InstancedMesh(node.geometry,node.material,plantings?.length??14);
    mesh.name=node.name;
@@ -153,6 +178,15 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.position.set(anchor[0]+dx,anchor[1],anchor[2]+dz);
    mesh.rotation.y=yaw;
   }
+  if(record.definition.scatter)placeScatter(record,rand);
+  const position=record.dust.geometry.attributes.position;
+  for(let i=0;i<position.count;i++){
+   const angle=rand()*Math.PI*2,radius=18+rand()*17;
+   position.setXYZ(i,Math.cos(angle)*radius,-6+rand()*10,Math.sin(angle)*radius);
+  }
+  position.needsUpdate=true;record.dust.geometry.computeBoundingSphere();
+ }
+ function placeScatter(record,rand){
   const [,scale,color,plantings]=record.definition.scatter;
   tint.setHex(color).lerp(white,.77);
   for(const mesh of record.plantingSurfaces)mesh.updateWorldMatrix(true,true);
@@ -186,12 +220,6 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.instanceColor.needsUpdate=true;
    mesh.computeBoundingSphere();
   }
-  const position=record.dust.geometry.attributes.position;
-  for(let i=0;i<position.count;i++){
-   const angle=rand()*Math.PI*2,radius=18+rand()*17;
-   position.setXYZ(i,Math.cos(angle)*radius,-6+rand()*10,Math.sin(angle)*radius);
-  }
-  position.needsUpdate=true;record.dust.geometry.computeBoundingSphere();
  }
  function setLevel(definition,campaign,index){
   requested=null;
@@ -201,7 +229,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
     const record={root,definition,status:'loading'};
     cache.set(definition.id,record);
     const deck=load(urlFor(platforms,'overhaul-platform-'+definition.deck));
-    const scatter=load(urlFor(scenery,'scenery/'+definition.scatter[0]));
+    const scatter=definition.scatter?load(urlFor(scenery,'scenery/'+definition.scatter[0])):null;
     const props=definition.models.map(([id])=>load(urlFor(scenery,'scenery/'+id)));
     Promise.all([deck,scatter,...props]).then(([base,detail,...models])=>{
      setup(record,base,detail,models);
@@ -220,11 +248,16 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
  function update(seconds,still,camera){
   if(!active)return;
   const t=still?0:seconds;
+  if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);
   for(const {mesh,yaw,role} of active.props){
    if(role==='iris'||role==='turn'||role==='pulse')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
    if(role==='left'||role==='right'||role==='turn'||role==='iris')
     mesh.visible=mesh.position.x*camera.x+mesh.position.z*camera.z<8;
+   if(role==='cliff'){
+    const horizontal=Math.hypot(camera.x,camera.z);
+    mesh.visible=(mesh.position.x*camera.x+mesh.position.z*camera.z)<7*horizontal+.001;
+   }
   }
  }
  return {setLevel,update,isVisible:()=>Boolean(active),getStatus:()=>requested?.status??null};

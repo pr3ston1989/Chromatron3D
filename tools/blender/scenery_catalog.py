@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.blender.style import MODELS, Sculpture, export_model, make_material
 from tools.blender.style import plate, render, reset_scene, rotation_from_profile
+from tools.blender.grotto_formations import FORMATIONS, produce_formation
 
 OUT = MODELS / "scenery"
 
@@ -317,7 +318,6 @@ SPECS = {
     "observatory-iris": (iris,None,"steel","copper",600),
     "observatory-landing": (observatory_landing,None,"navy","copper",600),
     "skyline-ridge": (skyline,False,"navy","steel",2000),
-    "grotto-buttress": (crystals,"amethyst","plum","amethyst",1500),
     "grotto-ridge": (skyline,True,"plum","amethyst",2000),
     "frost-spires": (crystals,"frost","steel","titanium",1500),
     "garden-arcade": (arc,"garden","bronze","limestone",1500),
@@ -346,6 +346,8 @@ SPECS = {
 
 
 def produce(name):
+    if name in FORMATIONS:
+        return produce_formation(name, OUT)
     reset_scene()
     build,argument,hull,accent,budget = SPECS[name]
     shape,materials = Sculpture(),finishes(hull,accent)
@@ -362,6 +364,6 @@ def produce(name):
 
 
 if __name__ == "__main__":
-    requested = sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else SPECS
+    requested = sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else [*SPECS, *FORMATIONS]
     for name in requested:
         produce(name)

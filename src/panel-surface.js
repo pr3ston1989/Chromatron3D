@@ -15,7 +15,7 @@ const families={
  scrap:'alloy',moss:'limestone',ice:'frost',crystal:'slate'
 };
 
-function loadSample(THREE,kind){
+export function loadSurfaceSample(THREE,kind){
  if(!samples.has(kind)){
   const url=new URL(`../assets/materials/deck/${kind}.png`,import.meta.url);
   samples.set(kind,new THREE.TextureLoader().loadAsync(url.href).then(texture=>{
@@ -102,7 +102,7 @@ export function applyPanelSurface(THREE,material,world,inset=.043){
  state.kind=kind;
  state.ready.value=0;
  state.contrast.value=finishes[kind].contrast;
- loadSample(THREE,kind).then(texture=>{
+ loadSurfaceSample(THREE,kind).then(texture=>{
   if(state.kind!==kind)return;
   if(!texture){state.kind=null;return}
   state.tex.value=texture;state.ready.value=1;

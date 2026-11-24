@@ -5,7 +5,7 @@
 | Świat | Plansza i konstrukcja | Dominanty otoczenia | Światło i ruch |
 | --- | --- | --- | --- |
 | Obserwatorium pryzmatyczne | Ciepła ceramika, granatowy cokół i miedź. | Pierścień kalibracyjny i niskie gniazdo soczewki, za nimi warstwy granatowej mgły. | Ciepły klucz i chłodne wypełnienie. Powolny ruch wewnętrznej ramy soczewki. |
-| Kryształowa grota | Neutralny liliowy wierzch na ciemnej śliwkowej podstawie. | Wyspy przytłumionego ametystu z obu stron, głębia w osi planszy. | Rozproszone fioletowe wypełnienie i delikatny ruch pyłu. |
+| Kryształowa grota | Płyty z łupku nad ciemną taflą wody. | Otwarta geoda, żyła ametystu i spektrometr zakotwiony w skale. Dalsza ściana bazaltu domyka kadr. | Boczne światło wydobywa pasma chalcedonu. W głębi widać chłodną mgłę, dryfujący pył i kręgi na wodzie. |
 | Ogród heliostatów | Wapień, patynowany brąz i chłodny jadeit w cofniętych panelach. | Heliostat, niski łuk, dalsze tarasy w zielonej mgle. | Łagodne światło z góry, wolny obrót heliostatu. Jasność horyzontu poniżej pokładu. |
 | Stocznia orbitalna | Tytan, grafit, widoczna kratownica i małe bursztynowe wskaźniki. | Duże żebro dokujące, odległy pylon i niski łuk planety. | Chłodne wypełnienie, łagodny ruch statku serwisowego poza planszą. |
 
