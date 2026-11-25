@@ -65,7 +65,7 @@ body{background:#102238;color:var(--ui-ink)}
  animation:coach-pulse 1.7s ease-in-out infinite;
 }
 @keyframes coach-pulse{50%{box-shadow:inset 4px 0 #ffd28c,0 0 0 1px #f4bb77b0,0 0 19px #ebba624c}}
-.return-tray,.spectrum-toggle{font-size:12px;width:100%;min-height:33px}
+.return-tray{font-size:12px;width:100%;min-height:33px}
 .small-note{font-size:9px;color:#b7d9e8;line-height:1.55}
 .hud-bottom{left:28px;right:28px;bottom:18px;color:#aac9d9;letter-spacing:.7px}
 .camera-label{font-size:10px;color:#aee8f7}
@@ -138,7 +138,7 @@ body{background:#102238;color:var(--ui-ink)}
  }
  #inventory .component-icon{width:29px;height:29px;font-size:17px}
  #inventory .inventory-item strong{font-size:10px}
- .tool-panel .return-tray,.tool-panel .spectrum-toggle{
+ .tool-panel .return-tray{
   width:auto;display:inline-block;font-size:10px;margin:4px 6px 2px 0;padding:6px 8px;min-height:0
  }
  .tool-panel .small-note{display:none}

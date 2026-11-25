@@ -5,7 +5,7 @@ export function mountPhoneControls(portrait){
  const dock=document.querySelector('.game-dock');
  const pilot=document.querySelector('#app').classList.contains('orbital-pilot');
  const utilities=pilot?[]:[
-  ['analysis-toggle','phoneAnalysis'],['spectral-toggle'],['keyboard-board-button'],
+  ['analysis-toggle','phoneAnalysis'],['keyboard-board-button'],
   ['board-focus'],['fullscreen'],['audio'],['language']
  ];
  for(const [id,label] of utilities){

@@ -1,5 +1,12 @@
 # QA
 
+## 25 listopada 2026 · wspólny panel rezonatora
+
+Kampania i Węzeł Keplera korzystają z karty jednego rezonatora otwieranej
+przyciskiem „i” albo wskazaniem rezonatora na planszy. Testy odtwarzają też
+profil ze starym ustawieniem „Widmo”. Karta zamyka się przy zmianie planszy,
+a Escape przywraca fokus przyciskowi informacji.
+
 ## 25 listopada 2026 · Laboratorium polarne
 
 - Porównanie w `screenshots/laboratorium-polarne` obejmuje kadr z monitora i pionowy widok w emulacji telefonu. Światło lodu przy planszy przyciemniono po pierwszej próbie, a dalekie kopie lodowca zastąpiono grańmi z 396 trójkątów na model.

@@ -12,9 +12,10 @@ test('the Kepler phone map keeps the contextual receiver inspector reachable',as
  await page.locator('#receiver-toggle').tap();
  await expect(page.locator('#receiver-card')).toBeVisible();
  await page.locator('#receiver-close').tap();
+ await expect(page.locator('#receiver-card')).toBeHidden();
  await page.locator('#phone-tools summary').tap();
  await expect(page.locator('#phone-tools #reset')).toBeVisible();
- await expect(page.locator('#phone-tools #spectral-toggle')).toHaveCount(0);
+ await expect(page.locator('#spectral-toggle, #spectral-inspector')).toHaveCount(0);
 });
 
 for(const [width,height] of [[320,568],[390,844]]){

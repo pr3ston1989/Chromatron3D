@@ -398,7 +398,7 @@ function choosePilotLevel(){
 }
 const demoLevels=orbitalPilot?choosePilotLevel():validateLevels(PROTOTYPE_LEVELS);
 let levels=demoLevels,levelIndex=0,pieces=[],selected=null,history=[],redoHistory=[],currentResult=null,won=false,audioEnabled=false;
-let language='pl',hintCount=0,solved=[],skipped=[],spectrumActive=false,analysisActive=false;
+let language='pl',hintCount=0,solved=[],skipped=[],analysisActive=false;
 let wallet=normalizeWallet(null);
 let currentPackId=packFingerprint(levels);
 const demoPackId=currentPackId;
@@ -440,7 +440,6 @@ try{
  showBoardSymbols=gameStorage().getItem('chromatron-board-symbols')!=='off';
  solved=JSON.parse(gameStorage().getItem('chromatron-reborn-solved')||'[]');
  skipped=JSON.parse(gameStorage().getItem('chromatron-reborn-skipped')||'[]');
- spectrumActive=gameStorage().getItem('chromatron-reborn-spectrum')==='true';
  wallet=normalizeWallet(gameStorage().getItem('chromatron-reborn-credit-wallet'));
  if(!Array.isArray(solved))solved=[];
  if(!Array.isArray(skipped))skipped=[];
@@ -1199,7 +1198,6 @@ function renderInventory(){
    (opticExample(selected.type,language)?' '+opticExample(selected.type,language):'');
  }
  $('return-tray').disabled=!(selected&&!selected.inTray&&movable.has(selected.type));
- renderSpectrum();
  refreshReceiver();
 }
 let inspectedReceiver=null;
@@ -1230,39 +1228,6 @@ function inspectReceiver(part){
  $('receiver-toggle').setAttribute('aria-expanded','true');
  refreshReceiver();
 }
-function renderSpectrum(){
- const panel=$('spectral-inspector');
- if(!panel)return;
- panel.classList.toggle('hidden',!spectrumActive);
- $('spectral-toggle').setAttribute('aria-expanded',String(spectrumActive));
- if(!spectrumActive)return;
- panel.replaceChildren();
- const makeBits=(mask)=>{
-  const el=document.createElement('div');el.className='spectrum-bits';
-  for(const [bit,label] of [[1,'R'],[2,'G'],[4,'B']]){
-   const part=document.createElement('span');part.className='spectrum-bit '+(mask&bit?'on':'off')+' spectrum-'+label.toLowerCase();
-   part.textContent=label;part.setAttribute('aria-label',label+': '+(mask&bit?'1':'0'));
-   el.appendChild(part);
-  }
-  return el;
- };
- for(const part of pieces.filter(p=>!p.inTray&&(p.type==='laser'||p.type==='target'))){
-  const row=document.createElement('div');row.className='spectrum-row';
-  const heading=document.createElement('strong');
-  heading.textContent=t(language,part.type==='laser'?'spectralSource':'spectralTarget')+' · '+(part.x+1)+','+(part.y+1);
-  row.appendChild(heading);
-  const lines=part.type==='laser'
-   ? [[t(language,'spectralEmits'),part.color]]
-   : [[t(language,'spectralNeed'),part.color],[t(language,'spectralReceived'),currentResult?.received.get(part.id)||0]];
-  for(const [label,mask] of lines){
-   const line=document.createElement('div');line.className='spectrum-line';
-   const text=document.createElement('span');text.textContent=label;
-   line.append(text,makeBits(mask));row.appendChild(line);
-  }
-  panel.appendChild(row);
- }
-}
-
 function syncAnalyzer(){
  $('analysis-panel').classList.toggle('hidden',!analysisActive);
  $('analysis-toggle').setAttribute('aria-pressed',String(analysisActive));
@@ -1506,7 +1471,7 @@ function syncCameraLabel(){
  $('camera-preset-label').textContent=t(language,label);
  syncPhoneZoomLabel();
 }
-const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#spectral-inspector,#coach,#receiver-toggle')];
+const overheadObstacles=[...document.querySelectorAll('.optic-workbench,#analysis-panel,#coach,#receiver-toggle')];
 const overheadHeader=document.querySelector('.header'),overheadMission=document.querySelector('.mission');
 const overheadDock=document.querySelector('.game-dock');
 function measureOverheadFrame(){
@@ -2267,7 +2232,6 @@ phonePortrait.addEventListener('change',()=>{
  renderInventory();resize();
 });
 $('keyboard-board-button').onclick=focusKeyboardBoard;
-$('spectral-toggle').onclick=()=>{spectrumActive=!spectrumActive;store('chromatron-reborn-spectrum',String(spectrumActive));renderSpectrum()};
 $('continue').onclick=()=>{
  if(levelIndex<levels.length-1){if(load(levelIndex+1))$('main-menu-toggle').focus()}
  else openLevelAtlas($('continue'));

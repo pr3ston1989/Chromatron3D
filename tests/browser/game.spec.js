@@ -1,9 +1,14 @@
 import {test,expect} from '@playwright/test';
 
-test('3D board, bilingual UI, progressive hints, skip and spectral inspector',async({page})=>{
+test('3D board, bilingual UI, progressive hints, skip and contextual receiver details',async({page})=>{
  const errors=[];
  page.on('pageerror',error=>errors.push(String(error)));
- await page.goto('/');
+ await page.addInitScript(()=>{
+  localStorage.setItem('chromatron-start-campaign','demo');
+  localStorage.setItem('chromatron-reborn-credit-wallet',JSON.stringify({balance:5}));
+ });
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/?play=1');
  await page.waitForFunction(()=>window.chromatron?.getState?.()?.pieces?.length>0);
  await expect(page.locator('#scene canvas')).toBeVisible();
  await expect(page.locator('#level-index')).toHaveText('001');
@@ -22,13 +27,13 @@ test('3D board, bilingual UI, progressive hints, skip and spectral inspector',as
  await expect(page.locator('#level-index')).toHaveText('002');
  await expect(page.locator('#level-status')).toBeEmpty();
 
- await page.locator('#language').click();
+ await page.keyboard.press('l');
  await expect(page.locator('html')).toHaveAttribute('lang','en');
  await expect(page.locator('#level-title')).toHaveText('THE DOUBLE TURN');
- await page.locator('#spectral-toggle').click();
- await expect(page.locator('#spectral-inspector')).toBeVisible();
- await expect(page.locator('#spectral-inspector .spectrum-row')).toHaveCount(2);
- await expect(page.locator('#spectral-inspector .spectrum-bit')).toHaveCount(9);
+ await page.locator('#receiver-toggle').click();
+ await expect(page.locator('#receiver-card')).toBeVisible();
+ await expect(page.locator('#receiver-required')).not.toBeEmpty();
+ await expect(page.locator('#receiver-actual')).not.toBeEmpty();
  await page.screenshot({path:'test-results/chromatron-desktop.png',fullPage:true});
  expect(errors).toEqual([]);
 });

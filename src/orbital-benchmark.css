@@ -10,7 +10,7 @@
 .game-hud .header kbd,.game-hud .progress-track,.game-hud .dock-credits,.game-hud #hint-badge,
 .game-hud .brand img,.game-hud .brand strong,.game-hud .equipment-heading h2 {display:none}
 .game-hud #level-status,.game-hud #draft-status {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.orbital-pilot #levels-button,.orbital-pilot .stage-navigation,.orbital-pilot .quality-widget,.orbital-pilot #spectral-inspector,
+.orbital-pilot #levels-button,.orbital-pilot .stage-navigation,.orbital-pilot .quality-widget,
 .orbital-pilot .equipment-heading,.orbital-pilot .dock-view,.orbital-pilot #audio,.orbital-pilot #board-focus,.orbital-pilot #fullscreen,
 .orbital-pilot #language,.orbital-pilot .drawer-handle {display:none!important}
 @media (pointer:fine), (min-width:681px), (orientation:landscape), (pointer:none) {

@@ -53,9 +53,8 @@
  .transform-controls button{font-size:17px;padding:4px 2px}
  .transform-controls button span{font-size:8px}
  .beam-guide-legend{padding:3px 0 6px;font-size:7px}
- .tool-panel .return-tray,.tool-panel .spectrum-toggle{min-height:29px;padding:5px 3px;margin:4px 0;font-size:10px;letter-spacing:.15px}
+ .tool-panel .return-tray{min-height:29px;padding:5px 3px;margin:4px 0;font-size:10px;letter-spacing:.15px}
  .tool-panel .small-note{display:none}
- .spectral-inspector{max-height:20dvh}
  .hud-bottom{left:14px;right:14px;bottom:8px;gap:6px}
  .hud-bottom .controls{display:none}
  .camera-label{font-size:9px}

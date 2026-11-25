@@ -158,7 +158,7 @@
 .dock-history { justify-content: space-between; }
 .dock-credits { display: flex; align-items: center; gap: 4px; color: var(--amber); margin-left: 3px; font: 700 14px/1 var(--display); }
 .dock-credits > span { font-size: 8px; }
-.action-key, .camera-preset, .spectrum-toggle, .transform-controls button, .ui-button {
+.action-key, .camera-preset, .transform-controls button, .ui-button {
   min-width: 0;
   min-height: 30px;
   border: 1px solid #6475896b;
@@ -173,8 +173,8 @@
 .action-key { flex: 0 0 29px; min-width: 29px; padding: 0; font: 600 20px/1 var(--display); }
 .action-key:disabled, .transform-controls button:disabled { opacity: .43; cursor: default; }
 .action-key:hover:not(:disabled), .ui-button:hover:not(:disabled), .transform-controls button:hover:not(:disabled),
-.camera-preset:hover, .spectrum-toggle:hover { border-color: var(--world); color: var(--world); background: #202c39; }
-.analyzer-btn[aria-pressed='true'], .camera-preset[aria-pressed='true'], #spectral-toggle[aria-expanded='true'] { border-color: var(--world); color: var(--world); box-shadow: none; }
+.camera-preset:hover { border-color: var(--world); color: var(--world); background: #202c39; }
+.analyzer-btn[aria-pressed='true'], .camera-preset[aria-pressed='true'] { border-color: var(--world); color: var(--world); box-shadow: none; }
 .camera-preset { flex: 1; margin: 0; padding: 5px 4px; font-size: 11px; white-space: normal; }
 .game-dock .hint-button {
   display: flex;
@@ -232,7 +232,6 @@
 }
 .equipment-scroll button[aria-disabled='true'] { opacity: .42; cursor: default; }
 .equipment-scroll button:hover:not([aria-disabled='true']) { border-color: var(--world); color: var(--world); }
-.tool-panel #spectral-toggle { position: static; width: auto; min-height: 24px; margin: 0; padding: 3px 8px; font-size: 10px; }
 #inventory { display: flex; align-items: center; gap: 8px; max-height: none; margin: 0; overflow: visible; }
 .equipment-slots { display: flex; flex: 1; gap: 4px; min-width: 0; overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: thin; }
 .equipment-slots:empty { min-height: 50px; }
@@ -278,7 +277,7 @@
   background: var(--plating);
   border: 1px solid var(--line);
 }
-.optic-workbench, #spectral-inspector {
+.optic-workbench {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 16px);
@@ -306,7 +305,7 @@
 .hint-guide button { width: 27px; height: 27px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: #151f31; color: var(--ink); }
 #play-surface:has(.hint-guide:not([hidden])) .coach { visibility: hidden; }
 .optic-workbench .transform-tools { width: 100%; max-width: none; }
-.transform-tools, .optic-info, #spectral-inspector {
+.transform-tools, .optic-info {
   margin: 0;
   padding: 7px 9px;
   background: var(--plating);
@@ -382,7 +381,6 @@
   #app.board-overhead .mission-objective { margin-top: 7px; }
   #app.board-overhead .optic-info { max-height: 31px; }
 }
-#spectral-inspector { z-index: 4; bottom: calc(100% + 20px); }
 .analysis-panel { inset: auto var(--inset) var(--dock-raised) auto; max-height: calc(100dvh - var(--dock-raised) - 80px); width: min(310px, calc(100vw - 2 * var(--inset))); background: var(--plating); border-radius: 3px; z-index: 5; }
 .coach { inset: auto auto var(--dock-raised) var(--inset); transform: none; width: min(295px, 26vw); min-width: 0; padding: 8px 10px; border: 1px solid #846549; border-left: 3px solid var(--amber); border-radius: 0; background: #211c1bf0; pointer-events: none; }
 .coach-dismiss { pointer-events: auto; }

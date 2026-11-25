@@ -571,18 +571,15 @@ test('short viewport keeps the horizontal equipment rail and level controls reac
  await page.screenshot({path:'test-results/chromatron-short-window.png'});
 });
 
-test('mobile equipment shelf keeps spectrum and keyboard selection within reach',async({page})=>{
+test('mobile equipment shelf keeps keyboard selection within reach',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto('/?play=1');
  const shelf=page.locator('.tool-panel');
- const spectrum=page.locator('#spectral-toggle');
  const mirror=page.locator('.equipment-slots button[data-optic-type="mirror"]');
  await openTools(page);
- await expect(spectrum).toBeInViewport({ratio:1});
+ await expect(page.locator('#phone-tools #analysis-toggle')).toBeInViewport({ratio:1});
  await expect(mirror).toBeInViewport({ratio:1});
- await spectrum.click();
- await expect(spectrum).toHaveAttribute('aria-expanded','true');
- await useTool(page,'spectral-toggle');
+ await page.locator('#phone-tools summary').click();
  await page.locator('#phone-tools summary').focus();
  for(let i=0;i<18&&!await mirror.evaluate(el=>el===document.activeElement);i++)await page.keyboard.press('Tab');
  await expect(mirror).toBeFocused();
