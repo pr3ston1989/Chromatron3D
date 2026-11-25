@@ -38,15 +38,17 @@ export const CAMPAIGN_WORLDS=Object.freeze([
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',
   0x0d2039,0x203f62,0x233c57,0xdbebff,0x65c6ce,'shipyard',{face:.59,glow:.31}),
  world('frost','Laboratorium polarne','Polar Laboratory','polar',
-  0x162b41,0x528093,0x435d76,0xdaefff,0x94e6ff,'shipyard',{
-   face:.59,groove:.73,dust:0xc0d8e4,deckTint:0xc7dcff,air:'aurora',surface:'frost',
+  0x0b162c,0x365c78,0x385067,0xdcf0ff,0x94e6ff,'shipyard',{
+   face:.59,groove:.65,dust:0xa7c3d5,deckTint:0xd4e7ff,air:'aurora',surface:'frost',
+   footing:{body:0x24394c,bevel:0x485b70},
    models:[
-    ['frost-escarpment',[-12.2,-9.4,-13.8],[1.13,1.28,1.39],-.39,'cliff'],
-    ['frost-traverser',[17.5,-5.88,6.2],1.19,-.47,'right'],
-    ['frost-escarpment',[20,-13.3,8.3],[1.18,1.19,1.38],-.67,'cliff'],
-    ['frost-escarpment',[14.3,-18,-34],[1.94,1.6,1.40],.21,'horizon'],
-    ['frost-escarpment',[38,-20,-49],[2.16,1.82,2.03],-.45,'horizon'],
-    ['frost-traverser',[25,-9,-19],.9,-.28,'horizon']
+    ['frost-optical-lab',[-10.5,-10.62,-13.9],1.20,-.41],
+    ['frost-icefall',[-10.5,-14.1,-13.9],[1.48,1.14,1.38],-.58],
+    ['frost-icefall',[10.2,-13.2,15.7],[1.28,1.11,1.19],-.37],
+    ['frost-radiometer',[10.2,-10.07,15.7],1.34,-.43,'pulse'],
+    ['frost-icefall',[-17.5,-11.6,10.4],[1.18,.96,1.51],.39],
+    ['frost-ridge',[24,-19.7,-23.8],[1.57,.95,1.38],-.47,'horizon'],
+    ['frost-ridge',[38,-26.1,-42],[2.24,1.25,1.69],-.35,'horizon']
    ]
   }),
  world('forge','Kuźnia widmowa','Spectral Forge','nebula',

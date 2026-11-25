@@ -1,4 +1,21 @@
+const iceBands=`
+  float layer=landmarkPoint.y-.18*sin(landmarkPoint.x*.51)-.073*landmarkPoint.z;
+  float veins=abs(fract(layer*1.13+.068*sin(landmarkPoint.x*2.1))-.5);
+  float seam=1.-smoothstep(.024,.083+fwidth(veins),veins);
+  float density=.56+.44*sin(landmarkPoint.x*.84+landmarkPoint.z*.92+2.8*layer);
+  diffuseColor.rgb*=.82+.17*density;
+  diffuseColor.rgb+=vec3(.019,.058,.088)*seam*density;
+`;
+
 const finishes={
+ 'Glacier compressed blue ice':iceBands,
+ 'Glacier clear fracture':iceBands,
+ 'Heated polar glazing':`
+  vec2 panel=landmarkPoint.xy;
+  float ridge=panel.y-.22*sin(panel.x*.75)-3.01-.034*sin(landmarkTime*.56);
+  float reflection=exp(-10.*abs(ridge));
+  diffuseColor.rgb+=vec3(.066,.119,.143)*reflection;
+ `,
  'Bathyal coated glass':`
   vec2 face=landmarkPoint.xy;
   float diagonal=face.y-.36*face.x-3.04;

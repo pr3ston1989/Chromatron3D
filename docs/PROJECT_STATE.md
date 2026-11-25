@@ -6,6 +6,10 @@ charakterystyczne budowle wymodelowane w Blenderze. Kamienne arkady i metalowe k
 podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
 atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
 
+Laboratorium polarne stoi na palach zakotwionych w lodowcu. Radiometr skanuje
+niebo z osobnej półki. Bliskie bloki lodu i daleka grań korzystają z osobnych
+modeli, dzięki czemu drobna geometria pozostaje przy planszy.
+
 W Optyce głębinowej można obserwować patrol pojazdu badawczego między rafą
 hydrotermalną a stacją pomiarową. Stacja, rafa i pojazd mają edytowalne źródła
 Blendera, a smugi w toni i refleksy w iluminatorach poruszają się w normalnym

@@ -74,9 +74,20 @@ function gradientSky(THREE){
      color=mix(dark,glow,.05+.29*upwell*clouds)+upwell*spill*vec3(.034,.058,.114);
      color+=vec3(.017,.031,.056)*upwell*shafts*(.49+.61*clouds);
     }else if(kind==3.){
-     float arc=uv.y+.28+.073*sin(uv.x*3.4)+.035*sin(uv.x*8.+.14*time);
-     float curtain=exp(-38.*abs(arc))*smoothstep(.25,.7,noise2(vec2(uv.x*13.,time*.025)));
-     color+=vec3(.024,.18,.157)*curtain+vec3(.047,.048,.12)*exp(-86.*abs(arc+.044));
+     float drift=.13*sin(time*.16);
+     float fold=.048*sin(uv.x*4.2+drift)+.023*sin(uv.x*9.3+.28+drift);
+     float base=uv.y+.51+fold;
+     float filaments=noise2(vec2(uv.x*46.+drift,uv.y*4.+time*.063));
+     float ribbon=smoothstep(-.046,.001,base)*exp(-23.*max(0.,base));
+     float higher=base-.098-.026*sin(uv.x*8.-drift);
+     float afterglow=smoothstep(-.059,.016,higher)*exp(-26.*max(0.,higher));
+     float reach=.29+.71*smoothstep(-.52,.64,ray.x);
+     color+=reach*(vec3(.025,.169,.130)*ribbon*(.56+.63*filaments)
+                +vec3(.070,.064,.149)*afterglow*(.32+.52*filaments));
+     vec2 cells=uv*vec2(394.,288.);
+     float pin=1.-smoothstep(.085,.205,length(fract(cells)-.5));
+     float stars=step(.990,hash2(floor(cells)))*pin*smoothstep(-.49,-.24,ray.y);
+     color+=vec3(.19,.23,.34)*stars;
     }else if(kind==4.){
      float heat=pow(clouds,2.65)*exp(-9.*abs(ray.y+.40));
      color+=vec3(.16,.039,.010)*heat;
@@ -124,6 +135,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(!active)return;
   const {definition,root}=active;
   root.visible=true;
+  // The aurora sits at clip-space far depth. Draw it after the opaque deck
+  // and ice so their depth lets the GPU skip those sky pixels.
+  sky.renderOrder=definition.air==='aurora'?100:-100;
   const {dark,glow,kind}=sky.material.uniforms;
   dark.value.setHex(definition.sky);
   glow.value.setHex(definition.haze);
@@ -174,13 +188,13 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
-   const terrain=/(basalt|reef|escarpment|orchard|buttress|fault-shelf)$/.test(id);
+   const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|fault-shelf)$/.test(id);
    if(role!=='horizon'){
     mesh.traverse(node=>{
      if(!node.isMesh)return;
      if(!materials.has(node.material)){
       const finish=node.material.clone();
-      if(!applyLandmarkFinish(THREE,finish,record.scenicTime)){
+      if(!applyLandmarkFinish(THREE,finish,record.scenicTime)&&id!=='frost-icefall'){
        if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
         finishGrottoRock(THREE,finish,definition.surface);
        }else if(node.geometry.getAttribute('uv')&&/ (body|bevel)$/.test(finish.name)){

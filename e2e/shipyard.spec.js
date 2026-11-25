@@ -45,7 +45,7 @@ test.describe('touch scenery',()=>{
  });
 });
 
-for(const [level,world] of [[2,'garden'],[3,'grotto'],[6,'abyss'],[7,'sanctuary']])
+for(const [level,world] of [[2,'garden'],[3,'grotto'],[4,'frost'],[6,'abyss'],[7,'sanctuary']])
 test(`${world} scenery stays clear when orbiting the board at a low angle`,async({page})=>{
  test.setTimeout(90000);
  const failedShaders=[];

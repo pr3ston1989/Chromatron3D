@@ -1,5 +1,11 @@
 # QA
 
+## 25 listopada 2026 · Laboratorium polarne
+
+- Porównanie w `screenshots/laboratorium-polarne` obejmuje kadr z monitora i pionowy widok w emulacji telefonu. Światło lodu przy planszy przyciemniono po pierwszej próbie, a dalekie kopie lodowca zastąpiono grańmi z 396 trójkątów na model.
+- Test zasobów śledzi cztery pale stacji i podstawę radiometru do powierzchni lodu. Stacja ma 2290 trójkątów, bliska ściana lodowca 1816, a radiometr 1100. Ujęcia w profilu zrównoważonym w 1672 × 941, 1366 × 768 i 390 × 844 potwierdziły widoczność wszystkich pól.
+- Porównanie klatek prawego brzegu wykryło ruch przy zwykłych ustawieniach i zero zmian powyżej progu po włączeniu ograniczonego ruchu. Na zintegrowanym Radeonie krótka próba profilu zrównoważonego dała ok. 60 kl./s przy 1366 × 768 oraz ok. 37 kl./s przy 1672 × 941. Profil płynności przy 1672 × 941 uzyskał ok. 46 kl./s.
+
 ## 24 listopada 2026 · Optyka głębinowa
 
 - Porównanie z gry w `screenshots/glebiny` obejmuje monitor i emulację dotyku. Po pierwszej próbie przesunięto kominy do przedniego planu, zmieniono pokład na chłodną ceramikę i odsunięto tor pojazdu od ikony informacji.

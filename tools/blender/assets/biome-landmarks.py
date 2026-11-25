@@ -224,6 +224,144 @@ def polar_station():
     return m
 
 
+def frost_optical_lab():
+    m = Landmark("Snowline optical station", "steel", "titanium", "amber", "navy")
+    enamel = make_material("Orange ceramic cladding", "copper", .29,.44)
+    glass = paint("Heated polar glazing", (.039,.171,.223), .41,.23,.08)
+    snow = paint("Drift across the roof", (.38,.50,.59), .02,.79)
+    m.slab((0,0),5.04,2.65,.83,.49,.65,m.stone)
+    m.slab((-.28,-1.69),4.28,1.11,1.32,.25,.33,m.body)
+    for x in (-3.51,3.51):
+        for y in (-1.83,1.83):
+            m.s.lathe([(x,y,-3.56,.46,.44),(x,y,-3.43,.54,.54),(x,y,-3.19,.54,.54),
+                       (x,y,-3.04,.33,.33),(x,y,.13,.29,.29)],m.dark,8,
+                      bands=[m.stone,m.body,m.edge,m.body])
+            m.slab((x,y),.74,.62,0,.29,.21)
+            m.pipe([(x,y,.19),(x*.91,y*.70,.97),(x*.95,y*.60,1.47)],.22,m.body)
+            m.pipe([(x-.61,y+.22,.26),(x+.17,y-.13,1.24)],.093,m.edge,5)
+
+    def outline(width,depth,z):
+        return [(x,y,z) for x,y in [(-width+.44,-depth),(width-.44,-depth),(width,-depth+.40),
+                (width,depth-.40),(width-.44,depth),(-width+.44,depth),(-width,depth-.40),(-width,-depth+.40)]]
+    sections = [(4.26,1.92,1.57),(4.48,2.02,1.82),(4.48,2.02,2.28),(4.21,1.91,3.65),
+                (3.89,1.63,4.03),(3.62,1.43,4.11)]
+    m.s.loft([outline(*section) for section in sections],m.dark,[m.edge,m.stone,m.body,m.edge,m.body])
+    for x in (-3.29,-2.17,-1.05,.07,1.19):
+        def pane(w,y,low,high):
+            return [(x-w,y,low+.09),(x-w+.10,y,low),(x+w-.10,y,low),(x+w,y,low+.09),
+                    (x+w,y+.11,high-.08),(x+w-.09,y+.13,high),
+                    (x-w+.09,y+.13,high),(x-w,y+.11,high-.08)]
+        m.s.loft([pane(.52,-2.02,2.46,3.46),pane(.48,-2.16,2.50,3.42),
+                  pane(.39,-2.17,2.59,3.34)],m.dark,[enamel,glass])
+    for side in (-1,1):
+        m.pipe([(-3.79,side*2.00,2.19),(.74,side*2.00,2.19),(1.38,side*1.95,2.44)],.053,m.signal,4)
+        for x in (-3.68,-.90,1.87,3.72):
+            m.pipe([(x,side*2.52,1.54),(x,side*2.52,1.95)],.041,m.edge,5)
+        m.pipe([(-3.93,side*2.52,1.95),(3.87,side*2.52,1.95)],.041,m.edge,5)
+    m.slab((2.96,-1.95),.85,.18,1.61,1.76,.12,enamel)
+    m.slab((2.96,-2.13),.59,.059,1.62,1.50,.035,m.dark)
+    for x in (2.57,3.35):
+        m.pipe([(x,-2.21,1.91),(x,-2.21,2.76)],.035,m.signal,4)
+    for step in range(4):
+        m.slab((2.97,-2.97-.20*step),.66,.45,1.29-.14*step,.16,.125,m.body)
+    # A drift interrupts the mechanical roof line. The intake and radiators stay exposed.
+    roof_drift = [(-3.72,-.72,4.09,.30,.015),(-2.68,-.57,4.15,.75,.07),
+                  (-1.82,-.76,4.16,.81,.16),(-.45,-.86,4.13,.57,.095),(.31,-.75,4.09,.19,.022)]
+    m.s.blade(roof_drift,snow,m.edge)
+    m.slab((1.64,.49),1.34,.67,4.14,.32,.24,m.stone)
+    for x in (.76,1.12,1.48,1.84,2.20,2.56):
+        m.slab((x,.49),.067,.57,4.46,.17,.047,m.edge)
+    m.pipe([(2.82,1.34,3.59),(2.92,1.34,4.57),(3.27,1.34,4.83)],.14,m.body,8)
+    m.pipe([(3.27,1.34,4.83),(3.46,1.34,4.83)],.18,enamel,8)
+    return m
+
+
+def frost_icefall():
+    m = Landmark("Layered glacial icefall", "steel", "cyan", "cyan", "navy", masonry=True)
+    core = paint("Glacier compressed blue ice", (.031,.125,.211), .19,.38)
+    face = paint("Glacier clear fracture", (.061,.24,.37), .22,.28)
+    snow = paint("Glacier wind crust", (.30,.43,.53), .03,.72)
+    sifted = paint("Glacier drift scallops", (.18,.30,.41), .04,.65)
+    rng = Random(418)
+    for i,(x,y,rx,ry,height) in enumerate([(-5.1,1.1,3.64,3.1,4.31),(-.93,1.52,3.30,2.97,5.14),
+                                         (2.78,1.88,3.43,3.27,6.32),(5.59,2.9,2.78,3.09,7.18),
+                                         (-2.87,-1.24,3.08,2.62,3.53),(2.13,-1.21,2.55,2.19,3.27)]):
+        count = 10
+        outline = [rng.uniform(.84,1.16) for _ in range(count)]
+        profile = [(0,.93,-.09),(.18,1.01,-.09),(.48,.94,-.11),(.69,.78,-.16),(.88,.77,-.18),
+                   (.94,.71,-.12),(.99,.56,-.05),(1,.32,.02)]
+        rings = []
+        for j,(level,width,bend) in enumerate(profile):
+            ring = []
+            for k in range(count):
+                a = k*tau/count+.13*i
+                skew = outline[k]*width
+                crust = max(0.,sin(a-.32))*min(j,5)*.035
+                z = (level+crust+(rng.uniform(-.046,.038) if j else 0))*height
+                ring.append((x+rx*(cos(a)*skew+bend),y+ry*(sin(a)*skew+.26*level),z))
+            rings.append(ring)
+        m.s.loft(rings,m.stone,[m.stone,core,face,core,face,sifted,snow])
+    for i,(x,y,z,height,w) in enumerate([(-5.6,-1.26,1.85,2.74,.64),(-4.6,-1.42,1.5,2.09,.53),
+                                        (.2,-1.91,1.37,2.13,.56),(1.19,-1.99,.94,1.75,.47),
+                                        (4.01,-.70,2.20,2.90,.70),(4.92,-.83,2.08,3.36,.62),
+                                        (6.03,.19,3.38,3.14,.58)]):
+        bend = .28 if i%2 else -.24
+        m.s.lathe([(x,y,z,w,w*.84),(x+bend*.31,y-.22,z+.47*height,w*.82,w*.61),
+                   (x+bend,y-.31,z+.87*height,w*.63,w*.47),(x+bend+.13,y-.22,z+height,w*.11,w*.09)],
+                  core,7,phase=.34*i,bands=[core,face,sifted])
+    for x,y,z,rx in [(-6.5,-2.17,.16,1.21),(-3.95,-3.07,.49,.93),(-1.2,-3.11,.20,1.24),
+                    (1.1,-3.17,.22,.93),(4.3,-2.88,.10,1.17),(5.8,-2.14,.21,.96)]:
+        m.rock((x,y,z),(rx,rx*.72),.53+rx*.46,int((x+7)*78),cap=sifted)
+    return m
+
+
+def frost_ridge():
+    m = Landmark("Distant glacial divide", "steel", "titanium", "cyan", "navy", masonry=True)
+    snow = paint("Distant snow line", (.37,.49,.60), .02,.84)
+    mountains = [(-12,1,4.2,3.4,7.1),(-6.8,0,4.8,3.8,10.2),(-1.8,-.5,4.1,3.3,8.8),
+                 (3.5,.2,5.6,4.1,13.3),(9.4,1.3,4.8,3.3,9.9),(13,2.7,3.7,3.15,6.1)]
+    for i,(x,y,w,d,h) in enumerate(mountains):
+        contour = [(-1,-.24),(-.51,-1),(.14,-.86),(.62,-.59),(1,-.13),(.63,.87),(-.54,.71)]
+        tiers = [(0,1,0),(.30,.92,.01),(.61,.51,-.08),(.83,.37,-.15),(1,.07,-.07)]
+        m.s.loft([[(x+w*(u*width+shift),y+d*(v*width+.12*height),
+                    h*max(0,height+.06*cos(k+i) if height else 0))
+                   for k,(u,v) in enumerate(contour)] for height,width,shift in tiers],
+                 m.body,[m.body,m.body,snow,snow])
+    return m
+
+
+def frost_radiometer():
+    m = Landmark("Polar scanning radiometer", "steel", "titanium", "amber", "navy")
+    mirror = paint("Radiometer optical panels", (.10,.29,.33), .66,.24)
+    copper = make_material("Radiometer heater traces", "copper", .46,.42)
+    m.s.lathe([(0,0,-1.62,.80,.80),(0,0,-1.49,.91,.91),(0,0,-1.24,.83,.83),
+               (0,0,-1.08,.59,.59),(0,0,.14,.56,.56)],m.dark,12,bands=[m.stone,m.body,m.edge,m.body])
+    m.slab((0,0),2.28,1.71,0,.38,.54,m.stone)
+    m.slab((0,.1),1.44,1.07,.36,.41,.39,m.body)
+    dish_axis = (0,-.85,.53)
+    radial_z = (0,.53,.85)
+    def dish_point(angle,r,depth):
+        return (r*cos(angle),r*sin(angle)*radial_z[1]+depth*dish_axis[1],
+                2.75+r*sin(angle)*radial_z[2]+depth*dish_axis[2])
+    n = 18
+    profile = [(-.85,.20),(-.68,1.02),(-.46,1.49),(-.11,1.87),(-.02,1.94),(.03,1.90),
+               (-.09,1.78),(-.43,1.24),(-.65,.59),(-.72,.19)]
+    m.s.loft([[dish_point(i*tau/n,radius,depth) for i in range(n)] for depth,radius in profile],
+             m.dark,[m.body,m.body,m.body,m.edge,m.edge,copper,mirror,mirror,mirror])
+    for i in range(0,n,2):
+        angle = i*tau/n
+        m.pipe([dish_point(angle,.31,-.70),dish_point(angle,.62,-.61),
+                dish_point(angle,1.26,-.40),dish_point(angle,1.87,-.054)],.027,copper,4)
+    for x in (-1.43,1.43):
+        m.pipe([(x,0,.64),(x,.47,1.58),(x*.76,.48,2.49)],.25,m.body,8)
+        m.pipe([(x,-.38,.45),(x*1.03,-.08,1.17)],.051,m.signal,5)
+    for side in (-1,1):
+        m.pipe([dish_point(0 if side==1 else pi,1.64,-.18),(side*.32,-.70,2.93),(0,-.83,3.04)],.065,m.edge,6)
+    m.pipe([(0,-.58,2.96),(0,-.89,3.09),(0,-.98,3.15)],.16,m.body,8)
+    m.pipe([(0,-.96,3.13),(0,-1.04,3.16)],.119,m.signal,8)
+    return m
+
+
 def smelter():
     m = Landmark("Spectral furnace", "graphite", "copper", "amber", "obsidian")
     m.slab((0,0),4.9,3.0,0,.56,.88)
@@ -564,6 +702,8 @@ BUILDERS = {
     "heliostat-aqueduct": aqueduct, "heliostat-orchard": orchard,
     "heliostat-garden-spring": garden_spring,
     "frost-escarpment": glacier, "frost-traverser": polar_station,
+    "frost-optical-lab": frost_optical_lab, "frost-icefall": frost_icefall,
+    "frost-radiometer": frost_radiometer, "frost-ridge": frost_ridge,
     "forge-smelter": smelter, "forge-basalt": basalt_basin,
     "abyss-habitat": bathysphere, "abyss-reef": reef,
     "abyss-observatory": abyss_observatory, "abyss-vent-reef": abyss_vent_reef,
@@ -575,8 +715,9 @@ BUILDERS = {
     "biome-deck-truss": alloy_support, "biome-deck-arcade": stone_support,
 }
 
-DEEPWATER_BUDGETS = {
+LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
+    "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
 }
 
 
@@ -592,7 +733,7 @@ if __name__ == "__main__":
         sculpture.vertices = [(x,y,z-floor) for x,y,z in sculpture.vertices]
         model = sculpture.object(name)
         finish_surface(model,reach=.72)
-        export_model(model,DEEPWATER_BUDGETS.get(name,4900),folder)
+        export_model(model,LANDMARK_BUDGETS.get(name,4900),folder)
         bpy.ops.wm.save_as_mainfile(filepath=str(folder/(name+".blend")),compress=True)
         if "--preview" in args:
             render("scenery/"+name,model=model)

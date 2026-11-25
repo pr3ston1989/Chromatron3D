@@ -63,6 +63,60 @@ test('the deepwater landmarks use authored meshes below the playing surface',asy
  }
 });
 
+test('the polar laboratory and radiometer are anchored in the modeled ice shelf',async()=>{
+ const {models}=campaignWorld('demo',3);
+ const loader=new GLTFLoader();
+ const landmarks={
+  'frost-optical-lab':[3200,'Heated polar glazing'],
+  'frost-radiometer':[1800,'Radiometer optical panels'],
+  'frost-icefall':[2400,'Glacier clear fracture'],
+  'frost-ridge':[480,'Distant snow line']
+ };
+ const originals=new Map();
+ for(const [id,[budget,finish]] of Object.entries(landmarks)){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  let triangles=0,finished=false;
+  scene.traverse(node=>{
+   if(!node.isMesh)return;
+   triangles+=node.geometry.index.count/3;
+   finished||=node.material.name===finish;
+  });
+  assert.ok(triangles>0&&triangles<=budget,id);
+  assert.ok(finished,id+' retains its modeled material');
+  assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
+  assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-5,id+' has a Y-up base');
+  originals.set(id,scene);
+ }
+ const placed=([id,anchor,scale,yaw])=>{
+  const model=originals.get(id).clone(true);
+  model.position.fromArray(anchor);model.rotation.y=yaw;
+  if(Array.isArray(scale))model.scale.fromArray(scale);
+  else model.scale.setScalar(scale);
+  model.updateMatrixWorld(true);
+  return model;
+ };
+ const mounts={
+  'frost-optical-lab':[[-3.51,-1.83],[-3.51,1.83],[3.51,-1.83],[3.51,1.83]],
+  'frost-radiometer':[[0,0]]
+ };
+ for(const [id,points] of Object.entries(mounts)){
+  const fixture=models.find(([name])=>name===id);
+  const [,anchor]=fixture;
+  const shelf=models.find(([name,pos])=>name==='frost-icefall'&&pos[0]===anchor[0]&&pos[2]===anchor[2]);
+  assert.ok(shelf,id+' shares the shelf position and placement offset');
+  const prop=placed(fixture),ice=placed(shelf);
+  assert.ok(new Box3().setFromObject(prop).max.y<0,id+' remains below the playable deck');
+  for(const [x,z] of points){
+   const foot=prop.localToWorld(new Vector3(x,0,z));
+   const ray=new Raycaster(foot.clone().setY(20),new Vector3(0,-1,0));
+   const contact=ray.intersectObject(ice,true)[0];
+   assert.ok(contact&&contact.point.y>foot.y,id+' foot reaches the glacial face');
+  }
+ }
+});
+
 test('the playable Blender models have matching, distinct transparent equipment portraits',()=>{
  const portraits=new Set();
  for(const kind of CLASSIC_TYPE_NAMES.slice(1)){

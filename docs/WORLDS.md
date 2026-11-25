@@ -10,7 +10,7 @@ na przypisanej części lokalnej kampanii.
 | 2 | Ogród heliostatów | Ciepły wapień i jadeit, złote światło nad doliną. | Heliostat nad sadem, akwedukt, trzy tarasy z kaskadą i zbiornikami oraz wijący się nurt w dolinie. |
 | 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, warstwy skalne, skupiska ametystu i ruch wody. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Dwie kratownicowe galerie serwisowe i przelot pojazdu. |
-| 5 | Laboratorium polarne | Oszroniony stop, niebieski lód i zorza. | Ściany lodowca, przewężenia skalne i modułowy pojazd stacji. |
+| 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Stacja z ogrzewanymi szybami, radiometr omiatający lodowiec, nawiewany śnieg i odległe pasma gór. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Segmentowy piec, kolumny bazaltu, suwnica i strumień lawy pod planszą. |
 | 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa z wypukłymi iluminatorami, rafa kominów hydrotermalnych i patrol pojazdu badawczego. |
 | 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Kolimator z wypukłym szkłem na dwóch przyporach, zerwany most i niski taras z cokołami. |

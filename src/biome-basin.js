@@ -1,6 +1,6 @@
 const BASINS={
  heliostat:{height:-17.5,base:0x1b3328,tint:0x527974,fog:0x937357,mode:4},
- frost:{height:-18,base:0x172f43,tint:0x608fa5,fog:0x486077,mode:1},
+ frost:{height:-19.4,base:0x1c344e,tint:0x608ca4,fog:0x3d5978,mode:1},
  forge:{height:-14,base:0x271722,tint:0xff6c1f,fog:0x552b2a,mode:2},
  abyss:{height:-20.5,base:0x122b35,tint:0x31737e,fog:0x17354b,mode:3},
  sanctuary:{height:-20,base:0x1d263c,tint:0x394e69,fog:0x526787,mode:5}
@@ -10,7 +10,7 @@ export function createBiomeBasin(THREE,id){
  const spec=BASINS[id];
  if(!spec)return null;
  const material=new THREE.ShaderMaterial({
-  transparent:spec.mode>=3,depthWrite:spec.mode<3,
+  transparent:spec.mode!==2,depthWrite:spec.mode===2,
   uniforms:{
    seconds:{value:0},base:{value:new THREE.Color(spec.base)},
    tint:{value:new THREE.Color(spec.tint)},mist:{value:new THREE.Color(spec.fog)},mode:{value:spec.mode}
@@ -51,8 +51,11 @@ export function createBiomeBasin(THREE,id){
      color*=.56+.47*ledge;
      color+=tint*caustic*(.09+.18*ledge);
     }else if(mode==1.){
-     float ice=exp(-27.*abs(ridges-.13));
-     color+=tint*.14*ice;
+     vec2 wind=p*vec2(.25,1.3)+vec2(-seconds*.18,seconds*.037);
+     float drift=smoothstep(.20,.71,strata(wind));
+     float fracture=strata(p*.38+vec2(2.1*broad,-broad));
+     float edge=exp(-25.*abs(fracture-.08));
+     color+=tint*(.11*edge+.19*drift);
     }else if(mode==4.){
      float center=p.x-.48*p.y-(19.+8.5*sin(p.y*.078));
      float shore=1.-smoothstep(1.75,5.21,abs(center));
@@ -65,7 +68,7 @@ export function createBiomeBasin(THREE,id){
     float distanceToEye=length(cameraPosition-ground);
     float fog=1.-exp(-.00018*distanceToEye*distanceToEye);
     color=mix(color,mist,fog*.91);
-    float fade=mode>=3.?1.-smoothstep(58.,125.,distanceToEye):1.;
+    float fade=mode!=2.?1.-smoothstep(58.,125.,distanceToEye):1.;
     gl_FragColor=vec4(color,fade);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
