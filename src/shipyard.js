@@ -3,6 +3,10 @@ import {applyPanelSurface} from './panel-surface.js';
 
 import {createOrbitalSky} from './orbital-benchmark.js';
 import {applyOpticFinish} from './optic-textures.js';
+import {createScenicDrift} from './scenic-drift.js';
+
+const terminalUrl=new URL('../assets/models/scenery/shipyard-transfer-dock.glb',import.meta.url).href;
+const tugUrl=new URL('../assets/models/scenery/shipyard-cargo-tug.glb',import.meta.url).href;
 
 /** One cached decorative layer, loaded atomically while the regular stage remains playable. */
 export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
@@ -15,13 +19,14 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
  sky.visible=false;
  scene.add(sky);
  let wanted=false,status='idle',nodes,drift=0;
+ const trafficTime={value:0};
  function sync(){
   root.visible=sky.visible=wanted&&status==='ready';
  }
  function startLoading(){
   status='loading';
-  const load=id=>loader.loadAsync(assets[id]).then(asset=>asset.scene);
-  Promise.all(['platform','dock','craft'].map(load)).then(([platform,dock,craft])=>{
+  const load=url=>loader.loadAsync(url).then(asset=>asset.scene);
+  Promise.all([assets.platform,assets.dock,assets.craft,terminalUrl,tugUrl].map(load)).then(([platform,dock,scout,terminal,tug])=>{
    platform.position.y=-3.768;
    platform.traverse(node=>{
     if(!node.isMesh)return;
@@ -32,26 +37,31 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
     if(material.name==='Inlay seam')material.color.multiplyScalar(.70);
     if(material.name==='Uniform playing surface')applyPanelSurface(THREE,material,'shipyard',.037);
    });
-   dock.position.set(20.4,-7.9,4.1);
-   dock.rotation.y=-.38;
-   dock.scale.setScalar(1.28);
-   const serviceBay=dock.clone(true);
-   serviceBay.position.set(-11.8,-7.2,-15.8);
-   serviceBay.rotation.y=.51;
-   serviceBay.scale.setScalar(1.36);
+   const place=(object,x,y,z,scale,yaw)=>{
+    object.position.set(x,y,z);object.scale.setScalar(scale);object.rotation.y=yaw;
+    root.add(object);
+   };
+   place(terminal,-11.7,-8.69,-13.5,1.35,-.45);
+   place(terminal.clone(true),9.8,-10.3,14.6,1.29,-.54);
+   place(dock,25.4,-9.1,-14.5,1.14,-.30);
+   root.add(platform,scout,tug);
    const finished=new Set();
-   dock.traverse(mesh=>{
+   root.traverse(mesh=>{
     if(!mesh.isMesh||finished.has(mesh.material)||!mesh.geometry.getAttribute('uv'))return;
     finished.add(mesh.material);
-    if(mesh.material.name.includes('bevel')||mesh.material.name.includes('body'))
+    if(/ (bevel|body)$/.test(mesh.material.name))
      applyOpticFinish(THREE,mesh.material,'brushed');
    });
-   craft.scale.setScalar(.90);
-   craft.rotation.y=-.34;
-   root.add(platform,dock,serviceBay,craft);
-   nodes={dock,serviceBay,craft};
+   tug.scale.setScalar(1.42);
+   for(const x of [-1.05,1.05])tug.add(createScenicDrift(THREE,trafficTime,{
+    count:12,origin:[x,.37,-1.60],spread:[.16,.15,.13],travel:[0,.03,-1.27],
+    tint:0x55c7fc,size:.18,length:.41,opacity:.64,rate:1.65
+   }));
+   scout.scale.setScalar(1.15);
+   scout.rotation.y=-.34;
+   nodes={scout,tug};
    status='ready';
-  },()=>{status='error'}).then(()=>{
+  }).catch(error=>{status='error';console.error('Orbital shipyard',error)}).then(()=>{
    sync();
    onReady();
   });
@@ -62,15 +72,15 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
   if(wanted&&status==='idle')startLoading();
   sync();
  }
- function update(seconds,still,cameraPosition){
+ function update(seconds,still){
   if(!root.visible)return;
   const t=still?0:seconds;
-  const {dock,serviceBay,craft}=nodes;
-  // The mooring structures follow the camera clearance rule independently.
-  dock.position.x=20.4+drift*1.4;
-  for(const bay of [dock,serviceBay])
-   bay.visible=bay.position.x*cameraPosition.x+bay.position.z*cameraPosition.z<20;
-  craft.position.set(24+drift*2.4+Math.sin(t*.13)*3,-2.8+Math.sin(t*.24)*.30,-13.9+Math.cos(t*.13)*2.3);
+  trafficTime.value=t;
+  const {scout,tug}=nodes;
+  scout.position.set(30+drift*2.4+Math.sin(t*.13)*3,-4.3+Math.sin(t*.24)*.30,-23.9+Math.cos(t*.13)*2.3);
+  const leg=t*.20;
+  tug.position.set(14.3+drift+Math.sin(leg)*1.2,-4.67+Math.sin(t*.42)*.28,10.2+Math.sin(leg)*2.3);
+  tug.rotation.set(.07*Math.sin(t*.63),-.67+.31*Math.sin(leg),.06*Math.sin(t*.48));
  }
  return {setLevel,update,isVisible:()=>root.visible,getStatus:()=>status};
 }

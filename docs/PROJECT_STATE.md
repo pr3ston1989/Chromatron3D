@@ -6,6 +6,16 @@ charakterystyczne budowle wymodelowane w Blenderze. Kamienne arkady i metalowe k
 podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
 atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
 
+Stocznia ma terminale przeładunkowe i holownik. Kuźnia korzysta z pieca
+ciśnieniowego i linii odlewniczej z ruchomym metalem. W Grocie pomost
+prowadzi do ujęcia wody obok starego stanowiska pomiarowego. Modele tych
+scen powstały w Blenderze i są podpięte do zwykłej kampanii.
+
+Poza orbitą wszystkie platformy stoją na wymodelowanych powierzchniach.
+Test sprawdza położenie gruntu pod każdą z dwunastu nóg ramy. Iskry Kuźni,
+mgiełka w Grocie i smugi silników holownika korzystają z niewielkich grup
+instancji i wspólnego zegara ograniczonego ruchu.
+
 Laboratorium polarne stoi na palach zakotwionych w lodowcu. Radiometr skanuje
 niebo z osobnej półki. Bliskie bloki lodu i daleka grań korzystają z osobnych
 modeli, dzięki czemu drobna geometria pozostaje przy planszy.

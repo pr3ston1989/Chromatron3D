@@ -1,5 +1,11 @@
 # QA
 
+## 27 listopada 2026 · grunt pod platformami i osiem światów kampanii
+
+- Test zasobów wczytuje siatki GLB i potwierdza kontakt 72 stóp podpór z terenem. Każda platforma poza orbitą ma dwanaście punktów podparcia. Najwyższy fragment gruntu nadal znajduje się poniżej siatki gry.
+- Kompilacja produkcyjna w Chrome pokazała osiem demonstracji w 1672 × 941 i 390 × 844. Każde ujęcie miało 225 widocznych pól i konsolę bez błędów. Sześć osadzonych plansz sprawdzono też po czterech ćwierćobrotach kamery przy niskiej elewacji.
+- Publiczne rozwiązania wszystkich ośmiu demonstracji wykonano w grze podczas odświeżania mapy kampanii. Porównania klatek w Stoczni, Kuźni i Grocie pokazały ruch w zwykłym trybie oraz zero zmian powyżej progu po włączeniu ograniczonego ruchu.
+
 ## 25 listopada 2026 · wspólny panel rezonatora
 
 Kampania i Węzeł Keplera korzystają z karty jednego rezonatora otwieranej

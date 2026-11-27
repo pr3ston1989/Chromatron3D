@@ -663,6 +663,137 @@ def graving_dock():
     return m
 
 
+def shipyard_transfer_dock():
+    m = Landmark("Orbital freight terminal", "navy", "titanium", "amber", "obsidian")
+    enamel = make_material("Dock ceramic shutters", "steel", .22,.50,shade=1)
+    glass = paint("Freight control windows", (.022,.092,.142), .52,.24,.16)
+    for y in (-2.22,2.22):
+        m.slab((0,y),6.95,1.01,.50,.51,.49,m.stone)
+        m.slab((0,y),6.65,.93,1.01,.21,.39,m.body)
+        for x in (-5.30,-1.76,1.76,5.30):
+            m.slab((x,y),.80,.94,0,.52,.37,m.dark)
+            m.pipe([(x-.53,y-.88,.83),(x+.53,y-.88,.83)],.047,m.signal,4)
+            m.pipe([(x,0,.22),(x,y*.58,.57),(x+.48,y,1.38)],.23,m.edge,5)
+    for x in (-4.84,-1.56,1.72,4.80):
+        for side in (-1,1):
+            m.pipe([(x-.32,side*2.5,1.20),(x,side*2.31,2.83),
+                    (x,side*1.54,3.69),(x,side*.96,3.77)],.25,m.body,6)
+            m.slab((x,side*2.08),.47,.43,2.57,.52,.22,m.edge)
+            m.pipe([(x-.22,side*2.52,2.72),(x+.22,side*2.52,2.72)],.041,m.signal,4)
+        m.pipe([(x,-.97,3.75),(x,.97,3.75)],.20,enamel,6)
+    for y in (-1.67,1.67):
+        m.pipe([(-5.03,y,3.54),(4.88,y,3.54)],.135,m.edge)
+        m.pipe([(-4.72,y,3.66),(4.56,y,3.66)],.033,m.signal,4)
+    m.slab((-4.83,.71),1.44,1.02,3.76,.20,.21,m.body)
+    m.slab((-4.83,.71),1.18,.77,3.96,.77,.26,enamel)
+    m.slab((-4.83,-.087),.93,.083,4.22,.33,.069,glass)
+    m.slab((-4.74,.77),1.21,.87,4.69,.18,.24,m.edge)
+    m.pipe([(-4.60,1.26,4.82),(-4.53,1.26,5.61),(-4.03,1.26,5.96)],.060)
+    m.pipe([(-4.05,1.26,5.94),(-3.91,1.26,6.04)],.075,m.signal,6)
+    for x in (-2.8,-.88,1.16,3.43):
+        m.slab((x,1.95),.66,.57,1.23,.66,.20,enamel)
+        m.pipe([(x-.32,1.34,1.56),(x+.32,1.34,1.56)],.036,m.signal,4)
+    return m
+
+
+def shipyard_cargo_tug():
+    m = Landmark("Orbital cargo tug", "navy", "titanium", "amber", "obsidian")
+    glass = paint("Tug cockpit canopy", (.022,.117,.176), .49,.21,.10)
+    drive = paint("Tug ion thrusters", (.044,.35,.54), .22,.24,1.9)
+    dr = [(1.54,.78,.32),(1.18,1.07,.53),(.12,1.03,.54),(-.82,.76,.68),(-1.67,.25,.41),(-1.93,.08,.21)]
+    m.s.loft([[(w*cos(i*tau/10),y,.65+h*sin(i*tau/10)) for i in range(10)] for y,w,h in dr],
+             m.dark,[m.edge,m.body,m.edge,m.body,m.edge])
+    m.s.blade([(0,.74,1.00,.29,.14),(0,.23,1.12,.48,.26),
+               (0,-.40,1.19,.39,.18),(0,-1.11,.99,.15,.04)],glass,m.body)
+    for side in (-1,1):
+        m.s.blade([(0,.77,.63,.23,.14),(side*1.00,1.01,.57,.42,.18),
+                   (side*1.75,1.28,.47,.22,.10),(side*1.96,1.40,.42,.02,.01)],m.edge,m.dark)
+        x=side*1.05
+        m.pipe([(x,.36,.57),(x,.70,.57),(x,1.35,.57)],.29,m.body,8)
+        m.pipe([(x,1.27,.57),(x,1.57,.57)],.22,m.edge,8)
+        m.pipe([(x,1.54,.57),(x,1.63,.57)],.155,drive,8)
+        m.pipe([(x*.73,-.47,.70),(x*.80,-.15,.71)],.040,m.signal,4)
+        m.pipe([(side*.97,1.18,.72),(side*1.13,1.14,1.19)],.07,m.edge,5)
+    return m
+
+
+def forge_furnace_bank():
+    m = Landmark("Spectral foundry hearth", "graphite", "copper", "amber", "obsidian")
+    enamel = make_material("Heat resistant ceramic", "bronze", .28,.57,shade=-1)
+    fire = paint("Furnace refractory throat", (.66,.176,.025), .06,.64,.92)
+    m.slab((0,0),5.80,3.31,0,.42,.72,m.stone)
+    for x in (-3.55,3.55):
+        for y in (-2.56,2.32):
+            m.slab((x,y),.91,.59,.38,.62,.29,m.dark)
+            m.pipe([(x,y,.79),(x*.94,y*.96,2.48),(x*.67,y*.74,4.67)],.31,m.body,6)
+    shell = [(-1.80,1.25),(-1.68,1.98),(-.86,2.18),(1.02,2.18),(1.45,1.83),(1.83,1.29)]
+    m.s.loft([[(r*cos(i*tau/16),y,3.01+r*sin(i*tau/16)) for i in range(16)] for y,r in shell],
+             m.dark,[m.edge,m.body,m.stone,m.body,m.edge])
+    m.ring((0,-1.86,3.01),.92,1.63,.22,m.edge,segments=12)
+    m.ring((0,-2.08,3.01),.72,1.15,.07,fire,segments=12)
+    m.ring((0,-1.95,3.01),.41,.74,.06,enamel,segments=10)
+    for x in (-1.29,1.29):
+        m.pipe([(x,-1.48,1.55),(x*1.52,-1.99,1.19),(x*2.13,-2.43,.94)],.19,m.edge)
+    for x in (-3.64,3.64):
+        m.s.lathe([(x,.67,.55,.77,.78),(x,.67,.79,.89,.85),(x,.67,2.16,.77,.76),
+                   (x,.67,2.57,.64,.63),(x,.67,4.39,.57,.56),(x,.67,4.64,.73,.70),
+                   (x,.67,4.87,.62,.61),(x,.67,4.82,.45,.44),(x,.64,4.33,.42,.40)],
+                  m.stone,11,bands=[m.edge,m.body,enamel,m.body,m.edge,m.body,enamel,m.dark])
+        m.pipe([(x,.24,3.60),(x,-.84,3.64),(x*.76,-1.52,4.20),(x*.47,-1.25,4.24)],.20,m.body)
+    for y in (-2.78,2.73):
+        m.pipe([(-5.02,y,.78),(4.98,y,.78)],.089,m.edge)
+        for x in (-4.4,-2.2,2.13,4.4):
+            m.pipe([(x-.35,y-.04,.87),(x+.35,y-.04,.87)],.044,m.signal,4)
+    return m
+
+
+def forge_casting_line():
+    m = Landmark("Lava foundry ingot line", "graphite", "copper", "amber", "obsidian")
+    hot = paint("Foundry flowing metal", (.50,.12,.020), .07,.42,1.14)
+    lining = make_material("Casting slag liner", "bronze", .16,.72,shade=-2)
+    for x in (-3.10,0,3.10):
+        m.slab((x,0),1.34,2.14,0,.41,.43,m.stone)
+        for y in (-1.60,1.60):
+            m.pipe([(x,y,.28),(x+.19,y*.76,1.52),(x-.38,y*.90,2.18)],.20,m.body,6)
+    for y in (-1.81,1.81):
+        m.slab((0,y),5.32,.39,2.01,.42,.28,m.body)
+        m.pipe([(-4.99,y,2.48),(4.90,y,2.48)],.103,m.edge,5)
+    for i,x in enumerate((-3.96,-2.02,-.08,1.86,3.8)):
+        low = .50+.12*i
+        m.slab((x,0),.86,1.33,2.21,.47+low,.29,m.stone)
+        m.slab((x,0),.77,1.23,2.68+low,.20,.32,lining)
+        m.slab((x,0),.62,.98,2.86+low,.083,.30,hot if i<3 else m.edge)
+        for y in (-1.22,1.22):
+            m.pipe([(x-.50,y,2.92+low),(x+.50,y,2.92+low)],.061,m.edge,5)
+    for y in (-2.27,2.27):
+        for x in (-4.57,-1.54,1.47,4.56):
+            m.pipe([(x,y,2.19),(x,y,3.29)],.041,m.edge,5)
+        m.pipe([(-4.65,y,3.31),(4.61,y,3.31)],.052,m.edge,5)
+    m.slab((-4.14,0),1.08,1.20,3.53,.61,.37,m.body)
+    m.pipe([(-4.90,0,4.09),(-5.38,0,4.34),(-5.69,.03,4.34)],.16,m.edge)
+    return m
+
+
+def grotto_pump_causeway():
+    m = Landmark("Grotto intake gallery", "navy", "titanium", "cyan", "obsidian")
+    for x in (-3.7,-1.37,1.12,3.54):
+        m.slab((x,0),.60,1.22,0,.43,.31,m.stone)
+        m.slab((x,0),.48,.77,.42,.97,.22,m.body)
+        m.pipe([(x,.79,.36),(x+.52,.52,1.60)],.108,m.edge,5)
+    m.slab((0,0),4.74,1.34,1.47,.37,.44,m.body)
+    for y in (-1.27,1.27):
+        for x in (-4.09,-2.11,0,2.11,4.09):
+            m.pipe([(x,y,1.79),(x,y,2.58)],.042,m.edge,5)
+        m.pipe([(-4.19,y,2.60),(4.19,y,2.60)],.043,m.edge,5)
+    for x in (-3.27,0,3.19):
+        m.pipe([(x,-1.26,1.67),(x+.55,-1.26,1.67)],.037,m.signal,4)
+    m.slab((-2.42,.33),1.05,.81,1.84,.38,.29,m.stone)
+    m.ring((-2.42,-.03,2.83),.28,.75,.23,m.edge,segments=10,lights=True)
+    m.pipe([(-2.42,.25,2.81),(-1.63,.71,2.82),(1.17,.71,2.82),(1.43,.71,2.18)],.145,m.body)
+    m.pipe([(-2.45,-.28,2.81),(-2.45,-1.67,2.81),(-2.41,-1.97,1.79),(-2.41,-1.97,.61)],.12,m.body)
+    return m
+
+
 def support_frame(materials, masonry):
     m = Landmark(*materials, masonry=masonry)
     m.slab((0,0),9.59,9.59,4.68,.49,.77,m.body)
@@ -712,12 +843,17 @@ BUILDERS = {
     "sanctuary-terrace": sanctuary_terrace,
     "sanctuary-collimator": sanctuary_collimator, "sanctuary-broken-span": sanctuary_broken_span,
     "grotto-crystal-seam": crystal_seam, "shipyard-graving-dock": graving_dock,
+    "shipyard-transfer-dock": shipyard_transfer_dock, "shipyard-cargo-tug": shipyard_cargo_tug,
+    "forge-furnace-bank": forge_furnace_bank, "forge-casting-line": forge_casting_line,
+    "grotto-pump-causeway": grotto_pump_causeway,
     "biome-deck-truss": alloy_support, "biome-deck-arcade": stone_support,
 }
 
 LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
+    "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400,
+    "forge-furnace-bank": 3800, "forge-casting-line": 3000, "grotto-pump-causeway": 1800,
 }
 
 

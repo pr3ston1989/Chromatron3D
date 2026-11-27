@@ -8,10 +8,10 @@ na przypisanej części lokalnej kampanii.
 | --- | --- | --- | --- |
 | 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
 | 2 | Ogród heliostatów | Ciepły wapień i jadeit, złote światło nad doliną. | Heliostat nad sadem, akwedukt, trzy tarasy z kaskadą i zbiornikami oraz wijący się nurt w dolinie. |
-| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, warstwy skalne, skupiska ametystu i ruch wody. |
-| 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Dwie kratownicowe galerie serwisowe i przelot pojazdu. |
+| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, pomost z ujęciem wody, warstwy skał i skupiska ametystu. |
+| 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale przeładunkowe z kabinami, daleki dok i przeloty dwóch pojazdów. |
 | 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Stacja z ogrzewanymi szybami, radiometr omiatający lodowiec, nawiewany śnieg i odległe pasma gór. |
-| 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Segmentowy piec, kolumny bazaltu, suwnica i strumień lawy pod planszą. |
+| 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Hala pieca z kominami, linia odlewnicza, ruch płynnego metalu i strumień lawy pod platformą. |
 | 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa z wypukłymi iluminatorami, rafa kominów hydrotermalnych i patrol pojazdu badawczego. |
 | 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Kolimator z wypukłym szkłem na dwóch przyporach, zerwany most i niski taras z cokołami. |
 
@@ -31,6 +31,11 @@ drobnych rekwizytów i pyłu jest deterministyczne dla gry i numeru planszy.
 Tryb ograniczonego ruchu zatrzymuje ozdobne animacje. Własne paczki importowane
 zachowują ogólną scenografię.
 
+W sześciu światach poza orbitą zamodelowany grunt dochodzi do stóp
+wszystkich dwunastu podpór. Ogród i Sanktuarium stoją na tarasach, Grota
+opiera się o łupkową półkę, Laboratorium o lodowiec, Kuźnia o bazalt,
+a stacja podwodna o dno. Teren pozostaje poniżej płaszczyzny gry.
+
 ## Próba Stoczni orbitalnej
 
 Wybór planszy 8 pozwala sprawdzić przy istniejącym układzie demonstracyjnym
@@ -39,5 +44,5 @@ w rodzimym interfejsie gry. W trybie developerskim `?debug=1&pilot=0`
 pokazuje starszą scenografię mgławicy na tej samej planszy.
 Wizualnym punktem odniesienia jest [koncepcja Stoczni](concepts/04-stocznia-orbitalna.png).
 
-[Arkusz ośmiu światów w 1920 × 1080](../assets/previews/overhaul/worlds/desktop.png) ·
-[Arkusz ośmiu światów w 390 × 844](../assets/previews/overhaul/worlds/mobile.png).
+[Arkusz ośmiu światów z ujęć 1672 × 941](../assets/previews/overhaul/worlds/desktop.png) ·
+[Arkusz ośmiu światów z ujęć 390 × 844](../assets/previews/overhaul/worlds/mobile.png).

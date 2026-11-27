@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {Box3,Raycaster,Vector3} from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
-import {campaignWorld} from '../src/campaign-worlds.js';
+import {CAMPAIGN_FOOTING_Y,CAMPAIGN_WORLDS,campaignWorld} from '../src/campaign-worlds.js';
 
 function gltf(path){
  const data=readFileSync(new URL('../public/models/'+path+'.glb',import.meta.url));
@@ -26,6 +26,63 @@ test('garden waterworks and sanctuary ruins use detailed Blender meshes and surf
    .reduce((count,primitive)=>count+doc.accessors[primitive.indices].count/3,0);
   assert.ok(triangles>=1500&&triangles<=4900,id+' stays within its module budget');
   assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0,id+' has an editable source');
+ }
+});
+
+test('the final forge, grotto and shipyard landmarks preserve their geometry and materials',async()=>{
+ const loader=new GLTFLoader();
+ const models={
+  'shipyard-transfer-dock':[3800,'Freight control windows'],
+  'shipyard-cargo-tug':[1400,'Tug ion thrusters'],
+  'forge-furnace-bank':[3800,'Furnace refractory throat'],
+  'forge-casting-line':[3000,'Foundry flowing metal'],
+  'grotto-pump-causeway':[1800,'Grotto intake gallery pilot lights']
+ };
+ for(const [id,[budget,finish]] of Object.entries(models)){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const {scene}=await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');
+  let triangles=0,finished=false;
+  scene.traverse(node=>{
+   if(!node.isMesh)return;
+   assert.ok(node.geometry.attributes.color,id+' retains Blender cavity shading');
+   triangles+=node.geometry.index.count/3;
+   if(node.material.name===finish)finished=node.material.emissive.getHex()>0;
+  });
+  assert.ok(triangles>0&&triangles<=budget,id+' stays within its polygon budget');
+  assert.ok(finished,id+' retains its emissive material');
+  assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-5,id+' stands on a Y-up base');
+  assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
+ }
+});
+
+test('all twelve platform piers reach modeled ground in each non-orbital biome',async()=>{
+ const worlds=CAMPAIGN_WORLDS.filter(world=>world.legacyId!=='orbital');
+ const loader=new GLTFLoader(),sources=new Map();
+ const ray=new Raycaster();
+ const vertical=new Vector3(0,-1,0),up=new Vector3(0,1,0);
+ assert.equal(worlds.length,6);
+ for(const {id,models} of worlds){
+  const ground=[];
+  for(const [name,anchor,scale,yaw,role] of models){
+   if(role!=='ground')continue;
+   if(!sources.has(name)){
+    const file=readFileSync(new URL('../assets/models/scenery/'+name+'.glb',import.meta.url));
+    const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+    sources.set(name,(await loader.parseAsync(bytes,'')).scene);
+   }
+   const model=sources.get(name).clone(true);
+   model.position.fromArray(anchor);model.scale.fromArray(scale);model.rotation.y=yaw;
+   model.updateMatrixWorld(true);
+   assert.ok(new Box3().setFromObject(model).max.y<-.6,id+' keeps the deck clear');
+   ground.push(model);
+  }
+  assert.ok(ground.length,id+' has terrain beneath the platform');
+  for(let side=0;side<4;side++)for(const x of [-7.24,0,7.24]){
+   // The centers of the load-bearing feet in the Blender arcade and truss.
+   ray.set(new Vector3(x,40,-7.89).applyAxisAngle(up,side*Math.PI/2),vertical);
+   const contact=ray.intersectObjects(ground,true)[0];
+   assert.ok(contact&&contact.point.y>=CAMPAIGN_FOOTING_Y,`${id}, pier ${side}/${x} reaches ground`);
+  }
  }
 });
 
@@ -262,7 +319,7 @@ test('the garden meshes from Blender fit their scenery budgets and stand on a Y-
 
 test('grotto cliffs preserve vertex pigment, opaque facets and the per-module triangle budget',async()=>{
  const loader=new GLTFLoader();
- const ids=new Set(campaignWorld('demo',2).models.map(([id])=>id).filter(id=>id!=='grotto-survey'));
+ const ids=new Set(campaignWorld('demo',2).models.map(([id])=>id).filter(id=>/(buttress|shelf|seam|escarpment)$/.test(id)));
  for(const id of ids){
   const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
   const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
@@ -291,8 +348,9 @@ test('grotto cliffs preserve vertex pigment, opaque facets and the per-module tr
 
 test('the three survey anchors penetrate the fault shelf under the gallery',async()=>{
  const fixtures=campaignWorld('demo',2).models;
- const [,shelf,scale,yaw]=fixtures.find(([id])=>id==='grotto-fault-shelf');
  const [,station,stationScale,stationYaw]=fixtures.find(([id])=>id==='grotto-survey');
+ const [,shelf,scale,yaw]=fixtures.find(([id,anchor])=>id==='grotto-fault-shelf'&&
+  anchor[0]===station[0]&&anchor[2]===station[2]);
  assert.deepEqual([station[0],station[2],stationScale,stationYaw],[shelf[0],shelf[2],scale,yaw]);
  const loader=new GLTFLoader();
  const load=async id=>{

@@ -29,7 +29,7 @@ Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami
 
 Edytowalne formacje i stanowisko pomiarowe znajdują się w `assets/models/scenery/grotto-*.blend`. Gra ładuje odpowiadające im pliki GLB. Pigment skały i cienie kontaktowe są zapisane w kolorach wierzchołków. Rysunek łupku pochodzi ze wspólnej próbki materiału pokładu.
 
-Zestaw budowli kampanii obejmuje 25 modeli z geometrią, materiałami
+Zestaw budowli kampanii obejmuje 30 modeli z geometrią, materiałami
 PBR i wypalonym cieniowaniem wnęk w kolorach wierzchołków. Pliki `.blend`
 i `.glb` są w `assets/models/scenery`, a podglądy w
 `assets/previews/overhaul/scenery`. Moduły zajmują 396–4696 trójkątów.
@@ -49,6 +49,13 @@ Modele Laboratorium polarnego to `frost-optical-lab` (limit 3200 trójkątów),
 `frost-icefall` (2400), `frost-radiometer` (1800) i `frost-ridge` (480). Stacja
 i radiometr mają pale, które sięgają bliskiego modelu lodu. Gra powiela
 niskopoligonową grań w dalszych planach.
+
+Stocznia korzysta z `shipyard-transfer-dock` i `shipyard-cargo-tug` (limity
+3800 i 1400 trójkątów). Kuźnia używa `forge-furnace-bank` i
+`forge-casting-line` (3800 i 3000). Ujęcie wody w Grocie korzysta z
+`grotto-pump-causeway` (1800). Materiał nazwany `Foundry flowing metal`
+otrzymuje w grze animowany refleks. Pliki GLB i odpowiadające im edytowalne
+źródła `.blend` znajdują się w `assets/models/scenery`.
 
 ```powershell
 & 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/scenery_catalog.py -- grotto-buttress grotto-fault-shelf grotto-escarpment

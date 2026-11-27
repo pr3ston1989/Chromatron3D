@@ -1,9 +1,10 @@
-import {scenerySeed} from './campaign-worlds.js';
+import {CAMPAIGN_FOOTING_Y,scenerySeed} from './campaign-worlds.js';
 import {applyPanelSurface} from './panel-surface.js';
 import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
 import {createBiomeBasin} from './biome-basin.js';
 import {applyOpticFinish} from './optic-textures.js';
 import {applyLandmarkFinish,createVentPlumes} from './landmark-surfaces.js';
+import {createScenicDrift} from './scenic-drift.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -89,8 +90,10 @@ function gradientSky(THREE){
      float stars=step(.990,hash2(floor(cells)))*pin*smoothstep(-.49,-.24,ray.y);
      color+=vec3(.19,.23,.34)*stars;
     }else if(kind==4.){
-     float heat=pow(clouds,2.65)*exp(-9.*abs(ray.y+.40));
-     color+=vec3(.16,.039,.010)*heat;
+     float heat=pow(clouds,2.65)*exp(-8.*abs(ray.y+.40));
+     float soot=veil(uv*vec2(8.,17.)+vec2(.06*time,0.));
+     float smoke=smoothstep(.26,.78,soot)*exp(-12.*abs(ray.y+.39+.12*sin(uv.x*4.)));
+     color+=vec3(.119,.037,.017)*heat+vec3(.092,.034,.027)*smoke;
     }else if(kind==5.){
      float longitude=ray.x*.81+ray.z*.58;
      float surface=smoothstep(-.77,.05,ray.y);
@@ -147,6 +150,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   const {definition,root}=record;
   const plantings=definition.scatter?.[3];
   record.scenicTime={value:0};
+  for(const current of definition.currents??[])root.add(createScenicDrift(THREE,record.scenicTime,current));
   record.platform=base.clone(true);
   record.platform.position.y=-3.768;
   const materials=new Map();
@@ -169,7 +173,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   root.add(record.platform);
   if(foundation){
    const supports=foundation.clone(true),colors=definition.footing;
-   supports.position.y=-8.88;
+   supports.position.y=CAMPAIGN_FOOTING_Y;
    supports.traverse(node=>{
     if(!node.isMesh)return;
     if(colors){
@@ -185,15 +189,24 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   }
   record.pool=definition.id==='grotto'?createGrottoPool(THREE):createBiomeBasin(THREE,definition.id);
   if(record.pool)root.add(record.pool);
+  const groundMaterials=new Map();
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
    const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|fault-shelf)$/.test(id);
    if(role!=='horizon'){
+    const palette=role==='ground'?groundMaterials:materials;
     mesh.traverse(node=>{
      if(!node.isMesh)return;
-     if(!materials.has(node.material)){
+     if(!palette.has(node.material)){
       const finish=node.material.clone();
+      const groundColor=role==='ground'?definition.ground?.[finish.name]:undefined;
+      if(groundColor!==undefined){
+       finish.color.setHex(groundColor);
+       // Subtle bounce from the surrounding terrain fills the shaded faces.
+       finish.emissive.copy(finish.color).multiplyScalar(.13);
+       finish.emissiveIntensity=1;
+      }
       if(!applyLandmarkFinish(THREE,finish,record.scenicTime)&&id!=='frost-icefall'){
        if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
         finishGrottoRock(THREE,finish,definition.surface);
@@ -201,9 +214,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
         applyOpticFinish(THREE,finish,'brushed');
        }
       }
-      materials.set(node.material,finish);
+      palette.set(node.material,finish);
      }
-     node.material=materials.get(node.material);
+     node.material=palette.get(node.material);
     });
    }
    mesh.position.fromArray(anchor);
@@ -221,7 +234,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
      node.material=horizon.get(node.material);
     });
    }
-   mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&!terrain}});
+   mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&role!=='ground'&&!terrain}});
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    root.add(mesh);
    return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role,id};
@@ -251,7 +264,8 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   record.lastSeed=seed;
   const rand=sequence(seed);
   const offsets=new Map();
-  for(const {mesh,anchor,yaw} of record.props){
+  for(const {mesh,anchor,yaw,role} of record.props){
+   if(role==='ground')continue;
    const key=anchor[0]+':'+anchor[2];
    if(!offsets.has(key))offsets.set(key,[(rand()-.5)*1.52,(rand()-.5)*1.52]);
    const [dx,dz]=offsets.get(key);

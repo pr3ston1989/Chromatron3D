@@ -8,6 +8,12 @@ const iceBands=`
 `;
 
 const finishes={
+ 'Foundry flowing metal':`
+  float roll=sin(landmarkPoint.x*8.1+landmarkPoint.z*4.4-landmarkTime*1.72);
+  float crust=sin(landmarkPoint.z*12.9+roll*.93+landmarkTime*.84);
+  float heat=smoothstep(.07,.78,roll*.52+crust*.48);
+  diffuseColor.rgb=diffuseColor.rgb*(.66+.42*heat)+vec3(.24,.076,.008)*heat;
+ `,
  'Glacier compressed blue ice':iceBands,
  'Glacier clear fracture':iceBands,
  'Heated polar glazing':`
