@@ -250,7 +250,7 @@ test('different board mirrors remain distinct; dragging one does not move the ot
  await selectQuality(page,'balanced');
  // A late scenery mesh used to move both mirrors by several cells on screen.
  let garden;
- await page.route('**/garden-heliostat-authored.glb',route=>{garden=route});
+ await page.route('**/heliostat-optical-collector.glb',route=>{garden=route});
  await page.evaluate(()=>{window.__debug.switchCampaign('demo');window.__debug.loadLevel(2)});
  await expect.poll(()=>Boolean(garden)).toBe(true);
  const point=async(x,y,height=0)=>page.evaluate(({x,y,height})=>window.chromatron.projectCell(x,y,height),{x,y,height});

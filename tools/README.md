@@ -29,7 +29,7 @@ Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami
 
 Edytowalne formacje i stanowisko pomiarowe znajdują się w `assets/models/scenery/grotto-*.blend`. Gra ładuje odpowiadające im pliki GLB. Pigment skały i cienie kontaktowe są zapisane w kolorach wierzchołków. Rysunek łupku pochodzi ze wspólnej próbki materiału pokładu.
 
-Zestaw budowli kampanii obejmuje 30 modeli z geometrią, materiałami
+Zestaw budowli kampanii obejmuje 33 modele z geometrią, materiałami
 PBR i wypalonym cieniowaniem wnęk w kolorach wierzchołków. Pliki `.blend`
 i `.glb` są w `assets/models/scenery`, a podglądy w
 `assets/previews/overhaul/scenery`. Moduły zajmują 396–4696 trójkątów.
@@ -56,6 +56,11 @@ Stocznia korzysta z `shipyard-transfer-dock` i `shipyard-cargo-tug` (limity
 `grotto-pump-causeway` (1800). Materiał nazwany `Foundry flowing metal`
 otrzymuje w grze animowany refleks. Pliki GLB i odpowiadające im edytowalne
 źródła `.blend` znajdują się w `assets/models/scenery`.
+
+`heliostat-optical-collector` ma panelową czaszę, przekładnie i kamienny
+fundament. `heliostat-ravine` łączy tarasy z przelewami, a `sanctuary-meridian`
+ma wyłamane segmenty pierścienia, osadzone w kamiennych pylonach. Limity
+wynoszą odpowiednio 4600, 4600 i 4300 trójkątów.
 
 ```powershell
 & 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/scenery_catalog.py -- grotto-buttress grotto-fault-shelf grotto-escarpment

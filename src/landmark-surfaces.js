@@ -8,6 +8,15 @@ const iceBands=`
 `;
 
 const finishes={
+ 'Heliostat coated glass':`
+  float glint=exp(-5.2*abs(landmarkPoint.y-.41*landmarkPoint.x-4.59-.13*sin(landmarkTime*.29)));
+  diffuseColor.rgb*=.87+.13*smoothstep(-1.4,1.8,landmarkPoint.x);
+  diffuseColor.rgb+=vec3(.082,.137,.119)*glint;
+ `,
+ 'Meridian fractured filter':`
+  float catchlight=exp(-10.*abs(landmarkPoint.y+.51*landmarkPoint.x-4.41));
+  diffuseColor.rgb+=vec3(.040,.081,.099)*catchlight;
+ `,
  'Foundry flowing metal':`
   float roll=sin(landmarkPoint.x*8.1+landmarkPoint.z*4.4-landmarkTime*1.72);
   float crust=sin(landmarkPoint.z*12.9+roll*.93+landmarkTime*.84);

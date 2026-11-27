@@ -1,5 +1,11 @@
 # QA
 
+## 27 listopada 2026 · nowe modele heliostatu i instrumentu południkowego
+
+- Podglądy Blendera pokazały zbyt jednolite podstawy i mało wyrazisty kontur ruiny. Heliostat dostał kamienną podstawę oddzieloną od mosiężnej ramy, przekładnie i osobne szklane panele. W ruinie poszerzono przerwany pierścień i zachowano fragmenty szklanych filtrów.
+- Heliostat ma 3072 trójkąty, tarasowe zbocze 4422, a ruiny 3690. Test zasobów wczytuje trzy pliki GLB, weryfikuje ich materiały i potwierdza użycie modeli w kampanii.
+- W przeglądarce opóźniono pobranie nowego heliostatu. Po doczytaniu dwa lustra pozostały w tych samych miejscach i dały się niezależnie przesuwać.
+
 ## 27 listopada 2026 · grunt pod platformami i osiem światów kampanii
 
 - Test zasobów wczytuje siatki GLB i potwierdza kontakt 72 stóp podpór z terenem. Każda platforma poza orbitą ma dwanaście punktów podparcia. Najwyższy fragment gruntu nadal znajduje się poniżej siatki gry.

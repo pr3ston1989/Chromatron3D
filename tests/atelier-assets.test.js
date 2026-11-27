@@ -86,6 +86,38 @@ test('all twelve platform piers reach modeled ground in each non-orbital biome',
  }
 });
 
+test('the terrace heliostat and meridian ruins retain their authored finishes in campaign scenery',async()=>{
+ const loader=new GLTFLoader();
+ const landmarks=[
+  [1,'heliostat-optical-collector',4600,['Heliostat coated glass','Pale limestone footing','Heliostat machined axles']],
+  [1,'heliostat-ravine',4600,['Garden running water','Ravine cypress foliage']],
+  [6,'sanctuary-meridian',4300,['Meridian fractured filter','Meridian cut stone','Oxidized meridian copper']]
+ ];
+ for(const [level,id,budget,expectedFinishes] of landmarks){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
+  const {scene}=await loader.parseAsync(bytes,'');
+  let triangles=0;
+  const materials=new Set();
+  scene.traverse(node=>{
+   if(!node.isMesh)return;
+   assert.ok(node.geometry.attributes.color,id+' includes baked shadows');
+   triangles+=node.geometry.index.count/3;
+   materials.add(node.material.name);
+  });
+  assert.ok(triangles>0&&triangles<=budget,id);
+  for(const finish of expectedFinishes)assert.ok(materials.has(finish),id+' retains '+finish);
+  assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
+  const placement=campaignWorld('demo',level).models.find(([name])=>name===id);
+  assert.ok(placement,id+' is used in campaign scenery');
+  const [,anchor,scale,,role]=placement;
+  const {min,max}=new Box3().setFromObject(scene);
+  assert.ok(Math.abs(min.y)<1e-5,id+' has the glTF ground origin');
+  const height=Array.isArray(scale)?scale[1]:scale;
+  assert.ok(anchor[1]+max.y*height<(role==='left'?2:0),id+' fits the side scenery envelope');
+ }
+});
+
 test('the deepwater landmarks use authored meshes below the playing surface',async()=>{
  const {models}=campaignWorld('demo',5);
  const landmarks={

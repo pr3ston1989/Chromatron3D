@@ -15,16 +15,16 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    models:[
     ['grotto-fault-shelf',[0,-18.40,0],[2.61,.85,3.60],-.13,'ground'],
     ['sanctuary-terrace',[-.8,-11.35,.8],[2.44,1.02,3.89],-.08,'ground'],
-    ['garden-heliostat-authored',[-9.9,-7.75,-13.0],1.43,-.41,'left'],
+    ['heliostat-optical-collector',[-10.5,-9.1,-13.4],1.25,-.26,'left'],
     ['heliostat-orchard',[-11.8,-12.9,-13.2],[1.22,1.27,1.21],-.42,'cliff'],
     ['heliostat-aqueduct',[20.5,-8.95,4.9],1.17,-.60,'right'],
     ['heliostat-orchard',[20.8,-14.6,6.0],[1.4,1.2,1.32],-.55],
     ['heliostat-aqueduct',[15.1,-15.6,-27.8],1.28,-.56,'horizon'],
     ['heliostat-orchard',[-16.4,-10.6,3.1],[1.04,1.02,1.10],-.38],
     ['heliostat-garden-spring',[9.7,-9.65,15.8],1.27,-.68],
-    ['heliostat-orchard',[26,-18.8,-25],[1.62,1.02,1.48],-.22,'horizon'],
-    ['heliostat-orchard',[29,-20,-43],[2.62,1.45,2.82],-.57,'horizon'],
-    ['heliostat-orchard',[44,-23,-57],[3.16,1.79,2.85],-.35,'horizon']
+    ['heliostat-ravine',[21.5,-14.7,-16.0],1.34,-.43],
+    ['frost-ridge',[31,-22.7,-38],[1.95,1.24,2.82],-.57,'horizon'],
+    ['frost-ridge',[56,-34.7,-60],[3.16,1.98,2.85],-.35,'horizon']
    ]
   }),
  world('grotto','Kryształowa grota','Crystal Grotto','nebula',
@@ -108,7 +108,7 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    models:[
     ['grotto-fault-shelf',[0,-20.55,0],[2.73,.79,3.70],-.23,'ground'],
     ['sanctuary-terrace',[0,-12.08,0],[2.72,1.17,4.66],.04,'ground'],
-    ['sanctuary-gate',[-10.8,-8.73,-17.4],1.31,-.52,'left'],
+    ['sanctuary-meridian',[-10.4,-8.5,-15.4],[1.00,1.19,1.10],-.43,'left'],
     ['sanctuary-collimator',[18.7,-7.8,7.1],1.28,-.54,'right'],
     ['sanctuary-terrace',[18.7,-12.1,7.1],1.32,-.54,'cliff'],
     ['sanctuary-terrace',[-11.1,-12.7,-17.8],1.35,-.52,'cliff'],

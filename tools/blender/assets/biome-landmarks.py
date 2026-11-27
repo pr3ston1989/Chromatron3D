@@ -22,11 +22,11 @@ class Landmark:
         self.glass = make_material(name + " ceramic and glass", signal, .38, .24)
         self.signal = make_material(name + " pilot lights", signal, .12, .36, 1.15)
 
-    def slab(self, center, x, y, base, height, corner, material=None):
+    def slab(self, center, x, y, base, height, corner, material=None, *, cap=None):
         lip = min(height*.24, corner*.32)
         plate(self.s, [(x*.91,y*.91,corner,base), (x,y,corner,base+lip),
                        (x,y,corner,base+height-lip), (x*.96,y*.96,corner,base+height)],
-              material or self.dark, [self.dark,material or self.body,self.edge], center)
+              material or self.dark, [self.dark,material or self.body,cap or self.edge], center)
 
     def pipe(self, points, radius, material=None, sides=6):
         self.s.cable([(*point,radius) for point in points], material or self.body, sides)
@@ -190,6 +190,101 @@ def garden_spring():
         if i%3==0:
             m.s.lathe([(x,y,z+.25,.025,.025),(x,y,z+.37,.081,.072),(x+.018,y,z+.40,.045,.034)],
                       leaf,5,bands=[blossom,blossom])
+    return m
+
+
+def heliostat_ravine():
+    m = Landmark("Irrigation ravine terraces", "limestone", "ceramic", "jade", "bronze", masonry=True)
+    soil = paint("Ravine olive embankment", (.093,.136,.033), .04,.86)
+    canopy = paint("Ravine cypress foliage", (.086,.168,.037), .03,.68)
+    deep = paint("Ravine sheltered foliage", (.028,.074,.022), .04,.81)
+    water = paint("Garden running water", (.030,.21,.17), .26,.24)
+    rng = Random(247)
+    for i,(x,y,level,width) in enumerate([(-7.1,1.7,3.1,2.91),(-3.1,1.8,4.9,3.30),
+                                           (1.4,2.2,5.7,3.45),(5.8,2.6,6.8,3.06),(9.0,3.2,5.1,2.67)]):
+        m.rock((x,y,0),(width*1.25,4.83),level+.65,460+i,cap=soil)
+        m.slab((x,y-1.60),width,2.53,level-.54,.68,.65,m.body)
+        m.slab((x,y-1.40),width*.91,2.15,level+.12,.30,.56,soil,cap=soil)
+        m.slab((x-.14,y-2.92),width*.87,.31,level+.39,.14,.19,m.body,cap=m.body)
+        for side in (-1,1):
+            pier=x+side*width*.63
+            m.slab((pier,y-4.06),.28,.37,level-1.55,1.18,.15,m.stone)
+        for j in range(3):
+            tx=x+(j-1)*width*.47+rng.uniform(-.28,.19)
+            ty=y+rng.uniform(-.38,.36)
+            height=rng.uniform(1.10,2.38)
+            m.pipe([(tx,ty,level),(tx+.11,ty,level+height*.56)],.075,m.stone,5)
+            m.s.lathe([(tx,ty,level+.24,.14,.14),(tx+.06,ty,level+height*.52,.41,.37),
+                       (tx+.11,ty,level+height*.81,.29,.31),(tx+.14,ty,level+height,.05,.045)],
+                      deep,7,phase=.29*i+.76*j,bands=[deep,canopy,canopy])
+    for x,y,z in [(-5.09,-2.02,4.93),(-.90,-1.85,5.73),(3.52,-1.42,6.83)]:
+        m.slab((x,y),.63,.92,z-.25,.29,.27,m.dark)
+        m.slab((x,y-.08),.46,1.01,z+.014,.07,.22,water,cap=water)
+        stream=[[(x+u,y+v,z+h) for u in (-.39,-.13,.13,.39)]
+                for v,h in [(-.72,.064),(-1.19,-.06),(-1.55,-.55),(-1.69,-1.17),(-1.85,-2.10)]]
+        first=len(m.s.vertices)
+        m.s.vertices.extend(point for row in stream for point in row)
+        for band in range(4):
+            for j in range(3):
+                a=first+4*band+j
+                m.s.face((a,a+1,a+5,a+4),water)
+    for x,y,z in [(-8.5,-1.87,2.61),(-3.7,-2.76,3.25),(1.68,-2.62,3.82),(6.25,-1.85,4.20)]:
+        m.ring((x,y,z),.82,1.18,.58,m.body,segments=7,span=pi)
+        m.slab((x-1.04,y),.37,.62,z-1.36,1.24,.21,m.body)
+        m.slab((x+1.04,y),.37,.62,z-1.36,1.24,.21,m.body)
+    return m
+
+
+def heliostat_optical_collector():
+    m = Landmark("Terrace heliostat", "bronze", "copper", "jade", "limestone", masonry=True)
+    brass = paint("Weathered heliostat brass", (.28,.14,.049), .55,.42)
+    patina = paint("Oxidized heliostat backing", (.065,.124,.088), .48,.51)
+    glass = paint("Heliostat coated glass", (.041,.224,.176), .53,.23)
+    second_glass = paint("Heliostat shadowed panes", (.028,.156,.141), .54,.26)
+    steel = make_material("Heliostat machined axles", "titanium", .56,.37,shade=-1)
+    sandstone = make_material("Pale limestone footing", "limestone", .04,.73,shade=1)
+    m.slab((0,0),3.79,2.84,0,.34,.84,m.stone,cap=sandstone)
+    m.slab((0,.13),2.61,1.96,.34,.61,.76,m.body,cap=patina)
+    for x in (-2.88,-1.48,-.07,1.34,2.75):
+        m.slab((x,-2.23),.64,.38,.32,.12,.26,sandstone,cap=m.stone)
+    for y in (-1.72,1.50):
+        m.pipe([(-2.15,y,.87),(-1.75,y-.08,1.02),(1.75,y-.08,1.02),(2.15,y,.87)],.041,brass,5)
+    m.s.lathe([(0,.06,.65,1.32,1.12),(0,.06,1.16,1.24,1.05),(0,.06,1.26,1.12,.94),
+               (0,.06,1.93,.83,.79),(0,.06,2.10,.97,.92)],m.dark,14,
+              bands=[m.body,brass,m.body,steel])
+    for side in (-1,1):
+        x=2.06*side
+        m.slab((x,.40),.74,.77,.89,.41,.27,m.stone)
+        m.pipe([(x,.39,1.16),(x*.92,.63,2.39),(x*.95,.53,3.77),(x*1.10,.42,4.45)],.36,m.body,8)
+        m.pipe([(x-.27*side,.46,1.31),(x*.79,1.04,2.34),(x*1.04,.84,3.88)],.112,brass,6)
+        m.pipe([(x*1.19,.42,4.45),(x*.95,.42,4.45)],.38,steel,10)
+        m.pipe([(x*.71,.93,1.11),(x*1.28,-.32,.74)],.138,brass,6)
+        m.ring((x*1.03,-.05,2.05),.25,.51,.11,m.body,segments=10)
+        m.pipe([(x*1.03,-.29,2.05),(x*1.03,-.08,2.05)],.24,steel,8)
+        m.pipe([(x*1.07,-.25,2.02),(x*.79,-.46,1.83),(x*.55,-.65,1.62)],.092,brass,6)
+        for y in (-1.53,1.45):
+            m.s.lathe([(side*2.89,y,.38,.145,.145),(side*2.89,y,.46,.148,.148)],m.edge,6)
+    def point(angle,r,depth):
+        return (r*cos(angle),.35+.57*r*sin(angle)-.82*depth,4.48+.82*r*sin(angle)+.57*depth)
+    curve=[(-.93,.19),(-.87,1.10),(-.61,1.96),(-.12,2.56),(.03,2.61),(.11,2.54),
+           (.045,2.43),(-.30,1.68),(-.56,.88),(-.66,.21)]
+    m.s.loft([[point(i*tau/24,r,depth) for i in range(24)] for depth,r in curve],m.dark,
+             [patina,patina,m.body,brass,m.edge,brass,patina,patina,patina])
+    for sector in range(12):
+        a=sector*tau/12+.023
+        b=(sector+1)*tau/12-.023
+        for j,(r0,r1,d0,d1) in enumerate([(.28,.87,-.635,-.534),(.92,1.64,-.519,-.272),
+                                          (1.70,2.35,-.255,.028)]):
+            ring=[point(a,r0,d0),point(b,r0,d0),point(b,r1,d1),point(a,r1,d1)]
+            m.s.loft([[(x,y+.02,z-.012) for x,y,z in ring],ring],m.dark,
+                     [second_glass if (sector+j)%5==0 else glass])
+        m.pipe([point(a-.022,r,d) for d,r in [(-.63,.33),(-.52,.90),(-.26,1.68),(.08,2.49)]],.024,brass,4)
+        if sector%3==0:
+            m.pipe([point(a,2.59,.07),point(a+.22,2.59,.07)],.035,m.signal,4)
+    m.pipe([(0,.74,4.24),(0,.05,4.69),(0,-1.08,5.12)],.161,steel,8)
+    m.pipe([(0,-1.04,5.10),(0,-1.25,5.18)],.112,m.signal,8)
+    for side in (-1,1):
+        m.pipe([(side*1.97,.49,4.22),(side*.85,.92,2.41),(0,.65,1.28)],.095,brass,6)
     return m
 
 
@@ -626,6 +721,47 @@ def sanctuary_broken_span():
     return m
 
 
+def sanctuary_meridian():
+    m = Landmark("Ruin of the meridian instrument", "plum", "titanium", "cyan", "navy", masonry=True)
+    trim = make_material("Oxidized meridian copper", "copper", .46,.53,shade=-1)
+    carved = paint("Meridian cut stone", (.15,.163,.225), .08,.73)
+    dashes = paint("Meridian inlaid indicators", (.045,.24,.32), .26,.38,.63)
+    for i,(x,y,w,d,h) in enumerate([(-6.7,.38,3.46,3.6,2.67),(-.80,.58,4.43,4.04,2.72),(4.9,1.16,3.41,4.31,3.34)]):
+        m.rock((x,y,0),(w,d),h,871+i,cap=m.body)
+        m.slab((x,y-.85),w*.91,d*.70,h-.82,.62,.57,m.body,cap=carved)
+    for i,(x,y,z,h) in enumerate([(-6.4,-1.48,1.77,4.35),(-3.02,-1.53,1.74,3.25),(.48,-1.63,1.78,4.41),
+                                   (3.42,-1.13,2.38,2.43),(6.46,-.86,2.66,4.12)]):
+        m.slab((x,y),.89,.86,z,.58,.30,m.dark)
+        for j in range(4):
+            cx=x+.10*j*(-1 if i%2 else 1)
+            m.slab((cx,y+.046*j*(i%3-1)),.69-j*.064,.73-j*.057,z+.54+j*h/4,h/4-.035,.16,
+                   carved,cap=m.body if (i+j)%3 else carved)
+            if j%2==0:
+                m.pipe([(cx-.31,y-.77+j*.06,z+.82+j*h/4),(cx+.14,y-.77+j*.06,z+.82+j*h/4)],.037,dashes,4)
+        m.slab((cx,y),.56,.63,z+.52+h,.30,.21,trim,cap=carved)
+    ring_start=len(m.s.vertices)
+    m.ring((-1.37,.42,3.68),2.34,3.00,.61,carved,segments=11,start=.35,span=2.43)
+    m.ring((-1.37,.33,3.68),2.65,2.89,.76,trim,segments=10,start=.43,span=2.28)
+    m.ring((-1.37,.32,3.68),2.18,2.33,.44,m.body,segments=7,start=3.03,span=1.38)
+    glass = paint("Meridian fractured filter", (.049,.107,.164), .47,.27)
+    for start,end in [(.53,1.23),(1.39,1.78),(2.07,2.55)]:
+        for i in range(5):
+            a=start+(end-start)*i/5
+            b=start+(end-start)*(i+1)/5-.012
+            rim=[(-1.37+r*cos(t),y,3.68+r*sin(t)) for t,r,y in [
+                (a,1.71,-.21),(b,1.72,-.22),(b,2.30,-.31),(a,2.31,-.33)]]
+            m.s.loft([[(x,y+.045,z) for x,y,z in rim],rim],m.body,[glass])
+        m.pipe([(-1.37+2.34*cos(t),-.315,3.68+2.34*sin(t)) for t in (start,(start+end)/2,end)],.042,trim,5)
+    for angle in (.56,.94,1.32,1.70,2.08,2.46,2.71):
+        c,s=cos(angle),sin(angle)
+        m.pipe([(-1.37+c*2.48,-.27,3.68+s*2.48),(-1.37+c*2.65,-.30,3.68+s*2.65)],.043,dashes,4)
+    m.s.vertices[ring_start:]=[(-1.37+1.33*(x+1.37),y,4.46+1.21*(z-3.68))
+                             for x,y,z in m.s.vertices[ring_start:]]
+    for i in range(5):
+        m.rock((4.8+.58*i,-2.49+.23*i,1.1+i*.10),(.87,.64),1.56,931+i)
+    return m
+
+
 def crystal_seam():
     m = Landmark("Amethyst seam", "plum", "amethyst", "lilac", "obsidian", masonry=True)
     quartz = make_material("Quartz tips", "lilac", .24, .24, .14, shade=1)
@@ -832,6 +968,8 @@ def stone_support():
 BUILDERS = {
     "heliostat-aqueduct": aqueduct, "heliostat-orchard": orchard,
     "heliostat-garden-spring": garden_spring,
+    "heliostat-ravine": heliostat_ravine,
+    "heliostat-optical-collector": heliostat_optical_collector,
     "frost-escarpment": glacier, "frost-traverser": polar_station,
     "frost-optical-lab": frost_optical_lab, "frost-icefall": frost_icefall,
     "frost-radiometer": frost_radiometer, "frost-ridge": frost_ridge,
@@ -842,6 +980,7 @@ BUILDERS = {
     "sanctuary-gate": sanctuary_gate, "sanctuary-reliquary": reliquary,
     "sanctuary-terrace": sanctuary_terrace,
     "sanctuary-collimator": sanctuary_collimator, "sanctuary-broken-span": sanctuary_broken_span,
+    "sanctuary-meridian": sanctuary_meridian,
     "grotto-crystal-seam": crystal_seam, "shipyard-graving-dock": graving_dock,
     "shipyard-transfer-dock": shipyard_transfer_dock, "shipyard-cargo-tug": shipyard_cargo_tug,
     "forge-furnace-bank": forge_furnace_bank, "forge-casting-line": forge_casting_line,
@@ -854,6 +993,7 @@ LANDMARK_BUDGETS = {
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400,
     "forge-furnace-bank": 3800, "forge-casting-line": 3000, "grotto-pump-causeway": 1800,
+    "heliostat-ravine": 4600, "heliostat-optical-collector": 4600, "sanctuary-meridian": 4300,
 }
 
 
