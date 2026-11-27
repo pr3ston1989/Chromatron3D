@@ -3,12 +3,73 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d1b"><title>CHROMATRON / REBORN</title>
+<style>
+ body {margin:0;background:#080d1b}
+ #app[data-booting] {opacity:0!important;pointer-events:none}
+ #startup-screen[hidden],#startup-retry[hidden] {display:none}
+ #startup-screen {position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:24px;color:#edf7ff;background:radial-gradient(ellipse at 50% 37%,#142b49,#080d1b 67%);font:500 15px/1.45 system-ui,sans-serif;text-align:center}
+ .startup-content {width:min(100%,350px)}
+ .startup-mark {display:grid;place-items:center;width:60px;height:67px;margin:0 auto 20px;background:linear-gradient(135deg,#8ceeff,#247fb5);clip-path:polygon(50% 0,96% 25%,96% 75%,50% 100%,4% 75%,4% 25%);color:#0a1d33;font-weight:800;font-size:36px}
+ .startup-brand {display:block;letter-spacing:.24em;font-size:clamp(16px,5vw,24px);font-weight:800}
+ .startup-track {height:2px;margin:23px auto 14px;width:min(100%,222px);overflow:hidden;background:#284360}
+ .startup-track::after {content:"";display:block;width:45%;height:100%;background:linear-gradient(90deg,#4594b7,#a1f3ff);animation:startup-sweep 1.55s ease-in-out infinite alternate}
+ #startup-copy {margin:0;color:#b6c9db}
+ #startup-retry {margin:16px auto 0;padding:8px 15px;border:1px solid #75adcc;border-radius:5px;background:#132b44;color:#eff7ff;font:inherit;cursor:pointer}
+ #startup-retry:focus-visible {outline:2px solid #bdf1ff;outline-offset:3px}
+ #startup-screen[data-failed] .startup-track {display:none}
+ #startup-screen[data-failed] #startup-copy {margin-top:14px}
+ @keyframes startup-sweep {from{transform:translateX(-85%)}to{transform:translateX(207%)}}
+ @media(prefers-reduced-motion:reduce) {.startup-track::after {animation:none;transform:translateX(61%)}}
+</style>
+<noscript><style>.startup-track,#startup-copy {display:none}</style></noscript>
 <link rel="icon" type="image/png" href="%BASE_URL%portraits/prism.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 </head>
-<body><div id="app" class="game-hud">
+<body>
+<div id="startup-screen">
+ <div class="startup-content">
+  <span class="startup-mark" aria-hidden="true">C</span>
+  <strong class="startup-brand">CHROMATRON</strong>
+  <div class="startup-track" aria-hidden="true"></div>
+  <p id="startup-copy" role="status">Ładowanie gry…</p>
+  <button id="startup-retry" type="button" hidden>Ponów</button>
+  <noscript><p>Włącz JavaScript, aby uruchomić grę.</p></noscript>
+ </div>
+</div>
+<script>
+ (()=>{
+  const screen=document.getElementById('startup-screen');
+  const copy=document.getElementById('startup-copy');
+  const retry=document.getElementById('startup-retry');
+  let english=false;
+  try{english=localStorage.getItem('chromatron-reborn-language')==='en'}catch{}
+  if(english){copy.textContent='Loading game…';retry.textContent='Retry'}
+  retry.addEventListener('click',()=>location.reload());
+  function fail(event){
+   const entryFailure=event.target instanceof HTMLScriptElement&&event.target.type==='module';
+   const gameFailure=event instanceof ErrorEvent&&event.filename?.startsWith(location.origin+'/');
+   if(!entryFailure&&!gameFailure)return;
+   copy.textContent=document.getElementById('startup-status')?.textContent||
+    (english?'The game could not start.':'Nie udało się uruchomić gry.');
+   screen.dataset.failed='';
+   retry.hidden=false;retry.focus();
+  }
+  window.addEventListener('error',fail,true);
+  window.addEventListener('chromatron:ready',()=>{
+   window.removeEventListener('error',fail,true);
+   const reveal=()=>{
+    const app=document.getElementById('app');
+    app.inert=false;app.removeAttribute('data-booting');screen.hidden=true;
+    if(!document.getElementById('main-menu').classList.contains('hidden'))
+     document.getElementById('menu-play').focus({preventScroll:true});
+   };
+   if(document.hidden)reveal();else requestAnimationFrame(reveal);
+  },{once:true});
+ })();
+</script>
+<div id="app" class="game-hud" data-booting inert>
  <main id="main-menu" class="main-menu" aria-labelledby="game-title">
   <div class="menu-art" aria-hidden="true"></div>
   <div class="menu-content">

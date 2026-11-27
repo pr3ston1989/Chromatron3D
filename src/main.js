@@ -2684,3 +2684,4 @@ if(debugEnabled){
   switchCampaign
  });
 }
+window.dispatchEvent(new Event('chromatron:ready'));

@@ -33,6 +33,7 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
  const loader=new GLTFLoader();
  const models={
   'shipyard-transfer-dock':[3800,'Freight control windows'],
+  'shipyard-service-arm':[1800,'Dock transfer arm pilot lights'],
   'shipyard-cargo-tug':[1400,'Tug ion thrusters'],
   'forge-furnace-bank':[3800,'Furnace refractory throat'],
   'forge-casting-line':[3000,'Foundry flowing metal'],
@@ -55,7 +56,7 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
  }
 });
 
-test('all twelve platform piers reach modeled ground in each non-orbital biome',async()=>{
+test('each non-orbital biome shares continuous modeled ground between the piers and the surrounding landscape',async()=>{
  const worlds=CAMPAIGN_WORLDS.filter(world=>world.legacyId!=='orbital');
  const loader=new GLTFLoader(),sources=new Map();
  const ray=new Raycaster();
@@ -71,6 +72,11 @@ test('all twelve platform piers reach modeled ground in each non-orbital biome',
     sources.set(name,(await loader.parseAsync(bytes,'')).scene);
    }
    const model=sources.get(name).clone(true);
+   model.traverse(node=>{
+    if(!node.isMesh)return;
+    assert.equal(node.material.vertexColors,true,id+' uses authored terrain pigment');
+    assert.ok(node.geometry.index.count/3<=3100,id+' stays within the terrain budget');
+   });
    model.position.fromArray(anchor);model.scale.fromArray(scale);model.rotation.y=yaw;
    model.updateMatrixWorld(true);
    assert.ok(new Box3().setFromObject(model).max.y<-.6,id+' keeps the deck clear');
@@ -82,6 +88,25 @@ test('all twelve platform piers reach modeled ground in each non-orbital biome',
    ray.set(new Vector3(x,40,-7.89).applyAxisAngle(up,side*Math.PI/2),vertical);
    const contact=ray.intersectObjects(ground,true)[0];
    assert.ok(contact&&contact.point.y>=CAMPAIGN_FOOTING_Y,`${id}, pier ${side}/${x} reaches ground`);
+  }
+  for(let angle=0;angle<8;angle++)for(const distance of [17,32,64]){
+   const direction=angle*Math.PI/4;
+   ray.set(new Vector3(distance*Math.cos(direction),40,distance*Math.sin(direction)),vertical);
+   assert.ok(ray.intersectObjects(ground,true).length,`${id}, no break in the terrain at ${angle}/${distance}`);
+  }
+  const fixtures={
+   heliostat:['heliostat-optical-collector','heliostat-aqueduct','heliostat-garden-spring'],
+   grotto:['grotto-pump-causeway','grotto-survey'],
+   frost:['frost-optical-lab','frost-radiometer'],
+   forge:['forge-furnace-bank','forge-casting-line','forge-service-rail'],
+   abyss:['abyss-observatory','abyss-vent-reef'],
+   sanctuary:['sanctuary-meridian','sanctuary-collimator','sanctuary-broken-span']
+  };
+  for(const [name,[x,y,z]] of models){
+   if(!fixtures[id].includes(name))continue;
+   ray.set(new Vector3(x,40,z),vertical);
+   const contact=ray.intersectObjects(ground,true)[0];
+   assert.ok(contact?.point.y>=y,`${id}, ${name} rests on its terrain (${contact?.point.y.toFixed(2)} vs ${y})`);
   }
  }
 });
@@ -162,6 +187,9 @@ test('the polar laboratory and radiometer are anchored in the modeled ice shelf'
   'frost-ridge':[480,'Distant snow line']
  };
  const originals=new Map();
+ const terrain=models.find(fixture=>fixture[4]==='ground');
+ const terrainFile=readFileSync(new URL('../assets/models/scenery/'+terrain[0]+'.glb',import.meta.url));
+ originals.set(terrain[0],(await loader.parseAsync(terrainFile.buffer.slice(terrainFile.byteOffset,terrainFile.byteOffset+terrainFile.byteLength),'')).scene);
  for(const [id,[budget,finish]] of Object.entries(landmarks)){
   const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
   const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
@@ -190,12 +218,10 @@ test('the polar laboratory and radiometer are anchored in the modeled ice shelf'
   'frost-optical-lab':[[-3.51,-1.83],[-3.51,1.83],[3.51,-1.83],[3.51,1.83]],
   'frost-radiometer':[[0,0]]
  };
+ const ice=placed(terrain);
  for(const [id,points] of Object.entries(mounts)){
   const fixture=models.find(([name])=>name===id);
-  const [,anchor]=fixture;
-  const shelf=models.find(([name,pos])=>name==='frost-icefall'&&pos[0]===anchor[0]&&pos[2]===anchor[2]);
-  assert.ok(shelf,id+' shares the shelf position and placement offset');
-  const prop=placed(fixture),ice=placed(shelf);
+  const prop=placed(fixture);
   assert.ok(new Box3().setFromObject(prop).max.y<0,id+' remains below the playable deck');
   for(const [x,z] of points){
    const foot=prop.localToWorld(new Vector3(x,0,z));
@@ -378,20 +404,17 @@ test('grotto cliffs preserve vertex pigment, opaque facets and the per-module tr
  }
 });
 
-test('the three survey anchors penetrate the fault shelf under the gallery',async()=>{
+test('the three survey anchors penetrate the cavern floor beneath the gallery',async()=>{
  const fixtures=campaignWorld('demo',2).models;
  const [,station,stationScale,stationYaw]=fixtures.find(([id])=>id==='grotto-survey');
- const [,shelf,scale,yaw]=fixtures.find(([id,anchor])=>id==='grotto-fault-shelf'&&
-  anchor[0]===station[0]&&anchor[2]===station[2]);
- assert.deepEqual([station[0],station[2],stationScale,stationYaw],[shelf[0],shelf[2],scale,yaw]);
+ const [terrain,floor]=fixtures.find(([, , , ,role])=>role==='ground');
  const loader=new GLTFLoader();
  const load=async id=>{
   const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
   return (await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'')).scene;
  };
- const [cliff,rig]=await Promise.all(['grotto-fault-shelf','grotto-survey'].map(load));
- const rock=[];
- cliff.traverse(node=>{if(node.material?.name==='Fractured slate')rock.push(node)});
+ const [cliff,rig]=await Promise.all([terrain,'grotto-survey'].map(load));
+ cliff.position.fromArray(floor);
  cliff.updateMatrixWorld(true);rig.updateMatrixWorld(true);
  const anchors=[];
  rig.traverse(node=>{
@@ -406,10 +429,10 @@ test('the three survey anchors penetrate the fault shelf under the gallery',asyn
   }
  });
  assert.equal(anchors.length,3);
- const foot=(station[1]-shelf[1])/scale;
  for(const anchor of anchors){
-  const ray=new Raycaster(new Vector3(anchor.x,40,anchor.z),new Vector3(0,-1,0));
-  const contact=ray.intersectObjects(rock)[0];
-  assert.ok(contact&&contact.point.y>=foot,'anchor reaches bedrock');
+  const foot=anchor.multiplyScalar(stationScale).applyAxisAngle(new Vector3(0,1,0),stationYaw).add(new Vector3(...station));
+  const ray=new Raycaster(new Vector3(foot.x,40,foot.z),new Vector3(0,-1,0));
+  const contact=ray.intersectObject(cliff,true)[0];
+  assert.ok(contact&&contact.point.y>=foot.y,`survey anchor at ${foot.x.toFixed(2)}, ${foot.z.toFixed(2)} reaches bedrock (${contact?.point.y.toFixed(2)} vs ${foot.y})`);
  }
 });

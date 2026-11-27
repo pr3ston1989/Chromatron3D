@@ -801,11 +801,16 @@ def graving_dock():
 
 def shipyard_transfer_dock():
     m = Landmark("Orbital freight terminal", "navy", "titanium", "amber", "obsidian")
-    enamel = make_material("Dock ceramic shutters", "steel", .22,.50,shade=1)
+    enamel = make_material("Dock ceramic shutters", "steel", .22,.50)
+    deck = paint("Dock graphite walkway", (.046,.072,.106), .37,.63)
+    warning = make_material("Dock ochre safety inlay", "amber", .12,.58,shade=-1)
     glass = paint("Freight control windows", (.022,.092,.142), .52,.24,.16)
     for y in (-2.22,2.22):
-        m.slab((0,y),6.95,1.01,.50,.51,.49,m.stone)
-        m.slab((0,y),6.65,.93,1.01,.21,.39,m.body)
+        m.slab((0,y),6.95,1.01,.50,.51,.49,m.stone,cap=m.body)
+        m.slab((0,y),6.65,.93,1.01,.21,.39,m.body,cap=deck)
+        for x in (-5.5,-3.3,-1.1,1.1,3.3,5.5):
+            m.pipe([(x-.23,y-.69,1.225),(x+.23,y-.50,1.225)],.030,warning,4)
+        m.pipe([(-6.25,y+.73,1.24),(6.25,y+.73,1.24)],.041,m.edge,4)
         for x in (-5.30,-1.76,1.76,5.30):
             m.slab((x,y),.80,.94,0,.52,.37,m.dark)
             m.pipe([(x-.53,y-.88,.83),(x+.53,y-.88,.83)],.047,m.signal,4)
@@ -823,11 +828,11 @@ def shipyard_transfer_dock():
     m.slab((-4.83,.71),1.44,1.02,3.76,.20,.21,m.body)
     m.slab((-4.83,.71),1.18,.77,3.96,.77,.26,enamel)
     m.slab((-4.83,-.087),.93,.083,4.22,.33,.069,glass)
-    m.slab((-4.74,.77),1.21,.87,4.69,.18,.24,m.edge)
+    m.slab((-4.74,.77),1.21,.87,4.69,.18,.24,m.edge,cap=enamel)
     m.pipe([(-4.60,1.26,4.82),(-4.53,1.26,5.61),(-4.03,1.26,5.96)],.060)
     m.pipe([(-4.05,1.26,5.94),(-3.91,1.26,6.04)],.075,m.signal,6)
     for x in (-2.8,-.88,1.16,3.43):
-        m.slab((x,1.95),.66,.57,1.23,.66,.20,enamel)
+        m.slab((x,1.95),.66,.57,1.23,.66,.20,enamel,cap=m.body)
         m.pipe([(x-.32,1.34,1.56),(x+.32,1.34,1.56)],.036,m.signal,4)
     return m
 
@@ -965,6 +970,117 @@ def stone_support():
     return support_frame(("Stone arcade foundations","amethyst","lilac","amber","plum"),True)
 
 
+def ambient_survey_glider():
+    m = Landmark("Survey glider", "bronze", "titanium", "amber", "obsidian")
+    cells = paint("Glider solar laminate", (.04,.156,.165), .48,.28)
+    window = paint("Glider instrument canopy", (.033,.117,.149), .51,.23,.12)
+    profile = [(-1.59,.12,.19),(-1.21,.42,.28),(-.40,.48,.38),(.74,.35,.34),(1.32,.15,.16)]
+    m.s.loft([[(w*cos(i*tau/12),y,.66+h*sin(i*tau/12)) for i in range(12)] for y,w,h in profile],
+             m.dark,[m.edge,m.body,m.body,m.edge])
+    m.s.blade([(0,-1.20,.83,.11,.02),(0,-.73,.93,.28,.09),(0,-.16,.99,.34,.15),
+               (0,.49,.94,.22,.07)],window,m.body)
+    for side in (-1,1):
+        m.s.blade([(side*.22,-.20,.69,.30,.09),(side*.83,-.10,.69,.57,.15),
+                   (side*1.83,.28,.76,.42,.09),(side*2.87,.55,.97,.20,.068),
+                   (side*3.29,.64,1.08,.037,.023)],cells,m.edge)
+        m.pipe([(side*.38,-.25,.67),(side*1.09,-.35,.76),(side*2.37,.13,.87),(side*3.25,.60,1.08)],.066,m.edge,5)
+        m.pipe([(side*2.94,.41,1.01),(side*3.25,.60,1.08)],.047,m.signal,5)
+        m.s.blade([(side*.17,.74,.77,.17,.047),(side*.52,1.00,.87,.21,.039),
+                   (side*.95,1.32,1.13,.035,.021)],m.body,m.edge)
+        m.pipe([(side*.27,-.18,.47),(side*.31,.57,.41),(side*.36,.83,.41)],.085,m.body)
+    m.pipe([(0,.98,.60),(0,1.37,.60)],.137,m.stone)
+    m.pipe([(0,1.35,.60),(0,1.44,.60)],.093,m.signal)
+    return m
+
+
+def ambient_cavern_moth():
+    m = Landmark("Cavern moth", "plum", "lilac", "lilac", "obsidian")
+    wing = paint("Moth translucent purple wing", (.075,.039,.135), .13,.45,.13)
+    spot = paint("Moth luminous wing eyes", (.24,.145,.36), .08,.43,.42)
+    m.pipe([(0,-.39,.43),(0,-.05,.48),(0,.46,.37)],.108,m.body,7)
+    for side in (-1,1):
+        m.s.blade([(side*.04,.03,.42,.06,.025),(side*.43,-.23,.55,.30,.047),
+                   (side*.80,-.40,.64,.21,.035),(side*1.04,-.41,.68,.025,.013)],wing,spot)
+        m.s.blade([(side*.05,.14,.43,.065,.028),(side*.40,.33,.48,.24,.042),
+                   (side*.69,.47,.55,.16,.037),(side*.82,.61,.59,.02,.015)],m.glass,wing)
+        m.pipe([(side*.02,-.33,.44),(side*.13,-.47,.53),(side*.26,-.54,.62)],.019,spot,5)
+        m.s.lathe([(side*.57,-.30,.57,.057,.073),(side*.57,-.30,.618,.056,.072)],spot,6)
+    return m
+
+
+def ambient_pelagic_fish():
+    m = Landmark("Bathyal lanternfish", "navy", "jade", "cyan", "obsidian")
+    belly = paint("Lanternfish silver side", (.046,.139,.161), .31,.42)
+    stripe = paint("Lanternfish photophore", (.042,.24,.258), .09,.35,.68)
+    profile = [(-.98,.08,.146),(-.78,.19,.26),(-.37,.31,.43),(.12,.29,.38),(.71,.12,.19),(.98,.060,.10)]
+    m.s.loft([[(w*cos(i*tau/10),y,.50+h*sin(i*tau/10)) for i in range(10)] for y,w,h in profile],
+             m.stone,[belly,m.body,belly,m.body,m.stone])
+    for side in (-1,1):
+        m.s.blade([(side*.11,.07,.52,.08,.042),(side*.38,.23,.46,.17,.025),(side*.58,.46,.41,.028,.014)],
+                  belly,m.body)
+        m.pipe([(side*.19,-.70,.56),(side*.225,-.52,.56),(side*.279,-.24,.54),
+                (side*.265,.05,.56),(side*.19,.40,.52)],.021,stripe,5)
+    fin=[(y,z) for y,z in [(.86,.46),(1.44,.98),(1.28,.63),(1.37,.48),(1.44,.09),(.96,.39)]]
+    m.s.loft([[(x,y,z) for y,z in fin] for x in (-.052,.052)],m.body,[belly])
+    return m
+
+
+def ambient_forge_hauler():
+    m = Landmark("Foundry ore hauler", "graphite", "copper", "amber", "obsidian")
+    load = paint("Glowing ore fragments", (.29,.096,.022), .09,.64,.52)
+    m.slab((0,0),1.79,1.08,.36,.31,.26,m.body)
+    for x in (-1.21,1.21):
+        for side in (-1,1):
+            y=side*.92
+            m.pipe([(x,y-.17,.35),(x,y+.17,.35)],.35,m.dark,9)
+            m.pipe([(x,y-.18,.35),(x,y+.18,.35)],.16,m.edge,7)
+    m.slab((0,-.10),1.41,.87,.66,.69,.30,m.stone,cap=load)
+    for x,y,z in [(-.78,.12,.96),(.08,-.44,.97),(.79,.14,1.02)]:
+        m.rock((x,y,z),(.48,.47),.61,int((x+1)*93),cap=load)
+    for y in (-.96,.86):
+        m.pipe([(-1.23,y,1.14),(1.25,y,1.14)],.044,m.edge,4)
+        m.pipe([(-1.42,y,.81),(-1.04,y,.81)],.051,m.signal,4)
+    return m
+
+
+def forge_service_rail():
+    m = Landmark("Foundry loading trestle", "graphite", "copper", "amber", "obsidian")
+    for x in (-5.11,-2.68,0,2.68,5.11):
+        m.slab((x,0),.71,1.63,0,.39,.34,m.stone)
+        for y in (-1.06,1.06):
+            m.pipe([(x,y,.37),(x+.17,y*.84,1.26),(x-.24,y*.98,2.37)],.26,m.body,6)
+            m.pipe([(x-.92,y,1.28),(x+.62,y,2.24)],.117,m.edge,5)
+    for y in (-1.08,1.08):
+        m.slab((0,y),5.84,.42,2.30,.42,.33,m.body)
+        m.pipe([(-5.61,y*.50,2.75),(5.61,y*.50,2.75)],.092,m.edge,6)
+        for x in (-4.7,0,4.7):
+            m.pipe([(x-.35,y-.37,2.61),(x+.35,y-.37,2.61)],.039,m.signal,4)
+    for x in (-5,-3.34,-1.67,0,1.67,3.34,5):
+        m.pipe([(x,-1.11,2.63),(x,1.11,2.63)],.083,m.edge,5)
+    return m
+
+
+def shipyard_service_arm():
+    m = Landmark("Dock transfer arm", "navy", "steel", "amber", "graphite")
+    # Long spar with heavy collars, open diagonal webs and a continuous conduit.
+    for y in (-.81,.81):
+        for z in (.24,1.48):
+            m.slab((0,y),5.12,.39,z,.27,.13,m.body)
+        for i,x in enumerate((-4.8,-2.4,0,2.4,4.8)):
+            m.slab((x,y),.33,.38,.16,1.63,.13,m.stone)
+            if i<4:
+                levels = (.36,1.53) if i%2==0 else (1.53,.36)
+                m.pipe([(x,y,levels[0]),(x+2.4,y,levels[1])],.15,m.edge,4)
+        m.pipe([(-4.92,y,1.13),(-2.4,y,1.17),(2.4,y,1.17),(4.92,y,1.13)],.083,m.glass,6)
+    for x in (-4.84,0,4.84):
+        m.slab((x,0),.49,1.34,0,1.93,.33,m.stone)
+        for y in (-1.01,1.01):
+            m.slab((x,y),.22,.28,1.68,.12,.08,m.signal)
+    for x in (-2.4,2.4):
+        m.slab((x,0),.58,.64,1.45,.14,.16,m.body)
+    return m
+
+
 BUILDERS = {
     "heliostat-aqueduct": aqueduct, "heliostat-orchard": orchard,
     "heliostat-garden-spring": garden_spring,
@@ -983,17 +1099,23 @@ BUILDERS = {
     "sanctuary-meridian": sanctuary_meridian,
     "grotto-crystal-seam": crystal_seam, "shipyard-graving-dock": graving_dock,
     "shipyard-transfer-dock": shipyard_transfer_dock, "shipyard-cargo-tug": shipyard_cargo_tug,
+    "shipyard-service-arm": shipyard_service_arm,
     "forge-furnace-bank": forge_furnace_bank, "forge-casting-line": forge_casting_line,
     "grotto-pump-causeway": grotto_pump_causeway,
     "biome-deck-truss": alloy_support, "biome-deck-arcade": stone_support,
+    "ambient-survey-glider": ambient_survey_glider, "ambient-cavern-moth": ambient_cavern_moth,
+    "ambient-pelagic-fish": ambient_pelagic_fish, "ambient-forge-hauler": ambient_forge_hauler,
+    "forge-service-rail": forge_service_rail,
 }
 
 LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
-    "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400,
+    "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,
     "forge-furnace-bank": 3800, "forge-casting-line": 3000, "grotto-pump-causeway": 1800,
     "heliostat-ravine": 4600, "heliostat-optical-collector": 4600, "sanctuary-meridian": 4300,
+    "ambient-survey-glider": 1100, "ambient-cavern-moth": 400,
+    "ambient-pelagic-fish": 520, "ambient-forge-hauler": 950, "forge-service-rail": 1800,
 }
 
 

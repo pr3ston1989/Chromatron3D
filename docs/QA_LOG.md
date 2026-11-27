@@ -1,5 +1,13 @@
 # QA
 
+## 27 listopada 2026 · ciągły teren, ruch dalszego planu i ekran ładowania
+
+- Sześć nieorbitalnych scen korzysta z ciągłych siatek krajobrazu. Testy wczytują GLB, sprawdzają dwanaście stóp każdej platformy, podpory głównych budowli oraz ciągłość powierzchni przy próbkowaniu wokół planszy. Dwa ramiona łączą terminale Stoczni z ramą platformy.
+- W Chrome sprawdzono zrzuty ośmiu demonstracji w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 i 390 × 844. Wszystkie środki pól pozostały widoczne. Obrót widoku sprawdzono także na sześciu osadzonych planszach i w Stoczni. 390 × 844 to emulacja telefonu.
+- Porównanie klatek w Grocie, Kuźni i Stoczni wykryło ozdobny ruch w zwykłych ustawieniach. Po włączeniu ograniczonego ruchu porównywane fragmenty pozostały nieruchome.
+- Playwright weryfikuje ekran ładowania przy celowo wstrzymanym module JavaScript oraz ponowny start po błędzie sieciowym. Przy poprawnym starcie menu odzyskuje fokus, a pod ekranem ładowania nie da się używać przycisków gry.
+- Osobne porównanie `?benchmark=orbital` z poprzednim `main` objęło ujęcie 1672 × 941, ten sam profil grafiki i demonstrację „Trzy barwy”. Obie wersje załadowały te same modele i zachowały położenie kamery. Niewielkie różnice obrazu dotyczyły okolicy poświaty wiązki przy barierze.
+
 ## 27 listopada 2026 · nowe modele heliostatu i instrumentu południkowego
 
 - Podglądy Blendera pokazały zbyt jednolite podstawy i mało wyrazisty kontur ruiny. Heliostat dostał kamienną podstawę oddzieloną od mosiężnej ramy, przekładnie i osobne szklane panele. W ruinie poszerzono przerwany pierścień i zachowano fragmenty szklanych filtrów.

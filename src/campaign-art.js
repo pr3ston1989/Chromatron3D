@@ -5,6 +5,7 @@ import {createBiomeBasin} from './biome-basin.js';
 import {applyOpticFinish} from './optic-textures.js';
 import {applyLandmarkFinish,createVentPlumes} from './landmark-surfaces.js';
 import {createScenicDrift} from './scenic-drift.js';
+import {createCampaignTraffic} from './campaign-traffic.js';
 
 const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,import:'default',query:'?url'});
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
@@ -146,11 +147,15 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   glow.value.setHex(definition.haze);
   kind.value=atmosphereKinds[definition.air]??0;
  }
- function setup(record,base,scatter,fixtures,foundation){
+ function setup(record,base,scatter,fixtures,foundation,trafficModel){
   const {definition,root}=record;
   const plantings=definition.scatter?.[3];
   record.scenicTime={value:0};
   for(const current of definition.currents??[])root.add(createScenicDrift(THREE,record.scenicTime,current));
+  if(trafficModel){
+   record.traffic=createCampaignTraffic(THREE,trafficModel,definition.traffic);
+   root.add(record.traffic.root);
+  }
   record.platform=base.clone(true);
   record.platform.position.y=-3.768;
   const materials=new Map();
@@ -189,24 +194,15 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   }
   record.pool=definition.id==='grotto'?createGrottoPool(THREE):createBiomeBasin(THREE,definition.id);
   if(record.pool)root.add(record.pool);
-  const groundMaterials=new Map();
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
-   const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|fault-shelf)$/.test(id);
+   const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|terrain)$/.test(id);
    if(role!=='horizon'){
-    const palette=role==='ground'?groundMaterials:materials;
     mesh.traverse(node=>{
      if(!node.isMesh)return;
-     if(!palette.has(node.material)){
+     if(!materials.has(node.material)){
       const finish=node.material.clone();
-      const groundColor=role==='ground'?definition.ground?.[finish.name]:undefined;
-      if(groundColor!==undefined){
-       finish.color.setHex(groundColor);
-       // Subtle bounce from the surrounding terrain fills the shaded faces.
-       finish.emissive.copy(finish.color).multiplyScalar(.13);
-       finish.emissiveIntensity=1;
-      }
       if(!applyLandmarkFinish(THREE,finish,record.scenicTime)&&id!=='frost-icefall'){
        if(terrain||(definition.masonry&&/ (body|bevel|substructure)$/.test(finish.name))){
         finishGrottoRock(THREE,finish,definition.surface);
@@ -214,9 +210,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
         applyOpticFinish(THREE,finish,'brushed');
        }
       }
-      palette.set(node.material,finish);
+      materials.set(node.material,finish);
      }
-     node.material=palette.get(node.material);
+     node.material=materials.get(node.material);
     });
    }
    mesh.position.fromArray(anchor);
@@ -237,7 +233,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&role!=='ground'&&!terrain}});
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    root.add(mesh);
-   return {mesh,anchor:[anchor[0],mesh.position.y,anchor[2]],yaw,role,id};
+   return {mesh,id};
   });
 
   record.plantingSurfaces=plantings?record.props.filter(prop=>prop.id==='garden-terrace').map(prop=>prop.mesh):[];
@@ -263,15 +259,6 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(record.lastSeed===seed)return;
   record.lastSeed=seed;
   const rand=sequence(seed);
-  const offsets=new Map();
-  for(const {mesh,anchor,yaw,role} of record.props){
-   if(role==='ground')continue;
-   const key=anchor[0]+':'+anchor[2];
-   if(!offsets.has(key))offsets.set(key,[(rand()-.5)*1.52,(rand()-.5)*1.52]);
-   const [dx,dz]=offsets.get(key);
-   mesh.position.set(anchor[0]+dx,anchor[1],anchor[2]+dz);
-   mesh.rotation.y=yaw;
-  }
   if(record.definition.scatter)placeScatter(record,rand);
   const position=record.dust.geometry.attributes.position;
   for(let i=0;i<position.count;i++){
@@ -326,8 +313,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
     const scatter=definition.scatter?load(urlFor(scenery,'scenery/'+definition.scatter[0])):null;
     const props=definition.models.map(([id])=>load(urlFor(scenery,'scenery/'+id)));
     const foundation=load(urlFor(scenery,'scenery/biome-deck-'+(definition.masonry?'arcade':'truss')));
-    Promise.all([deck,scatter,foundation,...props]).then(([base,detail,supports,...models])=>{
-     setup(record,base,detail,models,supports);
+    const traffic=definition.traffic?load(urlFor(scenery,'scenery/'+definition.traffic.model)).catch(()=>null):null;
+    Promise.all([deck,scatter,foundation,traffic,...props]).then(([base,detail,supports,trafficModel,...models])=>{
+     setup(record,base,detail,models,supports,trafficModel);
      record.status='ready';
      if(requested===record)layout(record,record.seed);
     }).catch(()=>{record.status='error'}).then(()=>{
@@ -344,6 +332,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(!active)return;
   const t=still?0:seconds;
   active.scenicTime.value=t;
+  active.traffic?.update(seconds,still);
   sky.material.uniforms.time.value=t;
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);

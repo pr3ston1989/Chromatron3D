@@ -1,0 +1,165 @@
+"""Sculpt a continuous landscape for each of the six grounded campaign scenes."""
+from math import exp, hypot, sin
+from pathlib import Path
+from random import Random
+import sys
+
+import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from tools.blender.style import MODELS, export_model, render, reset_scene
+
+
+# Scene coordinates (X, Z, height). Pads hold the footings, while the larger
+# slopes continue through the edges of the camera's orbit.
+SCENES = {
+    'heliostat': (-16.2, (.105, .126, .047), (.214, .258, .096), (.103, .207, .063), [
+        (-10.5, -13.4, -8.9, 5.2), (20.5, 4.9, -8.8, 14.1),
+        (15.1, -27.8, -15.3, 15), (9.7, 15.8, -9.5, 5.5),
+        (-16.4, 3.1, -10.4, 6), (21.5, -16., -14.3, 7),
+    ]),
+    'grotto': (-18.6, (.055, .049, .087), (.136, .125, .194), (.070, .102, .154), [
+        (12.8, 10.5, -8.22, 11), (-11.8, -10.4, -5.46, 6.4),
+        (-13.8, -15.7, -8.45, 5.1), (21, -10.9, -12.8, 5.2),
+        (24, -22, -16.7, 9),
+    ]),
+    'frost': (-16.3, (.125, .259, .381), (.294, .481, .623), (.126, .307, .430), [
+        (-10.5, -13.9, -10.42, 9.4), (10.2, 15.7, -9.92, 5.7),
+        (-17.5, 10.4, -11.36, 6.4), (24, -23.8, -18.1, 8),
+    ]),
+    'forge': (-15.9, (.050, .035, .045), (.123, .075, .063), (.061, .056, .074), [
+        (-10.9, -13.6, -8.6, 5.7), (9.8, 15.1, -9.1, 5.8),
+        (-17.5, 10.4, -11.6, 6.7), (24.5, -6.5, -13.6, 6.8),
+        (22.5, -18.9, -10.24, 7), (31, -29, -15.95, 10),
+    ]),
+    'abyss': (-18.4, (.041, .108, .127), (.059, .171, .173), (.076, .125, .159), [
+        (-9.7, -13.4, -7.64, 4.9), (18.7, 5, -11.45, 6.7),
+        (9.3, 16.4, -8.46, 4.9), (-17.7, 10.8, -9.5, 5.7),
+        (18, -18, -11.05, 6.4), (28, -30, -17.74, 7.4),
+    ]),
+    'sanctuary': (-17.1, (.079, .084, .126), (.162, .141, .195), (.100, .140, .136), [
+        (-10.4, -15.4, -8.32, 5.2), (18.7, 7.1, -7.6, 5.5),
+        (-12, 12.8, -9.22, 6), (17, -24.4, -12.43, 6.9),
+        (34, -41, -17.6, 10.2),
+    ]),
+}
+
+FLOOR = -40
+TRAILS = {
+    'heliostat': (.30, .208, .113, [(-10.5,-13.4),(-15,-8),(-16.5,2),(-14,12),(-6,15),(8,15.8)]),
+    'forge': (.128, .093, .082, [(9.8,15.1),(17,12),(22.4,6),(24.5,-6.5)]),
+    'sanctuary': (.166, .149, .167, [(-10.4,-15.4),(-18,-8),(-17.6,2),(-12,12.8),(2,16),(16,10)]),
+}
+
+
+def trail_distance(x, z, points):
+    closest = float('inf')
+    for (ax,az),(bx,bz) in zip(points,points[1:]):
+        dx,dz = bx-ax,bz-az
+        t = max(0,min(1,((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz)))
+        closest = min(closest,hypot(x-ax-dx*t,z-az-dz*t))
+    return closest
+
+
+def bed(theme):
+    depth, shadow, light, secondary, pads = SCENES[theme]
+    rng = Random(815 + list(SCENES).index(theme)*11)
+    lines = [-112,-91,-73,-59,-48,-40,-34,-29,-25,-22,-19,-16,-13,-10,-8,-6,
+             -4,-2,0,2,4,6,8,10,13,16,19,22,25,29,34,40,48,59,73,91,112]
+    width = len(lines)
+    vertices, faces, colors = [], [], []
+
+    def profile(x, z):
+        radial = hypot(x,z)
+        broad = sin(.144*x+.067*z)+.5*sin(.31*z-.123*x)
+        sediment = sin(.41*x+.31*z+.71*broad)
+        channel = abs(x-.48*z-(19+8.5*sin(.078*z)))
+        if theme == 'forge':
+            channel = abs(.19*x+.72*sin(.117*z)+.23*sin(.30*z)-1.54)*6
+        if theme == 'abyss':
+            channel = abs(x+.52*z-7.8-5*sin(.066*z))
+        floor = depth+1.43*broad+.62*sediment
+        if theme in ('heliostat','forge','abyss'):
+            floor -= 4.1*exp(-(channel/4.8)**2)
+        if theme == 'frost':
+            floor += 1.67*sin(.137*x-.21*z+1.4*broad)
+        if theme == 'grotto':
+            floor -= 3.4*exp(-((x+.3*z+19)/6)**2)
+        if theme == 'sanctuary':
+            floor += .88*sin(.35*radial+.4*broad)
+        # The central shelf holds all twelve platform piers. Peripheral ridges
+        # dissolve into fog instead of exposing the border of the mesh.
+        deck_distance = max(abs(x),abs(z))
+        floor = max(floor, -8.52-.49*max(0,deck_distance-9.3))
+        for px,pz,height,radius in pads:
+            distance = hypot(x-px,z-pz)
+            floor = max(floor,height-1.02*max(0,distance-radius*.65))
+        hills = exp(-((radial-61)/24)**2)
+        floor += hills*(3.5+(2.4 if theme in ('grotto','frost') else 1.14)*broad)
+        floor = min(floor,-5.25)
+        branch = .28 if theme == 'frost' else .53
+        mix = .43+.18*broad+.12*sediment+.065*rng.uniform(-1,1)
+        accent = max(0.,sin(.19*x-.23*z+.54*broad))*branch
+        shade = tuple((a+(b-a)*mix)*(1-accent)+c*accent
+                      for a,b,c in zip(shadow,light,secondary))
+        if theme in TRAILS:
+            r,g,b,route = TRAILS[theme]
+            path = .76*exp(-(trail_distance(x,z,route)/(1.36+.23*broad))**2)
+            shade = tuple(value*(1-path)+gravel*path for value,gravel in zip(shade,(r,g,b)))
+        return floor,shade
+
+    for j,z in enumerate(lines):
+        for i,x in enumerate(lines):
+            dx,dz = (rng.uniform(-.34,.34),rng.uniform(-.34,.34)) if 0<i<width-1 and 0<j<width-1 else (0,0)
+            height,color = profile(x+dx,z+dz)
+            # glTF converts Blender XY into game X and minus Z.
+            vertices.append((x+dx,-(z+dz),height-FLOOR))
+            colors.append((*color,1))
+    for j in range(width-1):
+        for i in range(width-1):
+            a = j*width+i
+            b,c,d = a+1,a+width,a+width+1
+            faces.extend(((a,c,d),(a,d,b)) if (i+j)%2 else ((a,c,b),(b,c,d)))
+    perimeter = [*range(width), *(j*width+width-1 for j in range(1,width)),
+                 *(width*(width-1)+i for i in range(width-2,-1,-1)),
+                 *(j*width for j in range(width-2,0,-1))]
+    for i,source in enumerate(perimeter):
+        x,y,_ = vertices[source]
+        vertices.append((x,y,0))
+        colors.append((*shadow,1))
+        following = (i+1)%len(perimeter)
+        faces.append((source,perimeter[following],width*width+following,width*width+i))
+
+    name = theme+'-terrain'
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices,[],faces)
+    mesh.update()
+    model = bpy.data.objects.new(name,mesh)
+    bpy.context.collection.objects.link(model)
+    material = bpy.data.materials.new('Terrain · '+theme)
+    material.use_nodes = True
+    shader = material.node_tree.nodes.get('Principled BSDF')
+    shader.inputs['Roughness'].default_value = .9
+    material.diffuse_color = (1,1,1,1)
+    material.node_tree.links.new(material.node_tree.nodes.new('ShaderNodeVertexColor').outputs['Color'],shader.inputs['Base Color'])
+    mesh.materials.append(material)
+    pigment = mesh.color_attributes.new(name='Layered ground pigment',type='FLOAT_COLOR',domain='POINT')
+    for i,color in enumerate(colors):
+        pigment.data[i].color = color
+    mesh.color_attributes.active_color = pigment
+    bpy.context.view_layer.objects.active = model
+    model.select_set(True)
+    return model
+
+
+if __name__ == '__main__':
+    args = sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else []
+    bpy.context.preferences.filepaths.save_version = 0
+    folder = MODELS/'scenery'
+    for theme in [arg for arg in args if arg != '--preview'] or SCENES:
+        reset_scene()
+        model = bed(theme)
+        export_model(model,3100,folder)
+        bpy.ops.wm.save_as_mainfile(filepath=str(folder/(model.name+'.blend')),compress=True)
+        if '--preview' in args:
+            render('scenery/'+model.name,model=model)

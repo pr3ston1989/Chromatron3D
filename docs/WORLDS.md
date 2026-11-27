@@ -7,13 +7,13 @@ na przypisanej części lokalnej kampanii.
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
 | --- | --- | --- | --- |
 | 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
-| 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz, szkło z zieloną powłoką i złote światło nad doliną. | Heliostat z osobnymi panelami czaszy, akwedukt i tarasowe stoki z trzema przelewami. |
-| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, pomost z ujęciem wody, warstwy skał i skupiska ametystu. |
-| 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale przeładunkowe z kabinami, daleki dok i przeloty dwóch pojazdów. |
-| 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Stacja z ogrzewanymi szybami, radiometr omiatający lodowiec, nawiewany śnieg i odległe pasma gór. |
-| 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Hala pieca z kominami, linia odlewnicza, ruch płynnego metalu i strumień lawy pod platformą. |
-| 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa z wypukłymi iluminatorami, rafa kominów hydrotermalnych i patrol pojazdu badawczego. |
-| 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator na dwóch przyporach i zerwany most. |
+| 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz, szkło z zieloną powłoką i złote światło nad doliną. | Heliostat, tarasy z trzema przelewami i mosiężny szybowiec pomiarowy nad doliną. |
+| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, pomost z ujęciem wody i ćmy w pobliżu kryształów. |
+| 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale na dwóch ramionach kratownicowych, holownik przy doku, kurier na dalszej trasie i meteory. |
+| 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Radiometr nad lodowcem, nawiewany śnieg i jasny szybowiec badawczy pod zorzą. |
+| 6 | Kuźnia widmowa | Ciemny bazalt, miedź i pomarańczowe światła pieca. | Hala pieca, strumień lawy oraz wagon poruszający się po estakadzie. |
+| 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa, patrol pojazdu badawczego i ławica nad rafą hydrotermalną. |
+| 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator, zerwany most i dryfujące nad przepaścią pasma mgły. |
 
 Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,
 układy i zapisy kampanii są niezależne od scenografii.
@@ -26,15 +26,17 @@ układy i zapisy kampanii są niezależne od scenografii.
 | Chromatron IV | Optyka głębinowa | Sanktuarium soczewek |
 
 Scenografia współdzieli siatki i materiały. Dwie główne formy budują
-kadr, a siatka przyrządów jest osobną warstwą. Rozmieszczenie
-drobnych rekwizytów i pyłu jest deterministyczne dla gry i numeru planszy.
-Tryb ograniczonego ruchu zatrzymuje ozdobne animacje. Własne paczki importowane
-zachowują ogólną scenografię.
+kadr, a siatka przyrządów jest osobną warstwą. Budowle zachowują położenie
+względem stóp i dróg. Układ pyłu zależy od numeru planszy.
+Przeloty i ruch zwierząt odbywają się z przerwami poniżej poziomu gry.
+Tryb ograniczonego ruchu wycisza przeloty i zostawia wagon na torze.
+Własne paczki importowane zachowują ogólną scenografię.
 
-W sześciu światach poza orbitą zamodelowany grunt dochodzi do stóp
-wszystkich dwunastu podpór. Ogród i Sanktuarium stoją na tarasach, Grota
-opiera się o łupkową półkę, Laboratorium o lodowiec, Kuźnia o bazalt,
-a stacja podwodna o dno. Teren pozostaje poniżej płaszczyzny gry.
+Każdy z sześciu światów poza orbitą ma ciągły teren od dwunastu nóg
+platformy po dalszy plan. Ogród i Sanktuarium mają ścieżki między budowlami,
+Grota leży na łupkowej półce, Laboratorium na lodowcu, a Kuźnia nad bazaltowym
+korytem lawy. Rafy i stacja podwodna osadzone są w dnie morskim. Powierzchnie
+i trasy tła biegną poniżej płaszczyzny gry.
 
 ## Próba Stoczni orbitalnej
 
