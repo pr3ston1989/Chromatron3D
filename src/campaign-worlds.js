@@ -26,18 +26,19 @@ export const CAMPAIGN_WORLDS=Object.freeze([
   0x0f1428,0x4e6582,0x313a54,0xffefe2,0xbb9ee1,'grotto',{
    face:.54,groove:.61,dust:0xaba4db,air:'cavern',masonry:true,footing:{body:0x493a5b,bevel:0x6b5985},
    traffic:{model:'ambient-cavern-moth',period:24,duration:13,offset:3.5,count:4,
-    from:[15.6,-3.2,-15.7],to:[22.2,-3.5,-8.6],scale:.73},
-   currents:[{count:55,origin:[-15.1,-4.7,-9.6],spread:[1.05,.46,.55],travel:[.50,-7.6,.3],
-    tint:0x9eb9d7,size:.25,length:1.42,opacity:.40,rate:.53}],
+    from:[27.1,-4.7,.7],to:[34.2,-5.9,8.9],scale:.69},
+   currents:[{count:22,origin:[30.38,-15.2,10.62],spread:[1.24,.41,1.02],travel:[1.30,.94,1.49],
+    tint:0x689faf,size:.89,length:1.38,opacity:.21,rate:.29}],
    models:[
     ['grotto-terrain',[0,-40,0],[1,1,1],0,'ground'],
-    ['grotto-buttress',[-13.3,-24.0,-10.4],1.47,-.32,'cliff'],
+    ['grotto-buttress',[-17.9,-24.65,-17.9],1.34,-.16,'cliff'],
     ['grotto-survey',[12.8,-8.62,10.5],1.47,-.54,'cliff'],
-    ['grotto-pump-causeway',[-11.8,-5.63,-10.4],1.28,-.35],
+    ['grotto-pump-causeway',[-11.8,-20.0556,-10.4],1.28,-.35],
+    ['grotto-calcite-spring',[30.85,-20.22,6.16],1.19,-.29],
     ['grotto-crystal-seam',[-13.8,-8.7,-15.7],1.17,-.41,'cliff'],
-    ['grotto-crystal-seam',[21,-13.1,-10.9],1.53,-.47,'cliff'],
-    ['grotto-escarpment',[19,-30,-24],[2.15,1.94,2.55],-.77],
-    ['grotto-escarpment',[38,-46,-40],[3.18,1.98,2.35],-.46]
+    ['grotto-crystal-seam',[27.5,-12.23,-1.5],1.13,-.48],
+    ['grotto-escarpment',[24,-32.4,-28],[2.15,1.78,2.49],-.77],
+    ['grotto-escarpment',[43,-48,-43],[3.18,1.87,2.35],-.46]
    ]
   }),
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',

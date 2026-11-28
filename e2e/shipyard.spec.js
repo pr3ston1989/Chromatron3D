@@ -2,19 +2,22 @@ import {selectQuality} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 import {captureFrame,luminance,projectCells} from './frame.js';
 
-test('the forge spillway animates on the far side and holds still with reduced motion',async({page})=>{
+for(const {name,level,water,threshold} of [
+ {name:'forge spillway',level:5,water:[30.8,-13.5,7.24],threshold:10},
+ {name:'grotto lake',level:3,water:[33.0,-15.76,11.4],threshold:5}
+])test(`${name} animates on the far side and holds still with reduced motion`,async({page})=>{
  test.setTimeout(90000);
  await page.setViewportSize({width:1280,height:720});
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/?debug=1');
  await selectQuality(page,'performance');
- await page.evaluate(()=>{
+ await page.evaluate(level=>{
   window.__debug.switchCampaign('demo');
-  window.__debug.loadLevel(5);
+  window.__debug.loadLevel(level);
   window.__debug.freezeAnimations(true,{onDemand:true});
- });
+ },level);
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
- const point=await page.evaluate(()=>window.chromatron.projectCell(30.8/1.30+7,7.24/1.30+7,-13.5));
+ const point=await page.evaluate(([x,y,z])=>window.chromatron.projectCell(x/1.30+7,z/1.30+7,y),water);
  const samples=async()=>{
   const first=await captureFrame(page);
   await page.waitForTimeout(360);
@@ -22,7 +25,7 @@ test('the forge spillway animates on the far side and holds still with reduced m
   let changed=0;
   for(let dx=-12;dx<=12;dx++)for(let dy=-18;dy<=18;dy++){
    const x=point.x+dx,y=point.y+dy;
-   if(Math.abs(luminance(first,x,y)-luminance(second,x,y))>=10)changed++;
+   if(Math.abs(luminance(first,x,y)-luminance(second,x,y))>=threshold)changed++;
   }
   return changed;
  };

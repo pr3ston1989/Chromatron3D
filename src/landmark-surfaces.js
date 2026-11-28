@@ -55,6 +55,14 @@ const finishes={
   diffuseColor.rgb=diffuseColor.rgb*(.85+.12*ripple)+vec3(.030,.071,.056)*crest;
   diffuseColor.rgb+=vec3(.216,.263,.196)*spill;
  `,
+ 'Grotto falling water':`
+  float distanceDownstream=landmarkPoint.z-landmarkPoint.y*.81;
+  float waves=sin(12.*distanceDownstream-landmarkTime*4.6+1.2*sin(7.5*landmarkPoint.x));
+  vec3 faceNormal=normalize(cross(dFdx(landmarkPoint),dFdy(landmarkPoint)));
+  float foam=(1.-abs(faceNormal.y))*smoothstep(.68,1.,waves);
+  diffuseColor.rgb*=.82+.21*waves;
+  diffuseColor.rgb+=vec3(.022,.091,.128)*foam;
+ `,
  'Sanctuary active lens':`
   vec2 radial=vec2(landmarkPoint.x,landmarkPoint.y-4.09);
   float distanceFromAxis=length(radial);

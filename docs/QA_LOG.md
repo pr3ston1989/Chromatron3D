@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Kryształowa Grota
+
+- Zrzut wyjściowy pokazał, że wielka przypora zasłaniała zatokę. Zmieniono ułożenie skał, kaskady i ametystu tak, aby jezioro było widoczne w domyślnym widoku 3D. Przy obrocie przeciwległa część jaskini pozostaje spokojniejsza wizualnie.
+- Siatki w Blenderze mają 872 trójkąty dla żyły ametystu, 1136 dla kaskady, 1882 dla pomostu i 2880 dla terenu. Test wczytuje gotowe GLB i weryfikuje, że woda spływa do jeziora, a cztery filary pomostu i fundament kaskady sięgają gruntu.
+- W Chrome sprawdzono planszę w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 oraz w emulacji telefonu 390 × 844. Cztery ćwierćobroty kamery przy małej elewacji zachowały widoczność wszystkich 225 pól. Osobny test wykrył ruch na powierzchni jeziora i jego zatrzymanie w trybie ograniczonej animacji.
+- `npm run check` zakończyło się wynikiem 259/259 i poprawną kompilacją produkcyjną.
+
 ## 28 listopada 2026 · Kuźnia Widmowa
 
 - Zrzut wyjściowy pokazał płaskie pokrywy na formach i odległy piec zlewający się w jedną plamę. Przerobiono piec i otwartą linię odlewniczą, a w dalszym planie osadzono śluzę z pomostem i bocznym korytem. Drugi przebieg dodał detal pomostu i przygasił emisję w formach. Dalsze zbocza pozostają oszczędne wizualnie.

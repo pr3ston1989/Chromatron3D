@@ -8,7 +8,7 @@ na przypisanej części lokalnej kampanii.
 | --- | --- | --- | --- |
 | 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
 | 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz, szkło z zieloną powłoką i złote światło nad doliną. | Heliostat, tarasy z trzema przelewami i mosiężny szybowiec pomiarowy nad doliną. |
-| 3 | Kryształowa grota | Łupek, liliowy pokład i chłodne światło szczeliny. | Stanowisko pomiarowe, pomost z ujęciem wody i ćmy w pobliżu kryształów. |
+| 3 | Kryształowa grota | Chłodny łupek, liliowy pokład i turkusowe refleksy w jeziorze. | Ametystowe skupiska, kaskada na kalcytowych progach, pomost ujęcia na filarach i przeloty ciem. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale na dwóch ramionach kratownicowych, holownik przy doku, kurier na dalszej trasie i meteory. |
 | 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Radiometr nad lodowcem, nawiewany śnieg i jasny szybowiec badawczy pod zorzą. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, stal, oksydowana miedź i bursztynowe światła pieca. | Piec i otwarte formy odlewnicze, śluza nad bocznym korytem lawy oraz wagon na estakadzie. |

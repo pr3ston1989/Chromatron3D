@@ -5,6 +5,7 @@ import {Box3,Raycaster,Vector3} from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
 import {CAMPAIGN_FOOTING_Y,CAMPAIGN_WORLDS,campaignWorld} from '../src/campaign-worlds.js';
+import {GROTTO_POOL_Y} from '../src/grotto-surface.js';
 
 function gltf(path){
  const data=readFileSync(new URL('../public/models/'+path+'.glb',import.meta.url));
@@ -38,7 +39,7 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
   'forge-furnace-bank':[3800,'Furnace refractory throat'],
   'forge-casting-line':[3000,'Foundry flowing metal'],
   'forge-spillway':[2600,'Spillway molten glass'],
-  'grotto-pump-causeway':[1800,'Grotto intake gallery pilot lights']
+  'grotto-pump-causeway':[2300,'Grotto intake gallery pilot lights']
  };
  for(const [id,[budget,finish]] of Object.entries(models)){
   const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
@@ -80,6 +81,35 @@ test('the forge has open casting pans and a spillway that reaches the lava chann
  gate.traverse(mesh=>{if(mesh.material?.name==='Spillway molten glass')spill.expandByObject(mesh)});
  assert.ok(spill.min.y<-16.5&&spill.max.y>-11,'the liquid sheet falls from the gate into the basin');
  assert.ok(new Box3().setFromObject(gate).max.y<-.6,'the spillway roof stays below the puzzle');
+});
+
+test('the grotto spring and intake meet the lake beneath the puzzle',async()=>{
+ const loader=new GLTFLoader(),{models}=campaignWorld('demo',2);
+ const placed=async name=>{
+  const [,anchor,scale,yaw]=models.find(([id])=>id===name);
+  const file=readFileSync(new URL('../assets/models/scenery/'+name+'.glb',import.meta.url));
+  const {scene}=await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');
+  scene.position.fromArray(anchor);
+  if(Array.isArray(scale))scene.scale.fromArray(scale);
+  else scene.scale.setScalar(scale);
+  scene.rotation.y=yaw;scene.updateMatrixWorld(true);
+  return scene;
+ };
+ const [ground,spring,intake]=await Promise.all(['grotto-terrain','grotto-calcite-spring','grotto-pump-causeway'].map(placed));
+ const down=new Vector3(0,-1,0);
+ const floorAt=(x,z)=>new Raycaster(new Vector3(x,5,z),down).intersectObject(ground,true)[0]?.point.y;
+ assert.ok(floorAt(-19,-8)<GROTTO_POOL_Y-.5,'lake has a submerged bed');
+ assert.ok(floorAt(29.6,9.5)<GROTTO_POOL_Y-.5,'the spring basin has a submerged bed');
+ const water=new Box3();
+ spring.traverse(mesh=>{if(mesh.material?.name==='Grotto falling water')water.expandByObject(mesh,true)});
+ assert.ok(water.min.y<GROTTO_POOL_Y&&water.max.y>GROTTO_POOL_Y+2.5,'the cascade descends into the lake');
+ const foot=spring.position;
+ assert.ok(floorAt(foot.x,foot.z)>=foot.y,'the rock foundation reaches the bed');
+ for(const x of [-3.7,-1.37,1.12,3.54]){
+  const pier=intake.localToWorld(new Vector3(x,0,0));
+  assert.ok(floorAt(pier.x,pier.z)>=pier.y,'intake pier reaches solid ground');
+ }
+ for(const model of [spring,intake])assert.ok(new Box3().setFromObject(model).max.y<-.6,'the scenery stays below the board');
 });
 
 test('each non-orbital biome shares continuous modeled ground between the piers and the surrounding landscape',async()=>{

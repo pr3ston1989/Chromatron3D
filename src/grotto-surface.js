@@ -36,6 +36,8 @@ export function finishGrottoRock(THREE,material,surface='slate'){
  };
 }
 
+export const GROTTO_POOL_Y=-15.76;
+
 export function createGrottoPool(THREE){
  const material=new THREE.ShaderMaterial({
   uniforms:{seconds:{value:0}},transparent:true,depthWrite:false,
@@ -48,6 +50,10 @@ export function createGrottoPool(THREE){
   fragmentShader:`
    varying vec3 surface;
    uniform float seconds;
+   float current(vec2 p,float t){
+    float sweep=sin(p.x*1.64+p.y*.84+t);
+    return sin(p.y*2.2-.8*t+1.4*sweep)+.41*sin(p.x*3.7+p.y*.81+t*.76);
+   }
    float drip(vec2 offset,float age){
     float radius=length(offset);
     float wave=radius-age*2.3;
@@ -61,24 +67,37 @@ export function createGrottoPool(THREE){
     vec3 n=normalize(vec3(.019*cos(p.x*.54+p.y*.31+t)+.011*chop,1.,
                           .020*sin(p.y*1.07+t)+.012*cos(p.x*1.68-t)));
     vec3 reflected=reflect(-eye,n);
-    float opening=clamp(.42+.63*reflected.z-.28*reflected.x,0.,1.);
-    float fresnel=.15+.71*pow(1.-max(dot(eye,n),0.),2.);
-    vec3 water=mix(vec3(.010,.029,.041),vec3(.079,.131,.179),opening*(fresnel+.15));
-    float ripple=.5+.5*sin(p.y*4.3+p.x*.81+chop+t);
-    float shimmer=smoothstep(.89,.99,ripple)*smoothstep(.18,.98,opening);
-    water+=vec3(.013,.026,.032)*shimmer;
-    // Drips from the rock shelves disturb only small patches of the surface.
-    float rings=drip(p-vec2(-8.,4.),fract(seconds*.48+.37))
-               +drip(p-vec2(6.,-5.),fract(seconds*.31+.76));
-    water+=vec3(.012,.022,.028)*rings;
-    float mist=smoothstep(32.,100.,length(p));
-    water=mix(water,vec3(.049,.045,.079),mist);
-    gl_FragColor=vec4(water,1.-smoothstep(78.,100.,length(p)));
+    float opening=clamp(.44+.49*reflected.z-.32*reflected.x,0.,1.);
+    float fresnel=.22+.58*pow(1.-max(dot(eye,n),0.),2.);
+    float inlet=length((p-vec2(-16.6,-9.))/vec2(6.2,8.3));
+    float lake=length((p-vec2(29.6,9.5))/vec2(8.1,8.3));
+    float shelf=min(inlet,lake);
+    float shallows=smoothstep(.32,.95,shelf);
+    vec3 water=mix(vec3(.010,.030,.063),vec3(.019,.104,.134),.15+.67*shallows);
+    water+=vec3(.059,.106,.172)*opening*fresnel;
+    float filaments=current(p,t*2.6);
+    float caustic=1.-smoothstep(.025,.18+fwidth(filaments),abs(filaments-.24));
+    water+=vec3(.019,.054,.072)*caustic*shallows*opening;
+    float rings=drip(p-vec2(30.38,10.62),fract(seconds*.48+.37))
+               +drip(p-vec2(-15.9,-6.9),fract(seconds*.31+.76));
+    water+=vec3(.028,.072,.099)*rings;
+    gl_FragColor=vec4(water,1.-smoothstep(.98,1.24,shelf));
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
    }`
  });
- const pool=new THREE.Mesh(new THREE.PlaneGeometry(202,202),material);
- pool.name='Grotto waterline';pool.rotation.x=-Math.PI/2;pool.position.y=-19.7;
+ // Two rectangles share the shader and leave the dry center of the cave out of the draw.
+ const vertices=[],indices=[];
+ for(const [x,z,width,depth] of [[-16.6,-9,17,22],[29.6,9.5,21,22]]){
+  const base=vertices.length/3;
+  vertices.push(x-width/2,0,z-depth/2,x+width/2,0,z-depth/2,
+   x-width/2,0,z+depth/2,x+width/2,0,z+depth/2);
+  indices.push(base,base+2,base+1,base+1,base+2,base+3);
+ }
+ const geometry=new THREE.BufferGeometry();
+ geometry.setIndex(indices);
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+ const pool=new THREE.Mesh(geometry,material);
+ pool.name='Grotto waterline';pool.position.y=GROTTO_POOL_Y;
  return pool;
 }

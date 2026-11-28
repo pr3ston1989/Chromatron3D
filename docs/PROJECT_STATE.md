@@ -9,9 +9,10 @@ atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORL
 Stocznia ma terminale przeładunkowe z holownikiem, kurierem i meteorami.
 Kuźnia ma estakadę dla wagonu, piec z obudową ze stali, otwartą linię
 odlewniczą i śluzę z pomostem obsługi. Spływ lawy łączy śluzę z korytem.
-W Grocie nad ujęciem wody przelatują ćmy. Szybowce w Ogrodzie i Laboratorium
-mają barwy dopasowane do sceny. Modele powstały w Blenderze i są podpięte do
-zwykłej kampanii.
+W Grocie przelatują ćmy nad żyłą ametystu. Mineralna kaskada zasila jezioro,
+a po drugiej stronie planszy pomost ujęcia stoi na filarach sięgających dna.
+Szybowce w Ogrodzie i Laboratorium mają barwy dopasowane do sceny. Modele
+powstały w Blenderze i są podpięte do zwykłej kampanii.
 
 Ekran ładowania jest widoczny od pierwszego wyświetlenia dokumentu.
 Ustępuje po inicjalizacji gry i wyświetla przycisk ponowienia przy błędzie.

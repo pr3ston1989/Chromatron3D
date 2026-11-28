@@ -1,5 +1,13 @@
 # Decyzje
 
+## Kryształowa Grota · 28 listopada 2026
+
+Dwie niecki w siatce terenu rozdzielają zatokę ujęcia od jeziora pod
+kaskadą. Pomost łączą z dnem filary i zastrzały. Żyły ametystu dostały
+zróżnicowane nachylenia i osobny materiał na oświetlonych płaszczyznach.
+Refleksy i kręgi na wodzie korzystają z tego samego zegara co pozostała
+scenografia i zatrzymują się w trybie ograniczonego ruchu.
+
 ## Kuźnia Widmowa · 28 listopada 2026
 
 Piec, linia odlewnicza i śluza operują wspólną paletą grafitowej stali,

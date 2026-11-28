@@ -765,20 +765,78 @@ def sanctuary_meridian():
 
 def crystal_seam():
     m = Landmark("Amethyst seam", "plum", "amethyst", "lilac", "obsidian", masonry=True)
-    quartz = make_material("Quartz tips", "lilac", .24, .24, .14, shade=1)
-    flanks = make_material("Layered violet quartz", "amethyst", .33, .29)
-    for i in range(5):
-        x,y = (i-2)*1.79, .17*(i%3)
-        m.rock((x,y,0),(1.72,1.87),2.80+i%3,42+i)
-        for j in range(4):
-            cx,cy = x+(j-1.5)*.51,y-1.08+.16*(j%2)
-            z = 1.56+i%3*.44
-            h = 1.02+.76*((j+i*3)%4)
-            r = .19+(h*.11)
-            m.s.lathe([(cx,cy,z,r*.72,r*.85), (cx+.18,cy-.16,z+h*.61,r,r*.90),
-                       (cx+.26,cy-.29,z+h*.84,r*.71,r*.66),
-                       (cx+.37,cy-.44,z+h,.021,.018)],m.stone,6,
-                      bands=[flanks,m.glass,quartz],phase=.31*j)
+    quartz = paint("Quartz tips", (.185,.104,.319), .25,.24,.065)
+    flanks = paint("Layered violet quartz", (.119,.043,.248), .33,.28,.045)
+    facets = paint("Amethyst fracture highlights", (.25,.166,.43), .28,.22,.12)
+    m.body = paint("Amethyst seam matrix", (.048,.035,.071), .12,.78)
+    m.edge = paint("Amethyst seam broken calcite", (.115,.091,.153), .18,.67)
+    for i,(x,y,rx,ry,h) in enumerate([(-3.1,.49,2.19,1.58,2.47),(-.5,.37,2.84,2.01,3.12),
+                                       (2.22,.64,2.16,2.16,2.67),(3.94,1.5,1.55,1.83,1.93)]):
+        m.rock((x,y,0),(rx,ry),h,61+i)
+    for cx,cy,z,h,r,tilt,phase in [
+        (-3.28,-.49,1.54,2.29,.45,-.50,.31),(-2.37,-.63,1.40,1.10,.29,.17,.44),
+        (-1.76,-.52,2.06,3.32,.63,-.68,.27),(-.56,-.21,2.48,4.16,.71,.27,.15),
+        (.53,.23,2.39,3.41,.63,.87,.65),(1.52,-.68,1.66,1.65,.38,.59,.22),
+        (2.87,-.29,1.70,2.53,.55,1.01,.56),(3.62,.48,1.23,1.37,.34,.52,.18),
+        (-.59,-1.35,.93,1.34,.29,-.31,.18),(1.18,-1.27,.76,1.19,.31,.69,.41),
+        (2.22,-1.13,.90,1.24,.24,.45,.74),(-3.87,.18,1.33,1.36,.31,-.48,.28),
+    ]:
+        face_start = len(m.s.faces)
+        m.s.lathe([(cx,cy,z,r*.67,r*.80), (cx+tilt*.26,cy-.15,z+h*.41,r,r*.82),
+                   (cx+tilt*.59,cy-.37,z+h*.77,r*.81,r*.74),
+                   (cx+tilt,cy-.54,z+h,.034,.039)],m.stone,6,
+                  bands=[flanks,flanks,quartz],phase=phase)
+        if facets not in m.s.palette:
+            m.s.palette.append(facets)
+        highlight = m.s.palette.index(facets)
+        m.s.finishes[face_start+5] = highlight
+        m.s.finishes[face_start+11] = highlight
+    return m
+
+
+def grotto_calcite_spring():
+    m = Landmark("Travertine spring", "plum", "amethyst", "cyan", "obsidian", masonry=True)
+    wet = paint("Wet slate at the spring", (.039,.051,.077), .12,.43)
+    calcite = paint("Calcite terraces", (.175,.158,.194), .09,.66)
+    mineral = paint("Manganese seams", (.095,.063,.134), .03,.80)
+    stream = paint("Grotto falling water", (.034,.138,.182), .19,.22,.05)
+    m.rock((-2.15,1.38,0),(3.05,2.11),4.43,841,cap=mineral)
+    m.rock((2.07,1.71,0),(2.05,1.94),3.59,872,cap=calcite)
+    m.rock((-3.71,.11,.06),(1.57,1.63),2.51,492,cap=wet)
+    # Beveled rims keep the shallow pools distinct when seen from above.
+    rows = [(0,1.76,4.17,1.34,1.22),(.28,.33,3.04,1.59,1.17),
+            (.57,-1.07,1.88,1.73,1.26),(.83,-2.55,.92,1.88,1.22)]
+    for i,(x,y,z,rx,ry) in enumerate(rows):
+        m.rock((x,y,0),(rx*1.21,ry*1.14),z,345+i,cap=wet)
+        profile = [(.90,z-.50),(1.03,z-.20),(1.0,z),(.85,z+.055),(.76,z-.16)]
+        start = len(m.s.vertices)
+        sides = 10
+        for factor,height in profile:
+            for side in range(sides):
+                a = side*tau/sides
+                spread = 1+.07*sin(side*3.5+i)
+                m.s.vertices.append((x+rx*cos(a)*factor*spread,y+ry*sin(a)*factor*spread,height+.023*sin(a*3+i)))
+        for row,material in enumerate((wet,mineral,calcite,wet)):
+            for side in range(sides):
+                a = start+row*sides+side
+                b = start+row*sides+(side+1)%sides
+                m.s.face((a,b,b+sides,a+sides),material)
+        surface = start+(len(profile)-1)*sides
+        m.s.face(tuple(range(surface,surface+sides)),stream)
+        next_z = rows[i+1][2]-.16 if i+1<len(rows) else -.13
+        path = [(x,y-ry*.58,z-.10,.37),(x+.07,y-ry*.91,z-.046,.46),
+                (x+.14,y-ry*1.09,z-.29,.40),(x+.22,y-ry*1.32,next_z,.48)]
+        start = len(m.s.vertices)
+        for cx,cy,cz,w in path:
+            for j in range(5):
+                q = j*.50-1
+                m.s.vertices.append((cx+q*w,cy+.061*cos(j*3.1+cz),cz+.030*sin(j*2.1+cy)))
+        for row in range(len(path)-1):
+            for side in range(4):
+                a = start+5*row+side
+                m.s.face((a,a+5,a+6,a+1),stream)
+    m.s.vertices = [(x,y,z+3.8) for x,y,z in m.s.vertices]
+    m.rock((-.25,-.72,0),(3.47,3.44),4.03,968,cap=wet)
     return m
 
 
@@ -1004,6 +1062,19 @@ def grotto_pump_causeway():
     m.ring((-2.42,-.03,2.83),.28,.75,.23,m.edge,segments=10,lights=True)
     m.pipe([(-2.42,.25,2.81),(-1.63,.71,2.82),(1.17,.71,2.82),(1.43,.71,2.18)],.145,m.body)
     m.pipe([(-2.45,-.28,2.81),(-2.45,-1.67,2.81),(-2.41,-1.97,1.79),(-2.41,-1.97,.61)],.12,m.body)
+    lifting = 11.27
+    m.s.vertices = [(x,y,z+lifting) for x,y,z in m.s.vertices]
+    for x in (-3.7,-1.37,1.12,3.54):
+        m.s.lathe([(x,0,0,.77,.80),(x,0,.69,.63,.66),(x,0,lifting-.45,.40,.62),
+                   (x,0,lifting+.12,.47,.71)],m.stone,8,bands=[m.edge,m.body,m.stone],phase=tau/16)
+        m.pipe([(x,-.59,3.76),(x,-.76,lifting+.28)],.09,m.edge,5)
+    for a,b in [(-3.7,-1.37),(-1.37,1.12),(1.12,3.54)]:
+        m.pipe([(a,-.43,6.7),((a+b)*.50,-.43,7.83),(b,-.43,8.96)],.079,m.edge,5)
+        m.pipe([(a,-.41,8.96),(b,-.41,6.70)],.079,m.body,5)
+    m.pipe([(-2.41,-1.97,lifting+.73),(-2.41,-1.97,4.15),(-2.66,-2.25,2.27),
+            (-2.66,-2.62,2.02)],.154,m.body,8)
+    for z in (3.66,5.41,7.12,8.74):
+        m.pipe([(-2.41,-1.98,z),(-2.41,-1.98,z+.24)],.218,m.edge,8)
     return m
 
 
@@ -1169,7 +1240,8 @@ BUILDERS = {
     "sanctuary-terrace": sanctuary_terrace,
     "sanctuary-collimator": sanctuary_collimator, "sanctuary-broken-span": sanctuary_broken_span,
     "sanctuary-meridian": sanctuary_meridian,
-    "grotto-crystal-seam": crystal_seam, "shipyard-graving-dock": graving_dock,
+    "grotto-crystal-seam": crystal_seam, "grotto-calcite-spring": grotto_calcite_spring,
+    "shipyard-graving-dock": graving_dock,
     "shipyard-transfer-dock": shipyard_transfer_dock, "shipyard-cargo-tug": shipyard_cargo_tug,
     "shipyard-service-arm": shipyard_service_arm,
     "forge-furnace-bank": forge_furnace_bank, "forge-casting-line": forge_casting_line,
@@ -1185,7 +1257,8 @@ LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,
-    "forge-furnace-bank": 3800, "forge-casting-line": 3000, "forge-spillway": 2600, "grotto-pump-causeway": 1800,
+    "forge-furnace-bank": 3800, "forge-casting-line": 3000, "forge-spillway": 2600, "grotto-pump-causeway": 2300,
+    "grotto-crystal-seam": 1500, "grotto-calcite-spring": 2400,
     "heliostat-ravine": 4600, "heliostat-optical-collector": 4600, "sanctuary-meridian": 4300,
     "ambient-survey-glider": 1100, "ambient-cavern-moth": 400,
     "ambient-pelagic-fish": 520, "ambient-forge-hauler": 950, "forge-service-rail": 1800,
