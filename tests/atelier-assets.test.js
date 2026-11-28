@@ -365,7 +365,7 @@ test('the polar instruments and core bridge sit on the ice below a clear glider 
  const loader=new GLTFLoader();
  const landmarks={
   'frost-optical-lab':[3200,'Heated polar glazing'],
-  'frost-radiometer':[1800,'Radiometer optical panels'],
+  'frost-radiometer':[2400,'Radiometer optical panels'],
   'frost-core-bridge':[2600,'Frosted sampling core'],
   'frost-icefall':[2400,'Glacier clear fracture'],
   'frost-ridge':[480,'Distant snow line']
@@ -400,7 +400,7 @@ test('the polar instruments and core bridge sit on the ice below a clear glider 
  };
  const mounts={
   'frost-optical-lab':[[-3.51,-1.83],[-3.51,1.83],[3.51,-1.83],[3.51,1.83]],
-  'frost-radiometer':[[0,0]],
+  'frost-radiometer':[[-2.12,-1.34],[-2.12,1.28],[2.12,-1.34],[2.12,1.28],[-.48,2.30]],
   'frost-core-bridge':[[-4.16,-1.16],[-4.16,1.16],[4.16,-1.16],[4.16,1.16]]
  };
  const down=new Vector3(0,-1,0);
@@ -415,6 +415,15 @@ test('the polar instruments and core bridge sit on the ice below a clear glider 
    const contact=ray.intersectObject(ice,true)[0];
    assert.ok(contact&&contact.point.y>foot.y,id+' foot reaches the glacial face');
   }
+ }
+ const station=placed(models.find(([name])=>name==='frost-radiometer'));
+ const scanner=station.getObjectByName('Radiometer_Pivot');
+ assert.equal(scanner?.parent.name,'frost-radiometer','the head is mounted in the fixed stand');
+ const pivot=scanner.getWorldPosition(new Vector3());
+ for(const angle of [-.31,0,.31]){
+  scanner.rotation.x=angle;station.updateMatrixWorld(true);
+  assert.ok(new Box3().setFromObject(scanner,true).max.y<-.6,'the moving panels clear the playable deck');
+  assert.deepEqual(scanner.getWorldPosition(new Vector3()).toArray(),pivot.toArray(),'the bearing stays in place');
  }
  const [,bridge]=models.find(([name])=>name==='frost-core-bridge');
  const fracture=new Raycaster(new Vector3(bridge[0],20,bridge[2]),down).intersectObject(ice,true)[0];

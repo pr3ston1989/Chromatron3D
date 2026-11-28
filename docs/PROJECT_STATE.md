@@ -31,8 +31,9 @@ terminale z konstrukcją planszy. Iskry Kuźni, mgiełka w Grocie i smugi
 silników holownika korzystają z niewielkich grup instancji.
 
 Laboratorium polarne stoi na palach zakotwionych w lodowcu. Stacja ma
-ciemniejsze ciągi serwisowe i ciepłe podświetlenie szyb. Radiometr skanuje
-niebo z tego samego lodowca, a pomost z wiertnicą łączy brzegi szczeliny.
+ciemniejsze ciągi serwisowe i ciepłe podświetlenie szyb. Trzy panele
+radiometru wychylają się w łożyskach na nieruchomym podeście. Dwa ogrzewane
+słupki znaczą dojście po lodzie, a pomost z wiertnicą łączy brzegi szczeliny.
 Szybowiec przelatuje za planszą na tle grzbietu. Bliskie bloki lodu mają
 osobne modele, a dalsze grzbiety należą do wspólnej siatki terenu.
 

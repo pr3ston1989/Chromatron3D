@@ -45,10 +45,16 @@ trójkątów), `abyss-vent-reef` (3300), `abyss-rov-berth` (2350) i
 `abyss-survey-rov` (1200). Iluminatory i reflektory pojazdu mają efekty
 nakładane w grze. Materiały i wypalone cienie pozostają zapisane w GLB.
 
-Modele Laboratorium polarnego to `frost-optical-lab` (limit 3200 trójkątów),
-`frost-icefall` (2400), `frost-radiometer` (1800) i `frost-core-bridge` (2600).
-Stacja i radiometr mają pale sięgające lodu. Cztery stopy pomostu stoją na
-przeciwległych brzegach szczeliny w `frost-terrain`.
+Modele Laboratorium polarnego z zestawu to `frost-optical-lab` (limit 3200
+trójkątów), `frost-icefall` (2400) i `frost-core-bridge` (2600). Cztery stopy
+pomostu stoją na przeciwległych brzegach szczeliny w `frost-terrain`.
+Radiometr ma 2118 z 2400 trójkątów i osobne źródło Blendera. Węzeł
+`Radiometer_Pivot` zawiera trzy panele i oś wspartą w dwóch łożyskach.
+Podest oraz oświetlone dojście pozostają nieruchome.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/frost-radiometer.py
+```
 
 Stocznia korzysta z `shipyard-transfer-dock` i `shipyard-cargo-tug` (limity
 3800 i 1400 trójkątów). Kuźnia używa `forge-furnace-bank`,

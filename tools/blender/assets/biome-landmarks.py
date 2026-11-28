@@ -439,42 +439,6 @@ def frost_ridge():
     return m
 
 
-def frost_radiometer():
-    m = Landmark("Polar scanning radiometer", "steel", "titanium", "amber", "navy")
-    mirror = paint("Radiometer optical panels", (.10,.29,.33), .66,.24)
-    copper = make_material("Radiometer heater traces", "copper", .46,.42)
-    m.s.lathe([(0,0,-1.62,.80,.80),(0,0,-1.49,.91,.91),(0,0,-1.24,.83,.83),
-               (0,0,-1.08,.59,.59),(0,0,.14,.56,.56)],m.dark,12,bands=[m.stone,m.body,m.edge,m.body])
-    m.slab((0,0),2.28,1.71,0,.38,.54,m.stone)
-    m.slab((0,.1),1.44,1.07,.36,.41,.39,m.body)
-    dish_axis = (0,-.85,.53)
-    radial_z = (0,.53,.85)
-    def dish_point(angle,r,depth):
-        return (r*cos(angle),r*sin(angle)*radial_z[1]+depth*dish_axis[1],
-                2.75+r*sin(angle)*radial_z[2]+depth*dish_axis[2])
-    n = 18
-    profile = [(-.85,.20),(-.68,1.02),(-.46,1.49),(-.11,1.87),(-.02,1.94),(.03,1.90),
-               (-.09,1.78),(-.43,1.24),(-.65,.59),(-.72,.19)]
-    m.s.loft([[dish_point(i*tau/n,radius,depth) for i in range(n)] for depth,radius in profile],
-             m.dark,[m.body,m.body,m.body,m.edge,m.edge,copper,mirror,mirror,mirror])
-    for i in range(0,n,2):
-        angle = i*tau/n
-        m.pipe([dish_point(angle,.31,-.70),dish_point(angle,.62,-.61),
-                dish_point(angle,1.26,-.40),dish_point(angle,1.87,-.054)],.027,copper,4)
-    for x in (-1.43,1.43):
-        m.pipe([(x,0,.64),(x,.47,1.58),(x*.76,.48,2.49)],.25,m.body,8)
-        m.pipe([(x,-.38,.45),(x*1.03,-.08,1.17)],.051,m.signal,5)
-    for side in (-1,1):
-        m.pipe([dish_point(0 if side==1 else pi,1.64,-.18),(side*.32,-.70,2.93),(0,-.83,3.04)],.065,m.edge,6)
-    m.pipe([(0,-.58,2.96),(0,-.89,3.09),(0,-.98,3.15)],.16,m.body,8)
-    m.pipe([(0,-.96,3.13),(0,-1.04,3.16)],.119,m.signal,8)
-    for x in (-1.79,1.79):
-        m.slab((x,.94),.31,.41,.30,.23,.14,m.body,cap=copper)
-        m.pipe([(x,-.78,.45),(x,-.31,.45)],.042,m.signal,4)
-    m.pipe([(-.69,1.08,.39),(-.55,1.19,.86),(.51,1.10,1.0),(.83,.79,1.03)],.083,m.stone)
-    return m
-
-
 def frost_core_bridge():
     m = Landmark("Polar core sampling bridge", "steel", "titanium", "amber", "navy")
     grating = paint("Dark polar grating", (.044,.069,.090), .27,.67)
@@ -1388,7 +1352,7 @@ BUILDERS = {
     "heliostat-optical-collector": heliostat_optical_collector,
     "frost-escarpment": glacier, "frost-traverser": polar_station,
     "frost-optical-lab": frost_optical_lab, "frost-icefall": frost_icefall,
-    "frost-radiometer": frost_radiometer, "frost-ridge": frost_ridge,
+    "frost-ridge": frost_ridge,
     "frost-core-bridge": frost_core_bridge,
     "forge-smelter": smelter, "forge-basalt": basalt_basin,
     "abyss-habitat": bathysphere, "abyss-reef": reef,
@@ -1413,7 +1377,7 @@ BUILDERS = {
 
 LANDMARK_BUDGETS = {
     "abyss-observatory": 3900, "abyss-vent-reef": 3300, "abyss-survey-rov": 1200, "abyss-rov-berth": 2350,
-    "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
+    "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-ridge": 480,
     "frost-core-bridge": 2600,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,
     "forge-furnace-bank": 3800, "forge-casting-line": 3000, "forge-spillway": 2600, "grotto-pump-causeway": 2300,

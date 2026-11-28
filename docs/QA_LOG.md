@@ -1,5 +1,11 @@
 # QA
 
+## 28 listopada 2026 · Radiometr Laboratorium Polarnego
+
+- Okrągłą czaszę zastąpiono trzema szkłami w fazowanych ramach. Po renderze odsunięto szkło od obudowy, aby powierzchnie nie nachodziły na siebie. Przestawiono podest, przyciemniono lód i odsłonięto dojście z dwoma lampami.
+- Model ma 2118 z 2400 trójkątów. Test z GLB sprawdza pięć punktów styku z lodowcem, stałe położenie osi i prześwit między panelem a poziomem gry przy obu skrajnych wychyleniach.
+- W grze sprawdzono 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 i emulację 390 × 844. W czterech rozmiarach desktopowych wykonano także po cztery ćwierćobroty, zachowując widoczność środków wszystkich 225 pól. `npm run check` przeszedł z wynikiem 263/263 i poprawną kompilacją.
+
 ## 28 listopada 2026 · Sklepienie Kryształowej Groty
 
 - Dwa podobne urwiska w tle zastąpiono warstwowym sklepieniem z prześwitem, stalaktytami i chłodnym odbiciem. Po pierwszych ujęciach przesunięto grotę w prawo i w dół. Po przeciwnej stronie wykorzystano półkę ametystu widoczną podczas obrotu.

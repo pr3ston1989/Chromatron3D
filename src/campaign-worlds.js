@@ -58,7 +58,7 @@ export const CAMPAIGN_WORLDS=Object.freeze([
     ['frost-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['frost-optical-lab',[-10.5,-10.62,-13.9],1.20,-.41],
     ['frost-icefall',[-15.1,-13.5,-16.1],[1.06,.84,1.01],-.58],
-    ['frost-radiometer',[10.2,-10.07,15.7],1.34,-.43,'pulse'],
+    ['frost-radiometer',[8.7,-10.42,13.95],1.27,-.59,'radiometer'],
     ['frost-core-bridge',[28.75,-15.08,6.9],1,1.32],
     ['frost-icefall',[-17.5,-11.6,10.4],[1.18,.96,1.51],.39]
    ]

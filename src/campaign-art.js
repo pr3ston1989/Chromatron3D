@@ -11,6 +11,7 @@ const scenery=import.meta.glob('../assets/models/scenery/*.glb',{eager:true,impo
 const platforms=import.meta.glob('../assets/models/overhaul-platform-*.glb',{eager:true,import:'default',query:'?url'});
 const urlFor=(base,id)=>base['../assets/models/'+id+'.glb'];
 const atmosphereKinds={sunset:1,cavern:2,aurora:3,embers:4,current:5,twilight:6};
+const pivotNames={calibration:'Calibration_Pivot',waterwheel:'Sluice_Wheel',radiometer:'Radiometer_Pivot'};
 
 function sequence(seed){
  let state=seed;
@@ -234,8 +235,8 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    if(role==='survey')mesh.add(createSurveyLights(THREE));
    root.add(mesh);
-   const pivot=role==='calibration'?mesh.getObjectByName('Calibration_Pivot'):
-    role==='waterwheel'?mesh.getObjectByName('Sluice_Wheel'):null;
+   const pivotName=pivotNames[role];
+   const pivot=pivotName?mesh.getObjectByName(pivotName):null;
    return {mesh,id,anchor,yaw,role,pivot};
   });
 
@@ -340,9 +341,10 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);
   for(const {mesh,yaw,role,anchor,pivot} of active.props){
-   if(role==='iris'||role==='turn'||role==='pulse')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
+   if(role==='iris'||role==='turn')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
    if(role==='calibration'&&pivot)pivot.rotation.x=Math.sin(t*.43)*.53;
    if(role==='waterwheel'&&pivot)pivot.rotation.z=-t*.34;
+   if(role==='radiometer'&&pivot)pivot.rotation.x=Math.sin(t*.32)*.31;
    if(role==='survey'){
     // Patrol the space between the dock and vent field, with a fixed pose at t = 0.
     const pass=t*.23;
@@ -360,5 +362,6 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
  }
  return {setLevel,update,isVisible:()=>Boolean(active),getStatus:()=>requested?.status??null,
   getMotionTimes:()=>({finishTime:active?.scenicTime.value??null,poolTime:active?.pool?.material.uniforms.seconds.value??null,
-   waterwheelAngle:active?.props.find(prop=>prop.role==='waterwheel')?.pivot?.rotation.z??null})};
+   waterwheelAngle:active?.props.find(prop=>prop.role==='waterwheel')?.pivot?.rotation.z??null,
+   radiometerAngle:active?.props.find(prop=>prop.role==='radiometer')?.pivot?.rotation.x??null})};
 }
