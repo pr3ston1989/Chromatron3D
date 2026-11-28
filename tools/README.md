@@ -64,6 +64,15 @@ fundament. `heliostat-ravine` łączy tarasy z przelewami, a `sanctuary-meridian
 ma wyłamane segmenty pierścienia, osadzone w kamiennych pylonach. Limity
 wynoszą odpowiednio 4600, 4600 i 4300 trójkątów.
 
+Stanowisko `sanctuary-calibration` ma 1484 z 2300 trójkątów. Model składa się
+z kamiennej podstawy i węzła `Calibration_Pivot` z pryzmatem i okuciami.
+Węzeł obraca się w grze wokół fizycznej osi. Osobny skrypt zapisuje źródło,
+eksport GLB i podgląd PNG.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/sanctuary-calibration.py
+```
+
 Ruchome elementy dalszego planu korzystają z `ambient-survey-glider`
 (504 trójkąty), `ambient-cavern-moth` (274), `ambient-pelagic-fish` (340)
 i `ambient-forge-hauler` (650). Wagon jeździ po `forge-service-rail`

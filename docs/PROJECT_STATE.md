@@ -35,6 +35,10 @@ rurkoczułkowców. Woda tłumi światło nad dalszym dnem, a nad stokiem przepł
 ławica. Modele stacji, rafy, doku i pojazdu mają edytowalne źródła Blendera.
 [Pracownia modeli](../tools/README.md)
 
+W Sanktuarium Soczewek kamienna ścieżka prowadzi od niższego tarasu
+kolimatora do stanowiska kalibracji. Ruchomy pryzmat ma osobną oś wspartą
+w dwóch filarach. Ograniczony ruch zatrzymuje mechanizm i dryf mgły.
+
 Węzeł Keplera otwiera się przez `?benchmark=orbital`. Prom startuje z galerii
 serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację.
 W oddali obraca się pierścień przekaźnika, skrzydła słoneczne zmieniają kąt

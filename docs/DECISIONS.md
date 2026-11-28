@@ -1,5 +1,12 @@
 # Decyzje
 
+## Sanktuarium Soczewek · 28 listopada 2026
+
+Kolimator i instrument kalibracyjny stoją na różnych wysokościach wzdłuż
+kamiennego podejścia. W dalszym planie pozostało jedno przęsło mostu.
+Pryzmat jest osobnym węzłem GLB z osią na linii łożysk. W grze obraca się
+tylko ta część, a podstawa spoczywa na wspólnej siatce terenu.
+
 ## Optyka Głębinowa · 28 listopada 2026
 
 Dok pojazdu stoi na czterech stopach po prawej stronie planszy. Patrol

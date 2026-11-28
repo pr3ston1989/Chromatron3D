@@ -159,7 +159,7 @@ test('each non-orbital biome shares continuous modeled ground between the piers 
    frost:['frost-optical-lab','frost-radiometer'],
    forge:['forge-furnace-bank','forge-casting-line','forge-service-rail'],
    abyss:['abyss-observatory','abyss-vent-reef','abyss-rov-berth'],
-   sanctuary:['sanctuary-meridian','sanctuary-collimator','sanctuary-broken-span']
+   sanctuary:['sanctuary-meridian','sanctuary-collimator','sanctuary-broken-span','sanctuary-calibration','sanctuary-terrace']
   };
   for(const [name,[x,y,z]] of models){
    if(!fixtures[id].includes(name))continue;
@@ -167,6 +167,38 @@ test('each non-orbital biome shares continuous modeled ground between the piers 
    const contact=ray.intersectObjects(ground,true)[0];
    assert.ok(contact?.point.y>=y,`${id}, ${name} rests on its terrain (${contact?.point.y.toFixed(2)} vs ${y})`);
   }
+ }
+});
+
+test('the sanctuary prism has a separate axle on a grounded stone terrace',async()=>{
+ const {models}=campaignWorld('demo',6),loader=new GLTFLoader();
+ async function placed(id){
+  const [,anchor,scale,yaw]=models.find(([name])=>name===id);
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const {scene}=await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');
+  scene.position.fromArray(anchor);
+  if(Array.isArray(scale))scene.scale.fromArray(scale);
+  else scene.scale.setScalar(scale);
+  scene.rotation.y=yaw;scene.updateMatrixWorld(true);
+  return scene;
+ }
+ const [terrain,terrace]=await Promise.all(['sanctuary-terrain','sanctuary-calibration'].map(placed));
+ const pivot=terrace.getObjectByName('Calibration_Pivot');
+ assert.equal(pivot?.parent.name,'sanctuary-calibration');
+ let triangles=0;
+ terrace.traverse(mesh=>{if(mesh.isMesh)triangles+=mesh.geometry.index.count/3});
+ assert.ok(triangles>=950&&triangles<=2300,'calibration assembly fits its polygon budget');
+ assert.ok(readFileSync(new URL('../assets/models/scenery/sanctuary-calibration.blend',import.meta.url)).length>0);
+ for(const x of [-3.5,3.5])for(const z of [-1.7,1.7]){
+  const foot=terrace.localToWorld(new Vector3(x,0,z));
+  const rock=new Raycaster(foot.clone().setY(20),new Vector3(0,-1,0)).intersectObject(terrain,true)[0];
+  assert.ok(rock?.point.y>=foot.y,'calibration terrace rests on the slope');
+ }
+ const bearing=pivot.getWorldPosition(new Vector3());
+ for(const angle of [-.53,0,.53]){
+  pivot.rotation.x=angle;terrace.updateMatrixWorld(true);
+  assert.ok(new Box3().setFromObject(terrace).max.y<-.6,'the prism remains safely below the active tiles');
+  assert.deepEqual(pivot.getWorldPosition(new Vector3()).toArray(),bearing.toArray(),'the axle stays in its bearing');
  }
 });
 

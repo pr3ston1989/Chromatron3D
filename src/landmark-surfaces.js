@@ -67,6 +67,15 @@ const finishes={
   float falloff=smoothstep(29.,93.,length(vViewPosition));
   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.010,.035,.060),falloff*.83);
  `,
+ 'Terrain · sanctuary':`
+  vec2 slate=landmarkPoint.xz;
+  float breakInStone=sin(slate.x*.48-slate.y*.16+.62*sin(slate.y*.37));
+  float grain=sin(slate.x*1.8+landmarkPoint.y*.89)+.41*cos(2.1*slate.y+slate.x*.37);
+  float weathering=.88+.19*smoothstep(-.21,.77,breakInStone*.69+grain*.31);
+  diffuseColor.rgb*=weathering;
+  float distanceTint=smoothstep(38.,105.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.039,.047,.074),distanceTint*.78);
+ `,
  'Garden running water':`
   vec2 water=landmarkPoint.xz;
   float wave=sin(water.x*7.2-landmarkTime*1.12+1.4*sin(water.y*8.5));

@@ -1,5 +1,13 @@
 # QA
 
+## 28 listopada 2026 · Sanktuarium Soczewek
+
+- Zrzut wyjściowy pokazał powtórzone jasne łuki. Przygaszono kamień i szkło, usunięto daleką kopię mostu i rozstawiono instrumenty na różnych wysokościach. Po kolejnych ujęciach odsunięto kolimator od prawej krawędzi i podniesiono bieg kamiennych schodów, aby był widoczny obok ruin.
+- Stanowisko kalibracji ma 1484 trójkąty, schody z pełnym kamiennym trzonem 1562, a teren 2880. Test sprawdza, czy podstawa sięga gruntu i czy pryzmat obraca się na własnej osi poniżej płaszczyzny gry.
+- Test Chrome odczytuje rzeczywisty kąt osi w scenie i sprawdza jej zatrzymanie po włączeniu ograniczonej animacji. Zwykły kadr oraz cztery ćwierćobroty zachowały widoczność środków pól. Próby obejmowały 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 oraz emulację 390 × 844.
+- `npm run check` zakończyło się wynikiem 260/260 i poprawną kompilacją.
+- Poprzedni przebieg CI przerwał testy Kuźni i Groty podczas wielokrotnego przechwytywania klatek. W trybie debug testy odczytują teraz odpowiednie zegary efektów i sprawdzają zmianę w obu kierunkach przy przełączaniu ograniczonego ruchu. Ocena wyglądu nadal korzysta ze zrzutów gry.
+
 ## 28 listopada 2026 · Optyka Głębinowa
 
 - Zrzut wyjściowy pokazał grubą fakturę dna i zdublowane sylwetki rafy w tle. Dno przyciemniono, stacja dostała detal pomostu, a obok rafy powstał dok pojazdu badawczego. Drugi kadr pomógł odsunąć dok od krawędzi i przygasić jasne pasy ławicy.

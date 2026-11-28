@@ -102,15 +102,15 @@ export const CAMPAIGN_WORLDS=Object.freeze([
  world('sanctuary','Sanktuarium soczewek','Lens Sanctuary','polar',
   0x101528,0x4d6988,0x333e58,0xf5ded0,0xc1b7eb,'grotto',{
    face:.53,groove:.60,dust:0xb6afd7,deckTint:0xe1d4eb,air:'twilight',masonry:true,footing:{body:0x424359,bevel:0x6a677b},
-   currents:[{count:15,origin:[16.9,-6.1,-20.8],spread:[7.9,.32,1.3],travel:[10.4,.72,1.4],
-    tint:0x9595b6,size:1.06,length:3.3,opacity:.18,rate:.15}],
+   currents:[{count:20,origin:[29.6,-12.16,-4.2],spread:[6.4,.41,2.31],travel:[10.4,.72,1.4],
+    tint:0x9195ad,size:1.02,length:2.48,opacity:.17,rate:.19}],
    models:[
     ['sanctuary-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['sanctuary-meridian',[-10.4,-8.5,-15.4],[1.00,1.19,1.10],-.43,'left'],
-    ['sanctuary-collimator',[18.7,-7.8,7.1],1.28,-.54,'right'],
+    ['sanctuary-collimator',[12.8,-9.02,12.25],1.28,-.54,'right'],
     ['sanctuary-broken-span',[17,-12.6,-24.4],1.45,-.53],
-    ['sanctuary-broken-span',[34,-17.8,-41],1.91,-.72,'horizon'],
-    ['sanctuary-terrace',[-12.0,-9.4,12.8],1.08,-.30],
+    ['sanctuary-calibration',[36.4,-14.83,2.8],1.24,-.62,'calibration'],
+    ['sanctuary-terrace',[-12.75,-12.72,-10.8],.92,-.82],
     ['grotto-escarpment',[36,-46,-54],[1.82,1.64,2.00],-.54,'horizon']
    ]
   })

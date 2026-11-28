@@ -2647,11 +2647,13 @@ if(debugEnabled){
    const dish=world.getObjectByName('Tracking_reflector');
    const tracker=world.getObjectByName('Sun_tracker');
    const rotor=world.getObjectByName('Habitat_rotor');
+   const calibration=activeEnvironment?.id==='sanctuary'?world.getObjectByName('Calibration_Pivot'):null;
    const pivot=tracker?.getWorldPosition(new THREE.Vector3()).project(camera);
    const meteor=skyMeteor.mesh;
    const head=meteor.visible?meteor.material.uniforms.head.value.clone().multiplyScalar(100)
     .add(camera.position).project(camera):null;
-   return {tender:tender?.position.toArray(),dish:dish?.quaternion.toArray(),
+   return {tender:tender?.position.toArray(),dish:dish?.quaternion.toArray(),calibrationAngle:calibration?.rotation.x??null,
+    ...campaignArt.getMotionTimes(),
     relay:tracker&&rotor?{angle:rotor.rotation.y,tilt:tracker.rotation.x,
      x:(pivot.x+1)*innerWidth/2,y:(1-pivot.y)*innerHeight/2}:null,
     meteor:head?{x:(head.x+1)*innerWidth/2,y:(1-head.y)*innerHeight/2,

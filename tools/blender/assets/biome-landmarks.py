@@ -769,12 +769,28 @@ def reliquary():
 
 def sanctuary_terrace():
     m = Landmark("Sanctuary terrace", "plum", "amethyst", "cyan", "obsidian", masonry=True)
+    tread = paint("Weathered sanctuary stair treads", (.104,.092,.108), .06,.83)
+    silt = paint("Soil between stair stones", (.075,.078,.064), .06,.88)
     for i,(x,y,rx,ry) in enumerate([(-2.7,.3,2.4,2.1),(0,.6,2.8,2.4),(2.9,.2,2.32,1.9)]):
         m.rock((x,y,0),(rx,ry),2.73+i*.25,205+i)
-    m.slab((0,0),4.17,2.57,2.66,.61,.63,m.body)
-    m.slab((0,0),3.81,2.34,3.23,.40,.54,m.body)
+    m.slab((0,.32),4.17,2.30,2.61,.45,.63,m.body,cap=tread)
+    m.slab((0,.51),3.71,2.03,3.01,.33,.54,m.edge,cap=tread)
+    # A continuous masonry core is visible between the treads from a low camera.
+    stair_core = [(-4.70,0),(1.36,0),(1.36,2.93),(-1.15,2.93)]
+    for i in reversed(range(6)):
+        y,z = -4.16+i*.53,.37+i*.45
+        stair_core.extend(((y+.25,z+.25),(y-.29,z+.25)))
+    m.s.loft([[(x,y,z) for y,z in stair_core] for x in (-2.07,1.94)],m.stone,[m.body])
+    for i in range(6):
+        z = .37+i*.45
+        y = -4.16+i*.53
+        m.slab((-.22+i*.087,y),2.31+.21*cos(i),.59,z,.34,.37,m.body,cap=tread)
+        if i%2==0:
+            m.slab((.19,y-.10),.31,.29,z+.33,.031,.071,silt,cap=silt)
     for x in (-3.14,-1.04,1.04,3.14):
-        m.slab((x,-2.18),.35,.23,2.65,.85,.14,m.edge)
+        m.slab((x,2.10),.35,.23,2.61,.59,.14,m.edge,cap=tread)
+    for i in range(4):
+        m.rock((-3.07+i*.26,-2.79-i*.34,0),(.72,.54),.97-.10*i,385+i,cap=tread)
     return m
 
 
@@ -782,7 +798,7 @@ def sanctuary_collimator():
     m = Landmark("Sanctuary collimator", "navy", "amethyst", "cyan", "plum", masonry=True)
     bronze = paint("Dark engraved bronze", (.23,.107,.060), .61,.38)
     glyph = paint("Etched copper inlay", (.39,.175,.068), .54,.31)
-    lens_body = paint("Sanctuary active lens", (.022,.200,.269), .51,.11,.12)
+    lens_body = paint("Sanctuary active lens", (.034,.122,.151), .50,.16,.095)
     deep_glass = paint("Smoked edge glass", (.011,.055,.098), .32,.14)
     m.slab((0,0),4.3,2.72,0,.57,.68,m.stone)
     m.slab((0,0),3.81,2.34,.57,.60,.54,m.body)
@@ -819,12 +835,13 @@ def sanctuary_collimator():
 
 
 def sanctuary_broken_span():
-    m = Landmark("Broken processional span", "plum", "titanium", "cyan", "obsidian", masonry=True)
+    m = Landmark("Broken processional span", "plum", "amethyst", "cyan", "obsidian", masonry=True)
+    cut = paint("Processional slate scars", (.087,.078,.116), .07,.81)
     for i,(x,y,scale) in enumerate([(-4,.11,1),(-.73,.38,.93),(3.18,.22,.76)]):
         m.rock((x,y,0),(1.93,2.15),2.24*scale,138+i)
         m.slab((x,y),1.18,1.24,1.52*scale,.55,.28,m.body)
         for z in (2.03,2.70,3.36,4.02):
-            m.slab((x,y),.79,.90,z*scale,.66*scale,.13,m.body)
+            m.slab((x,y),.79,.90,z*scale,.66*scale,.13,m.body,cap=cut)
         m.slab((x,y),1.01,1.12,4.65*scale,.30,.25,m.edge)
     m.ring((-2.36,.26,4.85),1.32,1.98,.68,m.body,segments=9,start=.02,span=pi-.11)
     m.ring((1.20,.24,4.47),1.45,2.12,.67,m.body,segments=3,start=.12,span=.91)
@@ -835,9 +852,9 @@ def sanctuary_broken_span():
 
 
 def sanctuary_meridian():
-    m = Landmark("Ruin of the meridian instrument", "plum", "titanium", "cyan", "navy", masonry=True)
+    m = Landmark("Ruin of the meridian instrument", "plum", "amethyst", "cyan", "navy", masonry=True)
     trim = make_material("Oxidized meridian copper", "copper", .46,.53,shade=-1)
-    carved = paint("Meridian cut stone", (.15,.163,.225), .08,.73)
+    carved = paint("Meridian cut stone", (.105,.088,.127), .08,.77)
     dashes = paint("Meridian inlaid indicators", (.045,.24,.32), .26,.38,.63)
     for i,(x,y,w,d,h) in enumerate([(-6.7,.38,3.46,3.6,2.67),(-.80,.58,4.43,4.04,2.72),(4.9,1.16,3.41,4.31,3.34)]):
         m.rock((x,y,0),(w,d),h,871+i,cap=m.body)

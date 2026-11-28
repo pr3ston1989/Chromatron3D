@@ -13,7 +13,7 @@ na przypisanej części lokalnej kampanii.
 | 5 | Laboratorium polarne | Oszroniony stop, ciemniejszy lodowiec i ciepłe światła stanowisk. | Stacja na palach, skanujący radiometr, pomost poboru rdzeni nad szczeliną i przelot szybowca nad doliną. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, stal, oksydowana miedź i bursztynowe światła pieca. | Piec i otwarte formy odlewnicze, śluza nad bocznym korytem lawy oraz wagon na estakadzie. |
 | 7 | Optyka głębinowa | Chłodna ceramika, granatowe dno, turkusowe refleksy i ciepłe światła doku. | Stacja ciśnieniowa, dok pojazdu badawczego, ławica i kominy hydrotermalne z koloniami rurkoczułkowców. |
-| 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator, zerwany most i dryfujące nad przepaścią pasma mgły. |
+| 8 | Sanktuarium soczewek | Przygaszony łupek, patynowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator na niższym tarasie, zerwany most i pryzmat na ruchomej osi. |
 
 Dwa światy na kampanię, każdy na 25 kolejnych planszach. Numeracja,
 układy i zapisy kampanii są niezależne od scenografii.

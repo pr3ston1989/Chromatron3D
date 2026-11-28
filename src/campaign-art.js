@@ -234,7 +234,8 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    if(role==='survey')mesh.add(createSurveyLights(THREE));
    root.add(mesh);
-   return {mesh,id,anchor,yaw,role};
+   const pivot=role==='calibration'?mesh.getObjectByName('Calibration_Pivot'):null;
+   return {mesh,id,anchor,yaw,role,pivot};
   });
 
   record.plantingSurfaces=plantings?record.props.filter(prop=>prop.id==='garden-terrace').map(prop=>prop.mesh):[];
@@ -337,8 +338,9 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   sky.material.uniforms.time.value=t;
   if(active.pool)active.pool.material.uniforms.seconds.value=t;
   active.dust.rotation.y=t*(active.definition.id==='abyss'?.028:.009);
-  for(const {mesh,yaw,role,anchor} of active.props){
+  for(const {mesh,yaw,role,anchor,pivot} of active.props){
    if(role==='iris'||role==='turn'||role==='pulse')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
+   if(pivot)pivot.rotation.x=Math.sin(t*.43)*.53;
    if(role==='survey'){
     // Patrol the space between the dock and vent field, with a fixed pose at t = 0.
     const pass=t*.23;
@@ -354,5 +356,6 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    }
   }
  }
- return {setLevel,update,isVisible:()=>Boolean(active),getStatus:()=>requested?.status??null};
+ return {setLevel,update,isVisible:()=>Boolean(active),getStatus:()=>requested?.status??null,
+  getMotionTimes:()=>({finishTime:active?.scenicTime.value??null,poolTime:active?.pool?.material.uniforms.seconds.value??null})};
 }
