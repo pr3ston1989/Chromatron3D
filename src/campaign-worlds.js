@@ -76,6 +76,7 @@ export const CAMPAIGN_WORLDS=Object.freeze([
     tint:0xd6956f,size:.88,length:1.72,opacity:.19,rate:.34}],
    models:[
     ['forge-terrain',[0,-40,0],[1,1,1],0,'ground'],
+    ['forge-lava-runs',[0,-23,0],1,0],
     ['forge-furnace-bank',[-10.9,-8.8,-13.6],1.31,-.41],
     ['forge-casting-line',[9.8,-9.29,15.1],1.23,-.51],
     ['forge-service-rail',[24.5,-13.8,-6.5],1.16,-.54],

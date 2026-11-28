@@ -8,6 +8,7 @@ import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.blender.style import MODELS, export_model, render, reset_scene
+from tools.blender.forge_channels import CHANNELS, section as channel_section
 
 
 # Scene coordinates (X, Z, height). Pads hold the footings, while the larger
@@ -76,21 +77,14 @@ def bed(theme):
         broad = sin(.144*x+.067*z)+.5*sin(.31*z-.123*x)
         sediment = sin(.41*x+.31*z+.71*broad)
         channel = abs(x-.48*z-(19+8.5*sin(.078*z)))
-        if theme == 'forge':
-            channel = abs(.19*x+.72*sin(.117*z)+.23*sin(.30*z)-1.54)*6
         if theme == 'abyss':
             channel = abs(x+.52*z-7.8-5*sin(.066*z))
         floor = depth+1.43*broad+.62*sediment
-        if theme in ('heliostat','forge','abyss'):
+        if theme in ('heliostat','abyss'):
             floor -= 4.1*exp(-(channel/4.8)**2)
         if theme == 'abyss':
             slope = exp(-((z+21.0+.16*x)/10.5)**2)
             floor -= 3.3*slope*max(0,min(1,(x-7.)/16.))
-        if theme == 'forge':
-            river = abs(x-(27.3+.34*z+.90*sin(.21*z)))
-            reach = 1.-exp(-((z-3.1)/6.4)**2)
-            north = max(0,min(1,(z-2)/5.5))
-            floor -= 6.4*exp(-(river/3.5)**2)*reach*north
         if theme == 'frost':
             floor += 1.67*sin(.137*x-.21*z+1.4*broad)
         if theme == 'grotto':
@@ -128,6 +122,13 @@ def bed(theme):
             floor -= reach*max(0,floor-(-20.45+.15*sediment))
         hills = exp(-((radial-61)/24)**2)
         floor += hills*(3.5+(2.4 if theme in ('grotto','frost') else 1.14)*broad)
+        if theme == 'forge':
+            for run in CHANNELS:
+                channel = channel_section(run,z)
+                if channel:
+                    center,width,surface = channel
+                    shoulder = min(1,max(0,(abs(x-center)-width-1.35)/2.7))
+                    floor -= (1-shoulder)*max(0,floor-(surface-2.60+.28*sediment))
         floor = min(floor,-5.25)
         branch = .28 if theme == 'frost' else .53
         mix = .43+.18*broad+.12*sediment+.065*rng.uniform(-1,1)

@@ -198,7 +198,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   record.props=fixtures.map((source,i)=>{
    const [id,anchor,scale,yaw,role]=definition.models[i];
    const mesh=source.clone(true);
-   const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|terrain)$/.test(id);
+   const terrain=/(basalt|reef|escarpment|icefall|orchard|buttress|terrain|lava-runs)$/.test(id);
    if(role!=='horizon'){
     mesh.traverse(node=>{
      if(!node.isMesh)return;

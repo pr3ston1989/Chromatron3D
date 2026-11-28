@@ -9,7 +9,9 @@ atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORL
 Stocznia ma dok z ruchomą suwnicą, terminal serwisowy, holownik z chwytakami,
 kuriera i meteory. Suwnica z ładunkiem przejeżdża między dwoma stanowiskami.
 Kuźnia ma estakadę dla wagonu, piec z obudową ze stali, otwartą linię
-odlewniczą i śluzę z pomostem obsługi. Spływ lawy łączy śluzę z korytem.
+odlewniczą i śluzę z pomostem obsługi. Spływ ze śluzy wpada do jednego
+z dwóch wymodelowanych kanałów. Gorące pęknięcia skorupy przesuwają się ze
+spadkiem koryta i przygasają wraz z odległością.
 W Grocie przelatują ćmy nad żyłą ametystu. Mineralna kaskada zasila jezioro,
 a po drugiej stronie planszy pomost ujęcia stoi na filarach sięgających dna.
 W głębi groty wyrzeźbione sklepienie z wiszącymi stalaktytami otwiera przejście

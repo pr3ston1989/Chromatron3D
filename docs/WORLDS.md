@@ -11,7 +11,7 @@ na przypisanej części lokalnej kampanii.
 | 3 | Kryształowa grota | Chłodny łupek, liliowy pokład i turkusowe refleksy w jeziorze. | Przejście pod warstwowym sklepieniem, półki ametystu, kaskada, pomost na filarach i przeloty ciem. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, granatowy stop i bursztynowe sygnały. | Dok z ruchomą suwnicą, osobny terminal serwisowy, holownik z chwytakami i przeloty w tle. |
 | 5 | Laboratorium polarne | Oszroniony stop, ciemniejszy lodowiec i ciepłe światła stanowisk. | Stacja na palach, trójsegmentowa głowica na łożyskach, oświetlone podejście, pomost nad szczeliną i przelot szybowca. |
-| 6 | Kuźnia widmowa | Ciemny bazalt, stal, oksydowana miedź i bursztynowe światła pieca. | Piec i otwarte formy odlewnicze, śluza nad bocznym korytem lawy oraz wagon na estakadzie. |
+| 6 | Kuźnia widmowa | Ciemny bazalt, stal, oksydowana miedź i pękająca skorupa lawy. | Piec, otwarte formy odlewnicze, dwa kanały ze skalnymi brzegami i wagon na estakadzie. |
 | 7 | Optyka głębinowa | Chłodna ceramika, granatowe dno, turkusowe refleksy i ciepłe światła doku. | Stacja ciśnieniowa, dok pojazdu badawczego, ławica i kominy hydrotermalne z koloniami rurkoczułkowców. |
 | 8 | Sanktuarium soczewek | Przygaszony łupek, patynowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator na niższym tarasie, zerwany most i pryzmat na ruchomej osi. |
 

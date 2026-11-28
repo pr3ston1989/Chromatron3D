@@ -42,6 +42,7 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
   'forge-furnace-bank':[3800,'Furnace refractory throat'],
   'forge-casting-line':[3000,'Foundry flowing metal'],
   'forge-spillway':[2600,'Spillway molten glass'],
+  'forge-lava-runs':[3700,'Forge channel lava'],
   'grotto-pump-causeway':[2300,'Grotto intake gallery pilot lights']
  };
  for(const [id,[budget,finish]] of Object.entries(models)){
@@ -114,6 +115,29 @@ test('the forge has open casting pans and a spillway that reaches the lava chann
  gate.traverse(mesh=>{if(mesh.material?.name==='Spillway molten glass')spill.expandByObject(mesh)});
  assert.ok(spill.min.y<-16.5&&spill.max.y>-11,'the liquid sheet falls from the gate into the basin');
  assert.ok(new Box3().setFromObject(gate).max.y<-.6,'the spillway roof stays below the puzzle');
+
+ const models=campaignWorld('demo',4).models;
+ const [channel,terrain]=await Promise.all(['forge-lava-runs','forge-terrain'].map(modelFor));
+ channel.position.fromArray(models.find(([id])=>id==='forge-lava-runs')[1]);
+ terrain.position.fromArray(models.find(([id])=>id==='forge-terrain')[1]);
+ channel.updateMatrixWorld(true);terrain.updateMatrixWorld(true);
+ const down=new Vector3(0,-1,0);
+ const outfall=gate.localToWorld(new Vector3(0,.23,4.30));
+ const liquid=(x,z)=>new Raycaster(new Vector3(x,20,z),down).intersectObject(channel,true)[0];
+ const landing=liquid(outfall.x,outfall.z);
+ assert.equal(landing?.object.material.name,'Forge channel lava','the gate pours into the liquid mesh');
+ assert.ok(landing.point.y>outfall.y&&landing.point.y-outfall.y<.65,'the lower lip is submerged');
+ for(const [x,z] of [[15.6,-36],[12.8,-28],[30.6,8.7],[32.4,11.7],[33.8,15],[35.1,20.7]]){
+  const surface=liquid(x,z);
+  const bed=new Raycaster(new Vector3(x,20,z),down).intersectObject(terrain,true)[0];
+  assert.equal(surface?.object.material.name,'Forge channel lava','the flow spans both cuts');
+  assert.ok(surface.uv&&surface.uv.x>.36&&surface.uv.x<.64,'UVs follow the center of each channel');
+  assert.ok(bed?.point.y<surface.point.y-.50,'the lava stays above the channel bed');
+ }
+ for(const [source,outlet] of [[[12.8,-28],[15.6,-36]],[[30.6,8.7],[35.1,20.7]]]){
+  const upper=liquid(...source),lower=liquid(...outlet);
+  assert.ok(lower.point.y<upper.point.y&&lower.uv.y>upper.uv.y,'the animated surface travels downhill');
+ }
 });
 
 test('the grotto spring and intake meet the lake beneath the puzzle',async()=>{

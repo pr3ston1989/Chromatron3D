@@ -7,6 +7,24 @@ const iceBands=`
   diffuseColor.rgb+=vec3(.019,.058,.088)*seam*density;
 `;
 
+const crustCells=`
+ float crustBoundary(vec2 point){
+  vec2 cell=floor(point),piece=fract(point);
+  float nearest=9.,second=9.;
+  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+   vec2 offset=vec2(float(x),float(y));
+   vec2 seed=cell+offset;
+   vec2 center=.17+.66*fract(sin(vec2(dot(seed,vec2(127.1,311.7)),
+      dot(seed,vec2(269.5,183.3))))*43758.5453);
+   vec2 delta=offset+center-piece;
+   float radius=dot(delta,delta);
+   second=min(second,max(nearest,radius));
+   nearest=min(nearest,radius);
+  }
+  return second-nearest;
+ }
+`;
+
 const finishes={
  'Heliostat coated glass':`
   float glint=exp(-5.2*abs(landmarkPoint.y-.41*landmarkPoint.x-4.59-.13*sin(landmarkTime*.29)));
@@ -37,6 +55,27 @@ const finishes={
   float seams=sin(landmarkPoint.x*18.+ripples*.94+landmarkPoint.y*.57);
   float flow=smoothstep(.20,.91,.57*seams+.43*ripples);
   diffuseColor.rgb=diffuseColor.rgb*(.31+.69*flow)+vec3(.64,.19,.014)*flow;
+ `,
+ 'Forge channel lava':`
+  vec2 run=landmarkFlow;
+  float core=smoothstep(.03,.24,run.x)*(1.-smoothstep(.76,.97,run.x));
+  vec2 crust=vec2(run.x*4.2+.14*sin(run.y*.96),run.y*.68-landmarkTime*.43);
+  crust+=vec2(.24*sin(crust.y*1.25+.63*cos(crust.x*.9)),.34*sin(crust.x*1.7+crust.y*.51));
+  float boundary=crustBoundary(crust);
+  float seam=1.-smoothstep(.014,.096+.61*fwidth(boundary),boundary);
+  float surge=.76+.24*sin(run.y*1.79-landmarkTime*1.54+run.x*7.);
+  float distanceTint=smoothstep(36.,82.,length(vViewPosition));
+  float flow=(.035+.92*seam)*(.38+.62*core)*surge*(1.-.47*distanceTint);
+  float glow=1.-smoothstep(0.,.51,boundary);
+  diffuseColor.rgb=mix(vec3(.043,.021,.027),vec3(.85,.174,.028),flow+.17*glow*core);
+ `,
+ 'Terrain · forge':`
+  vec3 rock=landmarkPoint;
+  float folds=sin(rock.x*.60+rock.z*.34+.48*sin(rock.z*.71));
+  float grains=sin(rock.x*3.3+rock.z*1.5)*cos(rock.z*2.8-rock.x*.92);
+  diffuseColor.rgb*=.90+.14*smoothstep(-.49,.59,folds)+.062*grains;
+  float falloff=smoothstep(36.,105.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.050,.034,.044),falloff*.72);
  `,
  'Glacier compressed blue ice':iceBands,
  'Glacier clear fracture':iceBands,
@@ -139,16 +178,21 @@ const finishes={
 export function applyLandmarkFinish(THREE,material,time){
  const finish=finishes[material.name];
  if(!finish)return false;
- if(material.name==='Garden running water'||material.name==='Spillway molten glass')material.side=THREE.DoubleSide;
+ const channel=material.name==='Forge channel lava';
+ const spillway=material.name==='Spillway molten glass';
+ if(material.name==='Garden running water'||spillway)material.side=THREE.DoubleSide;
  material.customProgramCacheKey=()=>material.name;
  material.onBeforeCompile=shader=>{
   shader.uniforms.landmarkTime=time;
-  shader.vertexShader='varying vec3 landmarkPoint;\n'+shader.vertexShader.replace(
-   '#include <begin_vertex>','#include <begin_vertex>\n landmarkPoint=position;');
-  shader.fragmentShader='varying vec3 landmarkPoint; uniform float landmarkTime;\n'+shader.fragmentShader.replace(
+  const flowVarying=channel?'varying vec2 landmarkFlow;\n':'';
+  shader.vertexShader='varying vec3 landmarkPoint;\n'+flowVarying+shader.vertexShader.replace(
+   '#include <begin_vertex>','#include <begin_vertex>\n landmarkPoint=position;'+(channel?'\n landmarkFlow=uv;':''));
+  shader.fragmentShader='varying vec3 landmarkPoint; uniform float landmarkTime;\n'+flowVarying+
+   (channel?crustCells:'')+shader.fragmentShader.replace(
    '#include <color_fragment>','#include <color_fragment>\n'+finish);
-  if(material.name==='Spillway molten glass')shader.fragmentShader=shader.fragmentShader.replace(
-   '#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance*=.26+.74*flow;');
+  if(spillway||channel)shader.fragmentShader=shader.fragmentShader.replace(
+   '#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance*='+
+   (spillway?'.26+.74*flow;':'.09+1.26*flow;'));
  };
  return true;
 }

@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Koryta Kuźni Widmowej
+
+- Rozmytą warstwę lawy zastąpiono dwiema wymodelowanymi strugami z bazaltowymi brzegami. Po pierwszym ujęciu odsunięto zakole od tytułu i przygaszono daleką emisję. Powierzchnia korzysta ze współrzędnych zapisanych wzdłuż spadku każdej strugi.
+- Model koryt ma 2708 z 3700 trójkątów, a teren 2880 z 3100. Test GLB potwierdza zanurzenie wylotu śluzy w korycie, prześwit nad skalnym dnem oraz kierunek animacji zgodny ze spadkiem.
+- Widoczność wszystkich 225 pól sprawdzono w grze w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 oraz w emulacji 390 × 844. Na desktopie sprawdzono również po cztery ćwierćobroty. `npm run check` przeszedł z wynikiem 263/263 i poprawną kompilacją.
+- W ujęciu 1280 × 720 porównanie klatek w okolicy śluzy wykryło 7228 pikseli zmienionych podczas animacji i zero po jej ograniczeniu.
+
 ## 28 listopada 2026 · Radiometr Laboratorium Polarnego
 
 - Okrągłą czaszę zastąpiono trzema szkłami w fazowanych ramach. Po renderze odsunięto szkło od obudowy, aby powierzchnie nie nachodziły na siebie. Przestawiono podest, przyciemniono lód i odsłonięto dojście z dwoma lampami.

@@ -65,6 +65,16 @@ Pomost w Grocie korzysta z `grotto-pump-causeway` (1882 z 2300 trójkątów),
 otrzymuje w grze animowany refleks. Pliki GLB i odpowiadające im edytowalne
 źródła `.blend` znajdują się w `assets/models/scenery`.
 
+`forge-lava-runs` ma 2708 z 3700 trójkątów. Skalne brzegi i siatka lawy
+korzystają ze wspólnych przekrojów z modelem `forge-terrain`. W GLB zapisano
+współrzędne przepływu wzdłuż spadku, a shader `Forge channel lava` odsłania
+gorące pęknięcia między fragmentami skorupy. Ograniczony ruch zatrzymuje spływ.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/forge-lava-runs.py
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/biome-terrain.py -- forge --preview
+```
+
 `grotto-vault` ma 1592 z 2300 trójkątów. Model rozdziela łupek i ametyst
 na dwa materiały, zachowuje kolory wierzchołków i ma pełny prześwit pod
 warstwowym sklepieniem. Obie podstawy osadzono w `grotto-terrain`.
