@@ -91,6 +91,16 @@ pięciu modeli. Trasy i częstotliwość zdarzeń konfiguruje `src/campaign-worl
 `shipyard-service-arm` ma 1684 trójkąty. Gra używa dwóch kopii modelu do
 połączenia bliskich terminali z platformą Stoczni.
 
+Bliższy `shipyard-cargo-berth` ma 2200 z 3500 trójkątów. Kadłub,
+prowadnice i kabina są osobną siatką od węzła `Cargo_Gantry`, który
+przesuwa się wzdłuż prowadnic z zawieszonym ładunkiem. Ramię dokujące
+wchodzi pod boczny kołnierz. Holownik ma 864 z 1400 trójkątów.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/shipyard-cargo-berth.py
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/biome-landmarks.py -- shipyard-cargo-tug --preview
+```
+
 Sześć krajobrazów ma osobne siatki `*-terrain.blend` i eksporty `*-terrain.glb`
 w tym samym katalogu. Każdy ma 2880 trójkątów, materiał PBR i pigment zapisany
 w wierzchołkach. Skrypt zawiera rzędne gruntu pod fundamentami oraz przebieg

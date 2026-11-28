@@ -1,5 +1,11 @@
 # QA
 
+## 28 listopada 2026 · Stocznia Orbitalna
+
+- Bliższą kopię terminalu zastąpiono dokiem z ruchomą suwnicą. Pierwsze ujęcie pokazało kratownicę przecinającą pokład doku. W kolejnej wersji ramię kończy się pod kołnierzem, a odmieniona orientacja doku odsłania prowadnice. Holownik ma przebudowany kadłub i dwa chwytaki.
+- Dok ma 2200 z 3500 trójkątów, a holownik 864 z 1400. Test zasobów sprawdza, czy oba końce suwnicy mają podparcie na prowadnicach na całej testowanej trasie i czy ładunek mija mocowania na pokładzie. Test przeglądarkowy potwierdza ruch suwnicy i jej zatrzymanie po włączeniu ograniczonego ruchu.
+- Domyślny widok oraz cztery ćwierćobroty w 1672 × 941, 1366 × 768, 1280 × 720 i 1093 × 614 zachowały widoczność środków 225 pól. Ujęcie 390 × 844 sprawdzono w emulowanym widoku mobilnym. `npm run check` przeszedł z wynikiem 262/262 i poprawną kompilacją.
+
 ## 28 listopada 2026 · Ogród Heliostatów
 
 - Zrzut pokazał powielony akwedukt i skały przecinające wodę w misach. Zastąpiono akwedukt ujęciem z kołem łopatkowym, połączono misy modelowanymi przelewami i przygaszono zbocza. W pierwszej próbie kanał zasłaniał wodę, więc podniesiono lustro wody ponad kamienne dno.

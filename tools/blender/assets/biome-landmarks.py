@@ -1036,20 +1036,33 @@ def shipyard_cargo_tug():
     m = Landmark("Orbital cargo tug", "navy", "titanium", "amber", "obsidian")
     glass = paint("Tug cockpit canopy", (.022,.117,.176), .49,.21,.10)
     drive = paint("Tug ion thrusters", (.044,.35,.54), .22,.24,1.9)
-    dr = [(1.54,.78,.32),(1.18,1.07,.53),(.12,1.03,.54),(-.82,.76,.68),(-1.67,.25,.41),(-1.93,.08,.21)]
-    m.s.loft([[(w*cos(i*tau/10),y,.65+h*sin(i*tau/10)) for i in range(10)] for y,w,h in dr],
-             m.dark,[m.edge,m.body,m.edge,m.body,m.edge])
-    m.s.blade([(0,.74,1.00,.29,.14),(0,.23,1.12,.48,.26),
-               (0,-.40,1.19,.39,.18),(0,-1.11,.99,.15,.04)],glass,m.body)
+    enamel = paint("Tug safety enamel", (.38,.178,.058), .32,.49)
+    ceramic = paint("Tug slate thermal panels", (.091,.147,.184), .24,.59)
+    profile = [(1.35,.61,.24),(1.06,.92,.43),(.34,.97,.49),(-.68,.83,.51),(-1.22,.59,.35),(-1.45,.43,.21)]
+    m.s.loft([[(w*cos(tau*i/8+.39),y,.64+h*sin(tau*i/8+.39)) for i in range(8)]
+              for y,w,h in profile],m.dark,[m.body,ceramic,m.body,m.body,m.dark])
+    cabin = [(.54,.30,1.13),(.26,.49,1.39),(-.49,.48,1.42),(-.98,.34,1.19)]
+    m.s.loft([[(-w,y,1.03),(w,y,1.03),(w*.87,y,h),(-w*.87,y,h)] for y,w,h in cabin],
+             m.body,[m.body,glass,m.body])
+    for x in (-.29,0,.29):
+        m.pipe([(x,-.98,1.19),(x*1.32,-.49,1.427),(x*1.33,.26,1.397)],.023,m.edge,4)
     for side in (-1,1):
-        m.s.blade([(0,.77,.63,.23,.14),(side*1.00,1.01,.57,.42,.18),
-                   (side*1.75,1.28,.47,.22,.10),(side*1.96,1.40,.42,.02,.01)],m.edge,m.dark)
         x=side*1.05
-        m.pipe([(x,.36,.57),(x,.70,.57),(x,1.35,.57)],.29,m.body,8)
-        m.pipe([(x,1.27,.57),(x,1.57,.57)],.22,m.edge,8)
-        m.pipe([(x,1.54,.57),(x,1.63,.57)],.155,drive,8)
-        m.pipe([(x*.73,-.47,.70),(x*.80,-.15,.71)],.040,m.signal,4)
-        m.pipe([(side*.97,1.18,.72),(side*1.13,1.14,1.19)],.07,m.edge,5)
+        # Two forward grapples give the workboat a split silhouette.
+        m.s.blade([(x*.82,.51,.53,.22,.14),(x*1.12,-.53,.56,.25,.18),
+                   (x*1.06,-1.38,.48,.18,.14),(x*.82,-2.02,.40,.11,.10),
+                   (x*.60,-2.14,.41,.067,.079)],ceramic,m.dark)
+        m.pipe([(x*1.08,-1.23,.61),(x*.83,-1.94,.51),(x*.61,-2.09,.48)],.049,enamel,5)
+        m.pipe([(x*.84,-1.76,.50),(x*.72,-1.97,.45)],.031,m.signal,4)
+        m.s.loft([[(x+r*cos(tau*i/8),y,.41+r*sin(tau*i/8)) for i in range(8)]
+                  for y,r in ((.35,.23),(.57,.33),(1.18,.33),(1.38,.26),(1.60,.25),
+                              (1.63,.17),(1.53,.154))],
+                 drive,[m.body,ceramic,enamel,m.body,m.dark,m.dark])
+        m.pipe([(x,1.51,.41),(x,1.55,.41)],.13,drive,8)
+        m.pipe([(x*.86,.33,.76),(x*.98,.14,.98),(x*.87,.89,1.02)],.078,m.edge,5)
+        for y in (.62,.84,1.06):
+            m.pipe([(x*.88,y,.768),(x*1.09,y,.793)],.027,m.dark,4)
+        m.slab((x*.53,-.78),.16,.42,0,.17,.10,m.dark)
     return m
 
 

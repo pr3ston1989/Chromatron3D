@@ -6,7 +6,8 @@ charakterystyczne budowle wymodelowane w Blenderze. Kamienne arkady i metalowe k
 podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
 atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
 
-Stocznia ma terminale przeładunkowe z holownikiem, kurierem i meteorami.
+Stocznia ma dok z ruchomą suwnicą, terminal serwisowy, holownik z chwytakami,
+kuriera i meteory. Suwnica z ładunkiem przejeżdża między dwoma stanowiskami.
 Kuźnia ma estakadę dla wagonu, piec z obudową ze stali, otwartą linię
 odlewniczą i śluzę z pomostem obsługi. Spływ lawy łączy śluzę z korytem.
 W Grocie przelatują ćmy nad żyłą ametystu. Mineralna kaskada zasila jezioro,

@@ -61,6 +61,36 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
  }
 });
 
+test('the cargo gantry clears the berth deck and stays on both rails throughout its travel',async()=>{
+ const id='shipyard-cargo-berth',loader=new GLTFLoader();
+ const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+ const {scene}=await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');
+ const gantry=scene.getObjectByName('Cargo_Gantry'),base=scene.getObjectByName(id);
+ assert.equal(gantry?.parent,base,'cargo and bridge have a separate moving GLB node');
+ assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
+ let triangles=0,lamps=false;
+ scene.traverse(mesh=>{
+  if(!mesh.isMesh)return;
+  assert.ok(mesh.geometry.attributes.color,'the mesh has baked contact shading');
+  triangles+=mesh.geometry.index.count/3;
+  if(mesh.material.name==='Berth docking indicators')lamps=mesh.material.emissive.getHex()>0;
+ });
+ assert.ok(triangles>=1400&&triangles<=3500,'berth and gantry meet the combined triangle budget');
+ assert.ok(lamps,'the GLB preserves the berth lights');
+ assert.ok(Math.abs(new Box3().setFromObject(base).min.y)<1e-5,'the foundation has a Y-up origin');
+ const fixed=base.children.filter(node=>node!==gantry),down=new Vector3(0,-1,0);
+ const home=gantry.position.x;
+ for(const movement of [0,2.245,4.49]){
+  gantry.position.x=home+movement;
+  scene.updateMatrixWorld(true);
+  for(const z of [-2.04,2.04]){
+   const rail=new Raycaster(new Vector3(gantry.position.x,4,z),down).intersectObjects(fixed,true)[0];
+   assert.ok(rail&&rail.point.y>2.44&&rail.point.y<=2.51,'each bogie sits on a continuous rail');
+  }
+  assert.ok(new Box3().setFromObject(gantry).min.y>1.88,'the load clears the pallet cradles');
+ }
+});
+
 test('the forge has open casting pans and a spillway that reaches the lava channel',async()=>{
  const loader=new GLTFLoader();
  async function modelFor(id){

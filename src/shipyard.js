@@ -7,6 +7,7 @@ import {createScenicDrift} from './scenic-drift.js';
 import {createCampaignTraffic} from './campaign-traffic.js';
 
 const terminalUrl=new URL('../assets/models/scenery/shipyard-transfer-dock.glb',import.meta.url).href;
+const berthUrl=new URL('../assets/models/scenery/shipyard-cargo-berth.glb',import.meta.url).href;
 const tugUrl=new URL('../assets/models/scenery/shipyard-cargo-tug.glb',import.meta.url).href;
 const serviceArmUrl=new URL('../assets/models/scenery/shipyard-service-arm.glb',import.meta.url).href;
 const gliderUrl=new URL('../assets/models/scenery/ambient-survey-glider.glb',import.meta.url).href;
@@ -29,7 +30,8 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
  function startLoading(){
   status='loading';
   const load=url=>loader.loadAsync(url).then(asset=>asset.scene);
-  Promise.all([assets.platform,assets.dock,assets.craft,terminalUrl,tugUrl,gliderUrl,serviceArmUrl].map(load)).then(([platform,dock,scout,terminal,tug,glider,serviceArm])=>{
+  Promise.all([assets.platform,assets.dock,assets.craft,terminalUrl,berthUrl,tugUrl,gliderUrl,serviceArmUrl].map(load))
+  .then(([platform,dock,scout,terminal,berth,tug,glider,serviceArm])=>{
    platform.position.y=-3.768;
    platform.traverse(node=>{
     if(!node.isMesh)return;
@@ -44,12 +46,18 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
     object.position.set(x,y,z);object.scale.setScalar(scale);object.rotation.y=yaw;
     root.add(object);
    };
-   place(terminal,-11.7,-8.69,-13.5,1.35,-.45);
-   place(terminal.clone(true),9.6,-10.2,14.4,1.29,-.62);
-   place(dock,25.4,-9.1,-14.5,1.14,-.30);
+   place(terminal,-11.7,-8.69,-13.5,1.22,-.45);
+   place(berth,8.92,-8.68,13.1,1.04,.47);
+   place(dock,30.1,-10.8,-17.6,1.10,-.30);
+   terminal.traverse(mesh=>{
+    if(!mesh.isMesh)return;
+    if(mesh.material.emissive.getHex()>0)mesh.material.emissiveIntensity=.56;
+   });
+   const gantry=berth.getObjectByName('Cargo_Gantry');
+   const gantryOrigin=gantry.position.x;
    for(const [inner,outer] of [
     [[-5.8,-5.1,-6.8],[-11.7,-8.9,-13.5]],
-    [[4.7,-5.1,7.1],[9.6,-10.4,14.4]]
+    [[4.7,-5.1,7.1],berth.localToWorld(new THREE.Vector3(0,-.80,-4.04)).toArray()]
    ]){
     const arm=serviceArm.clone(true),end=new THREE.Vector3(...outer),start=new THREE.Vector3(...inner);
     const direction=end.clone().sub(start);
@@ -79,7 +87,7 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
     palette:{'Survey glider body':0x375072,'Glider solar laminate':0x405677}
    });
    root.add(courier.root);
-   nodes={scout,tug,courier};
+   nodes={scout,tug,courier,gantry,gantryOrigin};
    status='ready';
   }).catch(error=>{status='error';console.error('Orbital shipyard',error)}).then(()=>{
    sync();
@@ -96,12 +104,14 @@ export function createShipyard(THREE,scene,world,{loader,assets,onReady}){
   if(!root.visible)return;
   const t=still?0:seconds;
   trafficTime.value=t;
-  const {scout,tug,courier}=nodes;
+  const {scout,tug,courier,gantry,gantryOrigin}=nodes;
+  gantry.position.x=gantryOrigin+2.245*(1-Math.cos(t*.29));
   courier.update(seconds,still);
   scout.position.set(30+drift*2.4+Math.sin(t*.13)*3,-4.3+Math.sin(t*.24)*.30,-23.9+Math.cos(t*.13)*2.3);
   const leg=t*.20;
   tug.position.set(14.3+drift+Math.sin(leg)*1.2,-4.67+Math.sin(t*.42)*.28,10.2+Math.sin(leg)*2.3);
   tug.rotation.set(.07*Math.sin(t*.63),-.67+.31*Math.sin(leg),.06*Math.sin(t*.48));
  }
- return {setLevel,update,isVisible:()=>root.visible,getStatus:()=>status};
+ return {setLevel,update,isVisible:()=>root.visible,getStatus:()=>status,
+  getGantryTravel:()=>root.visible?nodes.gantry.position.x-nodes.gantryOrigin:null};
 }
