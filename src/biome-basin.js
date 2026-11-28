@@ -1,7 +1,7 @@
 const BASINS={
  heliostat:{height:-17.5,base:0x1b3328,tint:0x527974,fog:0x937357,mode:4},
  frost:{height:-19.4,base:0x1c344e,tint:0x608ca4,fog:0x3d5978,mode:1},
- forge:{height:-16.5,base:0x271d24,tint:0xe96525,fog:0x4d3034,mode:2},
+ forge:{height:-16.5,base:0x231c20,tint:0xfa5c21,fog:0x453039,mode:2},
  abyss:{height:-20.5,base:0x122b35,tint:0x31737e,fog:0x17354b,mode:3},
  sanctuary:{height:-20,base:0x1d263c,tint:0x394e69,fog:0x526787,mode:5}
 };
@@ -37,13 +37,18 @@ export function createBiomeBasin(THREE,id){
     float ridges=strata(p+vec2(4.*broad,-2.*broad));
     vec3 color=mix(base,tint,.18+.18*ridges+.11*broad);
     if(mode==2.){
-     // Dark crust moves separately from the main lava flow.
-     float center=p.x*.19+.72*sin(p.y*.117)+.23*sin(p.y*.30)-1.54;
-     float crack=abs(center+.26*sin(p.y*.59));
-     float bank=1.-smoothstep(.28,.48,abs(center));
-     float glow=1.-smoothstep(.25,.72,crack);
-     float crust=smoothstep(.31,.67,strata(p*.83+vec2(-seconds*.14,seconds*.24)));
-     color=base*(.63+.41*ridges)+tint*(.15*glow+bank*(.40+.53*crust));
+     float mainChannel=abs(p.x*.19+.72*sin(p.y*.117)+.23*sin(p.y*.30)-1.54)*6.;
+     float spillway=abs(p.x-(27.3+.34*p.y+.90*sin(.21*p.y)));
+     spillway+=4.*(1.-smoothstep(1.3,5.4,p.y));
+     float center=min(mainChannel,spillway);
+     float bank=1.-smoothstep(1.1,3.3,center);
+     float current=1.-smoothstep(.24,1.18,center+.33*ridges);
+     vec2 flow=vec2(p.x*.91-p.y*.33,p.y*.93-seconds*.65);
+     float strataMask=strata(flow+vec2(broad*.52,0.));
+     float plates=smoothstep(.12,.49,strataMask);
+     float seam=(1.-smoothstep(.018,.12+fwidth(strataMask),abs(strataMask-.26)))*bank;
+     color=base*(.70+.21*ridges)+tint*(.27*bank+.68*current*(1.-.74*plates)+.55*seam);
+     color+=vec3(.63,.20,.013)*current*seam;
     }else if(mode==3.){
      vec2 q=p+vec2(seconds*.21,-seconds*.14);
      float light=strata(q*.73+vec2(1.8*broad,-1.2*broad));

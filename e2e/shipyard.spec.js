@@ -2,6 +2,37 @@ import {selectQuality} from './hud-tools.js';
 import {expect,test} from '@playwright/test';
 import {captureFrame,luminance,projectCells} from './frame.js';
 
+test('the forge spillway animates on the far side and holds still with reduced motion',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1280,height:720});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/?debug=1');
+ await selectQuality(page,'performance');
+ await page.evaluate(()=>{
+  window.__debug.switchCampaign('demo');
+  window.__debug.loadLevel(5);
+  window.__debug.freezeAnimations(true,{onDemand:true});
+ });
+ await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
+ const point=await page.evaluate(()=>window.chromatron.projectCell(30.8/1.30+7,7.24/1.30+7,-13.5));
+ const samples=async()=>{
+  const first=await captureFrame(page);
+  await page.waitForTimeout(360);
+  const second=await captureFrame(page);
+  let changed=0;
+  for(let dx=-12;dx<=12;dx++)for(let dy=-18;dy<=18;dy++){
+   const x=point.x+dx,y=point.y+dy;
+   if(Math.abs(luminance(first,x,y)-luminance(second,x,y))>=10)changed++;
+  }
+  return changed;
+ };
+ await page.evaluate(()=>window.__debug.freezeAnimations(false));
+ expect(await samples()).toBeLessThan(6);
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ expect(await samples()).toBeGreaterThan(14);
+ expect(await page.evaluate(()=>window.__debug.getSceneryOcclusion())).toEqual([]);
+});
+
 for(const levels of [[1,2,3,8],[4,5,6,7]])
 test(`scenery keeps all playable cells visible in worlds ${levels.join(', ')}`,async({page})=>{
  test.setTimeout(120000);

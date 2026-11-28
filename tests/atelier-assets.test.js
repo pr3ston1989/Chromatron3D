@@ -37,6 +37,7 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
   'shipyard-cargo-tug':[1400,'Tug ion thrusters'],
   'forge-furnace-bank':[3800,'Furnace refractory throat'],
   'forge-casting-line':[3000,'Foundry flowing metal'],
+  'forge-spillway':[2600,'Spillway molten glass'],
   'grotto-pump-causeway':[1800,'Grotto intake gallery pilot lights']
  };
  for(const [id,[budget,finish]] of Object.entries(models)){
@@ -54,6 +55,31 @@ test('the final forge, grotto and shipyard landmarks preserve their geometry and
   assert.ok(Math.abs(new Box3().setFromObject(scene).min.y)<1e-5,id+' stands on a Y-up base');
   assert.ok(readFileSync(new URL('../assets/models/scenery/'+id+'.blend',import.meta.url)).length>0);
  }
+});
+
+test('the forge has open casting pans and a spillway that reaches the lava channel',async()=>{
+ const loader=new GLTFLoader();
+ async function modelFor(id){
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  return (await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'')).scene;
+ }
+ const casting=await modelFor('forge-casting-line');
+ let exposed=0;
+ casting.traverse(mesh=>{
+  if(mesh.material?.name!=='Foundry flowing metal')return;
+  const {normal}=mesh.geometry.attributes;
+  for(let i=0;i<normal.count;i++)if(normal.getY(i)>.97)exposed++;
+ });
+ assert.ok(exposed>=24,'three pan surfaces have upward-facing molten metal');
+
+ const gate=await modelFor('forge-spillway');
+ const [,anchor,scale,yaw]=campaignWorld('demo',4).models.find(([id])=>id==='forge-spillway');
+ gate.position.fromArray(anchor);gate.scale.setScalar(scale);gate.rotation.y=yaw;
+ gate.updateMatrixWorld(true);
+ const spill=new Box3();
+ gate.traverse(mesh=>{if(mesh.material?.name==='Spillway molten glass')spill.expandByObject(mesh)});
+ assert.ok(spill.min.y<-16.5&&spill.max.y>-11,'the liquid sheet falls from the gate into the basin');
+ assert.ok(new Box3().setFromObject(gate).max.y<-.6,'the spillway roof stays below the puzzle');
 });
 
 test('each non-orbital biome shares continuous modeled ground between the piers and the surrounding landscape',async()=>{

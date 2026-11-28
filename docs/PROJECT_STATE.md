@@ -7,9 +7,11 @@ podpierają platformy, a dwa warianty nieba orbitalnego współdzielą model
 atmosfery, z oddzielnym układem planety i oświetlenia. [Światy kampanii](WORLDS.md)
 
 Stocznia ma terminale przeładunkowe z holownikiem, kurierem i meteorami.
-Kuźnia zyskała estakadę dla wagonu, a w Grocie nad ujęciem wody przelatują
-ćmy. Szybowce w Ogrodzie i Laboratorium mają barwy dopasowane do sceny.
-Ich modele powstały w Blenderze i są podpięte do zwykłej kampanii.
+Kuźnia ma estakadę dla wagonu, piec z obudową ze stali, otwartą linię
+odlewniczą i śluzę z pomostem obsługi. Spływ lawy łączy śluzę z korytem.
+W Grocie nad ujęciem wody przelatują ćmy. Szybowce w Ogrodzie i Laboratorium
+mają barwy dopasowane do sceny. Modele powstały w Blenderze i są podpięte do
+zwykłej kampanii.
 
 Ekran ładowania jest widoczny od pierwszego wyświetlenia dokumentu.
 Ustępuje po inicjalizacji gry i wyświetla przycisk ponowienia przy błędzie.

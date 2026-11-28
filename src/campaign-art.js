@@ -233,7 +233,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&role!=='ground'&&!terrain}});
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
    root.add(mesh);
-   return {mesh,id};
+   return {mesh,id,anchor,yaw,role};
   });
 
   record.plantingSurfaces=plantings?record.props.filter(prop=>prop.id==='garden-terrace').map(prop=>prop.mesh):[];

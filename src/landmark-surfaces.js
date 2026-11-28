@@ -23,6 +23,13 @@ const finishes={
   float heat=smoothstep(.07,.78,roll*.52+crust*.48);
   diffuseColor.rgb=diffuseColor.rgb*(.66+.42*heat)+vec3(.24,.076,.008)*heat;
  `,
+ 'Spillway molten glass':`
+  float distanceAlongFall=landmarkPoint.z*.61-landmarkPoint.y;
+  float ripples=sin(distanceAlongFall*5.8-landmarkTime*3.9+1.25*sin(landmarkPoint.x*4.7));
+  float seams=sin(landmarkPoint.x*18.+ripples*.94+landmarkPoint.y*.57);
+  float flow=smoothstep(.20,.91,.57*seams+.43*ripples);
+  diffuseColor.rgb=diffuseColor.rgb*(.31+.69*flow)+vec3(.64,.19,.014)*flow;
+ `,
  'Glacier compressed blue ice':iceBands,
  'Glacier clear fracture':iceBands,
  'Heated polar glazing':`
@@ -64,7 +71,7 @@ const finishes={
 export function applyLandmarkFinish(THREE,material,time){
  const finish=finishes[material.name];
  if(!finish)return false;
- if(material.name==='Garden running water')material.side=THREE.DoubleSide;
+ if(material.name==='Garden running water'||material.name==='Spillway molten glass')material.side=THREE.DoubleSide;
  material.customProgramCacheKey=()=>material.name;
  material.onBeforeCompile=shader=>{
   shader.uniforms.landmarkTime=time;
@@ -72,6 +79,8 @@ export function applyLandmarkFinish(THREE,material,time){
    '#include <begin_vertex>','#include <begin_vertex>\n landmarkPoint=position;');
   shader.fragmentShader='varying vec3 landmarkPoint; uniform float landmarkTime;\n'+shader.fragmentShader.replace(
    '#include <color_fragment>','#include <color_fragment>\n'+finish);
+  if(material.name==='Spillway molten glass')shader.fragmentShader=shader.fragmentShader.replace(
+   '#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance*=.26+.74*flow;');
  };
  return true;
 }

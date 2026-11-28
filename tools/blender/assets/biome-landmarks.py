@@ -9,6 +9,7 @@ import bpy
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.blender.style import MODELS, Sculpture, export_model, make_material, plate, render, reset_scene
 from tools.blender.orbital_finish import finish_surface
+from tools.style import clipped_rectangle
 from blender_sculpt import paint
 
 
@@ -859,20 +860,26 @@ def shipyard_cargo_tug():
 
 
 def forge_furnace_bank():
-    m = Landmark("Spectral foundry hearth", "graphite", "copper", "amber", "obsidian")
+    m = Landmark("Spectral foundry hearth", "graphite", "steel", "amber", "obsidian")
     enamel = make_material("Heat resistant ceramic", "bronze", .28,.57,shade=-1)
     fire = paint("Furnace refractory throat", (.66,.176,.025), .06,.64,.92)
-    m.slab((0,0),5.80,3.31,0,.42,.72,m.stone)
+    dark_steel = paint("Hearth blued steel", (.049,.055,.065), .52,.63)
+    grate = paint("Hearth perforated apron", (.082,.083,.086), .32,.72)
+    m.slab((0,0),5.80,3.31,0,.42,.72,m.stone,cap=grate)
     for x in (-3.55,3.55):
         for y in (-2.56,2.32):
             m.slab((x,y),.91,.59,.38,.62,.29,m.dark)
             m.pipe([(x,y,.79),(x*.94,y*.96,2.48),(x*.67,y*.74,4.67)],.31,m.body,6)
     shell = [(-1.80,1.25),(-1.68,1.98),(-.86,2.18),(1.02,2.18),(1.45,1.83),(1.83,1.29)]
     m.s.loft([[(r*cos(i*tau/16),y,3.01+r*sin(i*tau/16)) for i in range(16)] for y,r in shell],
-             m.dark,[m.edge,m.body,m.stone,m.body,m.edge])
+             m.dark,[dark_steel,m.body,m.stone,m.body,dark_steel])
     m.ring((0,-1.86,3.01),.92,1.63,.22,m.edge,segments=12)
     m.ring((0,-2.08,3.01),.72,1.15,.07,fire,segments=12)
     m.ring((0,-1.95,3.01),.41,.74,.06,enamel,segments=10)
+    for i in range(8):
+        a = tau*i/8
+        x,z = 1.38*cos(a),3.01+1.38*sin(a)
+        m.pipe([(x,-2.10,z),(x,-2.18,z)],.091,enamel,6)
     for x in (-1.29,1.29):
         m.pipe([(x,-1.48,1.55),(x*1.52,-1.99,1.19),(x*2.13,-2.43,.94)],.19,m.edge)
     for x in (-3.64,3.64):
@@ -882,18 +889,19 @@ def forge_furnace_bank():
                   m.stone,11,bands=[m.edge,m.body,enamel,m.body,m.edge,m.body,enamel,m.dark])
         m.pipe([(x,.24,3.60),(x,-.84,3.64),(x*.76,-1.52,4.20),(x*.47,-1.25,4.24)],.20,m.body)
     for y in (-2.78,2.73):
-        m.pipe([(-5.02,y,.78),(4.98,y,.78)],.089,m.edge)
+        m.pipe([(-5.02,y,.78),(4.98,y,.78)],.089,enamel)
         for x in (-4.4,-2.2,2.13,4.4):
             m.pipe([(x-.35,y-.04,.87),(x+.35,y-.04,.87)],.044,m.signal,4)
     return m
 
 
 def forge_casting_line():
-    m = Landmark("Lava foundry ingot line", "graphite", "copper", "amber", "obsidian")
-    hot = paint("Foundry flowing metal", (.50,.12,.020), .07,.42,1.14)
+    m = Landmark("Lava foundry ingot line", "graphite", "steel", "amber", "obsidian")
+    hot = paint("Foundry flowing metal", (.56,.113,.014), .07,.42,.69)
     lining = make_material("Casting slag liner", "bronze", .16,.72,shade=-2)
+    mould = paint("Cast iron moulds", (.050,.044,.044), .45,.62)
     for x in (-3.10,0,3.10):
-        m.slab((x,0),1.34,2.14,0,.41,.43,m.stone)
+        m.slab((x,0),1.34,2.14,0,.41,.43,m.stone,cap=m.body)
         for y in (-1.60,1.60):
             m.pipe([(x,y,.28),(x+.19,y*.76,1.52),(x-.38,y*.90,2.18)],.20,m.body,6)
     for y in (-1.81,1.81):
@@ -902,8 +910,21 @@ def forge_casting_line():
     for i,x in enumerate((-3.96,-2.02,-.08,1.86,3.8)):
         low = .50+.12*i
         m.slab((x,0),.86,1.33,2.21,.47+low,.29,m.stone)
-        m.slab((x,0),.77,1.23,2.68+low,.20,.32,lining)
-        m.slab((x,0),.62,.98,2.86+low,.083,.30,hot if i<3 else m.edge)
+        m.slab((x,0),.77,1.23,2.68+low,.20,.32,lining,cap=mould)
+        upper = 2.94+low
+        frame = [(.78,1.23,.31,upper-.13),(.76,1.20,.31,upper),
+                 (.60,.97,.23,upper),(.53,.88,.20,upper-.21)]
+        start = len(m.s.vertices)
+        for wx,wy,cut,z in frame:
+            m.s.vertices.extend((x+dx,dy,z) for dx,dy in clipped_rectangle(wx,wy,cut))
+        for row,material in enumerate((mould,m.edge,lining)):
+            for segment in range(8):
+                a = start+row*8+segment
+                b = start+row*8+(segment+1)%8
+                m.s.face((a,b,b+8,a+8),material)
+        if i<3:
+            # Fill each recessed pan just below its rim, with the actual hot material on top.
+            m.slab((x,0),.593,.957,upper-.13,.083,.20,hot,cap=hot)
         for y in (-1.22,1.22):
             m.pipe([(x-.50,y,2.92+low),(x+.50,y,2.92+low)],.061,m.edge,5)
     for y in (-2.27,2.27):
@@ -912,6 +933,57 @@ def forge_casting_line():
         m.pipe([(-4.65,y,3.31),(4.61,y,3.31)],.052,m.edge,5)
     m.slab((-4.14,0),1.08,1.20,3.53,.61,.37,m.body)
     m.pipe([(-4.90,0,4.09),(-5.38,0,4.34),(-5.69,.03,4.34)],.16,m.edge)
+    return m
+
+
+def forge_spillway():
+    m = Landmark("Foundry spillway", "graphite", "steel", "amber", "obsidian")
+    refractory = paint("Firebrick under the gate", (.141,.077,.056), .04,.85)
+    basalt = paint("Cinder-black basalt", (.057,.053,.069), .04,.91)
+    ash = paint("Ash on fractured ledges", (.091,.081,.083), .03,.87)
+    copper = make_material("Blackened spillway copper", "copper", .36,.66,shade=-2)
+    hot = paint("Spillway molten glass", (.81,.104,.009), .09,.48,1.18)
+    # Stone bases and tapered piers carry the gate above the open channel.
+    for side in (-1,1):
+        x = side*2.68
+        m.rock((x, .79, 0),(3.07,3.22),3.64,284+side,cap=ash)
+        m.rock((x*1.61,1.63,.11),(1.96,2.40),4.08,306+side,cap=basalt)
+        m.slab((x,.62),1.14,1.65,1.08,1.58,.39,m.stone,cap=basalt)
+        tower = [(x,.45,.0,1.07,.89),(x,.42,2.40,1.06,.86),(x*.87,.55,6.7,.72,.71),
+                 (x*.88,.55,7.90,.69,.68),(x*.90,.57,8.10,.62,.62)]
+        m.s.lathe(tower,m.dark,8,bands=[m.stone,m.body,m.edge,m.body],phase=tau/16)
+        m.pipe([(x*1.15,1.76,2.22),(x*1.14,1.86,5.11),(x*.89,.87,7.63)],.27,m.body,8)
+        m.pipe([(x,-.52,2.93),(x*.86,-.43,6.93),(x*.81,-.52,7.37)],.106,copper)
+        for z in (4.04,6.68,7.24):
+            m.slab((x*.91,-.49),.46,.22,z,.22,.08,m.stone,cap=copper)
+        for z in (6.95,7.43):
+            m.pipe([(x*.83,-.75,z),(x*.96,-.76,z+.02)],.044,m.signal,4)
+    m.slab((0,.53),3.69,1.30,7.86,.58,.40,m.body,cap=ash)
+    m.slab((0,.33),2.27,1.38,6.38,.52,.31,m.dark,cap=refractory)
+    for x in (-2.64,-1.36,0,1.36,2.64):
+        m.slab((x,.34),.54,.93,8.32,.17,.18,m.stone,cap=m.body)
+    for x in (-3.22,-1.57,1.57,3.22):
+        m.pipe([(x,-.67,8.41),(x,-.67,8.91)],.047,m.edge,5)
+    m.pipe([(-3.22,-.67,8.91),(3.22,-.67,8.91)],.057,m.edge,5)
+    for x in (-1.78,1.78):
+        m.pipe([(x,-.12,7.96),(x,.08,8.64),(x,.05,9.06),(x,.76,9.06),(x,1.08,8.81)],.155,copper,8)
+        m.s.lathe([(x,1.00,8.29,.49,.39),(x,1.00,8.44,.56,.46),(x,1.00,8.61,.51,.42),
+                   (x,1.00,8.96,.43,.39),(x,1.00,9.08,.39,.36)],m.stone,10,bands=[m.edge,m.body,m.stone,m.edge])
+    for x in (-1.55,-1.18,1.18,1.55):
+        m.pipe([(x,-.79,6.63),(x,-1.0,7.82)],.126,refractory,5)
+    m.pipe([(-2.92,-.85,7.80),(0,-1.14,7.80),(2.92,-.85,7.80)],.081,copper,6)
+    # A continuous sheet bends over the lip and widens where it hits the channel.
+    section = [(1.43,6.92,.68),(.12,6.90,.78),(-1.13,6.79,.78),(-1.45,6.48,.71),
+               (-1.66,5.70,.61),(-1.90,3.67,.53),(-2.34,1.37,.64),(-2.96,.34,.93),(-4.41,.23,1.55)]
+    start = len(m.s.vertices)
+    for y,z,width in section:
+        for i in range(6):
+            t = -1+i*.4
+            m.s.vertices.append((t*width+.09*sin(y*1.2),y+.11*sin(i*2.1+y),z+.076*cos(i*1.7+y)))
+    for row in range(len(section)-1):
+        for i in range(5):
+            a = start+row*6+i
+            m.s.face((a,a+6,a+7,a+1),hot)
     return m
 
 
@@ -1101,6 +1173,7 @@ BUILDERS = {
     "shipyard-transfer-dock": shipyard_transfer_dock, "shipyard-cargo-tug": shipyard_cargo_tug,
     "shipyard-service-arm": shipyard_service_arm,
     "forge-furnace-bank": forge_furnace_bank, "forge-casting-line": forge_casting_line,
+    "forge-spillway": forge_spillway,
     "grotto-pump-causeway": grotto_pump_causeway,
     "biome-deck-truss": alloy_support, "biome-deck-arcade": stone_support,
     "ambient-survey-glider": ambient_survey_glider, "ambient-cavern-moth": ambient_cavern_moth,
@@ -1112,7 +1185,7 @@ LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,
-    "forge-furnace-bank": 3800, "forge-casting-line": 3000, "grotto-pump-causeway": 1800,
+    "forge-furnace-bank": 3800, "forge-casting-line": 3000, "forge-spillway": 2600, "grotto-pump-causeway": 1800,
     "heliostat-ravine": 4600, "heliostat-optical-collector": 4600, "sanctuary-meridian": 4300,
     "ambient-survey-glider": 1100, "ambient-cavern-moth": 400,
     "ambient-pelagic-fish": 520, "ambient-forge-hauler": 950, "forge-service-rail": 1800,

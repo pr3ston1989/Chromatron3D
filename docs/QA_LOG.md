@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Kuźnia Widmowa
+
+- Zrzut wyjściowy pokazał płaskie pokrywy na formach i odległy piec zlewający się w jedną plamę. Przerobiono piec i otwartą linię odlewniczą, a w dalszym planie osadzono śluzę z pomostem i bocznym korytem. Drugi przebieg dodał detal pomostu i przygasił emisję w formach. Dalsze zbocza pozostają oszczędne wizualnie.
+- Blender wyeksportował 2132 trójkąty pieca, 1956 linii odlewniczej, 2196 śluzy i 2880 terenu. Test odczytuje geometrię i sprawdza, czy metal jest na odkrytej górze form, a spływ dochodzi do poziomu lawy.
+- W grze sprawdzono Kuźnię w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 i emulacji telefonu 390 × 844 oraz po czterech ćwierćobrotach przy obniżonej kamerze. Wszystkie 225 pól było widocznych. Osiem scen przeszło sprawdzenie na monitorze i w emulacji telefonu.
+- Test przeglądarkowy sprawdza animację lawy na zrzucie fragmentu śluzy i zatrzymanie jej przy ograniczonym ruchu. Polecenie `npm run check` zakończyło się wynikiem 258/258 i poprawną kompilacją.
+
 ## 27 listopada 2026 · ciągły teren, ruch dalszego planu i ekran ładowania
 
 - Sześć nieorbitalnych scen korzysta z ciągłych siatek krajobrazu. Testy wczytują GLB, sprawdzają dwanaście stóp każdej platformy, podpory głównych budowli oraz ciągłość powierzchni przy próbkowaniu wokół planszy. Dwa ramiona łączą terminale Stoczni z ramą platformy.

@@ -1,5 +1,12 @@
 # Decyzje
 
+## Kuźnia Widmowa · 28 listopada 2026
+
+Piec, linia odlewnicza i śluza operują wspólną paletą grafitowej stali,
+bazaltu i wygaszonej miedzi. Otwarta forma pokazuje ciekły metal poniżej
+obrzeża. Spływ ze śluzy kończy się w wyrzeźbionym korycie, co wiąże ruch
+z terenem i usuwa powtórzoną sylwetkę pieca z dalszego planu.
+
 ## 18 listopada 2026 · Faza 0
 
 - Gałąź `visual-overhaul` od commitu `5dd8864` stanowi punkt odniesienia. Gałąź obejmuje zmiany po kolejnych krokach.

@@ -59,21 +59,22 @@ export const CAMPAIGN_WORLDS=Object.freeze([
   }),
  world('forge','Kuźnia widmowa','Spectral Forge','nebula',
   0x1b1620,0x713b30,0x542d32,0xffc99b,0xf3a85d,'deck',{
-   face:.48,groove:.59,dust:0xd9a172,deckTint:0xd8c5b4,air:'embers',surface:'alloy',footing:{body:0x453337,bevel:0x835f45},
+   face:.48,groove:.59,dust:0xd9a172,deckTint:0xd8c5b4,air:'embers',surface:'slate',footing:{body:0x453337,bevel:0x835f45},
    traffic:{model:'ambient-forge-hauler',period:17,shuttle:true,offset:2.7,heading:-.54,
     from:[21.2,-10.5,-8.5],to:[27.8,-10.5,-4.5],scale:.68},
    currents:[{count:34,origin:[11.1,-4.7,14.5],spread:[4.6,.4,2.1],travel:[2.9,2.65,-.65],
     tint:0xffa557,size:.065,length:.29,opacity:.82,rate:.61},
    {count:23,origin:[-11.4,-3.2,-13.7],spread:[3.2,.28,1.9],travel:[3.4,2.1,.56],
-    tint:0x92716a,size:.65,length:1.48,opacity:.23,rate:.28}],
+    tint:0x92716a,size:.65,length:1.48,opacity:.23,rate:.28},
+   {count:22,origin:[29.7,-15.8,9.2],spread:[1.58,.52,1.63],travel:[2.65,5.1,1.74],
+    tint:0xd6956f,size:.88,length:1.72,opacity:.19,rate:.34}],
    models:[
     ['forge-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['forge-furnace-bank',[-10.9,-8.8,-13.6],1.31,-.41],
     ['forge-casting-line',[9.8,-9.29,15.1],1.23,-.51],
     ['forge-service-rail',[24.5,-13.8,-6.5],1.16,-.54],
     ['forge-basalt',[-17.5,-11.8,10.4],[1.25,1.13,1.35],-.31],
-    ['forge-smelter',[22.5,-10.5,-18.9],1.37,-.65,'horizon'],
-    ['forge-basalt',[31,-16.3,-29],[2.1,1.55,1.49],-.61,'horizon']
+    ['forge-spillway',[31.8,-17.13,5.5],1,-.51]
    ]
   }),
  world('abyss','Optyka głębinowa','Abyssal Optics','verdant',

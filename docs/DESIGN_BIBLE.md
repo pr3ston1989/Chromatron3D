@@ -21,6 +21,7 @@
 - W widoku z góry małe symbole o wysokim kontraście pomagają rozpoznać przyrządy także przy małym rozmiarze siatki. Są odsunięte od środka pola. Kształt identyfikuje mechanizm, a kolor obwódki wybranych przyrządów uzupełnia informację o widmie.
 - Plansza utrzymuje rytm symetryczny, a otoczenie kadrują dwie lub trzy duże formy z przerwami między sylwetkami. Ruchome części i dominanty są poza siatką. Dalsze plany mają coraz słabszy kontrast i nasycenie.
 - Domyślny kadr odniesienia to perspektywa o pionowym FOV 40°, odległość 44 m, azymut −0,80 rad, elewacja 0,86 rad. Oceniamy też w grze widok pionowy, z góry i po obrocie. W trybie ograniczonego ruchu otoczenie zachowuje statyczną kompozycję.
+- W Kuźni grafitowa stal i matowy bazalt stanowią tło dla małych powierzchni płynnego metalu. Animacja emisji jest skupiona w śluzie i korycie poniżej planszy, a obrzeża form pozostają ciemne.
 
 ## Paleta materiałów
 
