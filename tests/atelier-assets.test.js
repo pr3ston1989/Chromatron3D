@@ -335,8 +335,15 @@ test('the deepwater landmarks use authored meshes below the playing surface',asy
  const landmarks={
   'abyss-observatory':{budget:3900,material:'Bathyal coated glass'},
   'abyss-vent-reef':{budget:3300,material:'Sulfide chimney rim'},
+  'abyss-fan-slope':{budget:3000,material:'Gorgonian copper cartilage'},
+  'abyss-sponge-ledge':{budget:3000,material:'Glass sponge lattice'},
   'abyss-survey-rov':{budget:1200,material:'Inspection camera glass'},
   'abyss-rov-berth':{budget:2350,material:'Dock approach markers'}
+ };
+ const footing={
+  'abyss-rov-berth':[[-2.78,-1.63],[-2.78,1.63],[2.78,-1.63],[2.78,1.63]],
+  'abyss-fan-slope':[[-2.61,-1.02],[-2.20,1.12],[1.55,-.87],[2.38,.81]],
+  'abyss-sponge-ledge':[[-3.04,-1.01],[-2.84,1.05],[.82,-1.22],[2.12,.69]]
  };
  const loader=new GLTFLoader();
  const terrainFile=readFileSync(new URL('../assets/models/scenery/abyss-terrain.glb',import.meta.url));
@@ -365,13 +372,13 @@ test('the deepwater landmarks use authored meshes below the playing surface',asy
    assert.ok(anchor[1]+bounds.max.y*(Array.isArray(scale)?scale[1]:scale)+motionMargin<0,
     id+' remains below the play surface');
   }
-  if(id==='abyss-rov-berth'){
+  if(footing[id]){
    const [,anchor,scale,yaw]=placements[0];
    scene.position.fromArray(anchor);scene.scale.setScalar(scale);scene.rotation.y=yaw;scene.updateMatrixWorld(true);
-   for(const x of [-2.78,2.78])for(const z of [-1.63,1.63]){
+   for(const [x,z] of footing[id]){
     const foot=scene.localToWorld(new Vector3(x,0,z));
     const ground=new Raycaster(foot.clone().setY(20),new Vector3(0,-1,0)).intersectObject(terrain,true)[0];
-    assert.ok(ground?.point.y>=foot.y,'each docking berth leg reaches the seafloor');
+    assert.ok(ground?.point.y>=foot.y,id+' reaches the seafloor');
    }
   }
   if(id==='abyss-survey-rov'){

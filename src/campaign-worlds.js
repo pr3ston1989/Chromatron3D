@@ -95,9 +95,9 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    models:[
     ['abyss-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['abyss-observatory',[-9.7,-7.85,-13.4],1.27,-.36,'left'],
-    ['abyss-vent-reef',[18.7,-11.75,5.0],[1.42,1.39,1.48],-.46],
+    ['abyss-fan-slope',[22.6,-12.38,10.7],1.20,-.55],
     ['abyss-vent-reef',[9.3,-10.28,16.4],1.31,-.33,'vent'],
-    ['abyss-vent-reef',[-17.7,-9.65,10.8],[1.37,1.17,1.42],.61],
+    ['abyss-sponge-ledge',[-14.3,-12.0,-9.8],.98,.28],
     ['abyss-rov-berth',[31,-13.48,6.8],1.10,-.37],
     ['abyss-survey-rov',[24.8,-7.26,4.6],1.48,-.59,'survey']
    ]

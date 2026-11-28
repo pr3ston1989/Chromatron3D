@@ -34,8 +34,8 @@ SCENES = {
         (31, -29, -15.95, 10),
     ]),
     'abyss': (-18.4, (.027, .055, .083), (.051, .117, .127), (.062, .087, .105), [
-        (-9.7, -13.4, -7.64, 4.9), (18.7, 5, -11.45, 6.7),
-        (9.3, 16.4, -8.46, 4.9), (-17.7, 10.8, -9.5, 5.7),
+        (-9.7, -13.4, -7.64, 4.9), (22.6, 10.7, -12.01, 9.4),
+        (9.3, 16.4, -8.46, 4.9), (-14.3, -9.8, -11.76, 8.5),
         (31., 6.8, -13.15, 8.8),
     ]),
     'sanctuary': (-17.1, (.044, .050, .072), (.127, .115, .132), (.071, .091, .081), [
@@ -100,6 +100,12 @@ def bed(theme):
         for px,pz,height,radius in pads:
             distance = hypot(x-px,z-pz)
             floor = max(floor,height-1.02*max(0,distance-radius*.65))
+        if theme == 'abyss':
+            # A low, continuous ledge below the observatory. Fade the cut
+            # before the platform's footings and the habitat landing.
+            ledge = exp(-((x+14.3)/5.16)**6-((z+9.8)/3.04)**6)
+            reach = ledge*min(1,max(0,(-x-9.7)/1.85))
+            floor -= reach*max(0,floor-(-11.68+.11*sediment))
         if theme == 'frost':
             fault = abs(z-(6.9+.19*(x-28.75)+.67*sin((x-28.75)*.22)))
             reach = exp(-((x-29.5)/8.4)**4)

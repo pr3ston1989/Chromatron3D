@@ -103,6 +103,14 @@ const finishes={
   float reflected=exp(-9.*abs(diagonal-.07*sin(landmarkTime*.48)));
   diffuseColor.rgb+=vec3(.063,.139,.165)*reflected;
  `,
+ 'Glass sponge lattice':`
+  vec3 surface=landmarkPoint;
+  float ribs=sin(27.*surface.x-17.*surface.z+.71*sin(surface.y*9.));
+  float crossweave=cos(22.*surface.y+.76*cos(21.*surface.z+13.*surface.x));
+  float lattice=smoothstep(.46,.91,.5+.5*ribs*crossweave);
+  float visibility=1.-smoothstep(.21,.74,length(fwidth(surface))*14.);
+  diffuseColor.rgb*=.87+.26*visibility*lattice;
+ `,
  'Terrain · abyss':`
   vec2 seaFloor=landmarkPoint.xz;
   float current=sin(seaFloor.x*.68+seaFloor.y*.27-landmarkTime*.43);
@@ -177,13 +185,24 @@ const finishes={
 // time uniform drives the water and the lens finish for each loaded scene.
 export function applyLandmarkFinish(THREE,material,time){
  const finish=finishes[material.name];
- if(!finish)return false;
+ const coral=material.name.startsWith('Gorgonian ');
+ if(!finish&&!coral)return false;
  const channel=material.name==='Forge channel lava';
  const spillway=material.name==='Spillway molten glass';
  if(material.name==='Garden running water'||spillway)material.side=THREE.DoubleSide;
  material.customProgramCacheKey=()=>material.name;
  material.onBeforeCompile=shader=>{
   shader.uniforms.landmarkTime=time;
+  if(coral){
+   shader.vertexShader='uniform float landmarkTime;\n'+shader.vertexShader.replace(
+    '#include <begin_vertex>',`#include <begin_vertex>
+     float flex=pow(clamp((position.y-1.45)/4.7,0.,1.),1.65);
+     float phase=.37*position.x+.32*position.y;
+     transformed.x+=.36*flex*(sin(.89*landmarkTime+phase)-sin(phase));
+     transformed.z+=.24*flex*(cos(.64*landmarkTime+phase)-cos(phase));
+    `);
+   return;
+  }
   const flowVarying=channel?'varying vec2 landmarkFlow;\n':'';
   shader.vertexShader='varying vec3 landmarkPoint;\n'+flowVarying+shader.vertexShader.replace(
    '#include <begin_vertex>','#include <begin_vertex>\n landmarkPoint=position;'+(channel?'\n landmarkFlow=uv;':''));

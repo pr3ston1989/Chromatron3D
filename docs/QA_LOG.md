@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Siedliska Optyki Głębinowej
+
+- Dwa powtórzenia aktywnej rafy zastąpiono osobnymi modelami gąbek i wachlarzy koralowców. Pierwsze ujęcie pokazało, że półka gąbek wypada poza kamerą. Przeniesiono ją pod obserwatorium i ukształtowano pod nią szerszy stopień dna.
+- Wachlarze mają 2996 z 3000 trójkątów, półka gąbek 2136 z 3000, a dno 2880 z 3100. Test GLB potwierdza kontakt obu modeli z gruntem, materiały z Blendera i wysokość poniżej płaszczyzny gry.
+- Widoczność 225 pól sprawdzono w grze w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 oraz emulacji 390 × 844. Po czterech ćwierćobrotach na desktopie wszystkie środki pól pozostały widoczne. `npm run check` przeszedł z wynikiem 263/263 i poprawną kompilacją.
+- W wycinku prawego wachlarza porównanie klatek podczas animacji wykryło 5440 zmienionych pikseli. Przy ograniczonym ruchu wynik wyniósł zero.
+
 ## 28 listopada 2026 · Koryta Kuźni Widmowej
 
 - Rozmytą warstwę lawy zastąpiono dwiema wymodelowanymi strugami z bazaltowymi brzegami. Po pierwszym ujęciu odsunięto zakole od tytułu i przygaszono daleką emisję. Powierzchnia korzysta ze współrzędnych zapisanych wzdłuż spadku każdej strugi.

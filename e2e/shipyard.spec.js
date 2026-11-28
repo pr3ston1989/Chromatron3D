@@ -7,6 +7,7 @@ for(const [name,level,channel] of [
  ['forge spillway',5,'finishTime'],
  ['grotto lake',3,'poolTime'],
  ['polar radiometer',4,'radiometerAngle'],
+ ['abyss reef current',6,'finishTime'],
  ['sanctuary prism',7,'calibrationAngle'],
  ['shipyard gantry',8,'cargoGantryTravel']
 ])test(`${name} moves and parks with reduced motion`,async({page})=>{

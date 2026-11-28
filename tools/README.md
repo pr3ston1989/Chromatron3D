@@ -45,6 +45,16 @@ trójkątów), `abyss-vent-reef` (3300), `abyss-rov-berth` (2350) i
 `abyss-survey-rov` (1200). Iluminatory i reflektory pojazdu mają efekty
 nakładane w grze. Materiały i wypalone cienie pozostają zapisane w GLB.
 
+Dwa siedliska `abyss-fan-slope` (2996 z 3000 trójkątów) i
+`abyss-sponge-ledge` (2136 z 3000) modelują gałęzie, otwarte wnętrza
+gąbek i skalne podstawy. Ruch w prądzie używa wspólnego zegara sceny
+i dotyczy tylko materiałów koralowców. Ograniczony ruch przywraca
+spoczynkowy kształt gałęzi.
+
+```powershell
+& 'C:\Tools\blender-5.3.0-windows-x64\blender.exe' -b --python-exit-code 1 -P tools/blender/assets/abyss-benthic-gardens.py
+```
+
 Modele Laboratorium polarnego z zestawu to `frost-optical-lab` (limit 3200
 trójkątów), `frost-icefall` (2400) i `frost-core-bridge` (2600). Cztery stopy
 pomostu stoją na przeciwległych brzegach szczeliny w `frost-terrain`.

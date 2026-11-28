@@ -43,6 +43,8 @@ W Optyce głębinowej pojazd badawczy oświetla zawiesinę w toni podczas
 patrolu między rafą a dokiem. Rafa ma nieregularne kominy i kolonie
 rurkoczułkowców. Woda tłumi światło nad dalszym dnem, a nad stokiem przepływa
 ławica. Modele stacji, rafy, doku i pojazdu mają edytowalne źródła Blendera.
+Poniżej stacji rośnie kolonia gąbek, a przy doku gałęzie koralowców uginają
+się w prądzie. Obie formacje mają własne skalne podstawy połączone z dnem.
 [Pracownia modeli](../tools/README.md)
 
 W Sanktuarium Soczewek kamienna ścieżka prowadzi od niższego tarasu
