@@ -578,6 +578,7 @@ def abyss_observatory():
     glass = paint("Bathyal coated glass", (.035,.18,.23), .32,.21,.09)
     copper = make_material("Bronze hatch seal", "bronze", .57,.39)
     fairing = make_material("Pressure hull fairing", "steel", .41,.53,shade=-1)
+    walkway = paint("Bathyal perforated gantry deck", (.066,.090,.103), .32,.65)
     # The hull narrows into pressure bulkheads at both ends.
     sections = [(-4.8,.54,.60),(-4.62,.94,.93),(-3.85,1.55,1.31),(-3.29,1.69,1.40),
                 (2.99,1.69,1.40),(3.36,1.55,1.32),(4.27,.94,.93),(4.50,.64,.63)]
@@ -605,7 +606,7 @@ def abyss_observatory():
         for side in (-1,1):
             m.pipe([(x+side*r*.48,front-.44,z+r*.80),(x+side*r*.69,front-.44,z+r*.68)],.033,m.signal,4)
 
-    m.slab((.2,0),5.1,2.96,.74,.45,.75,m.stone)
+    m.slab((.2,0),5.1,2.96,.74,.45,.75,m.stone,cap=walkway)
     for x in (-3.62,3.35):
         for y in (-2.42,2.42):
             m.slab((x,y),.61,.68,0,.23,.23)
@@ -615,6 +616,12 @@ def abyss_observatory():
         m.pipe([(-4.2,y,1.29),(4.35,y,1.29)],.135,m.edge)
         for x in (-3.4,-1.7,0,1.7,3.4):
             m.pipe([(x-.34,y-.04,1.36),(x+.34,y-.04,1.36)],.046,m.signal,4)
+    for x in (-4.08,-2.89,1.22,2.38,3.65,4.40):
+        m.pipe([(x,-2.61,1.10),(x,-2.61,1.60)],.044,fairing,5)
+    for left,right in [(-4.08,-2.89),(1.22,4.40)]:
+        m.pipe([(left,-2.61,1.61),(right,-2.61,1.61)],.047,m.body,5)
+    for x in (-4.02,-3.75,2.74,3.01):
+        m.pipe([(x,-2.08,1.207),(x,-1.82,1.207)],.025,copper,4)
     m.pipe([(-3.25,1.28,2.28),(-3.75,2.11,2.04),(-.75,2.10,1.97),(2.79,1.80,2.22)],.21,copper,8)
     m.pipe([(-2.9,1.03,3.66),(-3.27,1.07,4.58),(-3.14,1.1,5.04)],.083,m.body)
     m.pipe([(-3.14,1.1,5.04),(-3.14,1.1,5.31)],.071,m.signal,5)
@@ -623,7 +630,8 @@ def abyss_observatory():
 
 def abyss_vent_reef():
     m = Landmark("Hydrothermal outcrop", "navy", "jade", "cyan", "obsidian", masonry=True)
-    shell = paint("Sulfide chimney rim", (.195,.143,.070), .16,.69)
+    shell = paint("Sulfide chimney rim", (.185,.132,.070), .16,.69)
+    crust = paint("Mineral-rich sulfide wall", (.047,.078,.096), .16,.79)
     mussel = paint("Blue mussel valves", (.042,.113,.152), .20,.39)
     polyp = paint("Cold-water anemone tips", (.205,.119,.092), .06,.55)
     weed = paint("Sea fan membranes", (.045,.171,.157), .06,.65)
@@ -635,10 +643,19 @@ def abyss_vent_reef():
     for i,(x,y,z,height,radius) in enumerate([(-1.8,.73,1.3,3.7,.79),(-.75,1.02,1.5,2.74,.52),
                                                (-2.92,.59,1.3,1.94,.55),(1.34,1.92,1.5,2.1,.62),
                                                (2.03,1.54,1.5,3.02,.61),(2.43,2.0,1.5,1.7,.37)]):
-        profile = [(x+dx*height,y-dx*.63,z+rise*height,radius*width,radius*width*.88)
-                   for rise,width,dx in [(0,1.18,0),(.22,.90,.02),(.45,.60,-.04),(.68,.65,-.05),
-                                         (.93,.43,.015),(1,.58,.035),(.99,.36,.035),(.74,.30,.018)]]
-        m.s.lathe(profile,m.stone,9,ribs=4,relief=.22,bands=[m.body,m.stone,m.body,m.body,shell,shell,m.dark],phase=.47*i)
+        profile = [(0,1.18,0),(.22,.90,.02),(.45,.60,-.04),(.68,.65,-.05),
+                   (.93,.43,.015),(1,.58,.035),(.99,.36,.035),(.74,.30,.018)]
+        rings = []
+        for rise,width,dx in profile:
+            ring = []
+            for side in range(9):
+                a = side*tau/9+i*.47
+                tooth = .17*sin(side*3.3+i*.54)+.086*cos(side*2.1-rise)
+                lip = (.092*sin(side*2.5+i)+.055*cos(side*3.8))*min(1,rise*1.6)
+                r = radius*width*(1+tooth)
+                ring.append((x+dx*height+r*cos(a),y-dx*.63+r*.88*sin(a),z+rise*height+lip))
+            rings.append(ring)
+        m.s.loft(rings,m.stone,[m.body,m.stone,crust,crust,shell,shell,m.dark])
     for x,y,z,size in [(-4.33,-.73,1.65,1.26),(-3.66,-1.60,1.75,1.77),(.37,-1.82,1.67,1.56),
                        (1.62,-1.09,1.98,1.64),(3.69,-1.48,1.34,1.44)]:
         for j in range(5):
@@ -655,6 +672,15 @@ def abyss_vent_reef():
             rad = rng.uniform(.105,.19)
             m.s.lathe([(cx,cy,z,rad,rad*.65),(cx+.09,cy,z+.16,rad*.85,rad*.71),
                        (cx+.13,cy,z+.30,rad*.18,rad*.23)],mussel,5,bands=[mussel,polyp if j==0 else mussel])
+    tubes = paint("Pale tubeworm sheaths", (.223,.207,.156), .06,.66)
+    for i,(x,y,z) in enumerate([(-3.75,-1.11,1.44),(-.86,-1.43,1.94),(2.7,-1.38,1.41)]):
+        for j in range(4):
+            angle = (i*1.21+j*1.57)
+            dx,dy = cos(angle)*.25,sin(angle)*.26
+            h = .31+.091*((j*3+i)%5)
+            m.pipe([(x+dx*.39,y+dy*.39,z),(x+dx*.84,y+dy*.81,z+h*.61),
+                    (x+dx*1.37,y+dy*1.33,z+h)],.035,tubes,4)
+            m.pipe([(x+dx*1.15,y+dy*1.12,z+h*.83),(x+dx*1.44,y+dy*1.36,z+h+.074)],.055,polyp,4)
     return m
 
 
@@ -683,6 +709,35 @@ def abyss_survey_rov():
         m.pipe([(.77,-1.26,.22),(x,-1.39,.20),(x,-1.49,.20)],.037,m.stone,4)
     m.pipe([(.28,.56,.91),(.29,.71,1.28),(.29,.78,1.42)],.04,m.edge,5)
     m.pipe([(.29,.78,1.42),(.30,.85,1.46)],.048,m.signal,5)
+    return m
+
+
+def abyss_rov_berth():
+    m = Landmark("Benthic docking berth", "navy", "steel", "amber", "obsidian")
+    grate = paint("Benthic wet deck grating", (.044,.075,.096), .35,.55)
+    copper = make_material("Berth safety enamel", "copper", .27,.57)
+    lamp = paint("Dock approach markers", (.035,.28,.32), .1,.4,.59)
+    for x in (-2.78,2.78):
+        for y in (-1.63,1.63):
+            m.slab((x,y),.68,.73,0,.36,.29,m.stone,cap=m.body)
+            m.pipe([(x,y,.34),(x*.93,y*.88,1.34)],.22,m.body,8)
+            m.pipe([(x,y,.32),(x*.81,y*.81,1.27)],.11,m.edge,6)
+    m.slab((0,0),3.64,2.22,1.18,.39,.47,m.body,cap=grate)
+    for side in (-1,1):
+        x = side*1.85
+        m.slab((x,.14),.30,1.68,1.53,.22,.22,m.edge,cap=copper)
+        for y in (-1.35,-.56,.23,1.02):
+            m.pipe([(x-.06,y-.15,1.779),(x-.06,y+.15,1.779)],.043,lamp,5)
+        # The armored shoulders leave a clear approach for the survey vehicle.
+        m.slab((side*2.76,.85),.46,.74,1.54,1.47,.17,m.body,cap=copper)
+        m.pipe([(side*2.61,.59,2.43),(side*2.09,.64,3.98),(side*1.46,.61,4.53)],.175,m.edge,8)
+        m.pipe([(side*2.85,1.38,2.24),(side*2.21,.78,3.76),(side*1.76,.79,4.12)],.09,m.body,6)
+        m.pipe([(side*2.73,-.71,1.60),(side*2.71,-1.69,1.14),(side*3.20,-1.90,.42)],.12,m.stone,7)
+    m.slab((0,.68),1.76,.43,4.38,.34,.26,m.body,cap=grate)
+    m.pipe([(-1.44,.30,4.56),(-.64,.30,4.56)],.049,lamp,5)
+    m.pipe([(.64,.30,4.56),(1.44,.30,4.56)],.049,lamp,5)
+    for x in (-.59,0,.59):
+        m.slab((x,.79),.21,.40,4.68,.18,.11,m.stone,cap=m.edge)
     return m
 
 
@@ -1212,15 +1267,23 @@ def ambient_pelagic_fish():
     m = Landmark("Bathyal lanternfish", "navy", "jade", "cyan", "obsidian")
     belly = paint("Lanternfish silver side", (.046,.139,.161), .31,.42)
     stripe = paint("Lanternfish photophore", (.042,.24,.258), .09,.35,.68)
-    profile = [(-.98,.08,.146),(-.78,.19,.26),(-.37,.31,.43),(.12,.29,.38),(.71,.12,.19),(.98,.060,.10)]
+    pupil = paint("Lanternfish dark iris", (.026,.050,.057), .11,.31)
+    profile = [(-1.02,.064,.104),(-.81,.165,.211),(-.40,.269,.348),(.13,.24,.317),(.68,.094,.147),(.98,.052,.080)]
     m.s.loft([[(w*cos(i*tau/10),y,.50+h*sin(i*tau/10)) for i in range(10)] for y,w,h in profile],
-             m.stone,[belly,m.body,belly,m.body,m.stone])
+             m.stone,[belly]*5)
+    dorsal = len(m.s.palette)
+    m.s.palette.append(m.body)
+    for row in range(len(profile)-1):
+        for flank in (1,2,3):
+            m.s.finishes[1+row*10+flank] = dorsal
     for side in (-1,1):
-        m.s.blade([(side*.11,.07,.52,.08,.042),(side*.38,.23,.46,.17,.025),(side*.58,.46,.41,.028,.014)],
+        m.s.blade([(side*.10,.06,.46,.078,.042),(side*.34,.20,.39,.14,.025),(side*.54,.42,.36,.024,.014)],
                   belly,m.body)
-        m.pipe([(side*.19,-.70,.56),(side*.225,-.52,.56),(side*.279,-.24,.54),
-                (side*.265,.05,.56),(side*.19,.40,.52)],.021,stripe,5)
-    fin=[(y,z) for y,z in [(.86,.46),(1.44,.98),(1.28,.63),(1.37,.48),(1.44,.09),(.96,.39)]]
+        m.pipe([(side*.16,-.73,.56),(side*.195,-.69,.57)],.054,pupil,7)
+        m.pipe([(side*.192,-.65,.42),(side*.237,-.48,.39),(side*.257,-.22,.38),
+                (side*.205,.16,.39),(side*.131,.46,.43)],.013,stripe,5)
+    m.s.loft([[(x,y,z) for y,z in [(-.44,.77),(-.29,1.01),(.27,.76),(.14,.71)]] for x in (-.022,.022)],m.body)
+    fin=[(y,z) for y,z in [(.89,.49),(1.49,.87),(1.24,.54),(1.29,.46),(1.48,.15),(.91,.43)]]
     m.s.loft([[(x,y,z) for y,z in fin] for x in (-.052,.052)],m.body,[belly])
     return m
 
@@ -1293,7 +1356,7 @@ BUILDERS = {
     "forge-smelter": smelter, "forge-basalt": basalt_basin,
     "abyss-habitat": bathysphere, "abyss-reef": reef,
     "abyss-observatory": abyss_observatory, "abyss-vent-reef": abyss_vent_reef,
-    "abyss-survey-rov": abyss_survey_rov,
+    "abyss-survey-rov": abyss_survey_rov, "abyss-rov-berth": abyss_rov_berth,
     "sanctuary-gate": sanctuary_gate, "sanctuary-reliquary": reliquary,
     "sanctuary-terrace": sanctuary_terrace,
     "sanctuary-collimator": sanctuary_collimator, "sanctuary-broken-span": sanctuary_broken_span,
@@ -1312,7 +1375,7 @@ BUILDERS = {
 }
 
 LANDMARK_BUDGETS = {
-    "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
+    "abyss-observatory": 3900, "abyss-vent-reef": 3300, "abyss-survey-rov": 1200, "abyss-rov-berth": 2350,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
     "frost-core-bridge": 2600,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,

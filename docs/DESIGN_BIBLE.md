@@ -24,6 +24,7 @@
 - W Kuźni grafitowa stal i matowy bazalt stanowią tło dla małych powierzchni płynnego metalu. Animacja emisji jest skupiona w śluzie i korycie poniżej planszy, a obrzeża form pozostają ciemne.
 - W Grocie chłodny łupek oddziela fioletowe fasety ametystu od turkusowej wody. Jasne krawędzie skupiają się na fasetach i mokrych progach. W kadrze akcenty wody wypadają przy brzegu platformy.
 - W Laboratorium Polarnym jasne plamy śniegu podkreślają krawędzie lodu i ustępują głębokiemu błękitowi szczeliny. Stanowiska badawcze mają niewielkie, ciepłe światła. Za tylną krawędzią planszy jasna sylwetka szybowca odcina się od grzbietu.
+- W Głębinach seledynowa poświata na osadzie zanika wraz z odległością. Jasne lampy podkreślają wejście do doku, a miękkie stożki wokół pojazdu pozostają poniżej siatki zagadki.
 
 ## Paleta materiałów
 

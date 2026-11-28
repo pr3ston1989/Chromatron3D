@@ -84,18 +84,19 @@ export const CAMPAIGN_WORLDS=Object.freeze([
  world('abyss','Optyka głębinowa','Abyssal Optics','verdant',
   0x041322,0x215974,0x183a4d,0xbde0f2,0x73c9c4,'deck',{
    face:.50,groove:.59,dust:0x88bebc,deckTint:0xaeced2,air:'current',footing:{body:0x223941,bevel:0x487176},
-   traffic:{model:'ambient-pelagic-fish',period:23,duration:14,offset:3.1,count:7,
-    from:[18.7,-6.0,-17.3],to:[27.5,-6.6,-4.5],scale:.83},
+   traffic:{model:'ambient-pelagic-fish',period:23,duration:14,offset:3.1,count:9,
+    from:[19.8,-4.5,-11.6],to:[32.8,-5.6,-1.5],scale:.79,
+    palette:{'Bathyal lanternfish body':0x264854,'Lanternfish silver side':0x557980}},
+   currents:[{count:24,origin:[26.5,-11.0,1.4],spread:[4.86,2.21,4.9],travel:[5.1,.78,2.95],
+    tint:0x83aeab,size:.056,length:.12,opacity:.32,rate:.23}],
    models:[
     ['abyss-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['abyss-observatory',[-9.7,-7.85,-13.4],1.27,-.36,'left'],
     ['abyss-vent-reef',[18.7,-11.75,5.0],[1.42,1.39,1.48],-.46],
-    ['abyss-vent-reef',[9.3,-8.65,16.4],1.31,-.33,'vent'],
+    ['abyss-vent-reef',[9.3,-10.28,16.4],1.31,-.33,'vent'],
     ['abyss-vent-reef',[-17.7,-9.65,10.8],[1.37,1.17,1.42],.61],
-    ['abyss-survey-rov',[15.7,-4.45,9.2],1.46,-.57,'survey'],
-    ['abyss-reef',[18,-11.4,-18],[1.74,1.35,1.58],-.36,'horizon'],
-    ['abyss-observatory',[28,-18.0,-30],1.53,-.58,'horizon'],
-    ['abyss-vent-reef',[41,-22.1,-45],[2.26,1.71,1.83],-.62,'horizon']
+    ['abyss-rov-berth',[31,-13.48,6.8],1.10,-.37],
+    ['abyss-survey-rov',[24.8,-7.26,4.6],1.48,-.59,'survey']
    ]
   }),
  world('sanctuary','Sanktuarium soczewek','Lens Sanctuary','polar',

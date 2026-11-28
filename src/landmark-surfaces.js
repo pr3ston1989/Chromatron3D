@@ -56,6 +56,17 @@ const finishes={
   float reflected=exp(-9.*abs(diagonal-.07*sin(landmarkTime*.48)));
   diffuseColor.rgb+=vec3(.063,.139,.165)*reflected;
  `,
+ 'Terrain · abyss':`
+  vec2 seaFloor=landmarkPoint.xz;
+  float current=sin(seaFloor.x*.68+seaFloor.y*.27-landmarkTime*.43);
+  float reefShade=sin(seaFloor.x*.14-seaFloor.y*.21);
+  float facetCaustic=sin(seaFloor.y*1.31+.65*current+landmarkTime*.34);
+  float glimmer=smoothstep(.32,.91,facetCaustic*.61+current*.39);
+  diffuseColor.rgb*=.87+.23*reefShade;
+  diffuseColor.rgb+=vec3(.026,.110,.119)*glimmer*.34;
+  float falloff=smoothstep(29.,93.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.010,.035,.060),falloff*.83);
+ `,
  'Garden running water':`
   vec2 water=landmarkPoint.xz;
   float wave=sin(water.x*7.2-landmarkTime*1.12+1.4*sin(water.y*8.5));
@@ -135,9 +146,9 @@ export function createVentPlumes(THREE,time){
    void main(){
     float age=fract(phase.x+seconds*(.22+.08*phase.y));
     float drift=sin(19.*phase.y+2.7*age);
-    vec3 point=vent+vec3(.35*age+.17*drift*age,.11+1.04*age,(phase.y-.5)*.43*age);
+    vec3 point=vent+vec3(.71*age+.21*drift*age,.11+1.82*age,(phase.y-.5)*.53*age);
     vec4 center=modelViewMatrix*vec4(point,1.);
-    float size=(.27+.64*age)*length(modelMatrix[0].xyz);
+    float size=(.23+.87*age)*length(modelMatrix[0].xyz);
     center.xy+=position.xy*vec2(size,size*1.16);
     sprite=position.xy*2.;
     fade=smoothstep(0.,.18,age)*(1.-smoothstep(.35,1.,age));
@@ -150,7 +161,7 @@ export function createVentPlumes(THREE,time){
    void main(){
     float fringe=length(sprite)+.09*sin(7.3*sprite.x+4.2*sprite.y+pattern*18.);
     float veil=1.-smoothstep(.18,.98,fringe);
-    gl_FragColor=vec4(.20,.38,.39,.22*veil*fade);
+    gl_FragColor=vec4(.20,.31,.33,.24*veil*fade);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
    }`
@@ -159,4 +170,35 @@ export function createVentPlumes(THREE,time){
  plumes.name='Hydrothermal plumes';
  plumes.frustumCulled=false;
  return plumes;
+}
+
+export function createSurveyLights(THREE){
+ const length=3.8,tilt=Math.PI*.55;
+ const material=new THREE.ShaderMaterial({
+  transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+  vertexShader:`
+   varying float distanceAlong,aperture;
+   void main(){
+    vec4 point=modelViewMatrix*vec4(position,1.);
+    distanceAlong=uv.y;
+    aperture=abs(dot(normalize(normalMatrix*normal),normalize(-point.xyz)));
+    gl_Position=projectionMatrix*point;
+   }`,
+  fragmentShader:`
+   varying float distanceAlong,aperture;
+   void main(){
+    float mask=smoothstep(0.,.15,distanceAlong)*(1.-smoothstep(.17,1.,distanceAlong));
+    gl_FragColor=vec4(.29,.50,.48,mask*smoothstep(.15,.90,aperture)*.105);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+   }`
+ });
+ const lights=new THREE.Group();
+ for(const side of [-1,1]){
+  const guide=new THREE.CylinderGeometry(.81,.077,length,10,1,true);
+  guide.rotateX(tilt);
+  guide.translate(side*.61,.82+Math.cos(tilt)*length/2,.91+Math.sin(tilt)*length/2);
+  lights.add(new THREE.Mesh(guide,material));
+ }
+ return lights;
 }

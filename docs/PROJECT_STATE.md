@@ -29,10 +29,11 @@ niebo z tego samego lodowca, a pomost z wiertnicą łączy brzegi szczeliny.
 Szybowiec przelatuje za planszą na tle grzbietu. Bliskie bloki lodu mają
 osobne modele, a dalsze grzbiety należą do wspólnej siatki terenu.
 
-W Optyce głębinowej można obserwować patrol pojazdu badawczego między rafą
-hydrotermalną a stacją pomiarową. Stacja, rafa i pojazd mają edytowalne źródła
-Blendera, a smugi w toni i refleksy w iluminatorach poruszają się w normalnym
-trybie gry. [Pracownia modeli](../tools/README.md)
+W Optyce głębinowej pojazd badawczy oświetla zawiesinę w toni podczas
+patrolu między rafą a dokiem. Rafa ma nieregularne kominy i kolonie
+rurkoczułkowców. Woda tłumi światło nad dalszym dnem, a nad stokiem przepływa
+ławica. Modele stacji, rafy, doku i pojazdu mają edytowalne źródła Blendera.
+[Pracownia modeli](../tools/README.md)
 
 Węzeł Keplera otwiera się przez `?benchmark=orbital`. Prom startuje z galerii
 serwisowej, okrąża dok i wraca na pomost. Antena śledząca zmienia elewację.

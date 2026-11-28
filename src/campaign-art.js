@@ -3,7 +3,7 @@ import {applyPanelSurface} from './panel-surface.js';
 import {createGrottoPool,finishGrottoRock} from './grotto-surface.js';
 import {createBiomeBasin} from './biome-basin.js';
 import {applyOpticFinish} from './optic-textures.js';
-import {applyLandmarkFinish,createVentPlumes} from './landmark-surfaces.js';
+import {applyLandmarkFinish,createSurveyLights,createVentPlumes} from './landmark-surfaces.js';
 import {createScenicDrift} from './scenic-drift.js';
 import {createCampaignTraffic} from './campaign-traffic.js';
 
@@ -232,6 +232,7 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
    }
    mesh.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=role!=='horizon'&&role!=='ground'&&!terrain}});
    if(role==='vent')mesh.add(createVentPlumes(THREE,record.scenicTime));
+   if(role==='survey')mesh.add(createSurveyLights(THREE));
    root.add(mesh);
    return {mesh,id,anchor,yaw,role};
   });
@@ -339,10 +340,10 @@ export function createCampaignArt(THREE,scene,world,{loader,onReady}){
   for(const {mesh,yaw,role,anchor} of active.props){
    if(role==='iris'||role==='turn'||role==='pulse')mesh.rotation.y=yaw+Math.sin(t*.26)*.23;
    if(role==='survey'){
-    // Local patrol outside the playable deck, with a fixed pose at t = 0.
-    mesh.position.y=anchor[1]+.42*Math.sin(t*.58);
-    mesh.position.z=anchor[2]+2.60*Math.sin(t*.17);
-    mesh.rotation.y=yaw+.44*Math.sin(t*.17);
+    // Patrol the space between the dock and vent field, with a fixed pose at t = 0.
+    const pass=t*.23;
+    mesh.position.set(anchor[0]+2.75*Math.sin(pass),anchor[1]+.34*Math.sin(t*.54),anchor[2]+1.56*(1-Math.cos(pass)));
+    mesh.rotation.y=yaw+.72*Math.sin(pass-.41)+.29;
     mesh.rotation.z=.10*Math.sin(t*.50);
    }
    if(role==='left'||role==='right'||role==='turn'||role==='iris')

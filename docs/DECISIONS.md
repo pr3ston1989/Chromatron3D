@@ -1,5 +1,13 @@
 # Decyzje
 
+## Optyka Głębinowa · 28 listopada 2026
+
+Dok pojazdu stoi na czterech stopach po prawej stronie planszy. Patrol
+odbywa się nad dokiem i rafą. Rozproszone światło reflektorów i ruch
+osadu korzystają z niskopoligonowych efektów, a dalszy stok ma cichszą
+kolorystykę. Sylwetkę rafy wyznaczają nieregularne krawędzie kominów,
+ciemne wykwity siarczków i małe kolonie rurkoczułkowców.
+
 ## Laboratorium Polarne · 28 listopada 2026
 
 Obudowy laboratorium i radiometru rozdzielają ciemne ciągi serwisowe od

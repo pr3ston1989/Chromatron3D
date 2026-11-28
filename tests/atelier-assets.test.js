@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {Box3,Raycaster,Vector3} from 'three';
+import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CLASSIC_TYPE_NAMES} from '../src/classic-pieces.js';
 import {CAMPAIGN_FOOTING_Y,CAMPAIGN_WORLDS,campaignWorld} from '../src/campaign-worlds.js';
 import {GROTTO_POOL_Y} from '../src/grotto-surface.js';
+import {createSurveyLights} from '../src/landmark-surfaces.js';
+
+const {Box3,Raycaster,Vector3}=THREE;
 
 function gltf(path){
  const data=readFileSync(new URL('../public/models/'+path+'.glb',import.meta.url));
@@ -155,7 +158,7 @@ test('each non-orbital biome shares continuous modeled ground between the piers 
    grotto:['grotto-pump-causeway','grotto-survey'],
    frost:['frost-optical-lab','frost-radiometer'],
    forge:['forge-furnace-bank','forge-casting-line','forge-service-rail'],
-   abyss:['abyss-observatory','abyss-vent-reef'],
+   abyss:['abyss-observatory','abyss-vent-reef','abyss-rov-berth'],
    sanctuary:['sanctuary-meridian','sanctuary-collimator','sanctuary-broken-span']
   };
   for(const [name,[x,y,z]] of models){
@@ -202,11 +205,15 @@ test('the terrace heliostat and meridian ruins retain their authored finishes in
 test('the deepwater landmarks use authored meshes below the playing surface',async()=>{
  const {models}=campaignWorld('demo',5);
  const landmarks={
-  'abyss-observatory':{budget:3700,material:'Bathyal coated glass'},
-  'abyss-vent-reef':{budget:3000,material:'Sulfide chimney rim'},
-  'abyss-survey-rov':{budget:1200,material:'Inspection camera glass'}
+  'abyss-observatory':{budget:3900,material:'Bathyal coated glass'},
+  'abyss-vent-reef':{budget:3300,material:'Sulfide chimney rim'},
+  'abyss-survey-rov':{budget:1200,material:'Inspection camera glass'},
+  'abyss-rov-berth':{budget:2350,material:'Dock approach markers'}
  };
  const loader=new GLTFLoader();
+ const terrainFile=readFileSync(new URL('../assets/models/scenery/abyss-terrain.glb',import.meta.url));
+ const terrain=(await loader.parseAsync(terrainFile.buffer.slice(terrainFile.byteOffset,terrainFile.byteOffset+terrainFile.byteLength),'')).scene;
+ terrain.position.fromArray(models.find(([id])=>id==='abyss-terrain')[1]);terrain.updateMatrixWorld(true);
  for(const [id,{budget,material}] of Object.entries(landmarks)){
   const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
   const bytes=file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength);
@@ -229,6 +236,22 @@ test('the deepwater landmarks use authored meshes below the playing surface',asy
    const motionMargin=role==='survey'?.70:0;
    assert.ok(anchor[1]+bounds.max.y*(Array.isArray(scale)?scale[1]:scale)+motionMargin<0,
     id+' remains below the play surface');
+  }
+  if(id==='abyss-rov-berth'){
+   const [,anchor,scale,yaw]=placements[0];
+   scene.position.fromArray(anchor);scene.scale.setScalar(scale);scene.rotation.y=yaw;scene.updateMatrixWorld(true);
+   for(const x of [-2.78,2.78])for(const z of [-1.63,1.63]){
+    const foot=scene.localToWorld(new Vector3(x,0,z));
+    const ground=new Raycaster(foot.clone().setY(20),new Vector3(0,-1,0)).intersectObject(terrain,true)[0];
+    assert.ok(ground?.point.y>=foot.y,'each docking berth leg reaches the seafloor');
+   }
+  }
+  if(id==='abyss-survey-rov'){
+   const [,anchor,scale]=placements[0];
+   const lights=createSurveyLights(THREE);
+   assert.equal(lights.children.length,2);
+   for(const light of lights.children)assert.equal(light.material.depthWrite,false);
+   assert.ok(anchor[1]+new Box3().setFromObject(lights).max.y*scale+.70<-.6,'searchlights stay below the deck');
   }
  }
 });

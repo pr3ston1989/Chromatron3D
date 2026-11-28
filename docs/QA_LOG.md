@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Optyka Głębinowa
+
+- Zrzut wyjściowy pokazał grubą fakturę dna i zdublowane sylwetki rafy w tle. Dno przyciemniono, stacja dostała detal pomostu, a obok rafy powstał dok pojazdu badawczego. Drugi kadr pomógł odsunąć dok od krawędzi i przygasić jasne pasy ławicy.
+- Blender wyeksportował 3760 trójkątów stacji, 3288 rafy, 1360 doku, 340 ryby i 2880 dna. Test sprawdza cztery stopy doku, obwiednię reflektorów pod powierzchnią gry oraz trasę ławicy.
+- Chrome potwierdził widoczność środków 225 pól w pięciu rozmiarach okna, w tym 390 × 844, oraz przy czterech ćwierćobrotach kamery. Porównanie klatek w prawej części ekranu wykryło ruch podczas patrolu i nieruchomy obraz przy ograniczonym ruchu.
+- Lokalnie przeszły `npm run check` (259 testów i kompilacja) oraz dwa scenariusze Chrome dotyczące prześwitu planszy i obrotu kamery.
+
 ## 28 listopada 2026 · Laboratorium Polarne
 
 - Na zrzucie wyjściowym lodowiec i plansza miały zbliżony kontrast, a część trasy szybowca ginęła za zboczem. Przyciemniono teren, ocieplono światła stacji i przeniesiono przelot na widoczną stronę grzbietu. W domyślnym kadrze platforma zasłania bliższy koniec szczeliny.
