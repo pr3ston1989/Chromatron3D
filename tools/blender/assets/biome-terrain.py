@@ -18,7 +18,7 @@ SCENES = {
         (9.7, 15.8, -9.5, 5.5),
         (-16.4, 3.1, -10.4, 6), (21.5, -16., -14.3, 7),
     ]),
-    'grotto': (-17.1, (.028, .041, .065), (.091, .106, .139), (.073, .068, .119), [
+    'grotto': (-17.1, (.024, .036, .058), (.075, .092, .132), (.055, .057, .102), [
         (12.8, 10.5, -8.22, 11), (-11.8, -10.4, -5.46, 6.4),
         (-13.8, -15.7, -8.45, 5.1), (27.5, -1.5, -12.1, 7.9), (24, -22, -16.7, 9),
     ]),
@@ -120,6 +120,12 @@ def bed(theme):
             cut = min(1,max(0,(-x-12.05)/1.85,(x-18.4)/2.06))
             if basin<1.15:
                 floor -= cut*max(0,floor-bedrock)
+            # Continue the back passage beyond the arch while retaining its
+            # enclosing rock shelves and the dry ground beneath the board.
+            along = .539*(x-38)-.842*(z+15.6)
+            width = .842*(x-38)+.539*(z+15.6)
+            reach = exp(-(width/6.6)**4) * exp(-((along-4.2)/18)**4)
+            floor -= reach*max(0,floor-(-20.45+.15*sediment))
         hills = exp(-((radial-61)/24)**2)
         floor += hills*(3.5+(2.4 if theme in ('grotto','frost') else 1.14)*broad)
         floor = min(floor,-5.25)

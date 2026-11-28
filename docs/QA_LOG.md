@@ -1,5 +1,11 @@
 # QA
 
+## 28 listopada 2026 · Sklepienie Kryształowej Groty
+
+- Dwa podobne urwiska w tle zastąpiono warstwowym sklepieniem z prześwitem, stalaktytami i chłodnym odbiciem. Po pierwszych ujęciach przesunięto grotę w prawo i w dół. Po przeciwnej stronie wykorzystano półkę ametystu widoczną podczas obrotu.
+- Sklepienie ma 1592 z 2300 trójkątów i dwa materiały. Teren ma 2880 z 3100. Test GLB sprawdza otwarte przejście, solidny strop, kontakt obu podstaw z gruntem i wysokość pod płaszczyzną gry.
+- Chrome zachował widoczność 225 pól w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 i emulacji 390 × 844, a także przy czterech ćwierćobrotach w rozmiarach desktopowych. `npm run check` przeszedł z wynikiem 263/263 i poprawną kompilacją.
+
 ## 28 listopada 2026 · Stocznia Orbitalna
 
 - Bliższą kopię terminalu zastąpiono dokiem z ruchomą suwnicą. Pierwsze ujęcie pokazało kratownicę przecinającą pokład doku. W kolejnej wersji ramię kończy się pod kołnierzem, a odmieniona orientacja doku odsłania prowadnice. Holownik ma przebudowany kadłub i dwa chwytaki.

@@ -103,6 +103,26 @@ const finishes={
   diffuseColor.rgb*=.82+.21*waves;
   diffuseColor.rgb+=vec3(.022,.091,.128)*foam;
  `,
+ 'Terrain · grotto':`
+  vec2 shale=landmarkPoint.xz;
+  float layers=sin(shale.x*.62-shale.y*.33+.87*sin(shale.y*.42));
+  float chips=sin(shale.x*3.7+shale.y*.57)*sin(shale.y*3.3+shale.x*.28);
+  diffuseColor.rgb*=.86+.17*smoothstep(-.44,.88,layers)+.052*chips;
+  float mist=smoothstep(32.,93.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.036,.063,.094),mist*.80);
+ `,
+ 'Grotto vault strata':`
+  vec3 stone=landmarkPoint;
+  float foliation=sin(stone.y*2.5-.27*stone.x+.55*cos(.72*stone.z+.22*stone.x));
+  float calcite=smoothstep(.72,.97,foliation)*(.54+.46*sin(stone.x*1.14));
+  diffuseColor.rgb=diffuseColor.rgb*(.88+.13*foliation)+vec3(.052,.042,.060)*calcite;
+  float depth=smoothstep(35.,86.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.031,.048,.078),depth*.67);
+  float recess=smoothstep(.25,4.9,-stone.z);
+  float falloff=exp(-.021*stone.x*stone.x)*recess;
+  float reflected=.8+.2*sin(.95*stone.x+.43*stone.z-.34*landmarkTime);
+  diffuseColor.rgb+=vec3(.012,.040,.058)*falloff*reflected;
+ `,
  'Sanctuary active lens':`
   vec2 radial=vec2(landmarkPoint.x,landmarkPoint.y-4.09);
   float distanceFromAxis=length(radial);

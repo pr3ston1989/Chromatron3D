@@ -27,7 +27,9 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    traffic:{model:'ambient-cavern-moth',period:24,duration:13,offset:3.5,count:4,
     from:[27.1,-4.7,.7],to:[34.2,-5.9,8.9],scale:.69},
    currents:[{count:22,origin:[30.38,-15.2,10.62],spread:[1.24,.41,1.02],travel:[1.30,.94,1.49],
-    tint:0x689faf,size:.89,length:1.38,opacity:.21,rate:.29}],
+    tint:0x689faf,size:.89,length:1.38,opacity:.21,rate:.29},
+    {count:16,origin:[37,-14.3,-15.6],spread:[5.2,.55,3.2],travel:[4.7,.61,.62],
+     tint:0x788ca9,size:1.15,length:2.7,opacity:.16,rate:.18}],
    models:[
     ['grotto-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['grotto-buttress',[-17.9,-24.65,-17.9],1.34,-.16,'cliff'],
@@ -36,8 +38,9 @@ export const CAMPAIGN_WORLDS=Object.freeze([
     ['grotto-calcite-spring',[30.85,-20.22,6.16],1.19,-.29],
     ['grotto-crystal-seam',[-13.8,-8.7,-15.7],1.17,-.41,'cliff'],
     ['grotto-crystal-seam',[27.5,-12.23,-1.5],1.13,-.48],
-    ['grotto-escarpment',[24,-32.4,-28],[2.15,1.78,2.49],-.77],
-    ['grotto-escarpment',[43,-48,-43],[3.18,1.87,2.35],-.46]
+    ['grotto-vault',[38,-19.85,-15.6],1.08,-.57],
+    ['grotto-fault-shelf',[-22.8,-25.7,20.3],1.32,.47],
+    ['grotto-escarpment',[48,-34.8,-35],[1.62,1.03,1.63],-.48,'horizon']
    ]
   }),
  world('shipyard','Stocznia orbitalna','Orbital Shipyard','orbital',

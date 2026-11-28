@@ -599,6 +599,45 @@ test('grotto cliffs preserve vertex pigment, opaque facets and the per-module tr
  }
 });
 
+test('the grotto vault frames a clear passage supported by two rock shoulders',async()=>{
+ const loader=new GLTFLoader(),{models}=campaignWorld('demo',2);
+ const load=async id=>{
+  const [,position,scale,yaw]=models.find(([name])=>name===id);
+  const file=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const {scene}=await loader.parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');
+  scene.position.fromArray(position);
+  if(Array.isArray(scale))scene.scale.fromArray(scale);
+  else scene.scale.setScalar(scale);
+  scene.rotation.y=yaw;scene.updateMatrixWorld(true);
+  return scene;
+ };
+ const [ground,vault]=await Promise.all(['grotto-terrain','grotto-vault'].map(load));
+ const shape=vault.getObjectByName('grotto-vault');
+ assert.ok(readFileSync(new URL('../assets/models/scenery/grotto-vault.blend',import.meta.url)).length>0);
+ let triangles=0,passes=0;
+ vault.traverse(mesh=>{
+  if(!mesh.isMesh)return;
+  passes++;
+  triangles+=mesh.geometry.index.count/3;
+  assert.ok(mesh.geometry.attributes.color,'strata and cavities retain their vertex pigment');
+  assert.equal(mesh.material.transparent,false);
+ });
+ assert.equal(passes,2,'stone and crystal use separate materials');
+ assert.ok(triangles>=1200&&triangles<=2300,'vault fits the triangle budget');
+ assert.ok(new Box3().setFromObject(vault).max.y<-.6,'the roof remains below the active tiles');
+ const down=new Vector3(0,-1,0);
+ for(const x of [-13.9,12.8]){
+  const foot=shape.localToWorld(new Vector3(x,0,-2));
+  const rock=new Raycaster(foot.clone().setY(20),down).intersectObject(ground,true)[0];
+  assert.ok(rock?.point.y>=foot.y,'each pillar meets the terrain');
+ }
+ const through=shape.localToWorld(new Vector3(0,5,15));
+ const across=shape.localToWorld(new Vector3(0,5,-15)).sub(through).normalize();
+ assert.equal(new Raycaster(through,across,0,32).intersectObject(vault,true).length,0,'the middle is open through the rock');
+ const top=shape.localToWorld(new Vector3(0,20,-2));
+ assert.ok(new Raycaster(top,down).intersectObject(vault,true).length,'the opening runs under solid roof geometry');
+});
+
 test('the three survey anchors penetrate the cavern floor beneath the gallery',async()=>{
  const fixtures=campaignWorld('demo',2).models;
  const [,station,stationScale,stationYaw]=fixtures.find(([id])=>id==='grotto-survey');

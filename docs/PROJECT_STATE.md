@@ -12,6 +12,8 @@ Kuźnia ma estakadę dla wagonu, piec z obudową ze stali, otwartą linię
 odlewniczą i śluzę z pomostem obsługi. Spływ lawy łączy śluzę z korytem.
 W Grocie przelatują ćmy nad żyłą ametystu. Mineralna kaskada zasila jezioro,
 a po drugiej stronie planszy pomost ujęcia stoi na filarach sięgających dna.
+W głębi groty wyrzeźbione sklepienie z wiszącymi stalaktytami otwiera przejście
+w skałach. Wewnątrz przesuwa się chłodny refleks i delikatna zawiesina.
 Szybowce w Ogrodzie i Laboratorium mają barwy dopasowane do sceny. Modele
 powstały w Blenderze i są podpięte do zwykłej kampanii.
 
