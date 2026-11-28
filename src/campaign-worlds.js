@@ -15,8 +15,7 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    models:[
     ['heliostat-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['heliostat-optical-collector',[-10.5,-9.1,-13.4],1.25,-.26,'left'],
-    ['heliostat-aqueduct',[20.5,-8.95,4.9],1.17,-.60,'right'],
-    ['heliostat-aqueduct',[15.1,-15.6,-27.8],1.28,-.56,'horizon'],
+    ['heliostat-waterworks',[22.55,-8.98,6.65],1.17,-.51,'waterwheel'],
     ['heliostat-orchard',[-16.4,-10.6,3.1],[1.04,1.02,1.10],-.38],
     ['heliostat-garden-spring',[9.7,-9.65,15.8],1.27,-.68],
     ['heliostat-ravine',[21.5,-14.7,-16.0],1.34,-.43]

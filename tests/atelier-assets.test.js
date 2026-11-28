@@ -154,7 +154,7 @@ test('each non-orbital biome shares continuous modeled ground between the piers 
    assert.ok(ray.intersectObjects(ground,true).length,`${id}, no break in the terrain at ${angle}/${distance}`);
   }
   const fixtures={
-   heliostat:['heliostat-optical-collector','heliostat-aqueduct','heliostat-garden-spring'],
+   heliostat:['heliostat-optical-collector','heliostat-waterworks','heliostat-garden-spring'],
    grotto:['grotto-pump-causeway','grotto-survey'],
    frost:['frost-optical-lab','frost-radiometer'],
    forge:['forge-furnace-bank','forge-casting-line','forge-service-rail'],
@@ -167,6 +167,48 @@ test('each non-orbital biome shares continuous modeled ground between the piers 
    const contact=ray.intersectObjects(ground,true)[0];
    assert.ok(contact?.point.y>=y,`${id}, ${name} rests on its terrain (${contact?.point.y.toFixed(2)} vs ${y})`);
   }
+ }
+});
+
+test('the garden waterwheel joins an open headrace and a grounded stone basin',async()=>{
+ const loader=new GLTFLoader(),{models}=campaignWorld('demo',1);
+ const placed=async id=>{
+  const [,anchor,scale,yaw]=models.find(([name])=>name===id);
+  const data=readFileSync(new URL('../assets/models/scenery/'+id+'.glb',import.meta.url));
+  const {scene}=await loader.parseAsync(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'');
+  scene.position.fromArray(anchor);
+  if(Array.isArray(scale))scene.scale.fromArray(scale);
+  else scene.scale.setScalar(scale);
+  scene.rotation.y=yaw;scene.updateMatrixWorld(true);
+  return scene;
+ };
+ const [ground,works]=await Promise.all(['heliostat-terrain','heliostat-waterworks'].map(placed));
+ const rotor=works.getObjectByName('Sluice_Wheel');
+ assert.equal(rotor?.parent.name,'heliostat-waterworks');
+ assert.ok(readFileSync(new URL('../assets/models/scenery/heliostat-waterworks.blend',import.meta.url)).length>0);
+ let triangles=0;
+ works.traverse(node=>{
+  if(!node.isMesh)return;
+  assert.ok(node.geometry.attributes.color,'the assembled model keeps baked shading');
+  triangles+=node.geometry.index.count/3;
+ });
+ assert.ok(triangles>=2300&&triangles<=3600,'the combined model fits its polygon budget');
+ const model=rotor.parent,down=new Vector3(0,-1,0);
+ for(const x of [-5.9,5.9])for(const z of [-1.9,1.9]){
+  const foot=model.localToWorld(new Vector3(x,0,z));
+  const hit=new Raycaster(foot.clone().setY(20),down).intersectObject(ground,true)[0];
+  assert.ok(hit?.point.y>=foot.y,'both ends of the base meet the ground');
+ }
+ for(const x of [1.4,2.3,3.85,5.82]){
+  const headrace=model.localToWorld(new Vector3(x,8,0));
+  const surface=new Raycaster(headrace,down).intersectObject(works,true)[0];
+  assert.equal(surface?.object.material.name,'Garden running water','water stays above the headrace masonry');
+ }
+ const axle=rotor.getWorldPosition(new Vector3());
+ for(const angle of [0,Math.PI/3,Math.PI/2]){
+  rotor.rotation.z=angle;works.updateMatrixWorld(true);
+  assert.ok(new Box3().setFromObject(works).max.y<-.6,'the gallery remains below the tiles');
+  assert.deepEqual(rotor.getWorldPosition(new Vector3()).toArray(),axle.toArray());
  }
 });
 

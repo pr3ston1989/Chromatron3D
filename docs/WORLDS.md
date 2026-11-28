@@ -7,7 +7,7 @@ na przypisanej części lokalnej kampanii.
 | Kolejność | Świat | Pokład i światło | Ramowanie i ruch |
 | --- | --- | --- | --- |
 | 1 | Obserwatorium pryzmatyczne | Szczotkowany stop i oświetlenie Węzła Keplera. | Wspólny dok, prom, antena, planeta i przekaźnik z poziomu wzorcowego. |
-| 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz, szkło z zieloną powłoką i złote światło nad doliną. | Heliostat, tarasy z trzema przelewami i mosiężny szybowiec pomiarowy nad doliną. |
+| 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz i chłodniejsze dalsze zbocza. | Heliostat, kamienne ujęcie z obracającym się kołem, połączone misy i szybowiec pomiarowy nad doliną. |
 | 3 | Kryształowa grota | Chłodny łupek, liliowy pokład i turkusowe refleksy w jeziorze. | Ametystowe skupiska, kaskada na kalcytowych progach, pomost ujęcia na filarach i przeloty ciem. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale na dwóch ramionach kratownicowych, holownik przy doku, kurier na dalszej trasie i meteory. |
 | 5 | Laboratorium polarne | Oszroniony stop, ciemniejszy lodowiec i ciepłe światła stanowisk. | Stacja na palach, skanujący radiometr, pomost poboru rdzeni nad szczeliną i przelot szybowca nad doliną. |

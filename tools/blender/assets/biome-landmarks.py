@@ -138,8 +138,8 @@ def garden_spring():
     bark = make_material("Twisted olive bark","bronze",.03,.75,shade=-2)
     rng = Random(83)
     # A string of low retaining walls carries the water toward the ravine.
-    for i,(x,y,z,rx,ry) in enumerate([(-3.1,.44,1.2,2.95,3.02),(.33,.22,.72,2.8,2.8),(3.2,-.32,.14,2.46,2.56)]):
-        m.rock((x,y,0),(rx*1.22,ry*1.18),z+1.44,310+i,cap=soil)
+    for i,(x,y,z,rx,ry) in enumerate([(-3.45,.44,1.2,1.82,2.91),(0,.22,.72,1.73,2.74),(3.2,-.32,.14,1.64,2.56)]):
+        m.rock((x,y,0),(rx*1.22,ry*1.18),z+1.18,310+i,cap=soil)
         m.slab((x,y),rx,ry,z+.75,.49,.79,m.body)
         m.slab((x,y+.18),rx*.87,ry*.82,z+1.23,.13,.48,soil)
         rim = [(rx*.70,.78,1.35),(rx*.76,.91,1.49),(rx*.65,.74,1.57),(rx*.59,.66,1.45)]
@@ -149,22 +149,29 @@ def garden_spring():
                             for wx,wy,height in rim for j in range(sides))
         for row,material in enumerate((m.body,m.edge,m.dark)):
             for j in range(sides):
+                if j in (0,sides-1):
+                    continue
                 a = start+row*sides+j
                 b = start+row*sides+(j+1)%sides
                 m.s.face((a,b,b+sides,a+sides),material)
         water_edge = start+3*sides
         m.s.face(tuple(range(water_edge,water_edge+sides)),water)
         for j in range(5):
-            pos = x+rx*(j/3.3-.57)
-            m.slab((pos,y-2.38),.27,.40,z+1.16,.22,.15,m.stone)
+            pos = x+rx*(j/3.1-.65)
+            m.slab((pos,y-2.38),.24,.35,z+1.16,.19,.13,m.stone)
     # The cascade crests and then drops into the next, lower basin.
-    for x,y,z in [(-1.47,-.68,2.73),(1.70,-.93,2.25),(4.22,-1.35,1.67)]:
-        cross = [(x-.41,y,z),(x-.33,y+.28,z+.02),(x+.31,y+.24,z+.02),(x+.46,y,z)]
-        sheet = [[(px+dx,py+dy,pz+dz) for px,py,pz in cross]
-                 for dx,dy,dz in [(0,0,0),(.51,-.17,-.10),(.87,-.30,-.38),(1.01,-.35,-.67)]]
+    for start,fall,landing in [((-2.72,-.59,2.666),(-1.65,-.71,2.60),(-.78,-.82,2.16)),
+                               ((.70,-.81,2.186),(1.55,-1.06,2.12),(2.38,-1.35,1.58)),
+                               ((3.89,-1.35,1.606),(4.75,-1.46,1.52),(5.18,-1.55,.44))]:
+        x,y,z = fall
+        dx,dy,dz = landing
+        lip = (x+.15,y+.04,z-.10)
+        slope = ((x+dx)/2,(y+dy)/2,(z+dz)/2-.06)
+        sheet = [[(x,y+offset,z) for offset in (-.22,-.064,.064,.22)]
+                 for x,y,z in (start,fall,lip,slope,landing)]
         base = len(m.s.vertices)
         m.s.vertices.extend(point for row in sheet for point in row)
-        for i in range(3):
+        for i in range(len(sheet)-1):
             for j in range(3):
                 v = base+4*i+j
                 m.s.face((v,v+1,v+5,v+4),water)

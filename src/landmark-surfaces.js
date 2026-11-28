@@ -13,6 +13,14 @@ const finishes={
   diffuseColor.rgb*=.87+.13*smoothstep(-1.4,1.8,landmarkPoint.x);
   diffuseColor.rgb+=vec3(.082,.137,.119)*glint;
  `,
+ 'Terrain · heliostat':`
+  vec2 ground=landmarkPoint.xz;
+  float meadow=sin(ground.x*.59+.86*sin(ground.y*.51))+cos(ground.y*.75+ground.x*.26);
+  float grit=sin(ground.y*3.8+ground.x*2.7)*cos(ground.x*4.12-ground.y*.71);
+  diffuseColor.rgb*=.86+.21*smoothstep(-1.4,1.24,meadow)+.045*grit;
+  float distanceTint=smoothstep(36.,93.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.076,.111,.114),distanceTint*.81);
+ `,
  'Meridian fractured filter':`
   float catchlight=exp(-10.*abs(landmarkPoint.y+.51*landmarkPoint.x-4.41));
   diffuseColor.rgb+=vec3(.040,.081,.099)*catchlight;

@@ -14,6 +14,10 @@ a po drugiej stronie planszy pomost ujęcia stoi na filarach sięgających dna.
 Szybowce w Ogrodzie i Laboratorium mają barwy dopasowane do sceny. Modele
 powstały w Blenderze i są podpięte do zwykłej kampanii.
 
+W Ogrodzie Heliostatów kamienne ujęcie stoi na zboczu, a otwarty kanał
+prowadzi wodę z arkad na koło łopatkowe. Trzy misy ogrodu łączą kaskady.
+Dalsze stoki mają przygaszoną paletę. Ograniczony ruch zatrzymuje koło i wodę.
+
 Ekran ładowania jest widoczny od pierwszego wyświetlenia dokumentu.
 Ustępuje po inicjalizacji gry i wyświetla przycisk ponowienia przy błędzie.
 

@@ -3,6 +3,7 @@ import {expect,test} from '@playwright/test';
 import {captureFrame,luminance,projectCells} from './frame.js';
 
 for(const [name,level,channel] of [
+ ['garden waterwheel',2,'waterwheelAngle'],
  ['forge spillway',5,'finishTime'],
  ['grotto lake',3,'poolTime'],
  ['sanctuary prism',7,'calibrationAngle']
@@ -17,11 +18,12 @@ for(const [name,level,channel] of [
  },level);
  await expect.poll(()=>page.evaluate(()=>window.__debug.getLevelState().pilotStatus)).toBe('ready');
  const motion=()=>page.evaluate(channel=>window.__debug.getAmbientMotion()[channel],channel);
- await expect.poll(motion).toBe(0);
+ const magnitude=async()=>Math.abs((await motion())??NaN);
+ await expect.poll(magnitude).toBe(0);
  await page.emulateMedia({reducedMotion:'no-preference'});
- await expect.poll(async()=>Math.abs((await motion())??0),{timeout:15000}).toBeGreaterThan(.10);
+ await expect.poll(magnitude,{timeout:15000}).toBeGreaterThan(.10);
  await page.emulateMedia({reducedMotion:'reduce'});
- await expect.poll(motion).toBe(0);
+ await expect.poll(magnitude).toBe(0);
 });
 
 for(const levels of [[1,2,3,8],[4,5,6,7]])

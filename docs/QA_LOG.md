@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Ogród Heliostatów
+
+- Zrzut pokazał powielony akwedukt i skały przecinające wodę w misach. Zastąpiono akwedukt ujęciem z kołem łopatkowym, połączono misy modelowanymi przelewami i przygaszono zbocza. W pierwszej próbie kanał zasłaniał wodę, więc podniesiono lustro wody ponad kamienne dno.
+- Ujęcie ma 3036 z 3600 trójkątów, ogród z misami 4678 z 4900, a teren 2880 z 3100. Test zasobów sprawdza kontakt kamiennej podstawy z terenem, odsłonięcie lustra wody oraz położenie osi przy obrocie koła.
+- Gra w Chrome zachowała widoczność 225 pól w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 oraz w emulacji 390 × 844. Na czterech rozmiarach desktopowych sprawdzono też po cztery ćwierćobroty. Test ruchu odczytuje kąt koła przed i po przełączeniu ograniczonej animacji.
+- `npm run check` zakończyło się wynikiem 261/261 i poprawną kompilacją produkcyjną.
+
 ## 28 listopada 2026 · Sanktuarium Soczewek
 
 - Zrzut wyjściowy pokazał powtórzone jasne łuki. Przygaszono kamień i szkło, usunięto daleką kopię mostu i rozstawiono instrumenty na różnych wysokościach. Po kolejnych ujęciach odsunięto kolimator od prawej krawędzi i podniesiono bieg kamiennych schodów, aby był widoczny obok ruin.
