@@ -29,7 +29,7 @@ Domyślna platforma ma 3,75 m grubości. Biom orbitalny używa wariantu z rurami
 
 Edytowalne formacje i stanowisko pomiarowe znajdują się w `assets/models/scenery/grotto-*.blend`. Gra ładuje odpowiadające im pliki GLB. Pigment skały i cienie kontaktowe są zapisane w kolorach wierzchołków. Rysunek łupku pochodzi ze wspólnej próbki materiału pokładu.
 
-Zestaw budowli kampanii obejmuje 41 modeli z geometrią, materiałami
+Zestaw budowli kampanii obejmuje 42 modele z geometrią, materiałami
 PBR i wypalonym cieniowaniem wnęk w kolorach wierzchołków. Pliki `.blend`
 i `.glb` są w `assets/models/scenery`, a podglądy w
 `assets/previews/overhaul/scenery`. Modele zajmują 274–4696 trójkątów.
@@ -46,9 +46,9 @@ model wykorzystuje materiał `Bathyal coated glass` z refleksem nakładanym
 w grze. Materiały i wypalone cienie pozostają zapisane w GLB.
 
 Modele Laboratorium polarnego to `frost-optical-lab` (limit 3200 trójkątów),
-`frost-icefall` (2400), `frost-radiometer` (1800) i `frost-ridge` (480). Stacja
-i radiometr mają pale, które sięgają bliskiego modelu lodu. Gra powiela
-niskopoligonową grań w dalszych planach.
+`frost-icefall` (2400), `frost-radiometer` (1800) i `frost-core-bridge` (2600).
+Stacja i radiometr mają pale sięgające lodu. Cztery stopy pomostu stoją na
+przeciwległych brzegach szczeliny w `frost-terrain`.
 
 Stocznia korzysta z `shipyard-transfer-dock` i `shipyard-cargo-tug` (limity
 3800 i 1400 trójkątów). Kuźnia używa `forge-furnace-bank`,

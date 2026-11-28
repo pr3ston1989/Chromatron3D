@@ -48,13 +48,16 @@ export const CAMPAIGN_WORLDS=Object.freeze([
    face:.59,groove:.65,dust:0xa7c3d5,deckTint:0xd4e7ff,air:'aurora',surface:'frost',
    footing:{body:0x24394c,bevel:0x485b70},
    traffic:{model:'ambient-survey-glider',period:37,duration:12,offset:4.8,
-    from:[11.7,-2.8,-28.9],to:[30.7,-2.1,-17.1],scale:.81,
-    palette:{'Survey glider body':0x7792a7,'Glider solar laminate':0x30536e}},
+    from:[17.5,-3.4,-11.4],to:[34,-2.6,-.7],scale:.87,
+    palette:{'Survey glider body':0x9db8c9,'Glider solar laminate':0x28435f}},
+   currents:[{count:27,origin:[22.6,-12.37,6.7],spread:[4.91,.48,2.38],travel:[6.82,.47,1.63],
+    tint:0xa5cede,size:.44,length:2.44,opacity:.19,rate:.42}],
    models:[
     ['frost-terrain',[0,-40,0],[1,1,1],0,'ground'],
     ['frost-optical-lab',[-10.5,-10.62,-13.9],1.20,-.41],
     ['frost-icefall',[-15.1,-13.5,-16.1],[1.06,.84,1.01],-.58],
     ['frost-radiometer',[10.2,-10.07,15.7],1.34,-.43,'pulse'],
+    ['frost-core-bridge',[28.75,-15.08,6.9],1,1.32],
     ['frost-icefall',[-17.5,-11.6,10.4],[1.18,.96,1.51],.39]
    ]
   }),

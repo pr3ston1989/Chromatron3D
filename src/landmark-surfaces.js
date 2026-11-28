@@ -32,6 +32,18 @@ const finishes={
  `,
  'Glacier compressed blue ice':iceBands,
  'Glacier clear fracture':iceBands,
+ 'Terrain · frost':`
+  float layer=landmarkPoint.y-.18*landmarkPoint.x+.53*sin(landmarkPoint.z*.25);
+  float veins=abs(fract(layer*.81)-.5);
+  float bands=1.-smoothstep(.047,.12+fwidth(veins),veins);
+  float steep=smoothstep(.18,.65,abs(dFdx(layer))+abs(dFdy(layer)));
+  float drift=.56+.24*sin(landmarkPoint.x*.36+landmarkPoint.z*.81+1.24*sin(landmarkPoint.z*.24))
+    +.16*sin(landmarkPoint.z*2.6-landmarkPoint.x*.42);
+  diffuseColor.rgb*=.91+.18*drift;
+  diffuseColor.rgb+=vec3(.012,.026,.041)*bands*(.38+.62*steep);
+  float veil=smoothstep(34.,100.,length(vViewPosition));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.044,.103,.148),veil*.73);
+ `,
  'Heated polar glazing':`
   vec2 panel=landmarkPoint.xy;
   float ridge=panel.y-.22*sin(panel.x*.75)-3.01-.034*sin(landmarkTime*.56);

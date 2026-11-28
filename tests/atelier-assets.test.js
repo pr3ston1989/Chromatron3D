@@ -233,12 +233,13 @@ test('the deepwater landmarks use authored meshes below the playing surface',asy
  }
 });
 
-test('the polar laboratory and radiometer are anchored in the modeled ice shelf',async()=>{
- const {models}=campaignWorld('demo',3);
+test('the polar instruments and core bridge sit on the ice below a clear glider route',async()=>{
+ const {models,traffic}=campaignWorld('demo',3);
  const loader=new GLTFLoader();
  const landmarks={
   'frost-optical-lab':[3200,'Heated polar glazing'],
   'frost-radiometer':[1800,'Radiometer optical panels'],
+  'frost-core-bridge':[2600,'Frosted sampling core'],
   'frost-icefall':[2400,'Glacier clear fracture'],
   'frost-ridge':[480,'Distant snow line']
  };
@@ -272,8 +273,10 @@ test('the polar laboratory and radiometer are anchored in the modeled ice shelf'
  };
  const mounts={
   'frost-optical-lab':[[-3.51,-1.83],[-3.51,1.83],[3.51,-1.83],[3.51,1.83]],
-  'frost-radiometer':[[0,0]]
+  'frost-radiometer':[[0,0]],
+  'frost-core-bridge':[[-4.16,-1.16],[-4.16,1.16],[4.16,-1.16],[4.16,1.16]]
  };
+ const down=new Vector3(0,-1,0);
  const ice=placed(terrain);
  for(const [id,points] of Object.entries(mounts)){
   const fixture=models.find(([name])=>name===id);
@@ -281,10 +284,19 @@ test('the polar laboratory and radiometer are anchored in the modeled ice shelf'
   assert.ok(new Box3().setFromObject(prop).max.y<0,id+' remains below the playable deck');
   for(const [x,z] of points){
    const foot=prop.localToWorld(new Vector3(x,0,z));
-   const ray=new Raycaster(foot.clone().setY(20),new Vector3(0,-1,0));
+   const ray=new Raycaster(foot.clone().setY(20),down);
    const contact=ray.intersectObject(ice,true)[0];
    assert.ok(contact&&contact.point.y>foot.y,id+' foot reaches the glacial face');
   }
+ }
+ const [,bridge]=models.find(([name])=>name==='frost-core-bridge');
+ const fracture=new Raycaster(new Vector3(bridge[0],20,bridge[2]),down).intersectObject(ice,true)[0];
+ assert.ok(fracture?.point.y<bridge[1]-2.5,'the bridge spans a recessed ice face');
+ const departure=new Vector3(...traffic.from),arrival=new Vector3(...traffic.to);
+ for(let i=0;i<=12;i++){
+  const point=departure.clone().lerp(arrival,i/12);
+  const terrainBelow=new Raycaster(point.clone().setY(20),down).intersectObject(ice,true)[0];
+  assert.ok(terrainBelow?.point.y<point.y-1.6,'the survey glider clears the glacier along its route');
  }
 });
 

@@ -22,9 +22,10 @@ SCENES = {
         (12.8, 10.5, -8.22, 11), (-11.8, -10.4, -5.46, 6.4),
         (-13.8, -15.7, -8.45, 5.1), (27.5, -1.5, -12.1, 7.9), (24, -22, -16.7, 9),
     ]),
-    'frost': (-16.3, (.125, .259, .381), (.294, .481, .623), (.126, .307, .430), [
+    'frost': (-16.3, (.079, .142, .207), (.208, .326, .407), (.079, .171, .246), [
         (-10.5, -13.9, -10.42, 9.4), (10.2, 15.7, -9.92, 5.7),
         (-17.5, 10.4, -11.36, 6.4), (24, -23.8, -18.1, 8),
+        (27.7, 11.0, -14.64, 5.2), (29.8, 2.9, -14.64, 5.2),
     ]),
     'forge': (-15.9, (.023, .023, .032), (.092, .064, .066), (.046, .052, .063), [
         (-10.9, -13.6, -8.6, 5.7), (9.8, 15.1, -9.1, 5.8),
@@ -98,6 +99,11 @@ def bed(theme):
         for px,pz,height,radius in pads:
             distance = hypot(x-px,z-pz)
             floor = max(floor,height-1.02*max(0,distance-radius*.65))
+        if theme == 'frost':
+            fault = abs(z-(6.9+.19*(x-28.75)+.67*sin((x-28.75)*.22)))
+            reach = exp(-((x-29.5)/8.4)**4)
+            bank = min(1,max(0,(fault-.63)/2.52))
+            floor -= reach*max(0,floor-(-22.9+9.4*bank))
         if theme == 'grotto':
             inlet = hypot((x+16.6+.12*(z+9.0))/6.8,(z+9.0)/9.0)
             lake = hypot((x-29.6+.07*(z-9.5))/8.7,(z-9.5)/8.8)
@@ -115,6 +121,9 @@ def bed(theme):
         accent = max(0.,sin(.19*x-.23*z+.54*broad))*branch
         shade = tuple((a+(b-a)*mix)*(1-accent)+c*accent
                       for a,b,c in zip(shadow,light,secondary))
+        if theme == 'frost':
+            deep = min(1,max(0,(-floor-15.9)/7.))
+            shade = tuple(c*(1-deep*.87)+ice*deep*.87 for c,ice in zip(shade,(.025,.071,.121)))
         if theme in TRAILS:
             r,g,b,route = TRAILS[theme]
             path = .76*exp(-(trail_distance(x,z,route)/(1.36+.23*broad))**2)

@@ -1,5 +1,12 @@
 # Decyzje
 
+## Laboratorium Polarne · 28 listopada 2026
+
+Obudowy laboratorium i radiometru rozdzielają ciemne ciągi serwisowe od
+ciepłych świateł. Pomost poboru rdzeni ma cztery stopy osadzone po bokach
+szczeliny wymodelowanej w lodowcu. Trasę szybowca zmieniono tak, by była
+widoczna nad tylną krawędzią planszy w zwykłym widoku 3D.
+
 ## Kryształowa Grota · 28 listopada 2026
 
 Dwie niecki w siatce terenu rozdzielają zatokę ujęcia od jeziora pod

@@ -1,5 +1,12 @@
 # QA
 
+## 28 listopada 2026 · Laboratorium Polarne
+
+- Na zrzucie wyjściowym lodowiec i plansza miały zbliżony kontrast, a część trasy szybowca ginęła za zboczem. Przyciemniono teren, ocieplono światła stacji i przeniesiono przelot na widoczną stronę grzbietu. W domyślnym kadrze platforma zasłania bliższy koniec szczeliny.
+- Modele mają 2576 trójkątów dla stacji, 1288 dla radiometru, 1722 dla pomostu i 2880 dla terenu. Test geometrii sprawdza cztery stopy pomostu, obniżenie gruntu pod przęsłem oraz prześwit pod trasą szybowca.
+- Zrzut z animowanej sceny potwierdził przelot za planszą. Widok w 1672 × 941, 1366 × 768, 1280 × 720, 1093 × 614 i emulacji 390 × 844 zachował widoczność środków wszystkich pól. Sprawdzono również cztery ćwierćobroty przy niskiej kamerze.
+- `npm run check` zakończyło się wynikiem 259/259 i poprawną kompilacją produkcyjną.
+
 ## 28 listopada 2026 · Kryształowa Grota
 
 - Zrzut wyjściowy pokazał, że wielka przypora zasłaniała zatokę. Zmieniono ułożenie skał, kaskady i ametystu tak, aby jezioro było widoczne w domyślnym widoku 3D. Przy obrocie przeciwległa część jaskini pozostaje spokojniejsza wizualnie.

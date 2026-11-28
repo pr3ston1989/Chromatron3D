@@ -23,9 +23,11 @@ i ciągłość terenu po bokach. W Stoczni dwa ramiona kratownicowe łączą
 terminale z konstrukcją planszy. Iskry Kuźni, mgiełka w Grocie i smugi
 silników holownika korzystają z niewielkich grup instancji.
 
-Laboratorium polarne stoi na palach zakotwionych w lodowcu. Radiometr skanuje
-niebo z tego samego lodowca. Bliskie bloki lodu mają osobne modele,
-a dalsze grzbiety należą do wspólnej siatki terenu.
+Laboratorium polarne stoi na palach zakotwionych w lodowcu. Stacja ma
+ciemniejsze ciągi serwisowe i ciepłe podświetlenie szyb. Radiometr skanuje
+niebo z tego samego lodowca, a pomost z wiertnicą łączy brzegi szczeliny.
+Szybowiec przelatuje za planszą na tle grzbietu. Bliskie bloki lodu mają
+osobne modele, a dalsze grzbiety należą do wspólnej siatki terenu.
 
 W Optyce głębinowej można obserwować patrol pojazdu badawczego między rafą
 hydrotermalną a stacją pomiarową. Stacja, rafa i pojazd mają edytowalne źródła

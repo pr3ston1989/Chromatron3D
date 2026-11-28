@@ -10,7 +10,7 @@ na przypisanej części lokalnej kampanii.
 | 2 | Ogród heliostatów | Ciepły wapień, patynowany brąz, szkło z zieloną powłoką i złote światło nad doliną. | Heliostat, tarasy z trzema przelewami i mosiężny szybowiec pomiarowy nad doliną. |
 | 3 | Kryształowa grota | Chłodny łupek, liliowy pokład i turkusowe refleksy w jeziorze. | Ametystowe skupiska, kaskada na kalcytowych progach, pomost ujęcia na filarach i przeloty ciem. |
 | 4 | Stocznia orbitalna | Chłodne światło planety, tytan i bursztynowe sygnały. | Terminale na dwóch ramionach kratownicowych, holownik przy doku, kurier na dalszej trasie i meteory. |
-| 5 | Laboratorium polarne | Oszroniony stop, pasma sprężonego lodu, zielona i fioletowa zorza. | Radiometr nad lodowcem, nawiewany śnieg i jasny szybowiec badawczy pod zorzą. |
+| 5 | Laboratorium polarne | Oszroniony stop, ciemniejszy lodowiec i ciepłe światła stanowisk. | Stacja na palach, skanujący radiometr, pomost poboru rdzeni nad szczeliną i przelot szybowca nad doliną. |
 | 6 | Kuźnia widmowa | Ciemny bazalt, stal, oksydowana miedź i bursztynowe światła pieca. | Piec i otwarte formy odlewnicze, śluza nad bocznym korytem lawy oraz wagon na estakadzie. |
 | 7 | Optyka głębinowa | Chłodna ceramika, głęboki morski granat i rozproszone smugi światła. | Stacja ciśnieniowa, patrol pojazdu badawczego i ławica nad rafą hydrotermalną. |
 | 8 | Sanktuarium soczewek | Liliowy kamień, oksydowany brąz i chłodna mgła. | Uszkodzony instrument południkowy, kolimator, zerwany most i dryfujące nad przepaścią pasma mgły. |

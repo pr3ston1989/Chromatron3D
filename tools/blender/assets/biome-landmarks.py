@@ -323,10 +323,11 @@ def polar_station():
 def frost_optical_lab():
     m = Landmark("Snowline optical station", "steel", "titanium", "amber", "navy")
     enamel = make_material("Orange ceramic cladding", "copper", .29,.44)
-    glass = paint("Heated polar glazing", (.039,.171,.223), .41,.23,.08)
+    glass = paint("Heated polar glazing", (.065,.133,.168), .39,.24,.12)
     snow = paint("Drift across the roof", (.38,.50,.59), .02,.79)
-    m.slab((0,0),5.04,2.65,.83,.49,.65,m.stone)
-    m.slab((-.28,-1.69),4.28,1.11,1.32,.25,.33,m.body)
+    deck = paint("Polar grated catwalk", (.056,.077,.097), .27,.61)
+    m.slab((0,0),5.04,2.65,.83,.49,.65,m.stone,cap=deck)
+    m.slab((-.28,-1.69),4.28,1.11,1.32,.25,.33,m.body,cap=deck)
     for x in (-3.51,3.51):
         for y in (-1.83,1.83):
             m.s.lathe([(x,y,-3.56,.46,.44),(x,y,-3.43,.54,.54),(x,y,-3.19,.54,.54),
@@ -349,6 +350,7 @@ def frost_optical_lab():
                     (x-w+.09,y+.13,high),(x-w,y+.11,high-.08)]
         m.s.loft([pane(.52,-2.02,2.46,3.46),pane(.48,-2.16,2.50,3.42),
                   pane(.39,-2.17,2.59,3.34)],m.dark,[enamel,glass])
+        m.pipe([(x-.33,-2.179,2.65),(x+.33,-2.179,2.65)],.033,m.signal,4)
     for side in (-1,1):
         m.pipe([(-3.79,side*2.00,2.19),(.74,side*2.00,2.19),(1.38,side*1.95,2.44)],.053,m.signal,4)
         for x in (-3.68,-.90,1.87,3.72):
@@ -369,6 +371,10 @@ def frost_optical_lab():
         m.slab((x,.49),.067,.57,4.46,.17,.047,m.edge)
     m.pipe([(2.82,1.34,3.59),(2.92,1.34,4.57),(3.27,1.34,4.83)],.14,m.body,8)
     m.pipe([(3.27,1.34,4.83),(3.46,1.34,4.83)],.18,enamel,8)
+    for x in (-2.72,-2.28,-1.84):
+        m.slab((x,1.46),.14,.39,4.03,.15,.069,m.stone,cap=m.body)
+    m.pipe([(-3.45,1.02,4.08),(-3.45,1.02,4.54),(-3.24,1.03,4.78)],.053,m.body,5)
+    m.pipe([(-3.24,1.03,4.78),(-3.24,1.03,4.91)],.056,m.signal,6)
     return m
 
 
@@ -455,6 +461,57 @@ def frost_radiometer():
         m.pipe([dish_point(0 if side==1 else pi,1.64,-.18),(side*.32,-.70,2.93),(0,-.83,3.04)],.065,m.edge,6)
     m.pipe([(0,-.58,2.96),(0,-.89,3.09),(0,-.98,3.15)],.16,m.body,8)
     m.pipe([(0,-.96,3.13),(0,-1.04,3.16)],.119,m.signal,8)
+    for x in (-1.79,1.79):
+        m.slab((x,.94),.31,.41,.30,.23,.14,m.body,cap=copper)
+        m.pipe([(x,-.78,.45),(x,-.31,.45)],.042,m.signal,4)
+    m.pipe([(-.69,1.08,.39),(-.55,1.19,.86),(.51,1.10,1.0),(.83,.79,1.03)],.083,m.stone)
+    return m
+
+
+def frost_core_bridge():
+    m = Landmark("Polar core sampling bridge", "steel", "titanium", "amber", "navy")
+    grating = paint("Dark polar grating", (.044,.069,.090), .27,.67)
+    ceramic = make_material("Weathered sampler enamel", "copper", .30,.61,shade=1)
+    cold = paint("Frosted sampling core", (.149,.307,.37), .16,.33)
+    # Deck and outriggers share a continuous load path between the two banks.
+    for x in (-4.16,4.16):
+        for y in (-1.16,1.16):
+            m.slab((x,y),.66,.68,0,.31,.23,m.stone,cap=m.body)
+            m.pipe([(x,y,.27),(x*.98,y*.91,1.29),(x*.92,y*.85,1.64)],.23,m.body,6)
+            m.pipe([(x,y,.31),(x*.85,y*.87,1.36)],.097,m.edge,5)
+        m.slab((x,0),.81,1.56,1.16,.39,.31,m.stone,cap=grating)
+    m.slab((0,0),4.07,1.36,1.46,.35,.34,m.body,cap=grating)
+    for side in (-1,1):
+        y = side*1.36
+        m.pipe([(-4.49,y,1.37),(4.49,y,1.37)],.079,m.edge,6)
+        for x in (-3.85,-2.13,-.72,.72,2.13,3.85):
+            m.pipe([(x,y,1.74),(x,y,2.38)],.039,m.edge,5)
+        m.pipe([(-4.04,y,2.39),(4.04,y,2.39)],.051,m.body,5)
+        for x in (-3.22,3.22):
+            m.pipe([(x-.35,y*1.02,1.65),(x+.35,y*1.02,1.65)],.041,m.signal,4)
+    for x in (-3.06,-2.57,-2.08,2.08,2.57,3.06):
+        m.pipe([(x,-1.09,1.811),(x,1.09,1.811)],.023,m.body,4)
+    # The open A-frame exposes the drive head, hose and sample core.
+    for y in (-.82,.82):
+        for x in (-1.57,1.57):
+            m.pipe([(x,y,1.78),(x*.77,y*.87,3.05),(x*.35,y*.72,5.32)],.139,m.edge,6)
+        m.pipe([(-1.25,y,3.18),(1.25,y,3.18)],.083,m.body,5)
+        m.pipe([(-1.58,y,1.81),(.61,y*.82,4.81)],.062,m.body,5)
+    m.slab((0,0),.67,.84,4.95,.52,.21,ceramic,cap=m.body)
+    m.slab((.05,0),.34,.48,5.46,.15,.11,m.dark,cap=m.edge)
+    for side in (-1,1):
+        m.pipe([(-.43,side*.82,5.21),(.43,side*.82,5.21)],.046,m.signal,4)
+    m.s.lathe([(0,0,2.12,.32,.34),(0,0,2.29,.39,.41),(0,0,3.01,.43,.45),
+               (0,0,3.23,.49,.49),(0,0,3.64,.35,.37),(0,0,3.9,.24,.26)],
+              m.dark,10,bands=[m.stone,cold,m.body,ceramic,m.body])
+    m.pipe([(0,0,3.84),(0,0,4.98)],.093,m.edge,8)
+    m.pipe([(-2.69,.76,2.25),(-2.43,.60,3.01),(-1.20,.25,3.83),
+            (-.64,.29,4.86),(-.28,.52,4.89)],.078,m.dark,7)
+    m.slab((-2.59,.63),.63,.51,1.80,.65,.20,m.body,cap=ceramic)
+    for x in (-2.89,-2.59,-2.29):
+        m.pipe([(x,.09,2.28),(x,.09,2.45)],.033,grating,5)
+    m.slab((1.97,-.64),.40,.36,1.80,.47,.15,m.stone,cap=m.edge)
+    m.pipe([(1.70,-.97,2.08),(2.22,-.97,2.08)],.036,m.signal,4)
     return m
 
 
@@ -1232,6 +1289,7 @@ BUILDERS = {
     "frost-escarpment": glacier, "frost-traverser": polar_station,
     "frost-optical-lab": frost_optical_lab, "frost-icefall": frost_icefall,
     "frost-radiometer": frost_radiometer, "frost-ridge": frost_ridge,
+    "frost-core-bridge": frost_core_bridge,
     "forge-smelter": smelter, "forge-basalt": basalt_basin,
     "abyss-habitat": bathysphere, "abyss-reef": reef,
     "abyss-observatory": abyss_observatory, "abyss-vent-reef": abyss_vent_reef,
@@ -1256,6 +1314,7 @@ BUILDERS = {
 LANDMARK_BUDGETS = {
     "abyss-observatory": 3700, "abyss-vent-reef": 3000, "abyss-survey-rov": 1200,
     "frost-optical-lab": 3200, "frost-icefall": 2400, "frost-radiometer": 1800, "frost-ridge": 480,
+    "frost-core-bridge": 2600,
     "shipyard-transfer-dock": 3800, "shipyard-cargo-tug": 1400, "shipyard-service-arm": 1800,
     "forge-furnace-bank": 3800, "forge-casting-line": 3000, "forge-spillway": 2600, "grotto-pump-causeway": 2300,
     "grotto-crystal-seam": 1500, "grotto-calcite-spring": 2400,
